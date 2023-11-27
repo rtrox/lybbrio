@@ -12,6 +12,7 @@ type BookListResponse = ListResponse[*calibre.Book]
 type SeriesListResponse = ListResponse[*calibre.Series]
 type TagListResponse = ListResponse[*calibre.Tag]
 type PublisherListResponse = ListResponse[*calibre.Publisher]
+type LanguageListResponse = ListResponse[*calibre.Language]
 
 type ListResponse[T any] struct {
 	Items []T                 `json:"items"`

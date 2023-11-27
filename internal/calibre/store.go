@@ -111,13 +111,18 @@ func (s *CalibreSQLite) GetAuthorSeries(id int64) ([]*Series, error) {
 
 func (s *CalibreSQLite) GetBook(id int64) (*Book, error) {
 	var book Book
-	err := s.db.Preload("Authors").Preload("Tags").Preload("Identifiers").First(&book, id).Error
+	err := s.db.Preload(clause.Associations).First(&book, id).Error
 	return &book, err
 }
 
 func (s *CalibreSQLite) GetBooks() ([]*Book, error) {
 	var books []*Book
-	err := s.db.Preload(clause.Associations).Find(&books).Error
+	err := s.db.
+		Preload("Authors").
+		Preload("Tags").
+		Preload("Comments").
+		Find(&books).
+		Error
 	return books, err
 }
 
@@ -135,7 +140,12 @@ func (s *CalibreSQLite) GetTags() ([]*Tag, error) {
 
 func (s *CalibreSQLite) GetTagBooks(id int64) ([]*Book, error) {
 	var books []*Book
-	err := s.db.Model(&Tag{ID: id}).Association("Books").Find(&books)
+	err := s.db.Model(&Tag{ID: id}).
+		Preload("Book.Authors").
+		Preload("Book.Tags").
+		Preload("Book.Comments").
+		Association("Books").
+		Find(&books)
 	return books, err
 }
 
@@ -153,7 +163,12 @@ func (s *CalibreSQLite) GetPublishers() ([]*Publisher, error) {
 
 func (s *CalibreSQLite) GetPublisherBooks(id int64) ([]*Book, error) {
 	var books []*Book
-	err := s.db.Model(&Publisher{ID: id}).Association("Books").Find(&books)
+	err := s.db.Model(&Publisher{ID: id}).
+		Preload("Book.Authors").
+		Preload("Book.Tags").
+		Preload("Book.Comments").
+		Association("Books").
+		Find(&books)
 	return books, err
 }
 
@@ -183,7 +198,12 @@ func (s *CalibreSQLite) GetIdentifier(id int64) (*Identifier, error) {
 
 func (s *CalibreSQLite) GetIdentifierBook(id int64) (*Book, error) {
 	var book Book
-	err := s.db.Model(&Identifier{ID: id}).Association("Book").Find(&book)
+	err := s.db.Model(&Identifier{ID: id}).
+		Preload("Book.Authors").
+		Preload("Book.Tags").
+		Preload("Book.Comments").
+		Association("Book").
+		Find(&book)
 	return &book, err
 }
 
@@ -214,6 +234,11 @@ func (s *CalibreSQLite) GetSeriesList() ([]*Series, error) {
 
 func (s *CalibreSQLite) GetSeriesBooks(id int64) ([]*Book, error) {
 	var books []*Book
-	err := s.db.Model(&Series{ID: id}).Association("Books").Find(&books)
+	err := s.db.Model(&Series{ID: id}).
+		Preload("Book.Authors").
+		Preload("Book.Tags").
+		Preload("Book.Comments").
+		Association("Books").
+		Find(&books)
 	return books, err
 }

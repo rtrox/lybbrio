@@ -18,19 +18,19 @@ type Book struct {
 	PubDate      *time.Time   `json:"pub_date" gorm:"column:pubdate"`
 	SeriesIndex  *float64     `json:"series_index"`
 	AuthorSort   string       `json:"author_sort"`
-	ISBN         string       `json:"isbn"`
-	LCCN         string       `json:"lccn"`
+	ISBN         string       `json:"isbn,omitempty"`
+	LCCN         string       `json:"lccn,omitempty"`
 	Path         string       `json:"path"`
 	Flags        int64        `json:"flags"`
 	UUID         string       `json:"uuid"`
 	HasCover     bool         `json:"has_cover"`
 	LastModified time.Time    `json:"last_modified"`
-	Authors      []Author     `json:"authors" gorm:"many2many:books_authors_link;foreignKey:id;joinForeignKey:book;References:ID;JoinReferences:author"`
-	Tags         []Tag        `json:"tags" gorm:"many2many:books_tags_link;foreignKey:id;joinForeignKey:book;References:ID;JoinReferences:tag"`
-	Identifiers  []Identifier `json:"identifiers" gorm:"foreignKey:book"`
-	Publisher    []Publisher  `json:"publisher" gorm:"many2many:books_publishers_link;foreignKey:id;joinForeignKey:book;References:ID;JoinReferences:publisher"`
+	Authors      []Author     `json:"authors,omitempty" gorm:"many2many:books_authors_link;foreignKey:id;joinForeignKey:book;References:ID;JoinReferences:author"`
+	Tags         []Tag        `json:"tags,omitempty" gorm:"many2many:books_tags_link;foreignKey:id;joinForeignKey:book;References:ID;JoinReferences:tag"`
+	Identifiers  []Identifier `json:"identifiers,omitempty" gorm:"foreignKey:book"`
+	Publisher    []Publisher  `json:"publishers,omitempty" gorm:"many2many:books_publishers_link;foreignKey:id;joinForeignKey:book;References:ID;JoinReferences:publisher"`
 	Comments     Comment      `json:"comments" gorm:"foreignKey:book"`
-	Languages    []Language   `json:"languages" gorm:"many2many:books_languages_link;foreignKey:id;joinForeignKey:book;References:ID;JoinReferences:lang_code"`
+	Languages    []Language   `json:"languages, omitempty" gorm:"many2many:books_languages_link;foreignKey:id;joinForeignKey:book;References:ID;JoinReferences:lang_code"`
 }
 
 type Identifier struct {
@@ -60,8 +60,8 @@ type Comment struct {
 
 type Language struct {
 	ID       int64  `json:"id"`
-	Book     int64  `json:"book"`
 	LangCode string `json:"lang"`
+	Books    []Book `json:"books,omitempty" gorm:"many2many:books_languages_link;foreignKey:id;joinForeignKey:lang_code;References:ID;JoinReferences:book"`
 }
 
 type Series struct {
