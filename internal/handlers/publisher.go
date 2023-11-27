@@ -12,6 +12,20 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+func PublisherRoutes(cal calibre.Calibre) *chi.Mux {
+	r := chi.NewRouter()
+
+	r.With(PaginationCtx).Get("/", GetPublishers(cal))
+
+	r.Route("/{publisherId}", func(r chi.Router) {
+		r.Use(PublisherCtx(cal))
+		r.Get("/", GetPublisher())
+		r.With(PaginationCtx).Get("/books", GetPublisherBooks(cal))
+	})
+
+	return r
+}
+
 type publisherCtxKeyType string
 
 const publisherCtxKey publisherCtxKeyType = "publisher"
