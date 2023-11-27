@@ -1,6 +1,7 @@
 package calibre
 
 import (
+	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
@@ -45,8 +46,25 @@ type CalibreSQLite struct {
 	db *gorm.DB
 }
 
-func NewCalibreSQLite(db *gorm.DB) *CalibreSQLite {
-	return &CalibreSQLite{db: db}
+func NewCalibreSQLite(dbPath string) (*CalibreSQLite, error) {
+	// newLogger := logger.New(
+	// 	stdlog.New(os.Stdout, "\r\n", stdlog.LstdFlags), // io writer
+	// 	logger.Config{
+	// 		SlowThreshold:             time.Second, // Slow SQL threshold
+	// 		LogLevel:                  logger.Info, // Log level
+	// 		IgnoreRecordNotFoundError: true,        // Ignore ErrRecordNotFound error for logger
+	// 		ParameterizedQueries:      true,        // Don't include params in the SQL log
+	// 		Colorful:                  false,       // Disable color
+	// 	},
+	// )
+	db, err := gorm.Open(sqlite.Open(dbPath), &gorm.Config{
+		// Logger: newLogger,
+	})
+
+	if err != nil {
+		return nil, err
+	}
+	return &CalibreSQLite{db: db}, nil
 }
 
 func (c *CalibreSQLite) WithPagination(page, pageSize int) Calibre {

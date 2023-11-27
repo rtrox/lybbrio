@@ -14,6 +14,18 @@ import (
 	flag "github.com/spf13/pflag"
 )
 
+func RegisterFlags(flagSet *flag.FlagSet) {
+	flagSet.String("log-level", "info", "Log level")
+	flagSet.String("log-format", "text", "Log format (text, json)")
+	flagSet.Duration("graceful-shutdown-timeout", 1*time.Second, "Graceful shutdown timeout prior to killing the process")
+	flagSet.String("base-url", "http://localhost:8080", "Base URL")
+	flagSet.Bool("go-collector", false, "Enable Go prometheus collector")
+	flagSet.Bool("process-collector", false, "Enable process prometheus collector")
+	flagSet.Int("port", 8080, "Port to Listen On")
+	flagSet.String("interface", "127.0.0.1", "Interface")
+	flagSet.String("calibre-db-path", "/database/metadata.db", "Path to Calibre database")
+}
+
 type Config struct {
 	// Logging
 	LogLevel  string `koanf:"log-level" validate:"ValidateLogLevel"`
@@ -27,6 +39,8 @@ type Config struct {
 
 	GoCollector      bool `koanf:"go-collector"`
 	ProcessCollector bool `koanf:"process-collector"`
+
+	CalibreDBPath string `koanf:"calibre-db-path" validate:"required"`
 
 	k *koanf.Koanf
 }
@@ -69,6 +83,9 @@ func LoadConfig(flagSet *flag.FlagSet) (*Config, error) {
 		"base-url":                  "http://localhost:8080",
 		"port":                      8080,
 		"interface":                 "127.0.0.1",
+		"go-collector":              true,
+		"process-collector":         true,
+		"calibre-db-path":           "database/metadata.db",
 	}, "."), nil); err != nil {
 		return nil, err
 	}
@@ -103,5 +120,6 @@ func (c Config) Translates() map[string]string {
 		"ProcessCollector":        "process-collector",
 		"Port":                    "port",
 		"Interface":               "interface",
+		"CalibreDBPath":           "calibre-db-path",
 	}
 }

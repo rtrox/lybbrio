@@ -1,0 +1,126 @@
+package handlers
+
+import (
+	"context"
+	"fmt"
+	"net/http"
+	"strconv"
+
+	"github.com/go-chi/chi"
+	"github.com/go-chi/render"
+	"github.com/rs/zerolog/log"
+
+	"lybbrio/internal/calibre"
+)
+
+func BookRoutes(cal calibre.Calibre) *chi.Mux {
+	r := chi.NewRouter()
+
+	r.Get("/", GetBooks(cal))
+	r.Route("/{bookId}", func(r chi.Router) {
+		r.Use(BookCtx(cal))
+		r.Get("/", GetBook())
+	})
+
+	return r
+}
+
+type bookCtxKeyType string
+
+const bookCtxKey bookCtxKeyType = "book"
+
+func bookFromContext(ctx context.Context) *calibre.Book {
+	return ctx.Value(bookCtxKey).(*calibre.Book)
+}
+
+func BookCtx(cal calibre.Calibre) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
+			s := chi.URLParam(r, "bookId")
+			bookId, err := strconv.ParseInt(s, 10, 64)
+			if err != nil {
+				render.Render(w, r, ErrBadRequest(err))
+				return
+			}
+
+			book, err := cal.GetBook(bookId)
+			if err != nil {
+				render.Render(w, r, ErrNotFound)
+				return
+			}
+
+			ctx := r.Context()
+			ctx = context.WithValue(ctx, bookCtxKey, book)
+			next.ServeHTTP(w, r.WithContext(ctx))
+		})
+	}
+}
+
+type BookListResponse struct {
+	Books  []*calibre.Book `json:"books"`
+	Cursor string          `json:"cursor"`
+	Next   string          `json:"next"`
+}
+
+// GetBook godoc
+// @Summary Get Book by ID
+// @Description Get Book by ID
+// @Tags books
+// @Accept json
+// @Produce json
+// @Param bookId path int true "Book ID"
+// @Success 200 {object} calibre.Book
+// @Failure 400 {object} ErrResponse
+// @Failure 401 {object} ErrResponse
+// @Failure 403 {object} ErrResponse
+// @Failure 404 {object} ErrResponse
+// @Failure 500 {object} ErrResponse
+// @Router /books/{bookId} [get]
+func GetBook() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		book := bookFromContext(r.Context())
+		render.JSON(w, r, book)
+	}
+}
+
+// GetBooks godoc
+// @Summary List Books
+// @Description List Books
+// @Tags books
+// @Accept json
+// @Produce json
+// @Param cursor query string false "Pagination cursor"
+// @Success 200 {object} BookListResponse
+// @Failure 400 {object} ErrResponse
+// @Failure 401 {object} ErrResponse
+// @Failure 403 {object} ErrResponse
+// @Failure 404 {object} ErrResponse
+// @Failure 500 {object} ErrResponse
+// @Router /books [get]
+func GetBooks(cal calibre.Calibre) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		token, err := PaginationTokenFromRequest(r)
+		log.Debug().Interface("token", token).Msg("token")
+		if err != nil {
+			render.Render(w, r, ErrBadRequest(err))
+			return
+		}
+		books, err := Paginate(cal, &token).GetBooks()
+		if err != nil {
+			render.Render(w, r, ErrInternalError(AppError{ErrRender, err.Error()}))
+			return
+		}
+		nextToken, err := MarshalPaginationToken(token.Next())
+		if err != nil {
+			render.Render(w, r, ErrInternalError(AppError{ErrPaginationToken, err.Error()}))
+			return
+		}
+		log.Debug().Interface("url", r.URL).Msg("url")
+		render.JSON(w, r, BookListResponse{
+			Books:  books,
+			Cursor: nextToken,
+			Next:   fmt.Sprintf("%s?cursor=%s", r.URL.String(), nextToken),
+		})
+	}
+}

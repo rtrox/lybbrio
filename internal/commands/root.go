@@ -5,10 +5,10 @@ import (
 	"fmt"
 
 	"net/http"
+	"net/url"
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
 
 	"github.com/go-chi/chi"
 	chi_middleware "github.com/go-chi/chi/middleware"
@@ -21,6 +21,7 @@ import (
 	httpSwagger "github.com/swaggo/http-swagger/v2"
 
 	"lybbrio/docs"
+	"lybbrio/internal/calibre"
 	"lybbrio/internal/config"
 	"lybbrio/internal/handlers"
 	"lybbrio/internal/metrics"
@@ -53,23 +54,17 @@ func Execute(a AppInfo) error {
 func init() {
 	cobra.OnInitialize(initConfig, initLogger, initDocs)
 
-	rootCmd.PersistentFlags().String("log-level", "info", "Log level")
-	rootCmd.PersistentFlags().String("log-format", "text", "Log format (text, json)")
-	rootCmd.PersistentFlags().Duration("graceful-shutdown-timeout", 1*time.Second, "Graceful shutdown timeout prior to killing the process")
-	rootCmd.PersistentFlags().String("base-url", "http://localhost:8080", "Base URL")
-	rootCmd.PersistentFlags().Bool("go-collector", false, "Enable Go prometheus collector")
-	rootCmd.PersistentFlags().Bool("process-collector", false, "Enable process prometheus collector")
-	rootCmd.PersistentFlags().Int("port", 8080, "Port to Listen On")
-	rootCmd.PersistentFlags().String("interface", "127.0.0.1", "Interface")
-
+	config.RegisterFlags(rootCmd.PersistentFlags())
 }
 
 func initDocs() {
 	docs.SwaggerInfo.Title = rootCmd.Short
 	docs.SwaggerInfo.Description = rootCmd.Long
 	docs.SwaggerInfo.Version = "0.1.0" // API Version, differs from app version
-	docs.SwaggerInfo.Host = conf.BaseURL
-	docs.SwaggerInfo.BasePath = "/v2"
+	u, _ := url.Parse(conf.BaseURL)
+	p, _ := url.JoinPath(u.Host, u.Path)
+	docs.SwaggerInfo.Host = p
+	docs.SwaggerInfo.BasePath = "/api/v2"
 	docs.SwaggerInfo.Schemes = []string{"http", "https"}
 }
 
@@ -155,6 +150,10 @@ func rootRun(cmd *cobra.Command, args []string) {
 	}
 
 	// Calibre
+	cal, error := calibre.NewCalibreSQLite(conf.CalibreDBPath)
+	if error != nil {
+		log.Fatal().Err(error).Msg("Failed to initialize Calibre")
+	}
 
 	// Database
 
@@ -174,9 +173,15 @@ func rootRun(cmd *cobra.Command, args []string) {
 
 	r.Get("/healthz", handlers.Health)
 	r.Handle("/metrics", promhttp.HandlerFor(reg, promhttp.HandlerOpts{}))
-	r.Handle("/swagger/*", httpSwagger.Handler(
-		httpSwagger.URL("/swagger/doc.json"),
-	))
+
+	r.Route("/api/v2", func(r chi.Router) {
+		// r.Mount("/auth", handlers.AuthRoutes(store, authProvider))
+		r.Route("/", func(r chi.Router) {
+			// r.Use(middleware.Auth(authProvider))
+			r.Mount("/books", handlers.BookRoutes(cal))
+		})
+	})
+	r.Mount("/swagger", httpSwagger.WrapHandler)
 
 	srv.Addr = fmt.Sprintf("%s:%d", conf.Interface, conf.Port)
 	srv.Handler = r
