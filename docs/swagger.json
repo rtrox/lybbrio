@@ -1,0 +1,14 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "contact": {
+            "name": "Maintainer",
+            "url": "https://lybbr.io"
+        },
+        "license": {
+            "name": "AGPLv3",
+            "url": "\u003cgithub license link\u003e"
+        }
+    },
+    "paths": {}
+}

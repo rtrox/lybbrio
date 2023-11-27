@@ -1,0 +1,9 @@
+info:
+  contact:
+    name: Maintainer
+    url: https://lybbr.io
+  license:
+    name: AGPLv3
+    url: <github license link>
+paths: {}
+swagger: "2.0"
