@@ -164,11 +164,11 @@ func rootRun(cmd *cobra.Command, args []string) {
 	// HTTP
 	r := chi.NewRouter()
 
+	r.Use(middleware.DefaultStructuredLogger())
 	r.Use(chi_middleware.RealIP)
 	r.Use(chi_middleware.RedirectSlashes)
 	r.Use(middleware.RequestID)
 	r.Use(middleware.Prometheus(reg))
-	r.Use(middleware.DefaultStructuredLogger())
 	r.Use(chi_middleware.Recoverer)
 
 	r.Get("/healthz", handlers.Health)

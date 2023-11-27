@@ -8,6 +8,7 @@ import (
 
 	"github.com/go-chi/chi"
 	"github.com/go-chi/render"
+	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 
 	"lybbrio/internal/calibre"
@@ -38,6 +39,15 @@ func BookCtx(cal calibre.Calibre) func(http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
 			s := chi.URLParam(r, "bookId")
+			if s == "" {
+				render.Render(w, r, ErrNotFound)
+				return
+			}
+			log := log.Ctx(r.Context())
+			log.UpdateContext(func(c zerolog.Context) zerolog.Context {
+				return c.Str("bookId", s)
+			})
+			ctx := log.WithContext(r.Context())
 			bookId, err := strconv.ParseInt(s, 10, 64)
 			if err != nil {
 				render.Render(w, r, ErrBadRequest(err))
@@ -50,7 +60,6 @@ func BookCtx(cal calibre.Calibre) func(http.Handler) http.Handler {
 				return
 			}
 
-			ctx := r.Context()
 			ctx = context.WithValue(ctx, bookCtxKey, book)
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})
@@ -101,7 +110,6 @@ func GetBook() http.HandlerFunc {
 func GetBooks(cal calibre.Calibre) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		token, err := PaginationTokenFromRequest(r)
-		log.Debug().Interface("token", token).Msg("token")
 		if err != nil {
 			render.Render(w, r, ErrBadRequest(err))
 			return
@@ -116,11 +124,10 @@ func GetBooks(cal calibre.Calibre) http.HandlerFunc {
 			render.Render(w, r, ErrInternalError(AppError{ErrPaginationToken, err.Error()}))
 			return
 		}
-		log.Debug().Interface("url", r.URL).Msg("url")
 		render.JSON(w, r, BookListResponse{
 			Books:  books,
 			Cursor: nextToken,
-			Next:   fmt.Sprintf("%s?cursor=%s", r.URL.String(), nextToken),
+			Next:   fmt.Sprintf("%s?cursor=%s", r.URL.Path, nextToken),
 		})
 	}
 }

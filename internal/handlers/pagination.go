@@ -19,6 +19,15 @@ type PaginationToken struct {
 	PageSize int
 }
 
+func (t PaginationToken) String() string {
+	ret, err := MarshalPaginationToken(t)
+	if err != nil {
+		log.Error().Err(err).Msg("Error marshalling pagination token.")
+		return ""
+	}
+	return ret
+}
+
 type PageableDB[D any] interface {
 	WithPagination(page, pageSize int) D
 }
@@ -54,22 +63,40 @@ func (t PaginationToken) Next() PaginationToken {
 }
 
 func PaginationTokenFromRequest(r *http.Request) (PaginationToken, error) {
+	log := log.Ctx(r.Context())
+	ret := PaginationToken{
+		Page:     1,
+		PageSize: defaultPageSize,
+	}
+	var err error
+
 	token := r.URL.Query().Get("cursor")
-	log.Debug().Str("cursor", token).Msg("cursor")
 	if token != "" {
-		return UnmarshalPaginationToken(token)
+		ret, err = UnmarshalPaginationToken(token)
+		if err != nil {
+			return PaginationToken{}, err
+		}
+		log.Debug().
+			Str("tokenString", token).
+			Int("pageSize", ret.PageSize).
+			Int("page", ret.Page).
+			Msg("Pagination token found.")
 	}
 
 	pageSizeStr := r.URL.Query().Get("pageSize")
-	pageSize := defaultPageSize
 	if pageSizeStr != "" {
-		var err error
-		pageSize, err = strconv.Atoi(pageSizeStr)
+		ret.PageSize, err = strconv.Atoi(pageSizeStr)
 		if err != nil {
 			return PaginationToken{}, err
 		}
 	}
-	return PaginationToken{1, pageSize}, nil
+
+	log.Debug().
+		Int("pageSize", ret.PageSize).
+		Int("page", ret.Page).
+		Msg("Pagination Token Processing Complete.")
+
+	return ret, nil
 }
 
 func Paginate[D PageableDB[D]](db D, token *PaginationToken) D {

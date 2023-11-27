@@ -27,6 +27,7 @@ func RequestID(next http.Handler) http.Handler {
 		l.UpdateContext(func(c zerolog.Context) zerolog.Context {
 			return c.Str("requestId", reqId)
 		})
+		ctx = l.WithContext(ctx)
 
 		w.Header().Set("X-Request-Id", reqId)
 		next.ServeHTTP(w, r.WithContext(ctx))

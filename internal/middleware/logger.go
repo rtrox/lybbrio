@@ -51,7 +51,6 @@ func StructuredLogger(logger *zerolog.Logger, excluded_paths ...string) func(htt
 				}
 
 				logEvent.
-					Str("request_id", RequestIDFromCtx(ctx)).
 					Str("client_id", r.RemoteAddr).
 					Str("method", r.Method).
 					Int("status_code", ww.Status()).
