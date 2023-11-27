@@ -9,9 +9,11 @@ import (
 type AppCode int
 
 const (
-	ErrRender AppCode = iota
+	ErrRender AppCode = iota + 1001
 	ErrPaginationToken
 	ErrAuthorBooksDB
+	ErrSeriesBooksDB
+	ErrSeriesDB
 )
 
 type AppError struct {

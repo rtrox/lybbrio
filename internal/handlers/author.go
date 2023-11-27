@@ -118,12 +118,6 @@ func GetAuthorBooks(cal calibre.Calibre) http.HandlerFunc {
 	}
 }
 
-// TODO: move to series handler once created
-type SeriesListResponse struct {
-	Series []*calibre.Series `json:"series"`
-	Page   PaginationResponse
-}
-
 func GetAuthorSeries(cal calibre.Calibre) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		author := authorFromContext(r.Context())
@@ -135,16 +129,19 @@ func GetAuthorSeries(cal calibre.Calibre) http.HandlerFunc {
 			))
 			return
 		}
-		render.JSON(w, r, SeriesListResponse{
+		ret := SeriesListResponse{
 			Series: series,
-			Page:   pagination.Response,
-		})
+		}
+		if len(ret.Series) == pagination.Token.PageSize {
+			ret.Page = &pagination.Response
+		}
+		render.JSON(w, r, ret)
 	}
 }
 
 type AuthorListResponse struct {
-	Authors []*calibre.Author `json:"authors"`
-	Page    PaginationResponse
+	Authors []*calibre.Author   `json:"authors"`
+	Page    *PaginationResponse `json:"page,omitempty"`
 }
 
 // GetAuthors godoc
@@ -169,10 +166,12 @@ func GetAuthors(cal calibre.Calibre) http.HandlerFunc {
 			render.Render(w, r, ErrInternalError(AppError{ErrRender, err.Error()}))
 			return
 		}
-
-		render.JSON(w, r, AuthorListResponse{
+		ret := AuthorListResponse{
 			Authors: authors,
-			Page:    pagination.Response,
-		})
+		}
+		if len(ret.Authors) == pagination.Token.PageSize {
+			ret.Page = &pagination.Response
+		}
+		render.JSON(w, r, ret)
 	}
 }
