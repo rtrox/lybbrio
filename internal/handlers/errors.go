@@ -14,6 +14,9 @@ const (
 	ErrAuthorBooksDB
 	ErrSeriesBooksDB
 	ErrSeriesDB
+	ErrPublishersDB
+	ErrPublisherBooksDB
+	ErrBooksDB
 )
 
 type AppError struct {

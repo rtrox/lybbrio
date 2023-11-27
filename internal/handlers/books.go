@@ -87,11 +87,6 @@ func GetBook() http.HandlerFunc {
 	}
 }
 
-type BookListResponse struct {
-	Books []*calibre.Book    `json:"books"`
-	Page  PaginationResponse `json:"page"`
-}
-
 // GetBooks godoc
 // @Summary List Books
 // @Description List Books
@@ -108,16 +103,15 @@ type BookListResponse struct {
 // @Router /books [get]
 func GetBooks(cal calibre.Calibre) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		pagination := PaginationCtxFromRequest(r)
+		pagination := PaginationFromCtx(r.Context())
 		books, err := Paginate(cal, pagination.Token).GetBooks()
 		if err != nil {
-			render.Render(w, r, ErrInternalError(AppError{ErrRender, err.Error()}))
+			render.Render(w, r, ErrInternalError(AppError{ErrBooksDB, err.Error()}))
 			return
 		}
-
-		render.JSON(w, r, BookListResponse{
-			Books: books,
-			Page:  pagination.Response,
+		render.Render(w, r, BookListResponse{
+			Items: books,
+			Page:  &pagination.Response,
 		})
 	}
 }

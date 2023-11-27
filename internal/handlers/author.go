@@ -102,8 +102,9 @@ func GetAuthor() http.HandlerFunc {
 // @Router /authors/{authorId}/books [get]
 func GetAuthorBooks(cal calibre.Calibre) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		author := authorFromContext(r.Context())
-		pagination := PaginationCtxFromRequest(r)
+		ctx := r.Context()
+		author := authorFromContext(ctx)
+		pagination := PaginationFromCtx(ctx)
 		books, err := Paginate(cal, pagination.Token).GetAuthorBooks(author.ID)
 		if err != nil {
 			render.Render(w, r, ErrInternalError(
@@ -111,17 +112,15 @@ func GetAuthorBooks(cal calibre.Calibre) http.HandlerFunc {
 			))
 			return
 		}
-		render.JSON(w, r, BookListResponse{
-			Books: books,
-			Page:  pagination.Response,
-		})
+		render.Render(w, r, BookListResponse{Items: books, Page: &pagination.Response})
 	}
 }
 
 func GetAuthorSeries(cal calibre.Calibre) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		author := authorFromContext(r.Context())
-		pagination := PaginationCtxFromRequest(r)
+		ctx := r.Context()
+		author := authorFromContext(ctx)
+		pagination := PaginationFromCtx(ctx)
 		series, err := Paginate(cal, pagination.Token).GetAuthorSeries(author.ID)
 		if err != nil {
 			render.Render(w, r, ErrInternalError(
@@ -129,19 +128,8 @@ func GetAuthorSeries(cal calibre.Calibre) http.HandlerFunc {
 			))
 			return
 		}
-		ret := SeriesListResponse{
-			Series: series,
-		}
-		if len(ret.Series) == pagination.Token.PageSize {
-			ret.Page = &pagination.Response
-		}
-		render.JSON(w, r, ret)
+		render.Render(w, r, SeriesListResponse{Items: series, Page: &pagination.Response})
 	}
-}
-
-type AuthorListResponse struct {
-	Authors []*calibre.Author   `json:"authors"`
-	Page    *PaginationResponse `json:"page,omitempty"`
 }
 
 // GetAuthors godoc
@@ -160,18 +148,12 @@ type AuthorListResponse struct {
 // @Router /authors [get]
 func GetAuthors(cal calibre.Calibre) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		pagination := PaginationCtxFromRequest(r)
+		pagination := PaginationFromCtx(r.Context())
 		authors, err := Paginate(cal, pagination.Token).GetAuthors()
 		if err != nil {
 			render.Render(w, r, ErrInternalError(AppError{ErrRender, err.Error()}))
 			return
 		}
-		ret := AuthorListResponse{
-			Authors: authors,
-		}
-		if len(ret.Authors) == pagination.Token.PageSize {
-			ret.Page = &pagination.Response
-		}
-		render.JSON(w, r, ret)
+		render.Render(w, r, AuthorListResponse{Items: authors, Page: &pagination.Response})
 	}
 }

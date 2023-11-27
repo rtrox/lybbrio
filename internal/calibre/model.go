@@ -41,13 +41,15 @@ type Identifier struct {
 }
 
 type Tag struct {
-	ID   int64  `json:"id"`
-	Name string `json:"name"`
+	ID    int64  `json:"id"`
+	Name  string `json:"name"`
+	Books []Book `json:"books,omitempty" gorm:"many2many:books_tags_link;foreignKey:id;joinForeignKey:tag;References:ID;JoinReferences:book"`
 }
 
 type Publisher struct {
-	ID   int64  `json:"id"`
-	Name string `json:"name"`
+	ID    int64  `json:"id"`
+	Name  string `json:"name"`
+	Books []Book `json:"books,omitempty" gorm:"many2many:books_publishers_link;foreignKey:id;joinForeignKey:publisher;References:ID;JoinReferences:book"`
 }
 
 type Comment struct {
