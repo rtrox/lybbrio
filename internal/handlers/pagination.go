@@ -36,8 +36,9 @@ type PaginationToken struct {
 }
 
 type PaginationResponse struct {
-	NextURL    string `json:"next"`
-	NextCursor string `json:"nextCursor"`
+	currentToken PaginationToken `json:"-"`
+	NextURL      string          `json:"next"`
+	NextCursor   string          `json:"nextCursor"`
 }
 
 func (t PaginationToken) String() string {
@@ -110,8 +111,8 @@ func PaginationCtx(next http.Handler) http.Handler {
 	})
 }
 
-func PaginationCtxFromRequest(r *http.Request) PaginationContextObject {
-	return r.Context().Value(paginationCtxKey).(PaginationContextObject)
+func PaginationFromCtx(ctx context.Context) PaginationContextObject {
+	return ctx.Value(paginationCtxKey).(PaginationContextObject)
 }
 
 func PaginationTokenFromRequest(r *http.Request) (PaginationToken, error) {

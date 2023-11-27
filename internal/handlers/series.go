@@ -91,18 +91,15 @@ func GetSeries() http.HandlerFunc {
 // @Router /series/{seriesId}/books [get]
 func GetSeriesBooks(cal calibre.Calibre) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		series := seriesFromContext(r.Context())
-		books, err := cal.GetSeriesBooks(series.ID)
+		ctx := r.Context()
+		series := seriesFromContext(ctx)
+		pagination := PaginationFromCtx(ctx)
+		books, err := Paginate(cal, pagination.Token).GetSeriesBooks(series.ID)
 		if err != nil {
 			render.Render(w, r, ErrInternalError(AppError{ErrSeriesBooksDB, err.Error()}))
 		}
-		render.JSON(w, r, BookListResponse{Books: books, Page: PaginationCtxFromRequest(r).Response})
+		render.Render(w, r, BookListResponse{Items: books, Page: &pagination.Response})
 	}
-}
-
-type SeriesListResponse struct {
-	Series []*calibre.Series   `json:"series"`
-	Page   *PaginationResponse `json:"page,omitempty"`
 }
 
 // GetSerieses godoc
@@ -114,18 +111,13 @@ type SeriesListResponse struct {
 // @Router /series [get]
 func GetSeriesList(cal calibre.Calibre) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		pagination := PaginationCtxFromRequest(r)
+		ctx := r.Context()
+		pagination := PaginationFromCtx(ctx)
 		series, err := Paginate(cal, pagination.Token).GetSeriesList()
 		if err != nil {
 			render.Render(w, r, ErrInternalError(AppError{ErrSeriesDB, err.Error()}))
 			return
 		}
-		ret := SeriesListResponse{
-			Series: series,
-		}
-		if len(series) == pagination.Token.PageSize {
-			ret.Page = &pagination.Response
-		}
-		render.JSON(w, r, ret)
+		render.Render(w, r, SeriesListResponse{Items: series, Page: &pagination.Response})
 	}
 }

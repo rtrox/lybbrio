@@ -181,6 +181,7 @@ func rootRun(cmd *cobra.Command, args []string) {
 			r.Mount("/books", handlers.BookRoutes(cal))
 			r.Mount("/authors", handlers.AuthorRoutes(cal))
 			r.Mount("/series", handlers.SeriesRoutes(cal))
+			r.Mount("/tags", handlers.TagRoutes(cal))
 		})
 	})
 	r.Mount("/swagger", httpSwagger.WrapHandler)
