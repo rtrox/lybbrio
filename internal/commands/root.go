@@ -179,6 +179,7 @@ func rootRun(cmd *cobra.Command, args []string) {
 		r.Route("/", func(r chi.Router) {
 			// r.Use(middleware.Auth(authProvider))
 			r.Mount("/books", handlers.BookRoutes(cal))
+			r.Mount("/authors", handlers.AuthorRoutes(cal))
 		})
 	})
 	r.Mount("/swagger", httpSwagger.WrapHandler)

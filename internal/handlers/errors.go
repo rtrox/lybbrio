@@ -11,6 +11,7 @@ type AppCode int
 const (
 	ErrRender AppCode = iota
 	ErrPaginationToken
+	ErrAuthorBooksDB
 )
 
 type AppError struct {

@@ -16,10 +16,8 @@ import (
 func BookRoutes(cal calibre.Calibre) *chi.Mux {
 	r := chi.NewRouter()
 
-	r.Route("/", func(r chi.Router) {
-		r.Use(PaginationCtx)
-		r.Get("/", GetBooks(cal))
-	})
+	r.With(PaginationCtx).Get("/", GetBooks(cal))
+
 	r.Route("/{bookId}", func(r chi.Router) {
 		r.Use(BookCtx(cal))
 		r.Get("/", GetBook())
@@ -68,12 +66,6 @@ func BookCtx(cal calibre.Calibre) func(http.Handler) http.Handler {
 	}
 }
 
-type BookListResponse struct {
-	Books  []*calibre.Book `json:"books"`
-	Cursor string          `json:"cursor"`
-	Next   string          `json:"next"`
-}
-
 // GetBook godoc
 // @Summary Get Book by ID
 // @Description Get Book by ID
@@ -93,6 +85,11 @@ func GetBook() http.HandlerFunc {
 		book := bookFromContext(r.Context())
 		render.JSON(w, r, book)
 	}
+}
+
+type BookListResponse struct {
+	Books []*calibre.Book    `json:"books"`
+	Page  PaginationResponse `json:"page"`
 }
 
 // GetBooks godoc
@@ -119,9 +116,8 @@ func GetBooks(cal calibre.Calibre) http.HandlerFunc {
 		}
 
 		render.JSON(w, r, BookListResponse{
-			Books:  books,
-			Cursor: pagination.NextCursor(),
-			Next:   pagination.NextURL,
+			Books: books,
+			Page:  pagination.Response,
 		})
 	}
 }

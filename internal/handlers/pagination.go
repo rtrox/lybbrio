@@ -21,8 +21,8 @@ type paginationCtxKeyType string
 const paginationCtxKey paginationCtxKeyType = "pagination"
 
 type PaginationContextObject struct {
-	Token   PaginationToken
-	NextURL string
+	Token    PaginationToken
+	Response PaginationResponse
 }
 
 func (o PaginationContextObject) NextCursor() string {
@@ -33,6 +33,11 @@ type PaginationToken struct {
 	// TODO: implement true cursors
 	Page     int
 	PageSize int
+}
+
+type PaginationResponse struct {
+	NextURL    string `json:"next"`
+	NextCursor string `json:"nextCursor"`
 }
 
 func (t PaginationToken) String() string {
@@ -94,8 +99,11 @@ func PaginationCtx(next http.Handler) http.Handler {
 			return
 		}
 		obj := PaginationContextObject{
-			Token:   token,
-			NextURL: fmt.Sprintf("%s?cursor=%s", r.URL.Path, nextToken),
+			Token: token,
+			Response: PaginationResponse{
+				NextCursor: nextToken,
+				NextURL:    fmt.Sprintf("%s?cursor=%s", r.URL.Path, nextToken),
+			},
 		}
 		ctx = context.WithValue(ctx, paginationCtxKey, obj)
 		next.ServeHTTP(w, r.WithContext(ctx))
