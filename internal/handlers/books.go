@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"strconv"
 
@@ -17,7 +16,10 @@ import (
 func BookRoutes(cal calibre.Calibre) *chi.Mux {
 	r := chi.NewRouter()
 
-	r.Get("/", GetBooks(cal))
+	r.Route("/", func(r chi.Router) {
+		r.Use(PaginationCtx)
+		r.Get("/", GetBooks(cal))
+	})
 	r.Route("/{bookId}", func(r chi.Router) {
 		r.Use(BookCtx(cal))
 		r.Get("/", GetBook())
@@ -109,25 +111,17 @@ func GetBook() http.HandlerFunc {
 // @Router /books [get]
 func GetBooks(cal calibre.Calibre) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		token, err := PaginationTokenFromRequest(r)
-		if err != nil {
-			render.Render(w, r, ErrBadRequest(err))
-			return
-		}
-		books, err := Paginate(cal, &token).GetBooks()
+		pagination := PaginationCtxFromRequest(r)
+		books, err := Paginate(cal, pagination.Token).GetBooks()
 		if err != nil {
 			render.Render(w, r, ErrInternalError(AppError{ErrRender, err.Error()}))
 			return
 		}
-		nextToken, err := MarshalPaginationToken(token.Next())
-		if err != nil {
-			render.Render(w, r, ErrInternalError(AppError{ErrPaginationToken, err.Error()}))
-			return
-		}
+
 		render.JSON(w, r, BookListResponse{
 			Books:  books,
-			Cursor: nextToken,
-			Next:   fmt.Sprintf("%s?cursor=%s", r.URL.Path, nextToken),
+			Cursor: pagination.NextCursor(),
+			Next:   pagination.NextURL,
 		})
 	}
 }

@@ -10,6 +10,10 @@ To access calibre, we are directly integrating with the `metadata.db` database c
 swag init -g ./cmd/lybbrio/main.go --pd
 ```
 
+## Pagination
+
+Pagination is pretty simple at the moment, leveraging "page" and "pageSize" as constructs for `limit` and `offset` in the DB. This is abstracted to a base64 encoded json string, and used as a "cursor" in the API. This abstraction should be kept, as it leaves room for more complex pagination later if it's needed, without breaking API assumptions.
+
 ## Gotchas
 
 ### Request ID should NOT be considered secure

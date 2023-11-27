@@ -164,7 +164,7 @@ func rootRun(cmd *cobra.Command, args []string) {
 	// HTTP
 	r := chi.NewRouter()
 
-	r.Use(middleware.DefaultStructuredLogger())
+	r.Use(middleware.DefaultStructuredLogger()) // Must be first, as it initializes the log ctx.
 	r.Use(chi_middleware.RealIP)
 	r.Use(chi_middleware.RedirectSlashes)
 	r.Use(middleware.RequestID)

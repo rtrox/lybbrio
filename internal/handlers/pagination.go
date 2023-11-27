@@ -2,16 +2,32 @@ package handlers
 
 import (
 	"bytes"
+	"context"
 	"encoding/base64"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
 
+	"github.com/go-chi/render"
 	"github.com/rs/zerolog/log"
 )
 
 const defaultPageSize = 30
+
+type paginationCtxKeyType string
+
+const paginationCtxKey paginationCtxKeyType = "pagination"
+
+type PaginationContextObject struct {
+	Token   PaginationToken
+	NextURL string
+}
+
+func (o PaginationContextObject) NextCursor() string {
+	return o.Token.Next().String()
+}
 
 type PaginationToken struct {
 	// TODO: implement true cursors
@@ -62,6 +78,34 @@ func (t PaginationToken) Next() PaginationToken {
 	}
 }
 
+func PaginationCtx(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		token, err := PaginationTokenFromRequest(r)
+		ctx := r.Context()
+		log := log.Ctx(ctx)
+		if err != nil {
+			log.Error().Err(err).Msg("Error processing pagination token.")
+			render.Render(w, r, ErrBadRequest(err))
+			return
+		}
+		nextToken, err := MarshalPaginationToken(token.Next())
+		if err != nil {
+			render.Render(w, r, ErrInternalError(AppError{ErrPaginationToken, err.Error()}))
+			return
+		}
+		obj := PaginationContextObject{
+			Token:   token,
+			NextURL: fmt.Sprintf("%s?cursor=%s", r.URL.Path, nextToken),
+		}
+		ctx = context.WithValue(ctx, paginationCtxKey, obj)
+		next.ServeHTTP(w, r.WithContext(ctx))
+	})
+}
+
+func PaginationCtxFromRequest(r *http.Request) PaginationContextObject {
+	return r.Context().Value(paginationCtxKey).(PaginationContextObject)
+}
+
 func PaginationTokenFromRequest(r *http.Request) (PaginationToken, error) {
 	log := log.Ctx(r.Context())
 	ret := PaginationToken{
@@ -99,9 +143,6 @@ func PaginationTokenFromRequest(r *http.Request) (PaginationToken, error) {
 	return ret, nil
 }
 
-func Paginate[D PageableDB[D]](db D, token *PaginationToken) D {
-	if token == nil {
-		return db.WithPagination(1, defaultPageSize)
-	}
+func Paginate[D PageableDB[D]](db D, token PaginationToken) D {
 	return db.WithPagination(token.Page, token.PageSize)
 }
