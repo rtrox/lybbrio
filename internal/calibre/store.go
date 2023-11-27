@@ -1,9 +1,14 @@
 package calibre
 
 import (
+	stdlog "log"
+	"os"
+	"time"
+
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
+	"gorm.io/gorm/logger"
 )
 
 // Pagination Notes:
@@ -47,18 +52,18 @@ type CalibreSQLite struct {
 }
 
 func NewCalibreSQLite(dbPath string) (*CalibreSQLite, error) {
-	// newLogger := logger.New(
-	// 	stdlog.New(os.Stdout, "\r\n", stdlog.LstdFlags), // io writer
-	// 	logger.Config{
-	// 		SlowThreshold:             time.Second, // Slow SQL threshold
-	// 		LogLevel:                  logger.Info, // Log level
-	// 		IgnoreRecordNotFoundError: true,        // Ignore ErrRecordNotFound error for logger
-	// 		ParameterizedQueries:      true,        // Don't include params in the SQL log
-	// 		Colorful:                  false,       // Disable color
-	// 	},
-	// )
+	newLogger := logger.New(
+		stdlog.New(os.Stdout, "\r\n", stdlog.LstdFlags), // io writer
+		logger.Config{
+			SlowThreshold:             time.Second, // Slow SQL threshold
+			LogLevel:                  logger.Info, // Log level
+			IgnoreRecordNotFoundError: true,        // Ignore ErrRecordNotFound error for logger
+			ParameterizedQueries:      true,        // Don't include params in the SQL log
+			Colorful:                  false,       // Disable color
+		},
+	)
 	db, err := gorm.Open(sqlite.Open(dbPath), &gorm.Config{
-		// Logger: newLogger,
+		Logger: newLogger,
 	})
 
 	if err != nil {
@@ -91,7 +96,15 @@ func (s *CalibreSQLite) GetAuthorBooks(id int64) ([]*Book, error) {
 
 func (s *CalibreSQLite) GetAuthorSeries(id int64) ([]*Series, error) {
 	var series []*Series
-	err := s.db.Model(&Author{ID: id}).Association("Series").Find(&series)
+	err := s.db.
+		Model(&Series{}).
+		Select("series.*, COUNT(DISTINCT books_authors_link.book) AS book_count").
+		Joins("JOIN books_series_link ON books_series_link.series = series.id").
+		Joins("JOIN books_authors_link ON books_authors_link.book = books_series_link.book").
+		Where("books_authors_link.author = ?", id).
+		Group("series.id").
+		Scan(&series).
+		Error
 	return series, err
 }
 
@@ -175,7 +188,14 @@ func (s *CalibreSQLite) GetIdentifierBook(id int64) (*Book, error) {
 
 func (s *CalibreSQLite) GetSeries(id int64) (*Series, error) {
 	var series Series
-	err := s.db.First(&series, id).Error
+	err := s.db.
+		Model(&Series{}).
+		Select("series.*, COUNT(DISTINCT books_series_link.book) AS book_count").
+		Joins("JOIN books_series_link ON books_series_link.series = series.id").
+		Where("series.id = ?", id).
+		Group("series.id").
+		Scan(&series).
+		Error
 	return &series, err
 }
 

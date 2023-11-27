@@ -7,7 +7,7 @@ type Author struct {
 	Name  string `json:"name"`
 	Sort  string `json:"sort"`
 	Link  string `json:"link"`
-	Books []Book `json:"books" gorm:"many2many:books_authors_link;foreignKey:id;joinForeignKey:author;References:ID;JoinReferences:book"`
+	Books []Book `json:"books,omitempty" gorm:"many2many:books_authors_link;foreignKey:id;joinForeignKey:author;References:ID;JoinReferences:book"`
 }
 
 type Book struct {
@@ -63,7 +63,9 @@ type Language struct {
 }
 
 type Series struct {
-	ID   int64  `json:"id"`
-	Name string `json:"name"`
-	Sort string `json:"sort"`
+	ID        int64  `json:"id"`
+	Name      string `json:"name"`
+	Sort      string `json:"sort"`
+	BookCount int64  `json:"book_count,omitempty"`
+	Books     []Book `json:"books,omitempty" gorm:"many2many:books_series_link;foreignKey:id;joinForeignKey:series;References:ID;JoinReferences:book"`
 }
