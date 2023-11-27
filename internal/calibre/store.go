@@ -41,6 +41,7 @@ type Calibre interface {
 	GetIdentifier(id int64) (*Identifier, error)
 	GetIdentifierBook(id int64) (*Book, error)
 
+	GetSeriesList() ([]*Series, error)
 	GetSeries(id int64) (*Series, error)
 	GetSeriesBooks(id int64) ([]*Book, error)
 
@@ -197,6 +198,18 @@ func (s *CalibreSQLite) GetSeries(id int64) (*Series, error) {
 		Scan(&series).
 		Error
 	return &series, err
+}
+
+func (s *CalibreSQLite) GetSeriesList() ([]*Series, error) {
+	var series []*Series
+	err := s.db.
+		Model(&Series{}).
+		Select("series.*, COUNT(DISTINCT books_series_link.book) AS book_count").
+		Joins("JOIN books_series_link ON books_series_link.series = series.id").
+		Group("series.id").
+		Scan(&series).
+		Error
+	return series, err
 }
 
 func (s *CalibreSQLite) GetSeriesBooks(id int64) ([]*Book, error) {
