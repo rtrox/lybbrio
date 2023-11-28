@@ -72,7 +72,7 @@ func PublisherCtx(cal calibre.Calibre) func(http.Handler) http.Handler {
 // @Tags publishers
 // @Produce json
 // @Param publisherId path int true "Publisher ID"
-// @Success 200 {object} Publisher
+// @Success 200 {object} calibre.Publisher
 // @Router /publishers/{publisherId} [get]
 func GetPublisher() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -87,7 +87,7 @@ func GetPublisher() http.HandlerFunc {
 // @Tags publishers
 // @Produce json
 // @Param publisherId path int true "Publisher ID"
-// @Success 200 {array} Book
+// @Success 200 {object} BookListResponse
 // @Router /publishers/{publisherId}/books [get]
 func GetPublisherBooks(cal calibre.Calibre) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -106,7 +106,7 @@ func GetPublisherBooks(cal calibre.Calibre) http.HandlerFunc {
 // @Description Get all publishers
 // @Tags publishers
 // @Produce json
-// @Success 200 {array} Publisher
+// @Success 200 {object} PublisherListResponse
 // @Router /publishers [get]
 func GetPublishers(cal calibre.Calibre) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {

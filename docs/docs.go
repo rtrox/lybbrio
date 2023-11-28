@@ -22,6 +22,253 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/authors": {
+            "get": {
+                "description": "List Authors",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "authors"
+                ],
+                "summary": "List Authors",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Pagination cursor",
+                        "name": "cursor",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_handlers.AuthorListResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/internal_handlers.ErrResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/internal_handlers.ErrResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/internal_handlers.ErrResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/internal_handlers.ErrResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/internal_handlers.ErrResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/authors/{authorId}": {
+            "get": {
+                "description": "Get an author by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "authors"
+                ],
+                "summary": "Get an author",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Author ID",
+                        "name": "authorId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/lybbrio_internal_calibre.Author"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/internal_handlers.ErrResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/internal_handlers.ErrResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/internal_handlers.ErrResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/internal_handlers.ErrResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/internal_handlers.ErrResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/authors/{authorId}/books": {
+            "get": {
+                "description": "Get an author's books by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "authors"
+                ],
+                "summary": "Get an author's books",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Author ID",
+                        "name": "authorId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_handlers.BookListResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/internal_handlers.ErrResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/internal_handlers.ErrResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/internal_handlers.ErrResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/internal_handlers.ErrResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/internal_handlers.ErrResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/authors/{authorId}/series": {
+            "get": {
+                "description": "Get an author's series by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "authors"
+                ],
+                "summary": "Get an author's series",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Author ID",
+                        "name": "authorId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_handlers.SeriesListResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/internal_handlers.ErrResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/internal_handlers.ErrResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/internal_handlers.ErrResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/internal_handlers.ErrResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/internal_handlers.ErrResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/books": {
             "get": {
                 "description": "List Books",
@@ -144,20 +391,355 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/languages": {
+            "get": {
+                "description": "Get all languages",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Languages"
+                ],
+                "summary": "Get all languages",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_handlers.LanguageListResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/languages/{languageId}": {
+            "get": {
+                "description": "Get a language by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Languages"
+                ],
+                "summary": "Get a language",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Language ID",
+                        "name": "languageId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/lybbrio_internal_calibre.Language"
+                        }
+                    }
+                }
+            }
+        },
+        "/languages/{languageId}/books": {
+            "get": {
+                "description": "Get books for a language by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Languages"
+                ],
+                "summary": "Get books for a language",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Language ID",
+                        "name": "languageId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_handlers.BookListResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/publishers": {
+            "get": {
+                "description": "Get all publishers",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "publishers"
+                ],
+                "summary": "Get all publishers",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_handlers.PublisherListResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/publishers/{publisherId}": {
+            "get": {
+                "description": "Get a publisher by ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "publishers"
+                ],
+                "summary": "Get a publisher",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Publisher ID",
+                        "name": "publisherId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/lybbrio_internal_calibre.Publisher"
+                        }
+                    }
+                }
+            }
+        },
+        "/publishers/{publisherId}/books": {
+            "get": {
+                "description": "Get a publisher's books by ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "publishers"
+                ],
+                "summary": "Get a publisher's books",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Publisher ID",
+                        "name": "publisherId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_handlers.BookListResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/series": {
+            "get": {
+                "description": "Get all series",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "series"
+                ],
+                "summary": "Get all series",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/lybbrio_internal_handlers.SeriesListResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/series/{seriesId}": {
+            "get": {
+                "description": "Get a series by ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "series"
+                ],
+                "summary": "Get a series",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Series ID",
+                        "name": "seriesId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/lybbrio_internal_calibre.Series"
+                        }
+                    }
+                }
+            }
+        },
+        "/series/{seriesId}/books": {
+            "get": {
+                "description": "Get a series' books by ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "series"
+                ],
+                "summary": "Get a series' books",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Series ID",
+                        "name": "seriesId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/lybbrio_internal_handlers.BookListResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/tags": {
+            "get": {
+                "description": "Get all tags",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "tags"
+                ],
+                "summary": "Get all tags",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_handlers.TagListResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/tags/{tagId}": {
+            "get": {
+                "description": "Get a tag by ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "tags"
+                ],
+                "summary": "Get a tag",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Tag ID",
+                        "name": "tagId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/lybbrio_internal_calibre.Tag"
+                        }
+                    }
+                }
+            }
+        },
+        "/tags/{tagId}/books": {
+            "get": {
+                "description": "Get books for a tag by ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "tags"
+                ],
+                "summary": "Get books for a tag",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Tag ID",
+                        "name": "tagId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_handlers.BookListResponse"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
+        "internal_handlers.AuthorListResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/lybbrio_internal_calibre.Author"
+                    }
+                },
+                "page": {
+                    "$ref": "#/definitions/internal_handlers.PaginationResponse"
+                }
+            }
+        },
         "internal_handlers.BookListResponse": {
             "type": "object",
             "properties": {
-                "books": {
+                "items": {
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/lybbrio_internal_calibre.Book"
                     }
                 },
-                "next": {
-                    "type": "string"
+                "page": {
+                    "$ref": "#/definitions/internal_handlers.PaginationResponse"
                 }
             }
         },
@@ -175,6 +757,73 @@ const docTemplate = `{
                 },
                 "status": {
                     "type": "string"
+                }
+            }
+        },
+        "internal_handlers.LanguageListResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/lybbrio_internal_calibre.Language"
+                    }
+                },
+                "page": {
+                    "$ref": "#/definitions/internal_handlers.PaginationResponse"
+                }
+            }
+        },
+        "internal_handlers.PaginationResponse": {
+            "type": "object",
+            "properties": {
+                "next": {
+                    "type": "string"
+                },
+                "nextCursor": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_handlers.PublisherListResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/lybbrio_internal_calibre.Publisher"
+                    }
+                },
+                "page": {
+                    "$ref": "#/definitions/internal_handlers.PaginationResponse"
+                }
+            }
+        },
+        "internal_handlers.SeriesListResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/lybbrio_internal_calibre.Series"
+                    }
+                },
+                "page": {
+                    "$ref": "#/definitions/internal_handlers.PaginationResponse"
+                }
+            }
+        },
+        "internal_handlers.TagListResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/lybbrio_internal_calibre.Tag"
+                    }
+                },
+                "page": {
+                    "$ref": "#/definitions/internal_handlers.PaginationResponse"
                 }
             }
         },
@@ -252,7 +901,7 @@ const docTemplate = `{
                 "pub_date": {
                     "type": "string"
                 },
-                "publisher": {
+                "publishers": {
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/lybbrio_internal_calibre.Publisher"
@@ -315,8 +964,11 @@ const docTemplate = `{
         "lybbrio_internal_calibre.Language": {
             "type": "object",
             "properties": {
-                "book": {
-                    "type": "integer"
+                "books": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/lybbrio_internal_calibre.Book"
+                    }
                 },
                 "id": {
                     "type": "integer"
@@ -329,26 +981,44 @@ const docTemplate = `{
         "lybbrio_internal_calibre.Publisher": {
             "type": "object",
             "properties": {
+                "books": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/lybbrio_internal_calibre.Book"
+                    }
+                },
                 "id": {
                     "type": "integer"
                 },
                 "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "lybbrio_internal_calibre.Series": {
+            "type": "object",
+            "properties": {
+                "book_count": {
+                    "type": "integer"
+                },
+                "books": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/lybbrio_internal_calibre.Book"
+                    }
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "sort": {
                     "type": "string"
                 }
             }
         },
         "lybbrio_internal_calibre.Tag": {
-            "type": "object",
-            "properties": {
-                "id": {
-                    "type": "integer"
-                },
-                "name": {
-                    "type": "string"
-                }
-            }
-        },
-        "lybbrio_internal_handlers.BookListResponse": {
             "type": "object",
             "properties": {
                 "books": {
@@ -357,8 +1027,39 @@ const docTemplate = `{
                         "$ref": "#/definitions/lybbrio_internal_calibre.Book"
                     }
                 },
-                "next": {
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
                     "type": "string"
+                }
+            }
+        },
+        "lybbrio_internal_handlers.AuthorListResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/lybbrio_internal_calibre.Author"
+                    }
+                },
+                "page": {
+                    "$ref": "#/definitions/lybbrio_internal_handlers.PaginationResponse"
+                }
+            }
+        },
+        "lybbrio_internal_handlers.BookListResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/lybbrio_internal_calibre.Book"
+                    }
+                },
+                "page": {
+                    "$ref": "#/definitions/lybbrio_internal_handlers.PaginationResponse"
                 }
             }
         },
@@ -376,6 +1077,73 @@ const docTemplate = `{
                 },
                 "status": {
                     "type": "string"
+                }
+            }
+        },
+        "lybbrio_internal_handlers.LanguageListResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/lybbrio_internal_calibre.Language"
+                    }
+                },
+                "page": {
+                    "$ref": "#/definitions/lybbrio_internal_handlers.PaginationResponse"
+                }
+            }
+        },
+        "lybbrio_internal_handlers.PaginationResponse": {
+            "type": "object",
+            "properties": {
+                "next": {
+                    "type": "string"
+                },
+                "nextCursor": {
+                    "type": "string"
+                }
+            }
+        },
+        "lybbrio_internal_handlers.PublisherListResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/lybbrio_internal_calibre.Publisher"
+                    }
+                },
+                "page": {
+                    "$ref": "#/definitions/lybbrio_internal_handlers.PaginationResponse"
+                }
+            }
+        },
+        "lybbrio_internal_handlers.SeriesListResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/lybbrio_internal_calibre.Series"
+                    }
+                },
+                "page": {
+                    "$ref": "#/definitions/lybbrio_internal_handlers.PaginationResponse"
+                }
+            }
+        },
+        "lybbrio_internal_handlers.TagListResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/lybbrio_internal_calibre.Tag"
+                    }
+                },
+                "page": {
+                    "$ref": "#/definitions/lybbrio_internal_handlers.PaginationResponse"
                 }
             }
         }

@@ -72,7 +72,7 @@ func LanguageCtx(cal calibre.Calibre) func(http.Handler) http.Handler {
 // @Accept  json
 // @Produce  json
 // @Param languageId path int true "Language ID"
-// @Success 200 {object} Language
+// @Success 200 {object} calibre.Language
 // @Router /languages/{languageId} [get]
 func GetLanguage() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -88,7 +88,7 @@ func GetLanguage() http.HandlerFunc {
 // @Accept  json
 // @Produce  json
 // @Param languageId path int true "Language ID"
-// @Success 200 {object} Book
+// @Success 200 {object} BookListResponse
 // @Router /languages/{languageId}/books [get]
 func GetLanguageBooks(cal calibre.Calibre) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -110,7 +110,7 @@ func GetLanguageBooks(cal calibre.Calibre) http.HandlerFunc {
 // @Tags Languages
 // @Accept  json
 // @Produce  json
-// @Success 200 {array} Language
+// @Success 200 {object} LanguageListResponse
 // @Router /languages [get]
 func GetLanguages(cal calibre.Calibre) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
