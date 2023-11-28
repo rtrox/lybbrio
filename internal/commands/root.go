@@ -185,6 +185,7 @@ func rootRun(cmd *cobra.Command, args []string) {
 			r.Mount("/publishers", handlers.PublisherRoutes(cal))
 			r.Mount("/languages", handlers.LanguageRoutes(cal))
 		})
+		r.NotFound(handlers.NotFoundHandler)
 	})
 	r.Mount("/swagger", httpSwagger.WrapHandler)
 

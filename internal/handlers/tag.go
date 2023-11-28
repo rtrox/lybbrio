@@ -72,7 +72,7 @@ func TagCtx(cal calibre.Calibre) func(next http.Handler) http.Handler {
 // @Tags tags
 // @Produce json
 // @Param tagId path int true "Tag ID"
-// @Success 200 {object} Tag
+// @Success 200 {object} calibre.Tag
 // @Router /tags/{tagId} [get]
 func GetTag() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -87,7 +87,7 @@ func GetTag() http.HandlerFunc {
 // @Tags tags
 // @Produce json
 // @Param tagId path int true "Tag ID"
-// @Success 200 {object} Book
+// @Success 200 {object} BookListResponse
 // @Router /tags/{tagId}/books [get]
 func GetTagBooks(cal calibre.Calibre) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -108,7 +108,7 @@ func GetTagBooks(cal calibre.Calibre) http.HandlerFunc {
 // @Description Get all tags
 // @Tags tags
 // @Produce json
-// @Success 200 {array} Tag
+// @Success 200 {object} TagListResponse
 // @Router /tags [get]
 func GetTags(cal calibre.Calibre) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {

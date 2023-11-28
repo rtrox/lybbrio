@@ -93,7 +93,7 @@ func GetAuthor() http.HandlerFunc {
 // @Accept json
 // @Produce json
 // @Param authorId path int true "Author ID"
-// @Success 200 {array} Book
+// @Success 200 {object} BookListResponse
 // @Failure 400 {object} ErrResponse
 // @Failure 401 {object} ErrResponse
 // @Failure 403 {object} ErrResponse
@@ -116,6 +116,20 @@ func GetAuthorBooks(cal calibre.Calibre) http.HandlerFunc {
 	}
 }
 
+// GetAuthorSeries godoc
+// @Summary Get an author's series
+// @Description Get an author's series by ID
+// @Tags authors
+// @Accept json
+// @Produce json
+// @Param authorId path int true "Author ID"
+// @Success 200 {object} SeriesListResponse
+// @Failure 400 {object} ErrResponse
+// @Failure 401 {object} ErrResponse
+// @Failure 403 {object} ErrResponse
+// @Failure 404 {object} ErrResponse
+// @Failure 500 {object} ErrResponse
+// @Router /authors/{authorId}/series [get]
 func GetAuthorSeries(cal calibre.Calibre) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()

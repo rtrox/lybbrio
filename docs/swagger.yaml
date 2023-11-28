@@ -1,12 +1,21 @@
 definitions:
+  internal_handlers.AuthorListResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/lybbrio_internal_calibre.Author'
+        type: array
+      page:
+        $ref: '#/definitions/internal_handlers.PaginationResponse'
+    type: object
   internal_handlers.BookListResponse:
     properties:
-      books:
+      items:
         items:
           $ref: '#/definitions/lybbrio_internal_calibre.Book'
         type: array
-      next:
-        type: string
+      page:
+        $ref: '#/definitions/internal_handlers.PaginationResponse'
     type: object
   internal_handlers.ErrResponse:
     properties:
@@ -18,6 +27,49 @@ definitions:
         type: string
       status:
         type: string
+    type: object
+  internal_handlers.LanguageListResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/lybbrio_internal_calibre.Language'
+        type: array
+      page:
+        $ref: '#/definitions/internal_handlers.PaginationResponse'
+    type: object
+  internal_handlers.PaginationResponse:
+    properties:
+      next:
+        type: string
+      nextCursor:
+        type: string
+    type: object
+  internal_handlers.PublisherListResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/lybbrio_internal_calibre.Publisher'
+        type: array
+      page:
+        $ref: '#/definitions/internal_handlers.PaginationResponse'
+    type: object
+  internal_handlers.SeriesListResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/lybbrio_internal_calibre.Series'
+        type: array
+      page:
+        $ref: '#/definitions/internal_handlers.PaginationResponse'
+    type: object
+  internal_handlers.TagListResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/lybbrio_internal_calibre.Tag'
+        type: array
+      page:
+        $ref: '#/definitions/internal_handlers.PaginationResponse'
     type: object
   lybbrio_internal_calibre.Author:
     properties:
@@ -68,7 +120,7 @@ definitions:
         type: string
       pub_date:
         type: string
-      publisher:
+      publishers:
         items:
           $ref: '#/definitions/lybbrio_internal_calibre.Publisher'
         type: array
@@ -109,8 +161,10 @@ definitions:
     type: object
   lybbrio_internal_calibre.Language:
     properties:
-      book:
-        type: integer
+      books:
+        items:
+          $ref: '#/definitions/lybbrio_internal_calibre.Book'
+        type: array
       id:
         type: integer
       lang:
@@ -118,26 +172,58 @@ definitions:
     type: object
   lybbrio_internal_calibre.Publisher:
     properties:
+      books:
+        items:
+          $ref: '#/definitions/lybbrio_internal_calibre.Book'
+        type: array
       id:
         type: integer
       name:
+        type: string
+    type: object
+  lybbrio_internal_calibre.Series:
+    properties:
+      book_count:
+        type: integer
+      books:
+        items:
+          $ref: '#/definitions/lybbrio_internal_calibre.Book'
+        type: array
+      id:
+        type: integer
+      name:
+        type: string
+      sort:
         type: string
     type: object
   lybbrio_internal_calibre.Tag:
-    properties:
-      id:
-        type: integer
-      name:
-        type: string
-    type: object
-  lybbrio_internal_handlers.BookListResponse:
     properties:
       books:
         items:
           $ref: '#/definitions/lybbrio_internal_calibre.Book'
         type: array
-      next:
+      id:
+        type: integer
+      name:
         type: string
+    type: object
+  lybbrio_internal_handlers.AuthorListResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/lybbrio_internal_calibre.Author'
+        type: array
+      page:
+        $ref: '#/definitions/lybbrio_internal_handlers.PaginationResponse'
+    type: object
+  lybbrio_internal_handlers.BookListResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/lybbrio_internal_calibre.Book'
+        type: array
+      page:
+        $ref: '#/definitions/lybbrio_internal_handlers.PaginationResponse'
     type: object
   lybbrio_internal_handlers.ErrResponse:
     properties:
@@ -150,6 +236,49 @@ definitions:
       status:
         type: string
     type: object
+  lybbrio_internal_handlers.LanguageListResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/lybbrio_internal_calibre.Language'
+        type: array
+      page:
+        $ref: '#/definitions/lybbrio_internal_handlers.PaginationResponse'
+    type: object
+  lybbrio_internal_handlers.PaginationResponse:
+    properties:
+      next:
+        type: string
+      nextCursor:
+        type: string
+    type: object
+  lybbrio_internal_handlers.PublisherListResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/lybbrio_internal_calibre.Publisher'
+        type: array
+      page:
+        $ref: '#/definitions/lybbrio_internal_handlers.PaginationResponse'
+    type: object
+  lybbrio_internal_handlers.SeriesListResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/lybbrio_internal_calibre.Series'
+        type: array
+      page:
+        $ref: '#/definitions/lybbrio_internal_handlers.PaginationResponse'
+    type: object
+  lybbrio_internal_handlers.TagListResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/lybbrio_internal_calibre.Tag'
+        type: array
+      page:
+        $ref: '#/definitions/lybbrio_internal_handlers.PaginationResponse'
+    type: object
 info:
   contact:
     name: Maintainer
@@ -158,6 +287,169 @@ info:
     name: AGPLv3
     url: <github license link>
 paths:
+  /authors:
+    get:
+      consumes:
+      - application/json
+      description: List Authors
+      parameters:
+      - description: Pagination cursor
+        in: query
+        name: cursor
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_handlers.AuthorListResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_handlers.ErrResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/internal_handlers.ErrResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/internal_handlers.ErrResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/internal_handlers.ErrResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_handlers.ErrResponse'
+      summary: List Authors
+      tags:
+      - authors
+  /authors/{authorId}:
+    get:
+      consumes:
+      - application/json
+      description: Get an author by ID
+      parameters:
+      - description: Author ID
+        in: path
+        name: authorId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/lybbrio_internal_calibre.Author'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_handlers.ErrResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/internal_handlers.ErrResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/internal_handlers.ErrResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/internal_handlers.ErrResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_handlers.ErrResponse'
+      summary: Get an author
+      tags:
+      - authors
+  /authors/{authorId}/books:
+    get:
+      consumes:
+      - application/json
+      description: Get an author's books by ID
+      parameters:
+      - description: Author ID
+        in: path
+        name: authorId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_handlers.BookListResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_handlers.ErrResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/internal_handlers.ErrResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/internal_handlers.ErrResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/internal_handlers.ErrResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_handlers.ErrResponse'
+      summary: Get an author's books
+      tags:
+      - authors
+  /authors/{authorId}/series:
+    get:
+      consumes:
+      - application/json
+      description: Get an author's series by ID
+      parameters:
+      - description: Author ID
+        in: path
+        name: authorId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_handlers.SeriesListResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_handlers.ErrResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/internal_handlers.ErrResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/internal_handlers.ErrResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/internal_handlers.ErrResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_handlers.ErrResponse'
+      summary: Get an author's series
+      tags:
+      - authors
   /books:
     get:
       consumes:
@@ -239,4 +531,214 @@ paths:
       summary: Get Book by ID
       tags:
       - books
+  /languages:
+    get:
+      consumes:
+      - application/json
+      description: Get all languages
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_handlers.LanguageListResponse'
+      summary: Get all languages
+      tags:
+      - Languages
+  /languages/{languageId}:
+    get:
+      consumes:
+      - application/json
+      description: Get a language by ID
+      parameters:
+      - description: Language ID
+        in: path
+        name: languageId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/lybbrio_internal_calibre.Language'
+      summary: Get a language
+      tags:
+      - Languages
+  /languages/{languageId}/books:
+    get:
+      consumes:
+      - application/json
+      description: Get books for a language by ID
+      parameters:
+      - description: Language ID
+        in: path
+        name: languageId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_handlers.BookListResponse'
+      summary: Get books for a language
+      tags:
+      - Languages
+  /publishers:
+    get:
+      description: Get all publishers
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_handlers.PublisherListResponse'
+      summary: Get all publishers
+      tags:
+      - publishers
+  /publishers/{publisherId}:
+    get:
+      description: Get a publisher by ID
+      parameters:
+      - description: Publisher ID
+        in: path
+        name: publisherId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/lybbrio_internal_calibre.Publisher'
+      summary: Get a publisher
+      tags:
+      - publishers
+  /publishers/{publisherId}/books:
+    get:
+      description: Get a publisher's books by ID
+      parameters:
+      - description: Publisher ID
+        in: path
+        name: publisherId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_handlers.BookListResponse'
+      summary: Get a publisher's books
+      tags:
+      - publishers
+  /series:
+    get:
+      description: Get all series
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/lybbrio_internal_handlers.SeriesListResponse'
+      summary: Get all series
+      tags:
+      - series
+  /series/{seriesId}:
+    get:
+      description: Get a series by ID
+      parameters:
+      - description: Series ID
+        in: path
+        name: seriesId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/lybbrio_internal_calibre.Series'
+      summary: Get a series
+      tags:
+      - series
+  /series/{seriesId}/books:
+    get:
+      description: Get a series' books by ID
+      parameters:
+      - description: Series ID
+        in: path
+        name: seriesId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/lybbrio_internal_handlers.BookListResponse'
+      summary: Get a series' books
+      tags:
+      - series
+  /tags:
+    get:
+      description: Get all tags
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_handlers.TagListResponse'
+      summary: Get all tags
+      tags:
+      - tags
+  /tags/{tagId}:
+    get:
+      description: Get a tag by ID
+      parameters:
+      - description: Tag ID
+        in: path
+        name: tagId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/lybbrio_internal_calibre.Tag'
+      summary: Get a tag
+      tags:
+      - tags
+  /tags/{tagId}/books:
+    get:
+      description: Get books for a tag by ID
+      parameters:
+      - description: Tag ID
+        in: path
+        name: tagId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_handlers.BookListResponse'
+      summary: Get books for a tag
+      tags:
+      - tags
 swagger: "2.0"

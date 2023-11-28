@@ -11,12 +11,6 @@ import (
 	"gorm.io/gorm/logger"
 )
 
-// Pagination Notes:
-// Order: 		https://gorm.io/docs/query.html#Order
-// Limit: 		https://gorm.io/docs/query.html#Limit
-// Offset: 		https://gorm.io/docs/query.html#Offset
-// Pagination: 	https://gorm.io/docs/scopes.html#pagination
-
 type Calibre interface {
 	GetAuthor(id int64) (*Author, error)
 	GetAuthors() ([]*Author, error)

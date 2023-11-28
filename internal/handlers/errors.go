@@ -74,3 +74,7 @@ func ErrBadRequest(err error) render.Renderer {
 }
 
 var ErrNotFound = &ErrResponse{HTTPStatusCode: 404, StatusText: "Resource not found."}
+
+func NotFoundHandler(w http.ResponseWriter, r *http.Request) {
+	render.Render(w, r, ErrNotFound)
+}

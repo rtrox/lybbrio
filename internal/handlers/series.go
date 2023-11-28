@@ -87,7 +87,7 @@ func GetSeries() http.HandlerFunc {
 // @Tags series
 // @Produce json
 // @Param seriesId path int true "Series ID"
-// @Success 200 {array} Book
+// @Success 200 {object} BookListResponse
 // @Router /series/{seriesId}/books [get]
 func GetSeriesBooks(cal calibre.Calibre) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -107,7 +107,7 @@ func GetSeriesBooks(cal calibre.Calibre) http.HandlerFunc {
 // @Description Get all series
 // @Tags series
 // @Produce json
-// @Success 200 {array} Series
+// @Success 200 {object} SeriesListResponse
 // @Router /series [get]
 func GetSeriesList(cal calibre.Calibre) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
