@@ -54,7 +54,7 @@ func SeriesCtx(cal calibre.Calibre) func(http.Handler) http.Handler {
 				return
 			}
 
-			series, err := cal.GetSeries(seriesId)
+			series, err := cal.GetSeries(ctx, seriesId)
 			if err != nil {
 				render.Render(w, r, ErrNotFound)
 				return
@@ -94,7 +94,7 @@ func GetSeriesBooks(cal calibre.Calibre) http.HandlerFunc {
 		ctx := r.Context()
 		series := seriesFromContext(ctx)
 		pagination := PaginationFromCtx(ctx)
-		books, err := Paginate(cal, pagination.Token).GetSeriesBooks(series.ID)
+		books, err := Paginate(cal, pagination.Token).GetSeriesBooks(ctx, series.ID)
 		if err != nil {
 			render.Render(w, r, ErrInternalError(AppError{ErrSeriesBooksDB, err.Error()}))
 		}
@@ -113,7 +113,7 @@ func GetSeriesList(cal calibre.Calibre) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		pagination := PaginationFromCtx(ctx)
-		series, err := Paginate(cal, pagination.Token).GetSeriesList()
+		series, err := Paginate(cal, pagination.Token).GetSeriesList(ctx)
 		if err != nil {
 			render.Render(w, r, ErrInternalError(AppError{ErrSeriesDB, err.Error()}))
 			return

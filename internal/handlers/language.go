@@ -54,7 +54,7 @@ func LanguageCtx(cal calibre.Calibre) func(http.Handler) http.Handler {
 				return
 			}
 
-			language, err := cal.GetLanguage(languageId)
+			language, err := cal.GetLanguage(ctx, languageId)
 			if err != nil {
 				render.Render(w, r, ErrNotFound)
 				return
@@ -95,7 +95,7 @@ func GetLanguageBooks(cal calibre.Calibre) http.HandlerFunc {
 		ctx := r.Context()
 		language := languageFromContext(ctx)
 		pagination := PaginationFromCtx(ctx)
-		books, err := Paginate(cal, pagination.Token).GetLanguageBooks(language.ID)
+		books, err := Paginate(cal, pagination.Token).GetLanguageBooks(ctx, language.ID)
 		if err != nil {
 			render.Render(w, r, ErrInternalError(AppError{ErrLanguageBooksDB, err.Error()}))
 			return
@@ -116,7 +116,7 @@ func GetLanguages(cal calibre.Calibre) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		pagination := PaginationFromCtx(ctx)
-		languages, err := Paginate(cal, pagination.Token).GetLanguages()
+		languages, err := Paginate(cal, pagination.Token).GetLanguages(ctx)
 		if err != nil {
 			render.Render(w, r, ErrInternalError(AppError{ErrLanguagesDB, err.Error()}))
 			return

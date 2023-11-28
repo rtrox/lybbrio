@@ -54,7 +54,7 @@ func BookCtx(cal calibre.Calibre) func(http.Handler) http.Handler {
 				return
 			}
 
-			book, err := cal.GetBook(bookId)
+			book, err := cal.GetBook(ctx, bookId)
 			if err != nil {
 				render.Render(w, r, ErrNotFound)
 				return
@@ -103,8 +103,9 @@ func GetBook() http.HandlerFunc {
 // @Router /books [get]
 func GetBooks(cal calibre.Calibre) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		pagination := PaginationFromCtx(r.Context())
-		books, err := Paginate(cal, pagination.Token).GetBooks()
+		ctx := r.Context()
+		pagination := PaginationFromCtx(ctx)
+		books, err := Paginate(cal, pagination.Token).GetBooks(ctx)
 		if err != nil {
 			render.Render(w, r, ErrInternalError(AppError{ErrBooksDB, err.Error()}))
 			return
