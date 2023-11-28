@@ -54,7 +54,7 @@ func PublisherCtx(cal calibre.Calibre) func(http.Handler) http.Handler {
 				return
 			}
 
-			publisher, err := cal.GetPublisher(publisherId)
+			publisher, err := cal.GetPublisher(ctx, publisherId)
 			if err != nil {
 				render.Render(w, r, ErrNotFound)
 				return
@@ -91,8 +91,10 @@ func GetPublisher() http.HandlerFunc {
 // @Router /publishers/{publisherId}/books [get]
 func GetPublisherBooks(cal calibre.Calibre) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		publisher := publisherFromContext(r.Context())
-		books, err := cal.GetPublisherBooks(publisher.ID)
+		ctx := r.Context()
+		pagination := PaginationFromCtx(ctx)
+		publisher := publisherFromContext(ctx)
+		books, err := Paginate(cal, pagination.Token).GetPublisherBooks(ctx, publisher.ID)
 		if err != nil {
 			render.Render(w, r, ErrInternalError(AppError{ErrPublisherBooksDB, err.Error()}))
 			return
@@ -112,7 +114,7 @@ func GetPublishers(cal calibre.Calibre) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		pagination := PaginationFromCtx(ctx)
-		publishers, err := Paginate(cal, pagination.Token).GetPublishers()
+		publishers, err := Paginate(cal, pagination.Token).GetPublishers(ctx)
 		if err != nil {
 			render.Render(w, r, ErrInternalError(AppError{ErrPublishersDB, err.Error()}))
 			return

@@ -54,7 +54,7 @@ func TagCtx(cal calibre.Calibre) func(next http.Handler) http.Handler {
 				return
 			}
 
-			tag, err := cal.GetTag(tagId)
+			tag, err := cal.GetTag(ctx, tagId)
 			if err != nil {
 				render.Render(w, r, ErrNotFound)
 				return
@@ -94,7 +94,7 @@ func GetTagBooks(cal calibre.Calibre) http.HandlerFunc {
 		ctx := r.Context()
 		tag := tagFromContext(ctx)
 		pagination := PaginationFromCtx(ctx)
-		books, err := Paginate(cal, pagination.Token).GetTagBooks(tag.ID)
+		books, err := Paginate(cal, pagination.Token).GetTagBooks(ctx, tag.ID)
 		if err != nil {
 			render.Render(w, r, ErrInternalError(AppError{ErrPaginationToken, err.Error()}))
 			return
@@ -112,8 +112,9 @@ func GetTagBooks(cal calibre.Calibre) http.HandlerFunc {
 // @Router /tags [get]
 func GetTags(cal calibre.Calibre) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		pagination := PaginationFromCtx(r.Context())
-		tags, err := Paginate(cal, pagination.Token).GetTags()
+		ctx := r.Context()
+		pagination := PaginationFromCtx(ctx)
+		tags, err := Paginate(cal, pagination.Token).GetTags(ctx)
 		if err != nil {
 			render.Render(w, r, ErrInternalError(AppError{ErrPaginationToken, err.Error()}))
 			return
