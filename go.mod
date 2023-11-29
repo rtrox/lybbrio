@@ -4,10 +4,10 @@ go 1.21.4
 
 require (
 	github.com/go-chi/chi v1.5.5
-	github.com/go-chi/chi/v5 v5.0.10
 	github.com/go-chi/render v1.0.3
 	github.com/gookit/validate v1.5.1
 	github.com/knadh/koanf v1.5.0
+	github.com/mpalmer/gorm-zerolog v0.1.0
 	github.com/prometheus/client_golang v1.17.0
 	github.com/rs/zerolog v1.31.0
 	github.com/segmentio/ksuid v1.0.4
