@@ -2,14 +2,12 @@ package calibre
 
 import (
 	"context"
-	stdlog "log"
-	"os"
-	"time"
 
+	gormLogger "github.com/mpalmer/gorm-zerolog"
+	"github.com/rs/zerolog"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
-	"gorm.io/gorm/logger"
 )
 
 type Calibre interface {
@@ -48,24 +46,32 @@ type CalibreSQLite struct {
 }
 
 func NewCalibreSQLite(dbPath string) (*CalibreSQLite, error) {
-	newLogger := logger.New(
-		stdlog.New(os.Stdout, "\r\n", stdlog.LstdFlags), // io writer
-		logger.Config{
-			SlowThreshold:             time.Second, // Slow SQL threshold
-			LogLevel:                  logger.Info, // Log level
-			IgnoreRecordNotFoundError: true,        // Ignore ErrRecordNotFound error for logger
-			ParameterizedQueries:      true,        // Don't include params in the SQL log
-			Colorful:                  false,       // Disable color
-		},
-	)
 	db, err := gorm.Open(sqlite.Open(dbPath), &gorm.Config{
-		Logger: newLogger,
+		Logger: gormLogger.Logger{},
 	})
 
 	if err != nil {
 		return nil, err
 	}
 	return &CalibreSQLite{db: db}, nil
+}
+
+func (c *CalibreSQLite) Close() error {
+	db, err := c.db.DB()
+	if err != nil {
+		return err
+	}
+	return db.Close()
+}
+
+func (c *CalibreSQLite) WithLogger(logger *zerolog.Logger) Calibre {
+	return &CalibreSQLite{
+		db: c.db.Session(
+			&gorm.Session{
+				Logger: gormLogger.Logger{},
+			},
+		),
+	}
 }
 
 func (c *CalibreSQLite) WithPagination(page, pageSize int) Calibre {
