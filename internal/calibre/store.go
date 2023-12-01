@@ -18,6 +18,7 @@ type Calibre interface {
 
 	GetBook(ctx context.Context, id int64) (*Book, error)
 	GetBooks(ctx context.Context) ([]*Book, error)
+	GetBookByIdentifier(ctx context.Context, val string) (*Book, error)
 
 	GetTag(ctx context.Context, id int64) (*Tag, error)
 	GetTags(ctx context.Context) ([]*Tag, error)
@@ -31,9 +32,6 @@ type Calibre interface {
 	GetLanguages(ctx context.Context) ([]*Language, error)
 	GetLanguageBooks(ctx context.Context, id int64) ([]*Book, error)
 
-	GetIdentifier(ctx context.Context, id int64) (*Identifier, error)
-	GetIdentifierBook(ctx context.Context, id int64) (*Book, error)
-
 	GetSeriesList(ctx context.Context) ([]*Series, error)
 	GetSeries(ctx context.Context, id int64) (*Series, error)
 	GetSeriesBooks(ctx context.Context, id int64) ([]*Book, error)
@@ -46,9 +44,7 @@ type CalibreSQLite struct {
 }
 
 func NewCalibreSQLite(dbPath string) (*CalibreSQLite, error) {
-	db, err := gorm.Open(sqlite.Open(dbPath), &gorm.Config{
-		Logger: gormLogger.Logger{},
-	})
+	db, err := gorm.Open(sqlite.Open(dbPath), &gorm.Config{})
 
 	if err != nil {
 		return nil, err
@@ -96,6 +92,9 @@ func (s *CalibreSQLite) GetAuthorBooks(ctx context.Context, id int64) ([]*Book, 
 	var books []*Book
 	err := s.db.WithContext(ctx).
 		Model(&Author{ID: id}).
+		Preload("Authors").
+		Preload("Tags").
+		Preload("Comments").
 		Association("Books").
 		Find(&books)
 	return books, err
@@ -132,6 +131,19 @@ func (s *CalibreSQLite) GetBooks(ctx context.Context) ([]*Book, error) {
 	return books, err
 }
 
+func (s *CalibreSQLite) GetBookByIdentifier(ctx context.Context, val string) (*Book, error) {
+	var identifier Identifier
+	err := s.db.WithContext(ctx).
+		Model(&Identifier{}).
+		Preload("Book").
+		Preload("Book.Authors").
+		Preload("Book.Tags").
+		Preload("Book.Comments").
+		Where("val = ?", val).
+		Find(&identifier).Error
+	return &identifier.Book, err
+}
+
 func (s *CalibreSQLite) GetTag(ctx context.Context, id int64) (*Tag, error) {
 	var tag Tag
 	err := s.db.WithContext(ctx).First(&tag, id).Error
@@ -148,9 +160,9 @@ func (s *CalibreSQLite) GetTagBooks(ctx context.Context, id int64) ([]*Book, err
 	var books []*Book
 	err := s.db.WithContext(ctx).
 		Model(&Tag{ID: id}).
-		Preload("Book.Authors").
-		Preload("Book.Tags").
-		Preload("Book.Comments").
+		Preload("Authors").
+		Preload("Tags").
+		Preload("Comments").
 		Association("Books").
 		Find(&books)
 	return books, err
@@ -172,9 +184,9 @@ func (s *CalibreSQLite) GetPublisherBooks(ctx context.Context, id int64) ([]*Boo
 	var books []*Book
 	err := s.db.WithContext(ctx).
 		Model(&Publisher{ID: id}).
-		Preload("Book.Authors").
-		Preload("Book.Tags").
-		Preload("Book.Comments").
+		Preload("Authors").
+		Preload("Tags").
+		Preload("Comments").
 		Association("Books").
 		Find(&books)
 	return books, err
@@ -196,24 +208,6 @@ func (s *CalibreSQLite) GetLanguageBooks(ctx context.Context, id int64) ([]*Book
 	var books []*Book
 	err := s.db.WithContext(ctx).Model(&Language{ID: id}).Association("Books").Find(&books)
 	return books, err
-}
-
-func (s *CalibreSQLite) GetIdentifier(ctx context.Context, id int64) (*Identifier, error) {
-	var identifier Identifier
-	err := s.db.WithContext(ctx).First(&identifier, id).Error
-	return &identifier, err
-}
-
-func (s *CalibreSQLite) GetIdentifierBook(ctx context.Context, id int64) (*Book, error) {
-	var book Book
-	err := s.db.WithContext(ctx).
-		Model(&Identifier{ID: id}).
-		Preload("Book.Authors").
-		Preload("Book.Tags").
-		Preload("Book.Comments").
-		Association("Book").
-		Find(&book)
-	return &book, err
 }
 
 func (s *CalibreSQLite) GetSeries(ctx context.Context, id int64) (*Series, error) {
@@ -245,9 +239,9 @@ func (s *CalibreSQLite) GetSeriesBooks(ctx context.Context, id int64) ([]*Book, 
 	var books []*Book
 	err := s.db.WithContext(ctx).
 		Model(&Series{ID: id}).
-		Preload("Book.Authors").
-		Preload("Book.Tags").
-		Preload("Book.Comments").
+		Preload("Authors").
+		Preload("Tags").
+		Preload("Comments").
 		Association("Books").
 		Find(&books)
 	return books, err

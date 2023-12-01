@@ -34,10 +34,11 @@ type Book struct {
 }
 
 type Identifier struct {
-	ID   int64  `json:"id"`
-	Book int64  `json:"book"`
-	Type string `json:"type"`
-	Val  string `json:"val"`
+	ID     int64  `json:"id"`
+	BookID int64  `json:"bookId" gorm:"column:book"`
+	Book   Book   `json:"book"`
+	Type   string `json:"type"`
+	Val    string `json:"val"`
 }
 
 type Tag struct {
