@@ -40,7 +40,7 @@ func LanguageCtx(cal calibre.Calibre) func(http.Handler) http.Handler {
 
 			s := chi.URLParam(r, "languageId")
 			if s == "" {
-				render.Render(w, r, ErrNotFound)
+				render.Render(w, r, ErrNotFound) //nolint:errcheck
 				return
 			}
 			log := log.Ctx(r.Context())
@@ -50,13 +50,13 @@ func LanguageCtx(cal calibre.Calibre) func(http.Handler) http.Handler {
 			ctx := log.WithContext(r.Context())
 			languageId, err := strconv.ParseInt(s, 10, 64)
 			if err != nil {
-				render.Render(w, r, ErrBadRequest(err))
+				render.Render(w, r, ErrBadRequest(err)) //nolint:errcheck
 				return
 			}
 
 			language, err := cal.GetLanguage(ctx, languageId)
 			if err != nil {
-				render.Render(w, r, ErrNotFound)
+				render.Render(w, r, ErrNotFound) //nolint:errcheck
 				return
 			}
 			ctx = context.WithValue(ctx, languageCtxKeyKey, language)
@@ -97,10 +97,10 @@ func GetLanguageBooks(cal calibre.Calibre) http.HandlerFunc {
 		pagination := PaginationFromCtx(ctx)
 		books, err := Paginate(cal, pagination.Token).GetLanguageBooks(ctx, language.ID)
 		if err != nil {
-			render.Render(w, r, ErrInternalError(AppError{ErrLanguageBooksDB, err.Error()}))
+			render.Render(w, r, ErrInternalError(AppError{ErrLanguageBooksDB, err.Error()})) //nolint:errcheck
 			return
 		}
-		render.Render(w, r, BookListResponse{Items: books, Page: &pagination.Response})
+		render.Render(w, r, BookListResponse{Items: books, Page: &pagination.Response}) //nolint:errcheck
 	}
 }
 
@@ -118,9 +118,9 @@ func GetLanguages(cal calibre.Calibre) http.HandlerFunc {
 		pagination := PaginationFromCtx(ctx)
 		languages, err := Paginate(cal, pagination.Token).GetLanguages(ctx)
 		if err != nil {
-			render.Render(w, r, ErrInternalError(AppError{ErrLanguagesDB, err.Error()}))
+			render.Render(w, r, ErrInternalError(AppError{ErrLanguagesDB, err.Error()})) //nolint:errcheck
 			return
 		}
-		render.Render(w, r, LanguageListResponse{Items: languages, Page: &pagination.Response})
+		render.Render(w, r, LanguageListResponse{Items: languages, Page: &pagination.Response}) //nolint:errcheck
 	}
 }

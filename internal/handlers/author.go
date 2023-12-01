@@ -40,7 +40,7 @@ func AuthorCtx(cal calibre.Calibre) func(http.Handler) http.Handler {
 
 			s := chi.URLParam(r, "authorId")
 			if s == "" {
-				render.Render(w, r, ErrNotFound)
+				render.Render(w, r, ErrNotFound) //nolint:errcheck
 				return
 			}
 			log := log.Ctx(r.Context())
@@ -50,13 +50,13 @@ func AuthorCtx(cal calibre.Calibre) func(http.Handler) http.Handler {
 			ctx := log.WithContext(r.Context())
 			authorId, err := strconv.ParseInt(s, 10, 64)
 			if err != nil {
-				render.Render(w, r, ErrBadRequest(err))
+				render.Render(w, r, ErrBadRequest(err)) //nolint:errcheck
 				return
 			}
 
 			author, err := cal.GetAuthor(ctx, authorId)
 			if err != nil {
-				render.Render(w, r, ErrNotFound)
+				render.Render(w, r, ErrNotFound) //nolint:errcheck
 				return
 			}
 			ctx = context.WithValue(ctx, authorCtxKey, author)
@@ -107,12 +107,12 @@ func GetAuthorBooks(cal calibre.Calibre) http.HandlerFunc {
 		pagination := PaginationFromCtx(ctx)
 		books, err := Paginate(cal, pagination.Token).GetAuthorBooks(ctx, author.ID)
 		if err != nil {
-			render.Render(w, r, ErrInternalError(
+			render.Render(w, r, ErrInternalError( //nolint:errcheck
 				AppError{ErrAuthorBooksDB, err.Error()},
 			))
 			return
 		}
-		render.Render(w, r, BookListResponse{Items: books, Page: &pagination.Response})
+		render.Render(w, r, BookListResponse{Items: books, Page: &pagination.Response}) //nolint:errcheck
 	}
 }
 
@@ -137,12 +137,12 @@ func GetAuthorSeries(cal calibre.Calibre) http.HandlerFunc {
 		pagination := PaginationFromCtx(ctx)
 		series, err := Paginate(cal, pagination.Token).GetAuthorSeries(ctx, author.ID)
 		if err != nil {
-			render.Render(w, r, ErrInternalError(
+			render.Render(w, r, ErrInternalError( //nolint:errcheck
 				AppError{ErrAuthorBooksDB, err.Error()},
 			))
 			return
 		}
-		render.Render(w, r, SeriesListResponse{Items: series, Page: &pagination.Response})
+		render.Render(w, r, SeriesListResponse{Items: series, Page: &pagination.Response}) //nolint:errcheck
 	}
 }
 
@@ -166,9 +166,9 @@ func GetAuthors(cal calibre.Calibre) http.HandlerFunc {
 		pagination := PaginationFromCtx(ctx)
 		authors, err := Paginate(cal, pagination.Token).GetAuthors(ctx)
 		if err != nil {
-			render.Render(w, r, ErrInternalError(AppError{ErrRender, err.Error()}))
+			render.Render(w, r, ErrInternalError(AppError{ErrRender, err.Error()})) //nolint:errcheck
 			return
 		}
-		render.Render(w, r, AuthorListResponse{Items: authors, Page: &pagination.Response})
+		render.Render(w, r, AuthorListResponse{Items: authors, Page: &pagination.Response}) //nolint:errcheck
 	}
 }
