@@ -40,7 +40,7 @@ func BookCtx(cal calibre.Calibre) func(http.Handler) http.Handler {
 
 			s := chi.URLParam(r, "bookId")
 			if s == "" {
-				render.Render(w, r, ErrNotFound)
+				render.Render(w, r, ErrNotFound) //nolint:errcheck
 				return
 			}
 			log := log.Ctx(r.Context())
@@ -50,13 +50,13 @@ func BookCtx(cal calibre.Calibre) func(http.Handler) http.Handler {
 			ctx := log.WithContext(r.Context())
 			bookId, err := strconv.ParseInt(s, 10, 64)
 			if err != nil {
-				render.Render(w, r, ErrBadRequest(err))
+				render.Render(w, r, ErrBadRequest(err)) //nolint:errcheck
 				return
 			}
 
 			book, err := cal.GetBook(ctx, bookId)
 			if err != nil {
-				render.Render(w, r, ErrNotFound)
+				render.Render(w, r, ErrNotFound) //nolint:errcheck
 				return
 			}
 
@@ -107,10 +107,10 @@ func GetBooks(cal calibre.Calibre) http.HandlerFunc {
 		pagination := PaginationFromCtx(ctx)
 		books, err := Paginate(cal, pagination.Token).GetBooks(ctx)
 		if err != nil {
-			render.Render(w, r, ErrInternalError(AppError{ErrBooksDB, err.Error()}))
+			render.Render(w, r, ErrInternalError(AppError{ErrBooksDB, err.Error()})) //nolint:errcheck
 			return
 		}
-		render.Render(w, r, BookListResponse{
+		render.Render(w, r, BookListResponse{ //nolint:errcheck
 			Items: books,
 			Page:  &pagination.Response,
 		})

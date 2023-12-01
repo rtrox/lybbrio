@@ -1,0 +1,22 @@
+project_name: "lybbrio"
+archives:
+  - id: main
+    wrap_in_directory: true
+    files:
+      - "README.md"
+builds:
+  - main: ./cmd/lybbrio/main.go
+    binary: lybbrio
+    ldflags:
+      - -s -w -X main.version={{.Version}} -X main.revision={{.Commit}} -X main.buildTime={{.CommitTimestamp}}
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+    goarch:
+      - amd64
+      - arm64
+    mod_timestamp: '{{ .CommitTimestamp }}'
+changelog:
+  use: github-native

@@ -91,12 +91,12 @@ func PaginationCtx(next http.Handler) http.Handler {
 		log := log.Ctx(ctx)
 		if err != nil {
 			log.Error().Err(err).Msg("Error processing pagination token.")
-			render.Render(w, r, ErrBadRequest(err))
+			render.Render(w, r, ErrBadRequest(err)) //nolint:errcheck
 			return
 		}
 		nextToken, err := MarshalPaginationToken(token.Next())
 		if err != nil {
-			render.Render(w, r, ErrInternalError(AppError{ErrPaginationToken, err.Error()}))
+			render.Render(w, r, ErrInternalError(AppError{ErrPaginationToken, err.Error()})) //nolint:errcheck
 			return
 		}
 		obj := PaginationContextObject{

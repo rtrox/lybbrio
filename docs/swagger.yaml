@@ -290,15 +290,15 @@ paths:
   /authors:
     get:
       consumes:
-      - application/json
+        - application/json
       description: List Authors
       parameters:
-      - description: Pagination cursor
-        in: query
-        name: cursor
-        type: string
+        - description: Pagination cursor
+          in: query
+          name: cursor
+          type: string
       produces:
-      - application/json
+        - application/json
       responses:
         "200":
           description: OK
@@ -326,20 +326,20 @@ paths:
             $ref: '#/definitions/internal_handlers.ErrResponse'
       summary: List Authors
       tags:
-      - authors
+        - authors
   /authors/{authorId}:
     get:
       consumes:
-      - application/json
+        - application/json
       description: Get an author by ID
       parameters:
-      - description: Author ID
-        in: path
-        name: authorId
-        required: true
-        type: integer
+        - description: Author ID
+          in: path
+          name: authorId
+          required: true
+          type: integer
       produces:
-      - application/json
+        - application/json
       responses:
         "200":
           description: OK
@@ -367,20 +367,20 @@ paths:
             $ref: '#/definitions/internal_handlers.ErrResponse'
       summary: Get an author
       tags:
-      - authors
+        - authors
   /authors/{authorId}/books:
     get:
       consumes:
-      - application/json
+        - application/json
       description: Get an author's books by ID
       parameters:
-      - description: Author ID
-        in: path
-        name: authorId
-        required: true
-        type: integer
+        - description: Author ID
+          in: path
+          name: authorId
+          required: true
+          type: integer
       produces:
-      - application/json
+        - application/json
       responses:
         "200":
           description: OK
@@ -408,20 +408,20 @@ paths:
             $ref: '#/definitions/internal_handlers.ErrResponse'
       summary: Get an author's books
       tags:
-      - authors
+        - authors
   /authors/{authorId}/series:
     get:
       consumes:
-      - application/json
+        - application/json
       description: Get an author's series by ID
       parameters:
-      - description: Author ID
-        in: path
-        name: authorId
-        required: true
-        type: integer
+        - description: Author ID
+          in: path
+          name: authorId
+          required: true
+          type: integer
       produces:
-      - application/json
+        - application/json
       responses:
         "200":
           description: OK
@@ -449,19 +449,19 @@ paths:
             $ref: '#/definitions/internal_handlers.ErrResponse'
       summary: Get an author's series
       tags:
-      - authors
+        - authors
   /books:
     get:
       consumes:
-      - application/json
+        - application/json
       description: List Books
       parameters:
-      - description: Pagination cursor
-        in: query
-        name: cursor
-        type: string
+        - description: Pagination cursor
+          in: query
+          name: cursor
+          type: string
       produces:
-      - application/json
+        - application/json
       responses:
         "200":
           description: OK
@@ -489,20 +489,20 @@ paths:
             $ref: '#/definitions/internal_handlers.ErrResponse'
       summary: List Books
       tags:
-      - books
+        - books
   /books/{bookId}:
     get:
       consumes:
-      - application/json
+        - application/json
       description: Get Book by ID
       parameters:
-      - description: Book ID
-        in: path
-        name: bookId
-        required: true
-        type: integer
+        - description: Book ID
+          in: path
+          name: bookId
+          required: true
+          type: integer
       produces:
-      - application/json
+        - application/json
       responses:
         "200":
           description: OK
@@ -530,14 +530,14 @@ paths:
             $ref: '#/definitions/internal_handlers.ErrResponse'
       summary: Get Book by ID
       tags:
-      - books
+        - books
   /languages:
     get:
       consumes:
-      - application/json
+        - application/json
       description: Get all languages
       produces:
-      - application/json
+        - application/json
       responses:
         "200":
           description: OK
@@ -545,20 +545,20 @@ paths:
             $ref: '#/definitions/internal_handlers.LanguageListResponse'
       summary: Get all languages
       tags:
-      - Languages
+        - Languages
   /languages/{languageId}:
     get:
       consumes:
-      - application/json
+        - application/json
       description: Get a language by ID
       parameters:
-      - description: Language ID
-        in: path
-        name: languageId
-        required: true
-        type: integer
+        - description: Language ID
+          in: path
+          name: languageId
+          required: true
+          type: integer
       produces:
-      - application/json
+        - application/json
       responses:
         "200":
           description: OK
@@ -566,20 +566,20 @@ paths:
             $ref: '#/definitions/lybbrio_internal_calibre.Language'
       summary: Get a language
       tags:
-      - Languages
+        - Languages
   /languages/{languageId}/books:
     get:
       consumes:
-      - application/json
+        - application/json
       description: Get books for a language by ID
       parameters:
-      - description: Language ID
-        in: path
-        name: languageId
-        required: true
-        type: integer
+        - description: Language ID
+          in: path
+          name: languageId
+          required: true
+          type: integer
       produces:
-      - application/json
+        - application/json
       responses:
         "200":
           description: OK
@@ -587,12 +587,12 @@ paths:
             $ref: '#/definitions/internal_handlers.BookListResponse'
       summary: Get books for a language
       tags:
-      - Languages
+        - Languages
   /publishers:
     get:
       description: Get all publishers
       produces:
-      - application/json
+        - application/json
       responses:
         "200":
           description: OK
@@ -600,18 +600,18 @@ paths:
             $ref: '#/definitions/internal_handlers.PublisherListResponse'
       summary: Get all publishers
       tags:
-      - publishers
+        - publishers
   /publishers/{publisherId}:
     get:
       description: Get a publisher by ID
       parameters:
-      - description: Publisher ID
-        in: path
-        name: publisherId
-        required: true
-        type: integer
+        - description: Publisher ID
+          in: path
+          name: publisherId
+          required: true
+          type: integer
       produces:
-      - application/json
+        - application/json
       responses:
         "200":
           description: OK
@@ -619,18 +619,18 @@ paths:
             $ref: '#/definitions/lybbrio_internal_calibre.Publisher'
       summary: Get a publisher
       tags:
-      - publishers
+        - publishers
   /publishers/{publisherId}/books:
     get:
       description: Get a publisher's books by ID
       parameters:
-      - description: Publisher ID
-        in: path
-        name: publisherId
-        required: true
-        type: integer
+        - description: Publisher ID
+          in: path
+          name: publisherId
+          required: true
+          type: integer
       produces:
-      - application/json
+        - application/json
       responses:
         "200":
           description: OK
@@ -638,12 +638,12 @@ paths:
             $ref: '#/definitions/internal_handlers.BookListResponse'
       summary: Get a publisher's books
       tags:
-      - publishers
+        - publishers
   /series:
     get:
       description: Get all series
       produces:
-      - application/json
+        - application/json
       responses:
         "200":
           description: OK
@@ -651,18 +651,18 @@ paths:
             $ref: '#/definitions/lybbrio_internal_handlers.SeriesListResponse'
       summary: Get all series
       tags:
-      - series
+        - series
   /series/{seriesId}:
     get:
       description: Get a series by ID
       parameters:
-      - description: Series ID
-        in: path
-        name: seriesId
-        required: true
-        type: integer
+        - description: Series ID
+          in: path
+          name: seriesId
+          required: true
+          type: integer
       produces:
-      - application/json
+        - application/json
       responses:
         "200":
           description: OK
@@ -670,18 +670,18 @@ paths:
             $ref: '#/definitions/lybbrio_internal_calibre.Series'
       summary: Get a series
       tags:
-      - series
+        - series
   /series/{seriesId}/books:
     get:
       description: Get a series' books by ID
       parameters:
-      - description: Series ID
-        in: path
-        name: seriesId
-        required: true
-        type: integer
+        - description: Series ID
+          in: path
+          name: seriesId
+          required: true
+          type: integer
       produces:
-      - application/json
+        - application/json
       responses:
         "200":
           description: OK
@@ -689,12 +689,12 @@ paths:
             $ref: '#/definitions/lybbrio_internal_handlers.BookListResponse'
       summary: Get a series' books
       tags:
-      - series
+        - series
   /tags:
     get:
       description: Get all tags
       produces:
-      - application/json
+        - application/json
       responses:
         "200":
           description: OK
@@ -702,18 +702,18 @@ paths:
             $ref: '#/definitions/internal_handlers.TagListResponse'
       summary: Get all tags
       tags:
-      - tags
+        - tags
   /tags/{tagId}:
     get:
       description: Get a tag by ID
       parameters:
-      - description: Tag ID
-        in: path
-        name: tagId
-        required: true
-        type: integer
+        - description: Tag ID
+          in: path
+          name: tagId
+          required: true
+          type: integer
       produces:
-      - application/json
+        - application/json
       responses:
         "200":
           description: OK
@@ -721,18 +721,18 @@ paths:
             $ref: '#/definitions/lybbrio_internal_calibre.Tag'
       summary: Get a tag
       tags:
-      - tags
+        - tags
   /tags/{tagId}/books:
     get:
       description: Get books for a tag by ID
       parameters:
-      - description: Tag ID
-        in: path
-        name: tagId
-        required: true
-        type: integer
+        - description: Tag ID
+          in: path
+          name: tagId
+          required: true
+          type: integer
       produces:
-      - application/json
+        - application/json
       responses:
         "200":
           description: OK
@@ -740,5 +740,5 @@ paths:
             $ref: '#/definitions/internal_handlers.BookListResponse'
       summary: Get books for a tag
       tags:
-      - tags
+        - tags
 swagger: "2.0"
