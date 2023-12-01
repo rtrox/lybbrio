@@ -102,8 +102,9 @@ func PaginationCtx(next http.Handler) http.Handler {
 		obj := PaginationContextObject{
 			Token: token,
 			Response: PaginationResponse{
-				NextCursor: nextToken,
-				NextURL:    fmt.Sprintf("%s?cursor=%s", r.URL.Path, nextToken),
+				currentToken: token,
+				NextCursor:   nextToken,
+				NextURL:      fmt.Sprintf("%s?cursor=%s", r.URL.Path, nextToken),
 			},
 		}
 		ctx = context.WithValue(ctx, paginationCtxKey, obj)

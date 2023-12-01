@@ -56,7 +56,7 @@ func AuthorCtx(cal calibre.Calibre) func(http.Handler) http.Handler {
 
 			author, err := cal.GetAuthor(ctx, authorId)
 			if err != nil {
-				render.Render(w, r, ErrNotFound) //nolint:errcheck
+				render.Render(w, r, ErrInternalError(AppError{ErrAuthorBooksDB, err.Error()})) //nolint:errcheck
 				return
 			}
 			ctx = context.WithValue(ctx, authorCtxKey, author)
