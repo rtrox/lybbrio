@@ -1,0 +1,12 @@
+name: Handle Pull Requests
+
+on:
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+
+jobs:
+  tests:
+    uses: ./.github/workflows/tests.yaml
