@@ -135,9 +135,9 @@ func TestGetAuthors(t *testing.T) {
 			require.NoError(err)
 			require.Equal(expected, actual.Items)
 			if tt.shouldReturnPage {
-				require.NotNil(actual.Page)
+				require.NotNil(actual.Page, "Page should not be nil when results >= pageSize")
 			} else {
-				require.Nil(actual.Page)
+				require.Nil(actual.Page, "Should not return Page struct on final page")
 			}
 
 			mockCal.AssertExpectations(t)
