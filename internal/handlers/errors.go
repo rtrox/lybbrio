@@ -46,7 +46,7 @@ func (e *ErrResponse) Render(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
-func ErrInvalidRequest(err error) render.Renderer {
+func ErrInvalidRequest(err error) render.Renderer { //nolint:errcheck
 	return &ErrResponse{
 		Err:            err,
 		HTTPStatusCode: http.StatusBadRequest,
@@ -55,7 +55,7 @@ func ErrInvalidRequest(err error) render.Renderer {
 	}
 }
 
-func ErrInternalError(err AppError) render.Renderer {
+func ErrInternalError(err AppError) render.Renderer { //nolint:errcheck
 	return &ErrResponse{
 		Err:            err,
 		HTTPStatusCode: http.StatusInternalServerError,
@@ -65,7 +65,7 @@ func ErrInternalError(err AppError) render.Renderer {
 	}
 }
 
-func ErrBadRequest(err error) render.Renderer {
+func ErrBadRequest(err error) render.Renderer { //nolint:errcheck
 	return &ErrResponse{
 		Err:            err,
 		HTTPStatusCode: http.StatusBadRequest,
@@ -77,5 +77,5 @@ func ErrBadRequest(err error) render.Renderer {
 var ErrNotFound = &ErrResponse{HTTPStatusCode: 404, StatusText: "Resource not found."}
 
 func NotFoundHandler(w http.ResponseWriter, r *http.Request) {
-	render.Render(w, r, ErrNotFound)
+	render.Render(w, r, ErrNotFound) //nolint:errcheck
 }

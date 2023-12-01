@@ -40,7 +40,7 @@ func PublisherCtx(cal calibre.Calibre) func(http.Handler) http.Handler {
 
 			s := chi.URLParam(r, "publisherId")
 			if s == "" {
-				render.Render(w, r, ErrNotFound)
+				render.Render(w, r, ErrNotFound) //nolint:errcheck
 				return
 			}
 			log := log.Ctx(r.Context())
@@ -50,13 +50,13 @@ func PublisherCtx(cal calibre.Calibre) func(http.Handler) http.Handler {
 			ctx := log.WithContext(r.Context())
 			publisherId, err := strconv.ParseInt(s, 10, 64)
 			if err != nil {
-				render.Render(w, r, ErrBadRequest(err))
+				render.Render(w, r, ErrBadRequest(err)) //nolint:errcheck
 				return
 			}
 
 			publisher, err := cal.GetPublisher(ctx, publisherId)
 			if err != nil {
-				render.Render(w, r, ErrNotFound)
+				render.Render(w, r, ErrNotFound) //nolint:errcheck
 				return
 			}
 
@@ -96,7 +96,7 @@ func GetPublisherBooks(cal calibre.Calibre) http.HandlerFunc {
 		publisher := publisherFromContext(ctx)
 		books, err := Paginate(cal, pagination.Token).GetPublisherBooks(ctx, publisher.ID)
 		if err != nil {
-			render.Render(w, r, ErrInternalError(AppError{ErrPublisherBooksDB, err.Error()}))
+			render.Render(w, r, ErrInternalError(AppError{ErrPublisherBooksDB, err.Error()})) //nolint:errcheck
 			return
 		}
 		render.JSON(w, r, books)
@@ -116,11 +116,11 @@ func GetPublishers(cal calibre.Calibre) http.HandlerFunc {
 		pagination := PaginationFromCtx(ctx)
 		publishers, err := Paginate(cal, pagination.Token).GetPublishers(ctx)
 		if err != nil {
-			render.Render(w, r, ErrInternalError(AppError{ErrPublishersDB, err.Error()}))
+			render.Render(w, r, ErrInternalError(AppError{ErrPublishersDB, err.Error()})) //nolint:errcheck
 			return
 		}
 
-		render.Render(w, r, PublisherListResponse{
+		render.Render(w, r, PublisherListResponse{ //nolint:errcheck
 			Items: publishers,
 			Page:  &pagination.Response,
 		})

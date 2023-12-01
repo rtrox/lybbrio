@@ -40,7 +40,7 @@ func TagCtx(cal calibre.Calibre) func(next http.Handler) http.Handler {
 
 			s := chi.URLParam(r, "tagId")
 			if s == "" {
-				render.Render(w, r, ErrNotFound)
+				render.Render(w, r, ErrNotFound) //nolint:errcheck
 				return
 			}
 			log := log.Ctx(r.Context())
@@ -50,13 +50,13 @@ func TagCtx(cal calibre.Calibre) func(next http.Handler) http.Handler {
 			ctx := log.WithContext(r.Context())
 			tagId, err := strconv.ParseInt(s, 10, 64)
 			if err != nil {
-				render.Render(w, r, ErrBadRequest(err))
+				render.Render(w, r, ErrBadRequest(err)) //nolint:errcheck
 				return
 			}
 
 			tag, err := cal.GetTag(ctx, tagId)
 			if err != nil {
-				render.Render(w, r, ErrNotFound)
+				render.Render(w, r, ErrNotFound) //nolint:errcheck
 				return
 			}
 
@@ -96,10 +96,10 @@ func GetTagBooks(cal calibre.Calibre) http.HandlerFunc {
 		pagination := PaginationFromCtx(ctx)
 		books, err := Paginate(cal, pagination.Token).GetTagBooks(ctx, tag.ID)
 		if err != nil {
-			render.Render(w, r, ErrInternalError(AppError{ErrPaginationToken, err.Error()}))
+			render.Render(w, r, ErrInternalError(AppError{ErrPaginationToken, err.Error()})) //nolint:errcheck
 			return
 		}
-		render.Render(w, r, BookListResponse{Items: books, Page: &pagination.Response})
+		render.Render(w, r, BookListResponse{Items: books, Page: &pagination.Response}) //nolint:errcheck
 	}
 }
 
@@ -116,9 +116,9 @@ func GetTags(cal calibre.Calibre) http.HandlerFunc {
 		pagination := PaginationFromCtx(ctx)
 		tags, err := Paginate(cal, pagination.Token).GetTags(ctx)
 		if err != nil {
-			render.Render(w, r, ErrInternalError(AppError{ErrPaginationToken, err.Error()}))
+			render.Render(w, r, ErrInternalError(AppError{ErrPaginationToken, err.Error()})) //nolint:errcheck
 			return
 		}
-		render.Render(w, r, TagListResponse{Items: tags, Page: &pagination.Response})
+		render.Render(w, r, TagListResponse{Items: tags, Page: &pagination.Response}) //nolint:errcheck
 	}
 }

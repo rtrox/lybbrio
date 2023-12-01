@@ -1,0 +1,60 @@
+name: Run Tests
+on:
+  workflow_call:
+jobs:
+  pre-commit-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+      - uses: pre-commit/action@v3.0.0
+        with:
+          extra_args: --config .github/lint/precommit-ci.yaml
+  golangci-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-go@v3
+        with:
+          go-version: ">=1.21.4"
+      - name: Check Go Fmt
+        run: |
+          go version
+          go fmt ./...
+          git diff --exit-code
+      - name: Check Go mod
+        run: |
+          go version
+          go mod tidy
+          git diff --exit-code
+      - uses: golangci/golangci-lint-action@v2
+        with:
+          version: v1.51.2
+          args: --timeout 5m --config .github/lint/golangci.yaml
+  go-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: ">=1.21.4"
+      - name: Tidy
+        run: |
+          go version
+          go mod tidy
+          git diff --exit-code
+      - name: Run Unit tests
+        run: |
+          go version
+          go test -v -race -covermode atomic -coverprofile=covprofile ./...
+
+# - name: Install goveralls
+#   run: |
+#     go version
+#     go install github.com/mattn/goveralls@latest
+
+# - name: Send coverage
+#   env:
+#     COVERALLS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#   run: goveralls -coverprofile=covprofile -service=github
