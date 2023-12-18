@@ -18,7 +18,7 @@ func RequestID(next http.Handler) http.Handler {
 		// If a request ID is already present in the request, use it.
 		reqId := r.Header.Get("X-Request-Id")
 		if reqId == "" {
-			reqId = ksuid.New().String()
+			reqId = "req_" + ksuid.New().String()
 		}
 
 		ctx := r.Context()

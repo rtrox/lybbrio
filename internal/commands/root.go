@@ -10,6 +10,10 @@ import (
 	"os/signal"
 	"syscall"
 
+	"entgo.io/contrib/entgql"
+	"entgo.io/ent/dialect"
+	"github.com/99designs/gqlgen/graphql/handler"
+	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/go-chi/chi"
 	chi_middleware "github.com/go-chi/chi/middleware"
 	"github.com/prometheus/client_golang/prometheus"
@@ -18,11 +22,11 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
-	httpSwagger "github.com/swaggo/http-swagger/v2"
 
 	"lybbrio/docs"
-	"lybbrio/internal/calibre"
 	"lybbrio/internal/config"
+	"lybbrio/internal/ent"
+	"lybbrio/internal/graph"
 	"lybbrio/internal/handlers"
 	"lybbrio/internal/metrics"
 	"lybbrio/internal/middleware"
@@ -150,14 +154,28 @@ func rootRun(cmd *cobra.Command, args []string) {
 	}
 
 	// Calibre
-	cal, error := calibre.NewCalibreSQLite(conf.CalibreDBPath)
-	cal = cal.WithLogger(&log.Logger).(*calibre.CalibreSQLite)
+	// cal, error := calibre.NewCalibreSQLite(conf.CalibreDBPath)
+	// cal = cal.WithLogger(&log.Logger).(*calibre.CalibreSQLite)
 
-	if error != nil {
-		log.Fatal().Err(error).Msg("Failed to initialize Calibre")
-	}
+	// if error != nil {
+	// 	log.Fatal().Err(error).Msg("Failed to initialize Calibre")
+	// }
 
 	// Database
+	// TODO: Abstract out the DB Client.
+	client, err := ent.Open(dialect.SQLite, "file:ent?mode=memory&cache=shared&_fk=1")
+	if err != nil {
+		log.Fatal().Err(err).Msg("opening ent client")
+	}
+	if err := client.Schema.Create(
+		context.Background(),
+	); err != nil {
+		log.Fatal().Err(err).Msg("migrating ent client")
+	}
+	graphqlHandler := handler.NewDefaultServer(graph.NewSchema(client.Debug()))
+	graphqlHandler.Use(
+		entgql.Transactioner{TxOpener: client.Debug()},
+	)
 
 	// Stores
 
@@ -176,20 +194,24 @@ func rootRun(cmd *cobra.Command, args []string) {
 	r.Get("/healthz", handlers.Health)
 	r.Handle("/metrics", promhttp.HandlerFor(reg, promhttp.HandlerOpts{}))
 
-	r.Route("/api/v2", func(r chi.Router) {
-		// r.Mount("/auth", handlers.AuthRoutes(store, authProvider))
-		r.Route("/", func(r chi.Router) {
-			// r.Use(middleware.Auth(authProvider))
-			r.Mount("/books", handlers.BookRoutes(cal))
-			r.Mount("/authors", handlers.AuthorRoutes(cal))
-			r.Mount("/series", handlers.SeriesRoutes(cal))
-			r.Mount("/tags", handlers.TagRoutes(cal))
-			r.Mount("/publishers", handlers.PublisherRoutes(cal))
-			r.Mount("/languages", handlers.LanguageRoutes(cal))
-		})
-		r.NotFound(handlers.NotFoundHandler)
-	})
-	r.Mount("/swagger", httpSwagger.WrapHandler)
+	// r.Route("/api/v2", func(r chi.Router) {
+	// 	// r.Mount("/auth", handlers.AuthRoutes(store, authProvider))
+	// 	r.Route("/", func(r chi.Router) {
+	// 		// r.Use(middleware.Auth(authProvider))
+	// 		r.Mount("/books", handlers.BookRoutes(cal))
+	// 		r.Mount("/authors", handlers.AuthorRoutes(cal))
+	// 		r.Mount("/series", handlers.SeriesRoutes(cal))
+	// 		r.Mount("/tags", handlers.TagRoutes(cal))
+	// 		r.Mount("/publishers", handlers.PublisherRoutes(cal))
+	// 		r.Mount("/languages", handlers.LanguageRoutes(cal))
+	// 	})
+	// 	r.NotFound(handlers.NotFoundHandler)
+	// })
+	// r.Mount("/swagger", httpSwagger.WrapHandler)
+
+	// TODO: Add back Auth
+	r.Handle("/graphql", graphqlHandler)
+	r.Handle("/graphiql", playground.Handler("Lybbrio GraphQL playground", "/graphql"))
 
 	srv.Addr = fmt.Sprintf("%s:%d", conf.Interface, conf.Port)
 	srv.Handler = r
