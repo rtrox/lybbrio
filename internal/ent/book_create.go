@@ -8,7 +8,11 @@ import (
 	"fmt"
 	"lybbrio/internal/ent/author"
 	"lybbrio/internal/ent/book"
+	"lybbrio/internal/ent/identifier"
+	"lybbrio/internal/ent/language"
 	"lybbrio/internal/ent/schema/ksuid"
+	"lybbrio/internal/ent/series"
+	"lybbrio/internal/ent/shelf"
 	"time"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -34,13 +38,13 @@ func (bc *BookCreate) SetSort(s string) *BookCreate {
 	return bc
 }
 
-// SetAddedAt sets the "addedAt" field.
+// SetAddedAt sets the "added_at" field.
 func (bc *BookCreate) SetAddedAt(t time.Time) *BookCreate {
 	bc.mutation.SetAddedAt(t)
 	return bc
 }
 
-// SetNillableAddedAt sets the "addedAt" field if the given value is not nil.
+// SetNillableAddedAt sets the "added_at" field if the given value is not nil.
 func (bc *BookCreate) SetNillableAddedAt(t *time.Time) *BookCreate {
 	if t != nil {
 		bc.SetAddedAt(*t)
@@ -48,13 +52,13 @@ func (bc *BookCreate) SetNillableAddedAt(t *time.Time) *BookCreate {
 	return bc
 }
 
-// SetPubDate sets the "pubDate" field.
+// SetPubDate sets the "pub_date" field.
 func (bc *BookCreate) SetPubDate(t time.Time) *BookCreate {
 	bc.mutation.SetPubDate(t)
 	return bc
 }
 
-// SetNillablePubDate sets the "pubDate" field if the given value is not nil.
+// SetNillablePubDate sets the "pub_date" field if the given value is not nil.
 func (bc *BookCreate) SetNillablePubDate(t *time.Time) *BookCreate {
 	if t != nil {
 		bc.SetPubDate(*t)
@@ -125,6 +129,70 @@ func (bc *BookCreate) AddAuthors(a ...*Author) *BookCreate {
 	return bc.AddAuthorIDs(ids...)
 }
 
+// AddSeriesIDs adds the "series" edge to the Series entity by IDs.
+func (bc *BookCreate) AddSeriesIDs(ids ...ksuid.ID) *BookCreate {
+	bc.mutation.AddSeriesIDs(ids...)
+	return bc
+}
+
+// AddSeries adds the "series" edges to the Series entity.
+func (bc *BookCreate) AddSeries(s ...*Series) *BookCreate {
+	ids := make([]ksuid.ID, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return bc.AddSeriesIDs(ids...)
+}
+
+// AddIdentifierIDs adds the "identifier" edge to the Identifier entity by IDs.
+func (bc *BookCreate) AddIdentifierIDs(ids ...ksuid.ID) *BookCreate {
+	bc.mutation.AddIdentifierIDs(ids...)
+	return bc
+}
+
+// AddIdentifier adds the "identifier" edges to the Identifier entity.
+func (bc *BookCreate) AddIdentifier(i ...*Identifier) *BookCreate {
+	ids := make([]ksuid.ID, len(i))
+	for j := range i {
+		ids[j] = i[j].ID
+	}
+	return bc.AddIdentifierIDs(ids...)
+}
+
+// SetLanguageID sets the "language" edge to the Language entity by ID.
+func (bc *BookCreate) SetLanguageID(id ksuid.ID) *BookCreate {
+	bc.mutation.SetLanguageID(id)
+	return bc
+}
+
+// SetNillableLanguageID sets the "language" edge to the Language entity by ID if the given value is not nil.
+func (bc *BookCreate) SetNillableLanguageID(id *ksuid.ID) *BookCreate {
+	if id != nil {
+		bc = bc.SetLanguageID(*id)
+	}
+	return bc
+}
+
+// SetLanguage sets the "language" edge to the Language entity.
+func (bc *BookCreate) SetLanguage(l *Language) *BookCreate {
+	return bc.SetLanguageID(l.ID)
+}
+
+// AddShelfIDs adds the "shelf" edge to the Shelf entity by IDs.
+func (bc *BookCreate) AddShelfIDs(ids ...ksuid.ID) *BookCreate {
+	bc.mutation.AddShelfIDs(ids...)
+	return bc
+}
+
+// AddShelf adds the "shelf" edges to the Shelf entity.
+func (bc *BookCreate) AddShelf(s ...*Shelf) *BookCreate {
+	ids := make([]ksuid.ID, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return bc.AddShelfIDs(ids...)
+}
+
 // Mutation returns the BookMutation object of the builder.
 func (bc *BookCreate) Mutation() *BookMutation {
 	return bc.mutation
@@ -184,7 +252,7 @@ func (bc *BookCreate) check() error {
 		return &ValidationError{Name: "sort", err: errors.New(`ent: missing required field "Book.sort"`)}
 	}
 	if _, ok := bc.mutation.AddedAt(); !ok {
-		return &ValidationError{Name: "addedAt", err: errors.New(`ent: missing required field "Book.addedAt"`)}
+		return &ValidationError{Name: "added_at", err: errors.New(`ent: missing required field "Book.added_at"`)}
 	}
 	if _, ok := bc.mutation.Path(); !ok {
 		return &ValidationError{Name: "path", err: errors.New(`ent: missing required field "Book.path"`)}
@@ -266,6 +334,71 @@ func (bc *BookCreate) createSpec() (*Book, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(author.FieldID, field.TypeString),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := bc.mutation.SeriesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   book.SeriesTable,
+			Columns: book.SeriesPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(series.FieldID, field.TypeString),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := bc.mutation.IdentifierIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   book.IdentifierTable,
+			Columns: []string{book.IdentifierColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(identifier.FieldID, field.TypeString),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := bc.mutation.LanguageIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   book.LanguageTable,
+			Columns: []string{book.LanguageColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(language.FieldID, field.TypeString),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.language_books = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := bc.mutation.ShelfIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   book.ShelfTable,
+			Columns: book.ShelfPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(shelf.FieldID, field.TypeString),
 			},
 		}
 		for _, k := range nodes {

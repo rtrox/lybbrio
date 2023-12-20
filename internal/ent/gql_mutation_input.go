@@ -83,14 +83,18 @@ func (c *AuthorUpdateOne) SetInput(i UpdateAuthorInput) *AuthorUpdateOne {
 
 // CreateBookInput represents a mutation input for creating books.
 type CreateBookInput struct {
-	Title       string
-	Sort        string
-	AddedAt     *time.Time
-	PubDate     *time.Time
-	Path        string
-	Isbn        *string
-	Description *string
-	AuthorIDs   []ksuid.ID
+	Title         string
+	Sort          string
+	AddedAt       *time.Time
+	PubDate       *time.Time
+	Path          string
+	Isbn          *string
+	Description   *string
+	AuthorIDs     []ksuid.ID
+	SeriesIDs     []ksuid.ID
+	IdentifierIDs []ksuid.ID
+	LanguageID    *ksuid.ID
+	ShelfIDs      []ksuid.ID
 }
 
 // Mutate applies the CreateBookInput on the BookMutation builder.
@@ -113,6 +117,18 @@ func (i *CreateBookInput) Mutate(m *BookMutation) {
 	if v := i.AuthorIDs; len(v) > 0 {
 		m.AddAuthorIDs(v...)
 	}
+	if v := i.SeriesIDs; len(v) > 0 {
+		m.AddSeriesIDs(v...)
+	}
+	if v := i.IdentifierIDs; len(v) > 0 {
+		m.AddIdentifierIDs(v...)
+	}
+	if v := i.LanguageID; v != nil {
+		m.SetLanguageID(*v)
+	}
+	if v := i.ShelfIDs; len(v) > 0 {
+		m.AddShelfIDs(v...)
+	}
 }
 
 // SetInput applies the change-set in the CreateBookInput on the BookCreate builder.
@@ -123,19 +139,30 @@ func (c *BookCreate) SetInput(i CreateBookInput) *BookCreate {
 
 // UpdateBookInput represents a mutation input for updating books.
 type UpdateBookInput struct {
-	Title            *string
-	Sort             *string
-	AddedAt          *time.Time
-	ClearPubDate     bool
-	PubDate          *time.Time
-	Path             *string
-	ClearIsbn        bool
-	Isbn             *string
-	ClearDescription bool
-	Description      *string
-	ClearAuthors     bool
-	AddAuthorIDs     []ksuid.ID
-	RemoveAuthorIDs  []ksuid.ID
+	Title               *string
+	Sort                *string
+	AddedAt             *time.Time
+	ClearPubDate        bool
+	PubDate             *time.Time
+	Path                *string
+	ClearIsbn           bool
+	Isbn                *string
+	ClearDescription    bool
+	Description         *string
+	ClearAuthors        bool
+	AddAuthorIDs        []ksuid.ID
+	RemoveAuthorIDs     []ksuid.ID
+	ClearSeries         bool
+	AddSeriesIDs        []ksuid.ID
+	RemoveSeriesIDs     []ksuid.ID
+	ClearIdentifier     bool
+	AddIdentifierIDs    []ksuid.ID
+	RemoveIdentifierIDs []ksuid.ID
+	ClearLanguage       bool
+	LanguageID          *ksuid.ID
+	ClearShelf          bool
+	AddShelfIDs         []ksuid.ID
+	RemoveShelfIDs      []ksuid.ID
 }
 
 // Mutate applies the UpdateBookInput on the BookMutation builder.
@@ -179,6 +206,39 @@ func (i *UpdateBookInput) Mutate(m *BookMutation) {
 	if v := i.RemoveAuthorIDs; len(v) > 0 {
 		m.RemoveAuthorIDs(v...)
 	}
+	if i.ClearSeries {
+		m.ClearSeries()
+	}
+	if v := i.AddSeriesIDs; len(v) > 0 {
+		m.AddSeriesIDs(v...)
+	}
+	if v := i.RemoveSeriesIDs; len(v) > 0 {
+		m.RemoveSeriesIDs(v...)
+	}
+	if i.ClearIdentifier {
+		m.ClearIdentifier()
+	}
+	if v := i.AddIdentifierIDs; len(v) > 0 {
+		m.AddIdentifierIDs(v...)
+	}
+	if v := i.RemoveIdentifierIDs; len(v) > 0 {
+		m.RemoveIdentifierIDs(v...)
+	}
+	if i.ClearLanguage {
+		m.ClearLanguage()
+	}
+	if v := i.LanguageID; v != nil {
+		m.SetLanguageID(*v)
+	}
+	if i.ClearShelf {
+		m.ClearShelf()
+	}
+	if v := i.AddShelfIDs; len(v) > 0 {
+		m.AddShelfIDs(v...)
+	}
+	if v := i.RemoveShelfIDs; len(v) > 0 {
+		m.RemoveShelfIDs(v...)
+	}
 }
 
 // SetInput applies the change-set in the UpdateBookInput on the BookUpdate builder.
@@ -189,6 +249,450 @@ func (c *BookUpdate) SetInput(i UpdateBookInput) *BookUpdate {
 
 // SetInput applies the change-set in the UpdateBookInput on the BookUpdateOne builder.
 func (c *BookUpdateOne) SetInput(i UpdateBookInput) *BookUpdateOne {
+	i.Mutate(c.Mutation())
+	return c
+}
+
+// CreateIdentifierInput represents a mutation input for creating identifiers.
+type CreateIdentifierInput struct {
+	Type   string
+	Value  string
+	BookID ksuid.ID
+}
+
+// Mutate applies the CreateIdentifierInput on the IdentifierMutation builder.
+func (i *CreateIdentifierInput) Mutate(m *IdentifierMutation) {
+	m.SetType(i.Type)
+	m.SetValue(i.Value)
+	m.SetBookID(i.BookID)
+}
+
+// SetInput applies the change-set in the CreateIdentifierInput on the IdentifierCreate builder.
+func (c *IdentifierCreate) SetInput(i CreateIdentifierInput) *IdentifierCreate {
+	i.Mutate(c.Mutation())
+	return c
+}
+
+// UpdateIdentifierInput represents a mutation input for updating identifiers.
+type UpdateIdentifierInput struct {
+	Type   *string
+	Value  *string
+	BookID *ksuid.ID
+}
+
+// Mutate applies the UpdateIdentifierInput on the IdentifierMutation builder.
+func (i *UpdateIdentifierInput) Mutate(m *IdentifierMutation) {
+	if v := i.Type; v != nil {
+		m.SetType(*v)
+	}
+	if v := i.Value; v != nil {
+		m.SetValue(*v)
+	}
+	if v := i.BookID; v != nil {
+		m.SetBookID(*v)
+	}
+}
+
+// SetInput applies the change-set in the UpdateIdentifierInput on the IdentifierUpdate builder.
+func (c *IdentifierUpdate) SetInput(i UpdateIdentifierInput) *IdentifierUpdate {
+	i.Mutate(c.Mutation())
+	return c
+}
+
+// SetInput applies the change-set in the UpdateIdentifierInput on the IdentifierUpdateOne builder.
+func (c *IdentifierUpdateOne) SetInput(i UpdateIdentifierInput) *IdentifierUpdateOne {
+	i.Mutate(c.Mutation())
+	return c
+}
+
+// CreateLanguageInput represents a mutation input for creating languages.
+type CreateLanguageInput struct {
+	Name    string
+	Code    string
+	BookIDs []ksuid.ID
+}
+
+// Mutate applies the CreateLanguageInput on the LanguageMutation builder.
+func (i *CreateLanguageInput) Mutate(m *LanguageMutation) {
+	m.SetName(i.Name)
+	m.SetCode(i.Code)
+	if v := i.BookIDs; len(v) > 0 {
+		m.AddBookIDs(v...)
+	}
+}
+
+// SetInput applies the change-set in the CreateLanguageInput on the LanguageCreate builder.
+func (c *LanguageCreate) SetInput(i CreateLanguageInput) *LanguageCreate {
+	i.Mutate(c.Mutation())
+	return c
+}
+
+// UpdateLanguageInput represents a mutation input for updating languages.
+type UpdateLanguageInput struct {
+	Name          *string
+	Code          *string
+	ClearBooks    bool
+	AddBookIDs    []ksuid.ID
+	RemoveBookIDs []ksuid.ID
+}
+
+// Mutate applies the UpdateLanguageInput on the LanguageMutation builder.
+func (i *UpdateLanguageInput) Mutate(m *LanguageMutation) {
+	if v := i.Name; v != nil {
+		m.SetName(*v)
+	}
+	if v := i.Code; v != nil {
+		m.SetCode(*v)
+	}
+	if i.ClearBooks {
+		m.ClearBooks()
+	}
+	if v := i.AddBookIDs; len(v) > 0 {
+		m.AddBookIDs(v...)
+	}
+	if v := i.RemoveBookIDs; len(v) > 0 {
+		m.RemoveBookIDs(v...)
+	}
+}
+
+// SetInput applies the change-set in the UpdateLanguageInput on the LanguageUpdate builder.
+func (c *LanguageUpdate) SetInput(i UpdateLanguageInput) *LanguageUpdate {
+	i.Mutate(c.Mutation())
+	return c
+}
+
+// SetInput applies the change-set in the UpdateLanguageInput on the LanguageUpdateOne builder.
+func (c *LanguageUpdateOne) SetInput(i UpdateLanguageInput) *LanguageUpdateOne {
+	i.Mutate(c.Mutation())
+	return c
+}
+
+// CreatePublisherInput represents a mutation input for creating publishers.
+type CreatePublisherInput struct {
+	Name    string
+	BookIDs []ksuid.ID
+}
+
+// Mutate applies the CreatePublisherInput on the PublisherMutation builder.
+func (i *CreatePublisherInput) Mutate(m *PublisherMutation) {
+	m.SetName(i.Name)
+	if v := i.BookIDs; len(v) > 0 {
+		m.AddBookIDs(v...)
+	}
+}
+
+// SetInput applies the change-set in the CreatePublisherInput on the PublisherCreate builder.
+func (c *PublisherCreate) SetInput(i CreatePublisherInput) *PublisherCreate {
+	i.Mutate(c.Mutation())
+	return c
+}
+
+// UpdatePublisherInput represents a mutation input for updating publishers.
+type UpdatePublisherInput struct {
+	Name          *string
+	ClearBooks    bool
+	AddBookIDs    []ksuid.ID
+	RemoveBookIDs []ksuid.ID
+}
+
+// Mutate applies the UpdatePublisherInput on the PublisherMutation builder.
+func (i *UpdatePublisherInput) Mutate(m *PublisherMutation) {
+	if v := i.Name; v != nil {
+		m.SetName(*v)
+	}
+	if i.ClearBooks {
+		m.ClearBooks()
+	}
+	if v := i.AddBookIDs; len(v) > 0 {
+		m.AddBookIDs(v...)
+	}
+	if v := i.RemoveBookIDs; len(v) > 0 {
+		m.RemoveBookIDs(v...)
+	}
+}
+
+// SetInput applies the change-set in the UpdatePublisherInput on the PublisherUpdate builder.
+func (c *PublisherUpdate) SetInput(i UpdatePublisherInput) *PublisherUpdate {
+	i.Mutate(c.Mutation())
+	return c
+}
+
+// SetInput applies the change-set in the UpdatePublisherInput on the PublisherUpdateOne builder.
+func (c *PublisherUpdateOne) SetInput(i UpdatePublisherInput) *PublisherUpdateOne {
+	i.Mutate(c.Mutation())
+	return c
+}
+
+// CreateSeriesInput represents a mutation input for creating seriesslice.
+type CreateSeriesInput struct {
+	Name    string
+	Sort    string
+	BookIDs []ksuid.ID
+}
+
+// Mutate applies the CreateSeriesInput on the SeriesMutation builder.
+func (i *CreateSeriesInput) Mutate(m *SeriesMutation) {
+	m.SetName(i.Name)
+	m.SetSort(i.Sort)
+	if v := i.BookIDs; len(v) > 0 {
+		m.AddBookIDs(v...)
+	}
+}
+
+// SetInput applies the change-set in the CreateSeriesInput on the SeriesCreate builder.
+func (c *SeriesCreate) SetInput(i CreateSeriesInput) *SeriesCreate {
+	i.Mutate(c.Mutation())
+	return c
+}
+
+// UpdateSeriesInput represents a mutation input for updating seriesslice.
+type UpdateSeriesInput struct {
+	Name          *string
+	Sort          *string
+	ClearBooks    bool
+	AddBookIDs    []ksuid.ID
+	RemoveBookIDs []ksuid.ID
+}
+
+// Mutate applies the UpdateSeriesInput on the SeriesMutation builder.
+func (i *UpdateSeriesInput) Mutate(m *SeriesMutation) {
+	if v := i.Name; v != nil {
+		m.SetName(*v)
+	}
+	if v := i.Sort; v != nil {
+		m.SetSort(*v)
+	}
+	if i.ClearBooks {
+		m.ClearBooks()
+	}
+	if v := i.AddBookIDs; len(v) > 0 {
+		m.AddBookIDs(v...)
+	}
+	if v := i.RemoveBookIDs; len(v) > 0 {
+		m.RemoveBookIDs(v...)
+	}
+}
+
+// SetInput applies the change-set in the UpdateSeriesInput on the SeriesUpdate builder.
+func (c *SeriesUpdate) SetInput(i UpdateSeriesInput) *SeriesUpdate {
+	i.Mutate(c.Mutation())
+	return c
+}
+
+// SetInput applies the change-set in the UpdateSeriesInput on the SeriesUpdateOne builder.
+func (c *SeriesUpdateOne) SetInput(i UpdateSeriesInput) *SeriesUpdateOne {
+	i.Mutate(c.Mutation())
+	return c
+}
+
+// CreateShelfInput represents a mutation input for creating shelves.
+type CreateShelfInput struct {
+	Name        string
+	Description *string
+	Public      *bool
+	BookIDs     []ksuid.ID
+	OwnerID     *ksuid.ID
+}
+
+// Mutate applies the CreateShelfInput on the ShelfMutation builder.
+func (i *CreateShelfInput) Mutate(m *ShelfMutation) {
+	m.SetName(i.Name)
+	if v := i.Description; v != nil {
+		m.SetDescription(*v)
+	}
+	if v := i.Public; v != nil {
+		m.SetPublic(*v)
+	}
+	if v := i.BookIDs; len(v) > 0 {
+		m.AddBookIDs(v...)
+	}
+	if v := i.OwnerID; v != nil {
+		m.SetOwnerID(*v)
+	}
+}
+
+// SetInput applies the change-set in the CreateShelfInput on the ShelfCreate builder.
+func (c *ShelfCreate) SetInput(i CreateShelfInput) *ShelfCreate {
+	i.Mutate(c.Mutation())
+	return c
+}
+
+// UpdateShelfInput represents a mutation input for updating shelves.
+type UpdateShelfInput struct {
+	Name             *string
+	ClearDescription bool
+	Description      *string
+	Public           *bool
+	ClearBooks       bool
+	AddBookIDs       []ksuid.ID
+	RemoveBookIDs    []ksuid.ID
+	ClearOwner       bool
+	OwnerID          *ksuid.ID
+}
+
+// Mutate applies the UpdateShelfInput on the ShelfMutation builder.
+func (i *UpdateShelfInput) Mutate(m *ShelfMutation) {
+	if v := i.Name; v != nil {
+		m.SetName(*v)
+	}
+	if i.ClearDescription {
+		m.ClearDescription()
+	}
+	if v := i.Description; v != nil {
+		m.SetDescription(*v)
+	}
+	if v := i.Public; v != nil {
+		m.SetPublic(*v)
+	}
+	if i.ClearBooks {
+		m.ClearBooks()
+	}
+	if v := i.AddBookIDs; len(v) > 0 {
+		m.AddBookIDs(v...)
+	}
+	if v := i.RemoveBookIDs; len(v) > 0 {
+		m.RemoveBookIDs(v...)
+	}
+	if i.ClearOwner {
+		m.ClearOwner()
+	}
+	if v := i.OwnerID; v != nil {
+		m.SetOwnerID(*v)
+	}
+}
+
+// SetInput applies the change-set in the UpdateShelfInput on the ShelfUpdate builder.
+func (c *ShelfUpdate) SetInput(i UpdateShelfInput) *ShelfUpdate {
+	i.Mutate(c.Mutation())
+	return c
+}
+
+// SetInput applies the change-set in the UpdateShelfInput on the ShelfUpdateOne builder.
+func (c *ShelfUpdateOne) SetInput(i UpdateShelfInput) *ShelfUpdateOne {
+	i.Mutate(c.Mutation())
+	return c
+}
+
+// CreateTagInput represents a mutation input for creating tags.
+type CreateTagInput struct {
+	Name    string
+	BookIDs []ksuid.ID
+}
+
+// Mutate applies the CreateTagInput on the TagMutation builder.
+func (i *CreateTagInput) Mutate(m *TagMutation) {
+	m.SetName(i.Name)
+	if v := i.BookIDs; len(v) > 0 {
+		m.AddBookIDs(v...)
+	}
+}
+
+// SetInput applies the change-set in the CreateTagInput on the TagCreate builder.
+func (c *TagCreate) SetInput(i CreateTagInput) *TagCreate {
+	i.Mutate(c.Mutation())
+	return c
+}
+
+// UpdateTagInput represents a mutation input for updating tags.
+type UpdateTagInput struct {
+	Name          *string
+	ClearBooks    bool
+	AddBookIDs    []ksuid.ID
+	RemoveBookIDs []ksuid.ID
+}
+
+// Mutate applies the UpdateTagInput on the TagMutation builder.
+func (i *UpdateTagInput) Mutate(m *TagMutation) {
+	if v := i.Name; v != nil {
+		m.SetName(*v)
+	}
+	if i.ClearBooks {
+		m.ClearBooks()
+	}
+	if v := i.AddBookIDs; len(v) > 0 {
+		m.AddBookIDs(v...)
+	}
+	if v := i.RemoveBookIDs; len(v) > 0 {
+		m.RemoveBookIDs(v...)
+	}
+}
+
+// SetInput applies the change-set in the UpdateTagInput on the TagUpdate builder.
+func (c *TagUpdate) SetInput(i UpdateTagInput) *TagUpdate {
+	i.Mutate(c.Mutation())
+	return c
+}
+
+// SetInput applies the change-set in the UpdateTagInput on the TagUpdateOne builder.
+func (c *TagUpdateOne) SetInput(i UpdateTagInput) *TagUpdateOne {
+	i.Mutate(c.Mutation())
+	return c
+}
+
+// UpdateUserInput represents a mutation input for updating users.
+type UpdateUserInput struct {
+	Username       *string
+	PasswordHash   *string
+	Email          *string
+	ClearShelves   bool
+	AddShelfIDs    []ksuid.ID
+	RemoveShelfIDs []ksuid.ID
+}
+
+// Mutate applies the UpdateUserInput on the UserMutation builder.
+func (i *UpdateUserInput) Mutate(m *UserMutation) {
+	if v := i.Username; v != nil {
+		m.SetUsername(*v)
+	}
+	if v := i.PasswordHash; v != nil {
+		m.SetPasswordHash(*v)
+	}
+	if v := i.Email; v != nil {
+		m.SetEmail(*v)
+	}
+	if i.ClearShelves {
+		m.ClearShelves()
+	}
+	if v := i.AddShelfIDs; len(v) > 0 {
+		m.AddShelfIDs(v...)
+	}
+	if v := i.RemoveShelfIDs; len(v) > 0 {
+		m.RemoveShelfIDs(v...)
+	}
+}
+
+// SetInput applies the change-set in the UpdateUserInput on the UserUpdate builder.
+func (c *UserUpdate) SetInput(i UpdateUserInput) *UserUpdate {
+	i.Mutate(c.Mutation())
+	return c
+}
+
+// SetInput applies the change-set in the UpdateUserInput on the UserUpdateOne builder.
+func (c *UserUpdateOne) SetInput(i UpdateUserInput) *UserUpdateOne {
+	i.Mutate(c.Mutation())
+	return c
+}
+
+// CreateUserInput represents a mutation input for creating users.
+type CreateUserInput struct {
+	Username     string
+	PasswordHash string
+	Email        string
+	ShelfIDs     []ksuid.ID
+}
+
+// Mutate applies the CreateUserInput on the UserMutation builder.
+func (i *CreateUserInput) Mutate(m *UserMutation) {
+	m.SetUsername(i.Username)
+	m.SetPasswordHash(i.PasswordHash)
+	m.SetEmail(i.Email)
+	if v := i.ShelfIDs; len(v) > 0 {
+		m.AddShelfIDs(v...)
+	}
+}
+
+// SetInput applies the change-set in the CreateUserInput on the UserCreate builder.
+func (c *UserCreate) SetInput(i CreateUserInput) *UserCreate {
 	i.Mutate(c.Mutation())
 	return c
 }

@@ -66,12 +66,12 @@ func Sort(v string) predicate.Book {
 	return predicate.Book(sql.FieldEQ(FieldSort, v))
 }
 
-// AddedAt applies equality check predicate on the "addedAt" field. It's identical to AddedAtEQ.
+// AddedAt applies equality check predicate on the "added_at" field. It's identical to AddedAtEQ.
 func AddedAt(v time.Time) predicate.Book {
 	return predicate.Book(sql.FieldEQ(FieldAddedAt, v))
 }
 
-// PubDate applies equality check predicate on the "pubDate" field. It's identical to PubDateEQ.
+// PubDate applies equality check predicate on the "pub_date" field. It's identical to PubDateEQ.
 func PubDate(v time.Time) predicate.Book {
 	return predicate.Book(sql.FieldEQ(FieldPubDate, v))
 }
@@ -221,92 +221,92 @@ func SortContainsFold(v string) predicate.Book {
 	return predicate.Book(sql.FieldContainsFold(FieldSort, v))
 }
 
-// AddedAtEQ applies the EQ predicate on the "addedAt" field.
+// AddedAtEQ applies the EQ predicate on the "added_at" field.
 func AddedAtEQ(v time.Time) predicate.Book {
 	return predicate.Book(sql.FieldEQ(FieldAddedAt, v))
 }
 
-// AddedAtNEQ applies the NEQ predicate on the "addedAt" field.
+// AddedAtNEQ applies the NEQ predicate on the "added_at" field.
 func AddedAtNEQ(v time.Time) predicate.Book {
 	return predicate.Book(sql.FieldNEQ(FieldAddedAt, v))
 }
 
-// AddedAtIn applies the In predicate on the "addedAt" field.
+// AddedAtIn applies the In predicate on the "added_at" field.
 func AddedAtIn(vs ...time.Time) predicate.Book {
 	return predicate.Book(sql.FieldIn(FieldAddedAt, vs...))
 }
 
-// AddedAtNotIn applies the NotIn predicate on the "addedAt" field.
+// AddedAtNotIn applies the NotIn predicate on the "added_at" field.
 func AddedAtNotIn(vs ...time.Time) predicate.Book {
 	return predicate.Book(sql.FieldNotIn(FieldAddedAt, vs...))
 }
 
-// AddedAtGT applies the GT predicate on the "addedAt" field.
+// AddedAtGT applies the GT predicate on the "added_at" field.
 func AddedAtGT(v time.Time) predicate.Book {
 	return predicate.Book(sql.FieldGT(FieldAddedAt, v))
 }
 
-// AddedAtGTE applies the GTE predicate on the "addedAt" field.
+// AddedAtGTE applies the GTE predicate on the "added_at" field.
 func AddedAtGTE(v time.Time) predicate.Book {
 	return predicate.Book(sql.FieldGTE(FieldAddedAt, v))
 }
 
-// AddedAtLT applies the LT predicate on the "addedAt" field.
+// AddedAtLT applies the LT predicate on the "added_at" field.
 func AddedAtLT(v time.Time) predicate.Book {
 	return predicate.Book(sql.FieldLT(FieldAddedAt, v))
 }
 
-// AddedAtLTE applies the LTE predicate on the "addedAt" field.
+// AddedAtLTE applies the LTE predicate on the "added_at" field.
 func AddedAtLTE(v time.Time) predicate.Book {
 	return predicate.Book(sql.FieldLTE(FieldAddedAt, v))
 }
 
-// PubDateEQ applies the EQ predicate on the "pubDate" field.
+// PubDateEQ applies the EQ predicate on the "pub_date" field.
 func PubDateEQ(v time.Time) predicate.Book {
 	return predicate.Book(sql.FieldEQ(FieldPubDate, v))
 }
 
-// PubDateNEQ applies the NEQ predicate on the "pubDate" field.
+// PubDateNEQ applies the NEQ predicate on the "pub_date" field.
 func PubDateNEQ(v time.Time) predicate.Book {
 	return predicate.Book(sql.FieldNEQ(FieldPubDate, v))
 }
 
-// PubDateIn applies the In predicate on the "pubDate" field.
+// PubDateIn applies the In predicate on the "pub_date" field.
 func PubDateIn(vs ...time.Time) predicate.Book {
 	return predicate.Book(sql.FieldIn(FieldPubDate, vs...))
 }
 
-// PubDateNotIn applies the NotIn predicate on the "pubDate" field.
+// PubDateNotIn applies the NotIn predicate on the "pub_date" field.
 func PubDateNotIn(vs ...time.Time) predicate.Book {
 	return predicate.Book(sql.FieldNotIn(FieldPubDate, vs...))
 }
 
-// PubDateGT applies the GT predicate on the "pubDate" field.
+// PubDateGT applies the GT predicate on the "pub_date" field.
 func PubDateGT(v time.Time) predicate.Book {
 	return predicate.Book(sql.FieldGT(FieldPubDate, v))
 }
 
-// PubDateGTE applies the GTE predicate on the "pubDate" field.
+// PubDateGTE applies the GTE predicate on the "pub_date" field.
 func PubDateGTE(v time.Time) predicate.Book {
 	return predicate.Book(sql.FieldGTE(FieldPubDate, v))
 }
 
-// PubDateLT applies the LT predicate on the "pubDate" field.
+// PubDateLT applies the LT predicate on the "pub_date" field.
 func PubDateLT(v time.Time) predicate.Book {
 	return predicate.Book(sql.FieldLT(FieldPubDate, v))
 }
 
-// PubDateLTE applies the LTE predicate on the "pubDate" field.
+// PubDateLTE applies the LTE predicate on the "pub_date" field.
 func PubDateLTE(v time.Time) predicate.Book {
 	return predicate.Book(sql.FieldLTE(FieldPubDate, v))
 }
 
-// PubDateIsNil applies the IsNil predicate on the "pubDate" field.
+// PubDateIsNil applies the IsNil predicate on the "pub_date" field.
 func PubDateIsNil() predicate.Book {
 	return predicate.Book(sql.FieldIsNull(FieldPubDate))
 }
 
-// PubDateNotNil applies the NotNil predicate on the "pubDate" field.
+// PubDateNotNil applies the NotNil predicate on the "pub_date" field.
 func PubDateNotNil() predicate.Book {
 	return predicate.Book(sql.FieldNotNull(FieldPubDate))
 }
@@ -541,6 +541,98 @@ func HasAuthors() predicate.Book {
 func HasAuthorsWith(preds ...predicate.Author) predicate.Book {
 	return predicate.Book(func(s *sql.Selector) {
 		step := newAuthorsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasSeries applies the HasEdge predicate on the "series" edge.
+func HasSeries() predicate.Book {
+	return predicate.Book(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, SeriesTable, SeriesPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasSeriesWith applies the HasEdge predicate on the "series" edge with a given conditions (other predicates).
+func HasSeriesWith(preds ...predicate.Series) predicate.Book {
+	return predicate.Book(func(s *sql.Selector) {
+		step := newSeriesStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasIdentifier applies the HasEdge predicate on the "identifier" edge.
+func HasIdentifier() predicate.Book {
+	return predicate.Book(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, IdentifierTable, IdentifierColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasIdentifierWith applies the HasEdge predicate on the "identifier" edge with a given conditions (other predicates).
+func HasIdentifierWith(preds ...predicate.Identifier) predicate.Book {
+	return predicate.Book(func(s *sql.Selector) {
+		step := newIdentifierStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasLanguage applies the HasEdge predicate on the "language" edge.
+func HasLanguage() predicate.Book {
+	return predicate.Book(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, LanguageTable, LanguageColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasLanguageWith applies the HasEdge predicate on the "language" edge with a given conditions (other predicates).
+func HasLanguageWith(preds ...predicate.Language) predicate.Book {
+	return predicate.Book(func(s *sql.Selector) {
+		step := newLanguageStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasShelf applies the HasEdge predicate on the "shelf" edge.
+func HasShelf() predicate.Book {
+	return predicate.Book(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, ShelfTable, ShelfPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasShelfWith applies the HasEdge predicate on the "shelf" edge with a given conditions (other predicates).
+func HasShelfWith(preds ...predicate.Shelf) predicate.Book {
+	return predicate.Book(func(s *sql.Selector) {
+		step := newShelfStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

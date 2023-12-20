@@ -15,6 +15,7 @@ import (
 )
 
 func RegisterFlags(flagSet *flag.FlagSet) {
+	flagSet.String("config", "config.yaml", "Path to config file")
 	flagSet.String("log-level", "info", "Log level")
 	flagSet.String("log-format", "text", "Log format (text, json)")
 	flagSet.Duration("graceful-shutdown-timeout", 1*time.Second, "Graceful shutdown timeout prior to killing the process")
@@ -24,6 +25,22 @@ func RegisterFlags(flagSet *flag.FlagSet) {
 	flagSet.Int("port", 8080, "Port to Listen On")
 	flagSet.String("interface", "127.0.0.1", "Interface")
 	flagSet.String("calibre-db-path", "/database/metadata.db", "Path to Calibre database")
+	flagSet.String("db.driver", "sqlite3", "Database driver")
+	flagSet.String("db.dsn", "file:database/app.db?cache=shared&_fk=1", "Database DSN")
+	flagSet.Int("db.max-idle-conns", 10, "Database max idle connections")
+	flagSet.Int("db.max-open-conns", 100, "Database max open connections")
+	flagSet.Duration("db.conn-max-lifetime", 1*time.Hour, "Database connection max lifetime")
+}
+
+type DatabaseConfig struct {
+	Driver          string        `koanf:"driver" validate:"required|in:sqlite3,mysql,postgres"`
+	Username        string        `koanf:"username"`
+	Password        string        `koanf:"password"`
+	DatabaseName    string        `koanf:"database-name"`
+	DSN             string        `koanf:"dsn" validate:"required"`
+	MaxIdleConns    int           `koanf:"max-idle-conns"`
+	MaxOpenConns    int           `koanf:"max-open-conns"`
+	ConnMaxLifetime time.Duration `koanf:"conn-max-lifetime"`
 }
 
 type Config struct {
@@ -42,6 +59,8 @@ type Config struct {
 
 	CalibreDBPath string `koanf:"calibre-db-path" validate:"required"`
 
+	DB DatabaseConfig `koanf:"db"`
+
 	k *koanf.Koanf
 }
 
@@ -56,6 +75,10 @@ func (c *Config) Validate() error {
 	v := validate.Struct(c)
 	if !v.Validate() {
 		return v.Errors
+	}
+	vd := validate.Struct(c.DB)
+	if !vd.Validate() {
+		return vd.Errors
 	}
 	return nil
 }
@@ -86,13 +109,20 @@ func LoadConfig(flagSet *flag.FlagSet) (*Config, error) {
 		"go-collector":              true,
 		"process-collector":         true,
 		"calibre-db-path":           "database/metadata.db",
+		"db": map[string]interface{}{
+			"driver":            "sqlite3",
+			"dsn":               "file:database/app.db?cache=shared&_fk=1",
+			"max-idle-conns":    10,
+			"max-open-conns":    100,
+			"conn-max-lifetime": "1h",
+		},
 	}, "."), nil); err != nil {
 		return nil, err
 	}
 
 	// Environment
 	if err := k.Load(env.Provider("", ".", func(s string) string {
-		return strings.ReplaceAll(strings.ToLower(s), "_", "-")
+		return strings.ReplaceAll(strings.ReplaceAll(strings.ToLower(s), "__", "."), "_", "-")
 	}), nil); err != nil {
 		return nil, err
 	}
@@ -122,4 +152,22 @@ func (c Config) Translates() map[string]string {
 		"Interface":               "interface",
 		"CalibreDBPath":           "calibre-db-path",
 	}
+}
+
+func (c DatabaseConfig) Translates() map[string]string {
+	return validate.MS{
+		"Driver":          "driver",
+		"DSN":             "dsn",
+		"MaxIdleConns":    "max-idle-conns",
+		"MaxOpenConns":    "max-open-conns",
+		"ConnMaxLifetime": "conn-max-lifetime",
+	}
+}
+
+func (c *DatabaseConfig) Validate() error {
+	v := validate.Struct(c)
+	if !v.Validate() {
+		return v.Errors
+	}
+	return nil
 }

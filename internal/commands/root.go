@@ -5,13 +5,11 @@ import (
 	"fmt"
 
 	"net/http"
-	"net/url"
 	"os"
 	"os/signal"
 	"syscall"
 
 	"entgo.io/contrib/entgql"
-	"entgo.io/ent/dialect"
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/go-chi/chi"
@@ -23,9 +21,8 @@ import (
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 
-	"lybbrio/docs"
 	"lybbrio/internal/config"
-	"lybbrio/internal/ent"
+	"lybbrio/internal/db"
 	"lybbrio/internal/graph"
 	"lybbrio/internal/handlers"
 	"lybbrio/internal/metrics"
@@ -56,20 +53,9 @@ func Execute(a AppInfo) error {
 }
 
 func init() {
-	cobra.OnInitialize(initConfig, initLogger, initDocs)
+	cobra.OnInitialize(initConfig, initLogger)
 
 	config.RegisterFlags(rootCmd.PersistentFlags())
-}
-
-func initDocs() {
-	docs.SwaggerInfo.Title = rootCmd.Short
-	docs.SwaggerInfo.Description = rootCmd.Long
-	docs.SwaggerInfo.Version = "0.1.0" // API Version, differs from app version
-	u, _ := url.Parse(conf.BaseURL)
-	p, _ := url.JoinPath(u.Host, u.Path)
-	docs.SwaggerInfo.Host = p
-	docs.SwaggerInfo.BasePath = "/api/v2"
-	docs.SwaggerInfo.Schemes = []string{"http", "https"}
 }
 
 func initConfig() {
@@ -135,6 +121,7 @@ func rootRun(cmd *cobra.Command, args []string) {
 		Str("build_time", appInfo.BuildTime).
 		Str("revision", appInfo.Revision).
 		Msg("App Started.")
+	log.Debug().Interface("config", conf).Msg("Loaded config")
 
 	appFunc := metrics.AppInfoGaugeFunc(metrics.AppInfoOpts{
 		Name:      appInfo.Name,
@@ -162,22 +149,20 @@ func rootRun(cmd *cobra.Command, args []string) {
 	// }
 
 	// Database
-	// TODO: Abstract out the DB Client.
-	client, err := ent.Open(dialect.SQLite, "file:ent?mode=memory&cache=shared&_fk=1")
+	client, err := db.Open(&conf.DB)
 	if err != nil {
 		log.Fatal().Err(err).Msg("opening ent client")
 	}
+	// TODO: Better Migrations
 	if err := client.Schema.Create(
 		context.Background(),
 	); err != nil {
 		log.Fatal().Err(err).Msg("migrating ent client")
 	}
-	graphqlHandler := handler.NewDefaultServer(graph.NewSchema(client.Debug()))
+	graphqlHandler := handler.NewDefaultServer(graph.NewSchema(client))
 	graphqlHandler.Use(
-		entgql.Transactioner{TxOpener: client.Debug()},
+		entgql.Transactioner{TxOpener: client},
 	)
-
-	// Stores
 
 	// Auth Provider
 
@@ -194,24 +179,13 @@ func rootRun(cmd *cobra.Command, args []string) {
 	r.Get("/healthz", handlers.Health)
 	r.Handle("/metrics", promhttp.HandlerFor(reg, promhttp.HandlerOpts{}))
 
-	// r.Route("/api/v2", func(r chi.Router) {
-	// 	// r.Mount("/auth", handlers.AuthRoutes(store, authProvider))
-	// 	r.Route("/", func(r chi.Router) {
-	// 		// r.Use(middleware.Auth(authProvider))
-	// 		r.Mount("/books", handlers.BookRoutes(cal))
-	// 		r.Mount("/authors", handlers.AuthorRoutes(cal))
-	// 		r.Mount("/series", handlers.SeriesRoutes(cal))
-	// 		r.Mount("/tags", handlers.TagRoutes(cal))
-	// 		r.Mount("/publishers", handlers.PublisherRoutes(cal))
-	// 		r.Mount("/languages", handlers.LanguageRoutes(cal))
-	// 	})
-	// 	r.NotFound(handlers.NotFoundHandler)
-	// })
-	// r.Mount("/swagger", httpSwagger.WrapHandler)
-
-	// TODO: Add back Auth
-	r.Handle("/graphql", graphqlHandler)
-	r.Handle("/graphiql", playground.Handler("Lybbrio GraphQL playground", "/graphql"))
+	// TODO: Auth
+	// r.Mount("/auth", handlers.AuthRoutes(store, authProvider))
+	r.Route("/graphql", func(r chi.Router) {
+		// r.Use(auth.Middleware())
+		r.Handle("/", graphqlHandler)
+		r.Handle("/playground", playground.Handler("Lybbrio GraphQL playground", "/graphql"))
+	})
 
 	srv.Addr = fmt.Sprintf("%s:%d", conf.Interface, conf.Port)
 	srv.Handler = r

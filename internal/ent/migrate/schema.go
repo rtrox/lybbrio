@@ -11,9 +11,9 @@ var (
 	// AuthorsColumns holds the columns for the "authors" table.
 	AuthorsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeString},
-		{Name: "name", Type: field.TypeString, Size: 2147483647},
-		{Name: "sort", Type: field.TypeString, Size: 2147483647},
-		{Name: "link", Type: field.TypeString, Nullable: true, Size: 2147483647},
+		{Name: "name", Type: field.TypeString},
+		{Name: "sort", Type: field.TypeString},
+		{Name: "link", Type: field.TypeString, Nullable: true},
 	}
 	// AuthorsTable holds the schema information for the "authors" table.
 	AuthorsTable = &schema.Table{
@@ -31,12 +31,171 @@ var (
 		{Name: "path", Type: field.TypeString, Size: 2147483647},
 		{Name: "isbn", Type: field.TypeString, Nullable: true, Size: 2147483647},
 		{Name: "description", Type: field.TypeString, Nullable: true, Size: 2147483647},
+		{Name: "language_books", Type: field.TypeString, Nullable: true},
+		{Name: "publisher_books", Type: field.TypeString, Nullable: true},
+		{Name: "tag_books", Type: field.TypeString, Nullable: true},
 	}
 	// BooksTable holds the schema information for the "books" table.
 	BooksTable = &schema.Table{
 		Name:       "books",
 		Columns:    BooksColumns,
 		PrimaryKey: []*schema.Column{BooksColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "books_languages_books",
+				Columns:    []*schema.Column{BooksColumns[8]},
+				RefColumns: []*schema.Column{LanguagesColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "books_publishers_books",
+				Columns:    []*schema.Column{BooksColumns[9]},
+				RefColumns: []*schema.Column{PublishersColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "books_tags_books",
+				Columns:    []*schema.Column{BooksColumns[10]},
+				RefColumns: []*schema.Column{TagsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+	}
+	// IdentifiersColumns holds the columns for the "identifiers" table.
+	IdentifiersColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeString},
+		{Name: "type", Type: field.TypeString},
+		{Name: "value", Type: field.TypeString},
+		{Name: "identifier_book", Type: field.TypeString},
+	}
+	// IdentifiersTable holds the schema information for the "identifiers" table.
+	IdentifiersTable = &schema.Table{
+		Name:       "identifiers",
+		Columns:    IdentifiersColumns,
+		PrimaryKey: []*schema.Column{IdentifiersColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "identifiers_books_book",
+				Columns:    []*schema.Column{IdentifiersColumns[3]},
+				RefColumns: []*schema.Column{BooksColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+	}
+	// LanguagesColumns holds the columns for the "languages" table.
+	LanguagesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeString},
+		{Name: "name", Type: field.TypeString},
+		{Name: "code", Type: field.TypeString},
+	}
+	// LanguagesTable holds the schema information for the "languages" table.
+	LanguagesTable = &schema.Table{
+		Name:       "languages",
+		Columns:    LanguagesColumns,
+		PrimaryKey: []*schema.Column{LanguagesColumns[0]},
+	}
+	// PublishersColumns holds the columns for the "publishers" table.
+	PublishersColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeString},
+		{Name: "name", Type: field.TypeString},
+	}
+	// PublishersTable holds the schema information for the "publishers" table.
+	PublishersTable = &schema.Table{
+		Name:       "publishers",
+		Columns:    PublishersColumns,
+		PrimaryKey: []*schema.Column{PublishersColumns[0]},
+	}
+	// SeriesColumns holds the columns for the "series" table.
+	SeriesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeString},
+		{Name: "name", Type: field.TypeString},
+		{Name: "sort", Type: field.TypeString},
+	}
+	// SeriesTable holds the schema information for the "series" table.
+	SeriesTable = &schema.Table{
+		Name:       "series",
+		Columns:    SeriesColumns,
+		PrimaryKey: []*schema.Column{SeriesColumns[0]},
+	}
+	// SeriesBooksColumns holds the columns for the "series_books" table.
+	SeriesBooksColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeString},
+		{Name: "series_index", Type: field.TypeFloat64, Nullable: true},
+		{Name: "series_id", Type: field.TypeString},
+		{Name: "book_id", Type: field.TypeString},
+	}
+	// SeriesBooksTable holds the schema information for the "series_books" table.
+	SeriesBooksTable = &schema.Table{
+		Name:       "series_books",
+		Columns:    SeriesBooksColumns,
+		PrimaryKey: []*schema.Column{SeriesBooksColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "series_books_series_series",
+				Columns:    []*schema.Column{SeriesBooksColumns[2]},
+				RefColumns: []*schema.Column{SeriesColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "series_books_books_book",
+				Columns:    []*schema.Column{SeriesBooksColumns[3]},
+				RefColumns: []*schema.Column{BooksColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "seriesbook_series_id_book_id",
+				Unique:  true,
+				Columns: []*schema.Column{SeriesBooksColumns[2], SeriesBooksColumns[3]},
+			},
+		},
+	}
+	// ShelvesColumns holds the columns for the "shelves" table.
+	ShelvesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeString},
+		{Name: "name", Type: field.TypeString},
+		{Name: "description", Type: field.TypeString, Nullable: true},
+		{Name: "public", Type: field.TypeBool, Default: false},
+		{Name: "user_shelves", Type: field.TypeString, Nullable: true},
+	}
+	// ShelvesTable holds the schema information for the "shelves" table.
+	ShelvesTable = &schema.Table{
+		Name:       "shelves",
+		Columns:    ShelvesColumns,
+		PrimaryKey: []*schema.Column{ShelvesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "shelves_users_shelves",
+				Columns:    []*schema.Column{ShelvesColumns[4]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+	}
+	// TagsColumns holds the columns for the "tags" table.
+	TagsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeString},
+		{Name: "name", Type: field.TypeString},
+	}
+	// TagsTable holds the schema information for the "tags" table.
+	TagsTable = &schema.Table{
+		Name:       "tags",
+		Columns:    TagsColumns,
+		PrimaryKey: []*schema.Column{TagsColumns[0]},
+	}
+	// UsersColumns holds the columns for the "users" table.
+	UsersColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeString},
+		{Name: "username", Type: field.TypeString, Unique: true},
+		{Name: "password_hash", Type: field.TypeString},
+		{Name: "email", Type: field.TypeString, Unique: true},
+	}
+	// UsersTable holds the schema information for the "users" table.
+	UsersTable = &schema.Table{
+		Name:       "users",
+		Columns:    UsersColumns,
+		PrimaryKey: []*schema.Column{UsersColumns[0]},
 	}
 	// AuthorBooksColumns holds the columns for the "author_books" table.
 	AuthorBooksColumns = []*schema.Column{
@@ -63,15 +222,58 @@ var (
 			},
 		},
 	}
+	// ShelfBooksColumns holds the columns for the "shelf_books" table.
+	ShelfBooksColumns = []*schema.Column{
+		{Name: "shelf_id", Type: field.TypeString},
+		{Name: "book_id", Type: field.TypeString},
+	}
+	// ShelfBooksTable holds the schema information for the "shelf_books" table.
+	ShelfBooksTable = &schema.Table{
+		Name:       "shelf_books",
+		Columns:    ShelfBooksColumns,
+		PrimaryKey: []*schema.Column{ShelfBooksColumns[0], ShelfBooksColumns[1]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "shelf_books_shelf_id",
+				Columns:    []*schema.Column{ShelfBooksColumns[0]},
+				RefColumns: []*schema.Column{ShelvesColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "shelf_books_book_id",
+				Columns:    []*schema.Column{ShelfBooksColumns[1]},
+				RefColumns: []*schema.Column{BooksColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		AuthorsTable,
 		BooksTable,
+		IdentifiersTable,
+		LanguagesTable,
+		PublishersTable,
+		SeriesTable,
+		SeriesBooksTable,
+		ShelvesTable,
+		TagsTable,
+		UsersTable,
 		AuthorBooksTable,
+		ShelfBooksTable,
 	}
 )
 
 func init() {
+	BooksTable.ForeignKeys[0].RefTable = LanguagesTable
+	BooksTable.ForeignKeys[1].RefTable = PublishersTable
+	BooksTable.ForeignKeys[2].RefTable = TagsTable
+	IdentifiersTable.ForeignKeys[0].RefTable = BooksTable
+	SeriesBooksTable.ForeignKeys[0].RefTable = SeriesTable
+	SeriesBooksTable.ForeignKeys[1].RefTable = BooksTable
+	ShelvesTable.ForeignKeys[0].RefTable = UsersTable
 	AuthorBooksTable.ForeignKeys[0].RefTable = AuthorsTable
 	AuthorBooksTable.ForeignKeys[1].RefTable = BooksTable
+	ShelfBooksTable.ForeignKeys[0].RefTable = ShelvesTable
+	ShelfBooksTable.ForeignKeys[1].RefTable = BooksTable
 }

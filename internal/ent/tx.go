@@ -16,6 +16,22 @@ type Tx struct {
 	Author *AuthorClient
 	// Book is the client for interacting with the Book builders.
 	Book *BookClient
+	// Identifier is the client for interacting with the Identifier builders.
+	Identifier *IdentifierClient
+	// Language is the client for interacting with the Language builders.
+	Language *LanguageClient
+	// Publisher is the client for interacting with the Publisher builders.
+	Publisher *PublisherClient
+	// Series is the client for interacting with the Series builders.
+	Series *SeriesClient
+	// SeriesBook is the client for interacting with the SeriesBook builders.
+	SeriesBook *SeriesBookClient
+	// Shelf is the client for interacting with the Shelf builders.
+	Shelf *ShelfClient
+	// Tag is the client for interacting with the Tag builders.
+	Tag *TagClient
+	// User is the client for interacting with the User builders.
+	User *UserClient
 
 	// lazily loaded.
 	client     *Client
@@ -149,6 +165,14 @@ func (tx *Tx) Client() *Client {
 func (tx *Tx) init() {
 	tx.Author = NewAuthorClient(tx.config)
 	tx.Book = NewBookClient(tx.config)
+	tx.Identifier = NewIdentifierClient(tx.config)
+	tx.Language = NewLanguageClient(tx.config)
+	tx.Publisher = NewPublisherClient(tx.config)
+	tx.Series = NewSeriesClient(tx.config)
+	tx.SeriesBook = NewSeriesBookClient(tx.config)
+	tx.Shelf = NewShelfClient(tx.config)
+	tx.Tag = NewTagClient(tx.config)
+	tx.User = NewUserClient(tx.config)
 }
 
 // txDriver wraps the given dialect.Tx with a nop dialect.Driver implementation.

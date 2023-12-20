@@ -4,8 +4,19 @@ package ent
 
 import (
 	"context"
+	"database/sql/driver"
+	"fmt"
 	"lybbrio/internal/ent/author"
 	"lybbrio/internal/ent/book"
+	"lybbrio/internal/ent/identifier"
+	"lybbrio/internal/ent/language"
+	"lybbrio/internal/ent/publisher"
+	"lybbrio/internal/ent/schema/ksuid"
+	"lybbrio/internal/ent/series"
+	"lybbrio/internal/ent/seriesbook"
+	"lybbrio/internal/ent/shelf"
+	"lybbrio/internal/ent/tag"
+	"lybbrio/internal/ent/user"
 
 	"entgo.io/contrib/entgql"
 	"entgo.io/ent/dialect/sql"
@@ -39,8 +50,84 @@ func (a *AuthorQuery) collectField(ctx context.Context, opCtx *graphql.Operation
 				path  = append(path, alias)
 				query = (&BookClient{config: a.config}).Query()
 			)
-			if err := query.collectField(ctx, opCtx, field, path, satisfies...); err != nil {
+			args := newBookPaginateArgs(fieldArgs(ctx, new(BookWhereInput), path...))
+			if err := validateFirstLast(args.first, args.last); err != nil {
+				return fmt.Errorf("validate first and last in path %q: %w", path, err)
+			}
+			pager, err := newBookPager(args.opts, args.last != nil)
+			if err != nil {
+				return fmt.Errorf("create new pager in path %q: %w", path, err)
+			}
+			if query, err = pager.applyFilter(query); err != nil {
 				return err
+			}
+			ignoredEdges := !hasCollectedField(ctx, append(path, edgesField)...)
+			if hasCollectedField(ctx, append(path, totalCountField)...) || hasCollectedField(ctx, append(path, pageInfoField)...) {
+				hasPagination := args.after != nil || args.first != nil || args.before != nil || args.last != nil
+				if hasPagination || ignoredEdges {
+					query := query.Clone()
+					a.loadTotal = append(a.loadTotal, func(ctx context.Context, nodes []*Author) error {
+						ids := make([]driver.Value, len(nodes))
+						for i := range nodes {
+							ids[i] = nodes[i].ID
+						}
+						var v []struct {
+							NodeID ksuid.ID `sql:"author_id"`
+							Count  int      `sql:"count"`
+						}
+						query.Where(func(s *sql.Selector) {
+							joinT := sql.Table(author.BooksTable)
+							s.Join(joinT).On(s.C(book.FieldID), joinT.C(author.BooksPrimaryKey[1]))
+							s.Where(sql.InValues(joinT.C(author.BooksPrimaryKey[0]), ids...))
+							s.Select(joinT.C(author.BooksPrimaryKey[0]), sql.Count("*"))
+							s.GroupBy(joinT.C(author.BooksPrimaryKey[0]))
+						})
+						if err := query.Select().Scan(ctx, &v); err != nil {
+							return err
+						}
+						m := make(map[ksuid.ID]int, len(v))
+						for i := range v {
+							m[v[i].NodeID] = v[i].Count
+						}
+						for i := range nodes {
+							n := m[nodes[i].ID]
+							if nodes[i].Edges.totalCount[0] == nil {
+								nodes[i].Edges.totalCount[0] = make(map[string]int)
+							}
+							nodes[i].Edges.totalCount[0][alias] = n
+						}
+						return nil
+					})
+				} else {
+					a.loadTotal = append(a.loadTotal, func(_ context.Context, nodes []*Author) error {
+						for i := range nodes {
+							n := len(nodes[i].Edges.Books)
+							if nodes[i].Edges.totalCount[0] == nil {
+								nodes[i].Edges.totalCount[0] = make(map[string]int)
+							}
+							nodes[i].Edges.totalCount[0][alias] = n
+						}
+						return nil
+					})
+				}
+			}
+			if ignoredEdges || (args.first != nil && *args.first == 0) || (args.last != nil && *args.last == 0) {
+				continue
+			}
+			if query, err = pager.applyCursors(query, args.after, args.before); err != nil {
+				return err
+			}
+			path = append(path, edgesField, nodeField)
+			if field := collectedField(ctx, path...); field != nil {
+				if err := query.collectField(ctx, opCtx, *field, path, mayAddCondition(satisfies, "Book")...); err != nil {
+					return err
+				}
+			}
+			if limit := paginateLimit(args.first, args.last); limit > 0 {
+				modify := limitRows(author.BooksPrimaryKey[0], limit, pager.orderExpr(query))
+				query.modifiers = append(query.modifiers, modify)
+			} else {
+				query = pager.applyOrder(query)
 			}
 			a.WithNamedBooks(alias, func(wq *BookQuery) {
 				*wq = *query
@@ -162,6 +249,52 @@ func (b *BookQuery) collectField(ctx context.Context, opCtx *graphql.OperationCo
 			b.WithNamedAuthors(alias, func(wq *AuthorQuery) {
 				*wq = *query
 			})
+		case "series":
+			var (
+				alias = field.Alias
+				path  = append(path, alias)
+				query = (&SeriesClient{config: b.config}).Query()
+			)
+			if err := query.collectField(ctx, opCtx, field, path, satisfies...); err != nil {
+				return err
+			}
+			b.WithNamedSeries(alias, func(wq *SeriesQuery) {
+				*wq = *query
+			})
+		case "identifier":
+			var (
+				alias = field.Alias
+				path  = append(path, alias)
+				query = (&IdentifierClient{config: b.config}).Query()
+			)
+			if err := query.collectField(ctx, opCtx, field, path, satisfies...); err != nil {
+				return err
+			}
+			b.WithNamedIdentifier(alias, func(wq *IdentifierQuery) {
+				*wq = *query
+			})
+		case "language":
+			var (
+				alias = field.Alias
+				path  = append(path, alias)
+				query = (&LanguageClient{config: b.config}).Query()
+			)
+			if err := query.collectField(ctx, opCtx, field, path, satisfies...); err != nil {
+				return err
+			}
+			b.withLanguage = query
+		case "shelf":
+			var (
+				alias = field.Alias
+				path  = append(path, alias)
+				query = (&ShelfClient{config: b.config}).Query()
+			)
+			if err := query.collectField(ctx, opCtx, field, path, satisfies...); err != nil {
+				return err
+			}
+			b.WithNamedShelf(alias, func(wq *ShelfQuery) {
+				*wq = *query
+			})
 		case "title":
 			if _, ok := fieldSeen[book.FieldTitle]; !ok {
 				selectedFields = append(selectedFields, book.FieldTitle)
@@ -172,12 +305,12 @@ func (b *BookQuery) collectField(ctx context.Context, opCtx *graphql.OperationCo
 				selectedFields = append(selectedFields, book.FieldSort)
 				fieldSeen[book.FieldSort] = struct{}{}
 			}
-		case "addedat":
+		case "addedAt":
 			if _, ok := fieldSeen[book.FieldAddedAt]; !ok {
 				selectedFields = append(selectedFields, book.FieldAddedAt)
 				fieldSeen[book.FieldAddedAt] = struct{}{}
 			}
-		case "pubdate":
+		case "pubDate":
 			if _, ok := fieldSeen[book.FieldPubDate]; !ok {
 				selectedFields = append(selectedFields, book.FieldPubDate)
 				fieldSeen[book.FieldPubDate] = struct{}{}
@@ -262,6 +395,1416 @@ func newBookPaginateArgs(rv map[string]any) *bookPaginateArgs {
 	}
 	if v, ok := rv[whereField].(*BookWhereInput); ok {
 		args.opts = append(args.opts, WithBookFilter(v.Filter))
+	}
+	return args
+}
+
+// CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
+func (i *IdentifierQuery) CollectFields(ctx context.Context, satisfies ...string) (*IdentifierQuery, error) {
+	fc := graphql.GetFieldContext(ctx)
+	if fc == nil {
+		return i, nil
+	}
+	if err := i.collectField(ctx, graphql.GetOperationContext(ctx), fc.Field, nil, satisfies...); err != nil {
+		return nil, err
+	}
+	return i, nil
+}
+
+func (i *IdentifierQuery) collectField(ctx context.Context, opCtx *graphql.OperationContext, collected graphql.CollectedField, path []string, satisfies ...string) error {
+	path = append([]string(nil), path...)
+	var (
+		unknownSeen    bool
+		fieldSeen      = make(map[string]struct{}, len(identifier.Columns))
+		selectedFields = []string{identifier.FieldID}
+	)
+	for _, field := range graphql.CollectFields(opCtx, collected.Selections, satisfies) {
+		switch field.Name {
+		case "book":
+			var (
+				alias = field.Alias
+				path  = append(path, alias)
+				query = (&BookClient{config: i.config}).Query()
+			)
+			if err := query.collectField(ctx, opCtx, field, path, satisfies...); err != nil {
+				return err
+			}
+			i.withBook = query
+		case "type":
+			if _, ok := fieldSeen[identifier.FieldType]; !ok {
+				selectedFields = append(selectedFields, identifier.FieldType)
+				fieldSeen[identifier.FieldType] = struct{}{}
+			}
+		case "value":
+			if _, ok := fieldSeen[identifier.FieldValue]; !ok {
+				selectedFields = append(selectedFields, identifier.FieldValue)
+				fieldSeen[identifier.FieldValue] = struct{}{}
+			}
+		case "id":
+		case "__typename":
+		default:
+			unknownSeen = true
+		}
+	}
+	if !unknownSeen {
+		i.Select(selectedFields...)
+	}
+	return nil
+}
+
+type identifierPaginateArgs struct {
+	first, last   *int
+	after, before *Cursor
+	opts          []IdentifierPaginateOption
+}
+
+func newIdentifierPaginateArgs(rv map[string]any) *identifierPaginateArgs {
+	args := &identifierPaginateArgs{}
+	if rv == nil {
+		return args
+	}
+	if v := rv[firstField]; v != nil {
+		args.first = v.(*int)
+	}
+	if v := rv[lastField]; v != nil {
+		args.last = v.(*int)
+	}
+	if v := rv[afterField]; v != nil {
+		args.after = v.(*Cursor)
+	}
+	if v := rv[beforeField]; v != nil {
+		args.before = v.(*Cursor)
+	}
+	if v, ok := rv[orderByField]; ok {
+		switch v := v.(type) {
+		case []*IdentifierOrder:
+			args.opts = append(args.opts, WithIdentifierOrder(v))
+		case []any:
+			var orders []*IdentifierOrder
+			for i := range v {
+				mv, ok := v[i].(map[string]any)
+				if !ok {
+					continue
+				}
+				var (
+					err1, err2 error
+					order      = &IdentifierOrder{Field: &IdentifierOrderField{}, Direction: entgql.OrderDirectionAsc}
+				)
+				if d, ok := mv[directionField]; ok {
+					err1 = order.Direction.UnmarshalGQL(d)
+				}
+				if f, ok := mv[fieldField]; ok {
+					err2 = order.Field.UnmarshalGQL(f)
+				}
+				if err1 == nil && err2 == nil {
+					orders = append(orders, order)
+				}
+			}
+			args.opts = append(args.opts, WithIdentifierOrder(orders))
+		}
+	}
+	if v, ok := rv[whereField].(*IdentifierWhereInput); ok {
+		args.opts = append(args.opts, WithIdentifierFilter(v.Filter))
+	}
+	return args
+}
+
+// CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
+func (l *LanguageQuery) CollectFields(ctx context.Context, satisfies ...string) (*LanguageQuery, error) {
+	fc := graphql.GetFieldContext(ctx)
+	if fc == nil {
+		return l, nil
+	}
+	if err := l.collectField(ctx, graphql.GetOperationContext(ctx), fc.Field, nil, satisfies...); err != nil {
+		return nil, err
+	}
+	return l, nil
+}
+
+func (l *LanguageQuery) collectField(ctx context.Context, opCtx *graphql.OperationContext, collected graphql.CollectedField, path []string, satisfies ...string) error {
+	path = append([]string(nil), path...)
+	var (
+		unknownSeen    bool
+		fieldSeen      = make(map[string]struct{}, len(language.Columns))
+		selectedFields = []string{language.FieldID}
+	)
+	for _, field := range graphql.CollectFields(opCtx, collected.Selections, satisfies) {
+		switch field.Name {
+		case "books":
+			var (
+				alias = field.Alias
+				path  = append(path, alias)
+				query = (&BookClient{config: l.config}).Query()
+			)
+			args := newBookPaginateArgs(fieldArgs(ctx, new(BookWhereInput), path...))
+			if err := validateFirstLast(args.first, args.last); err != nil {
+				return fmt.Errorf("validate first and last in path %q: %w", path, err)
+			}
+			pager, err := newBookPager(args.opts, args.last != nil)
+			if err != nil {
+				return fmt.Errorf("create new pager in path %q: %w", path, err)
+			}
+			if query, err = pager.applyFilter(query); err != nil {
+				return err
+			}
+			ignoredEdges := !hasCollectedField(ctx, append(path, edgesField)...)
+			if hasCollectedField(ctx, append(path, totalCountField)...) || hasCollectedField(ctx, append(path, pageInfoField)...) {
+				hasPagination := args.after != nil || args.first != nil || args.before != nil || args.last != nil
+				if hasPagination || ignoredEdges {
+					query := query.Clone()
+					l.loadTotal = append(l.loadTotal, func(ctx context.Context, nodes []*Language) error {
+						ids := make([]driver.Value, len(nodes))
+						for i := range nodes {
+							ids[i] = nodes[i].ID
+						}
+						var v []struct {
+							NodeID ksuid.ID `sql:"language_books"`
+							Count  int      `sql:"count"`
+						}
+						query.Where(func(s *sql.Selector) {
+							s.Where(sql.InValues(s.C(language.BooksColumn), ids...))
+						})
+						if err := query.GroupBy(language.BooksColumn).Aggregate(Count()).Scan(ctx, &v); err != nil {
+							return err
+						}
+						m := make(map[ksuid.ID]int, len(v))
+						for i := range v {
+							m[v[i].NodeID] = v[i].Count
+						}
+						for i := range nodes {
+							n := m[nodes[i].ID]
+							if nodes[i].Edges.totalCount[0] == nil {
+								nodes[i].Edges.totalCount[0] = make(map[string]int)
+							}
+							nodes[i].Edges.totalCount[0][alias] = n
+						}
+						return nil
+					})
+				} else {
+					l.loadTotal = append(l.loadTotal, func(_ context.Context, nodes []*Language) error {
+						for i := range nodes {
+							n := len(nodes[i].Edges.Books)
+							if nodes[i].Edges.totalCount[0] == nil {
+								nodes[i].Edges.totalCount[0] = make(map[string]int)
+							}
+							nodes[i].Edges.totalCount[0][alias] = n
+						}
+						return nil
+					})
+				}
+			}
+			if ignoredEdges || (args.first != nil && *args.first == 0) || (args.last != nil && *args.last == 0) {
+				continue
+			}
+			if query, err = pager.applyCursors(query, args.after, args.before); err != nil {
+				return err
+			}
+			path = append(path, edgesField, nodeField)
+			if field := collectedField(ctx, path...); field != nil {
+				if err := query.collectField(ctx, opCtx, *field, path, mayAddCondition(satisfies, "Book")...); err != nil {
+					return err
+				}
+			}
+			if limit := paginateLimit(args.first, args.last); limit > 0 {
+				modify := limitRows(language.BooksColumn, limit, pager.orderExpr(query))
+				query.modifiers = append(query.modifiers, modify)
+			} else {
+				query = pager.applyOrder(query)
+			}
+			l.WithNamedBooks(alias, func(wq *BookQuery) {
+				*wq = *query
+			})
+		case "name":
+			if _, ok := fieldSeen[language.FieldName]; !ok {
+				selectedFields = append(selectedFields, language.FieldName)
+				fieldSeen[language.FieldName] = struct{}{}
+			}
+		case "code":
+			if _, ok := fieldSeen[language.FieldCode]; !ok {
+				selectedFields = append(selectedFields, language.FieldCode)
+				fieldSeen[language.FieldCode] = struct{}{}
+			}
+		case "id":
+		case "__typename":
+		default:
+			unknownSeen = true
+		}
+	}
+	if !unknownSeen {
+		l.Select(selectedFields...)
+	}
+	return nil
+}
+
+type languagePaginateArgs struct {
+	first, last   *int
+	after, before *Cursor
+	opts          []LanguagePaginateOption
+}
+
+func newLanguagePaginateArgs(rv map[string]any) *languagePaginateArgs {
+	args := &languagePaginateArgs{}
+	if rv == nil {
+		return args
+	}
+	if v := rv[firstField]; v != nil {
+		args.first = v.(*int)
+	}
+	if v := rv[lastField]; v != nil {
+		args.last = v.(*int)
+	}
+	if v := rv[afterField]; v != nil {
+		args.after = v.(*Cursor)
+	}
+	if v := rv[beforeField]; v != nil {
+		args.before = v.(*Cursor)
+	}
+	if v, ok := rv[orderByField]; ok {
+		switch v := v.(type) {
+		case []*LanguageOrder:
+			args.opts = append(args.opts, WithLanguageOrder(v))
+		case []any:
+			var orders []*LanguageOrder
+			for i := range v {
+				mv, ok := v[i].(map[string]any)
+				if !ok {
+					continue
+				}
+				var (
+					err1, err2 error
+					order      = &LanguageOrder{Field: &LanguageOrderField{}, Direction: entgql.OrderDirectionAsc}
+				)
+				if d, ok := mv[directionField]; ok {
+					err1 = order.Direction.UnmarshalGQL(d)
+				}
+				if f, ok := mv[fieldField]; ok {
+					err2 = order.Field.UnmarshalGQL(f)
+				}
+				if err1 == nil && err2 == nil {
+					orders = append(orders, order)
+				}
+			}
+			args.opts = append(args.opts, WithLanguageOrder(orders))
+		}
+	}
+	if v, ok := rv[whereField].(*LanguageWhereInput); ok {
+		args.opts = append(args.opts, WithLanguageFilter(v.Filter))
+	}
+	return args
+}
+
+// CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
+func (pu *PublisherQuery) CollectFields(ctx context.Context, satisfies ...string) (*PublisherQuery, error) {
+	fc := graphql.GetFieldContext(ctx)
+	if fc == nil {
+		return pu, nil
+	}
+	if err := pu.collectField(ctx, graphql.GetOperationContext(ctx), fc.Field, nil, satisfies...); err != nil {
+		return nil, err
+	}
+	return pu, nil
+}
+
+func (pu *PublisherQuery) collectField(ctx context.Context, opCtx *graphql.OperationContext, collected graphql.CollectedField, path []string, satisfies ...string) error {
+	path = append([]string(nil), path...)
+	var (
+		unknownSeen    bool
+		fieldSeen      = make(map[string]struct{}, len(publisher.Columns))
+		selectedFields = []string{publisher.FieldID}
+	)
+	for _, field := range graphql.CollectFields(opCtx, collected.Selections, satisfies) {
+		switch field.Name {
+		case "books":
+			var (
+				alias = field.Alias
+				path  = append(path, alias)
+				query = (&BookClient{config: pu.config}).Query()
+			)
+			args := newBookPaginateArgs(fieldArgs(ctx, new(BookWhereInput), path...))
+			if err := validateFirstLast(args.first, args.last); err != nil {
+				return fmt.Errorf("validate first and last in path %q: %w", path, err)
+			}
+			pager, err := newBookPager(args.opts, args.last != nil)
+			if err != nil {
+				return fmt.Errorf("create new pager in path %q: %w", path, err)
+			}
+			if query, err = pager.applyFilter(query); err != nil {
+				return err
+			}
+			ignoredEdges := !hasCollectedField(ctx, append(path, edgesField)...)
+			if hasCollectedField(ctx, append(path, totalCountField)...) || hasCollectedField(ctx, append(path, pageInfoField)...) {
+				hasPagination := args.after != nil || args.first != nil || args.before != nil || args.last != nil
+				if hasPagination || ignoredEdges {
+					query := query.Clone()
+					pu.loadTotal = append(pu.loadTotal, func(ctx context.Context, nodes []*Publisher) error {
+						ids := make([]driver.Value, len(nodes))
+						for i := range nodes {
+							ids[i] = nodes[i].ID
+						}
+						var v []struct {
+							NodeID ksuid.ID `sql:"publisher_books"`
+							Count  int      `sql:"count"`
+						}
+						query.Where(func(s *sql.Selector) {
+							s.Where(sql.InValues(s.C(publisher.BooksColumn), ids...))
+						})
+						if err := query.GroupBy(publisher.BooksColumn).Aggregate(Count()).Scan(ctx, &v); err != nil {
+							return err
+						}
+						m := make(map[ksuid.ID]int, len(v))
+						for i := range v {
+							m[v[i].NodeID] = v[i].Count
+						}
+						for i := range nodes {
+							n := m[nodes[i].ID]
+							if nodes[i].Edges.totalCount[0] == nil {
+								nodes[i].Edges.totalCount[0] = make(map[string]int)
+							}
+							nodes[i].Edges.totalCount[0][alias] = n
+						}
+						return nil
+					})
+				} else {
+					pu.loadTotal = append(pu.loadTotal, func(_ context.Context, nodes []*Publisher) error {
+						for i := range nodes {
+							n := len(nodes[i].Edges.Books)
+							if nodes[i].Edges.totalCount[0] == nil {
+								nodes[i].Edges.totalCount[0] = make(map[string]int)
+							}
+							nodes[i].Edges.totalCount[0][alias] = n
+						}
+						return nil
+					})
+				}
+			}
+			if ignoredEdges || (args.first != nil && *args.first == 0) || (args.last != nil && *args.last == 0) {
+				continue
+			}
+			if query, err = pager.applyCursors(query, args.after, args.before); err != nil {
+				return err
+			}
+			path = append(path, edgesField, nodeField)
+			if field := collectedField(ctx, path...); field != nil {
+				if err := query.collectField(ctx, opCtx, *field, path, mayAddCondition(satisfies, "Book")...); err != nil {
+					return err
+				}
+			}
+			if limit := paginateLimit(args.first, args.last); limit > 0 {
+				modify := limitRows(publisher.BooksColumn, limit, pager.orderExpr(query))
+				query.modifiers = append(query.modifiers, modify)
+			} else {
+				query = pager.applyOrder(query)
+			}
+			pu.WithNamedBooks(alias, func(wq *BookQuery) {
+				*wq = *query
+			})
+		case "name":
+			if _, ok := fieldSeen[publisher.FieldName]; !ok {
+				selectedFields = append(selectedFields, publisher.FieldName)
+				fieldSeen[publisher.FieldName] = struct{}{}
+			}
+		case "id":
+		case "__typename":
+		default:
+			unknownSeen = true
+		}
+	}
+	if !unknownSeen {
+		pu.Select(selectedFields...)
+	}
+	return nil
+}
+
+type publisherPaginateArgs struct {
+	first, last   *int
+	after, before *Cursor
+	opts          []PublisherPaginateOption
+}
+
+func newPublisherPaginateArgs(rv map[string]any) *publisherPaginateArgs {
+	args := &publisherPaginateArgs{}
+	if rv == nil {
+		return args
+	}
+	if v := rv[firstField]; v != nil {
+		args.first = v.(*int)
+	}
+	if v := rv[lastField]; v != nil {
+		args.last = v.(*int)
+	}
+	if v := rv[afterField]; v != nil {
+		args.after = v.(*Cursor)
+	}
+	if v := rv[beforeField]; v != nil {
+		args.before = v.(*Cursor)
+	}
+	if v, ok := rv[orderByField]; ok {
+		switch v := v.(type) {
+		case []*PublisherOrder:
+			args.opts = append(args.opts, WithPublisherOrder(v))
+		case []any:
+			var orders []*PublisherOrder
+			for i := range v {
+				mv, ok := v[i].(map[string]any)
+				if !ok {
+					continue
+				}
+				var (
+					err1, err2 error
+					order      = &PublisherOrder{Field: &PublisherOrderField{}, Direction: entgql.OrderDirectionAsc}
+				)
+				if d, ok := mv[directionField]; ok {
+					err1 = order.Direction.UnmarshalGQL(d)
+				}
+				if f, ok := mv[fieldField]; ok {
+					err2 = order.Field.UnmarshalGQL(f)
+				}
+				if err1 == nil && err2 == nil {
+					orders = append(orders, order)
+				}
+			}
+			args.opts = append(args.opts, WithPublisherOrder(orders))
+		}
+	}
+	if v, ok := rv[whereField].(*PublisherWhereInput); ok {
+		args.opts = append(args.opts, WithPublisherFilter(v.Filter))
+	}
+	return args
+}
+
+// CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
+func (s *SeriesQuery) CollectFields(ctx context.Context, satisfies ...string) (*SeriesQuery, error) {
+	fc := graphql.GetFieldContext(ctx)
+	if fc == nil {
+		return s, nil
+	}
+	if err := s.collectField(ctx, graphql.GetOperationContext(ctx), fc.Field, nil, satisfies...); err != nil {
+		return nil, err
+	}
+	return s, nil
+}
+
+func (s *SeriesQuery) collectField(ctx context.Context, opCtx *graphql.OperationContext, collected graphql.CollectedField, path []string, satisfies ...string) error {
+	path = append([]string(nil), path...)
+	var (
+		unknownSeen    bool
+		fieldSeen      = make(map[string]struct{}, len(series.Columns))
+		selectedFields = []string{series.FieldID}
+	)
+	for _, field := range graphql.CollectFields(opCtx, collected.Selections, satisfies) {
+		switch field.Name {
+		case "books":
+			var (
+				alias = field.Alias
+				path  = append(path, alias)
+				query = (&BookClient{config: s.config}).Query()
+			)
+			args := newBookPaginateArgs(fieldArgs(ctx, new(BookWhereInput), path...))
+			if err := validateFirstLast(args.first, args.last); err != nil {
+				return fmt.Errorf("validate first and last in path %q: %w", path, err)
+			}
+			pager, err := newBookPager(args.opts, args.last != nil)
+			if err != nil {
+				return fmt.Errorf("create new pager in path %q: %w", path, err)
+			}
+			if query, err = pager.applyFilter(query); err != nil {
+				return err
+			}
+			ignoredEdges := !hasCollectedField(ctx, append(path, edgesField)...)
+			if hasCollectedField(ctx, append(path, totalCountField)...) || hasCollectedField(ctx, append(path, pageInfoField)...) {
+				hasPagination := args.after != nil || args.first != nil || args.before != nil || args.last != nil
+				if hasPagination || ignoredEdges {
+					query := query.Clone()
+					s.loadTotal = append(s.loadTotal, func(ctx context.Context, nodes []*Series) error {
+						ids := make([]driver.Value, len(nodes))
+						for i := range nodes {
+							ids[i] = nodes[i].ID
+						}
+						var v []struct {
+							NodeID ksuid.ID `sql:"series_id"`
+							Count  int      `sql:"count"`
+						}
+						query.Where(func(s *sql.Selector) {
+							joinT := sql.Table(series.BooksTable)
+							s.Join(joinT).On(s.C(book.FieldID), joinT.C(series.BooksPrimaryKey[1]))
+							s.Where(sql.InValues(joinT.C(series.BooksPrimaryKey[0]), ids...))
+							s.Select(joinT.C(series.BooksPrimaryKey[0]), sql.Count("*"))
+							s.GroupBy(joinT.C(series.BooksPrimaryKey[0]))
+						})
+						if err := query.Select().Scan(ctx, &v); err != nil {
+							return err
+						}
+						m := make(map[ksuid.ID]int, len(v))
+						for i := range v {
+							m[v[i].NodeID] = v[i].Count
+						}
+						for i := range nodes {
+							n := m[nodes[i].ID]
+							if nodes[i].Edges.totalCount[0] == nil {
+								nodes[i].Edges.totalCount[0] = make(map[string]int)
+							}
+							nodes[i].Edges.totalCount[0][alias] = n
+						}
+						return nil
+					})
+				} else {
+					s.loadTotal = append(s.loadTotal, func(_ context.Context, nodes []*Series) error {
+						for i := range nodes {
+							n := len(nodes[i].Edges.Books)
+							if nodes[i].Edges.totalCount[0] == nil {
+								nodes[i].Edges.totalCount[0] = make(map[string]int)
+							}
+							nodes[i].Edges.totalCount[0][alias] = n
+						}
+						return nil
+					})
+				}
+			}
+			if ignoredEdges || (args.first != nil && *args.first == 0) || (args.last != nil && *args.last == 0) {
+				continue
+			}
+			if query, err = pager.applyCursors(query, args.after, args.before); err != nil {
+				return err
+			}
+			path = append(path, edgesField, nodeField)
+			if field := collectedField(ctx, path...); field != nil {
+				if err := query.collectField(ctx, opCtx, *field, path, mayAddCondition(satisfies, "Book")...); err != nil {
+					return err
+				}
+			}
+			if limit := paginateLimit(args.first, args.last); limit > 0 {
+				modify := limitRows(series.BooksPrimaryKey[0], limit, pager.orderExpr(query))
+				query.modifiers = append(query.modifiers, modify)
+			} else {
+				query = pager.applyOrder(query)
+			}
+			s.WithNamedBooks(alias, func(wq *BookQuery) {
+				*wq = *query
+			})
+		case "seriesBooks":
+			var (
+				alias = field.Alias
+				path  = append(path, alias)
+				query = (&SeriesBookClient{config: s.config}).Query()
+			)
+			args := newSeriesBookPaginateArgs(fieldArgs(ctx, new(SeriesBookWhereInput), path...))
+			if err := validateFirstLast(args.first, args.last); err != nil {
+				return fmt.Errorf("validate first and last in path %q: %w", path, err)
+			}
+			pager, err := newSeriesBookPager(args.opts, args.last != nil)
+			if err != nil {
+				return fmt.Errorf("create new pager in path %q: %w", path, err)
+			}
+			if query, err = pager.applyFilter(query); err != nil {
+				return err
+			}
+			ignoredEdges := !hasCollectedField(ctx, append(path, edgesField)...)
+			if hasCollectedField(ctx, append(path, totalCountField)...) || hasCollectedField(ctx, append(path, pageInfoField)...) {
+				hasPagination := args.after != nil || args.first != nil || args.before != nil || args.last != nil
+				if hasPagination || ignoredEdges {
+					query := query.Clone()
+					s.loadTotal = append(s.loadTotal, func(ctx context.Context, nodes []*Series) error {
+						ids := make([]driver.Value, len(nodes))
+						for i := range nodes {
+							ids[i] = nodes[i].ID
+						}
+						var v []struct {
+							NodeID ksuid.ID `sql:"series_id"`
+							Count  int      `sql:"count"`
+						}
+						query.Where(func(s *sql.Selector) {
+							s.Where(sql.InValues(s.C(series.SeriesBooksColumn), ids...))
+						})
+						if err := query.GroupBy(series.SeriesBooksColumn).Aggregate(Count()).Scan(ctx, &v); err != nil {
+							return err
+						}
+						m := make(map[ksuid.ID]int, len(v))
+						for i := range v {
+							m[v[i].NodeID] = v[i].Count
+						}
+						for i := range nodes {
+							n := m[nodes[i].ID]
+							if nodes[i].Edges.totalCount[1] == nil {
+								nodes[i].Edges.totalCount[1] = make(map[string]int)
+							}
+							nodes[i].Edges.totalCount[1][alias] = n
+						}
+						return nil
+					})
+				} else {
+					s.loadTotal = append(s.loadTotal, func(_ context.Context, nodes []*Series) error {
+						for i := range nodes {
+							n := len(nodes[i].Edges.SeriesBooks)
+							if nodes[i].Edges.totalCount[1] == nil {
+								nodes[i].Edges.totalCount[1] = make(map[string]int)
+							}
+							nodes[i].Edges.totalCount[1][alias] = n
+						}
+						return nil
+					})
+				}
+			}
+			if ignoredEdges || (args.first != nil && *args.first == 0) || (args.last != nil && *args.last == 0) {
+				continue
+			}
+			if query, err = pager.applyCursors(query, args.after, args.before); err != nil {
+				return err
+			}
+			path = append(path, edgesField, nodeField)
+			if field := collectedField(ctx, path...); field != nil {
+				if err := query.collectField(ctx, opCtx, *field, path, mayAddCondition(satisfies, "SeriesBook")...); err != nil {
+					return err
+				}
+			}
+			if limit := paginateLimit(args.first, args.last); limit > 0 {
+				modify := limitRows(series.SeriesBooksColumn, limit, pager.orderExpr(query))
+				query.modifiers = append(query.modifiers, modify)
+			} else {
+				query = pager.applyOrder(query)
+			}
+			s.WithNamedSeriesBooks(alias, func(wq *SeriesBookQuery) {
+				*wq = *query
+			})
+		case "name":
+			if _, ok := fieldSeen[series.FieldName]; !ok {
+				selectedFields = append(selectedFields, series.FieldName)
+				fieldSeen[series.FieldName] = struct{}{}
+			}
+		case "sort":
+			if _, ok := fieldSeen[series.FieldSort]; !ok {
+				selectedFields = append(selectedFields, series.FieldSort)
+				fieldSeen[series.FieldSort] = struct{}{}
+			}
+		case "id":
+		case "__typename":
+		default:
+			unknownSeen = true
+		}
+	}
+	if !unknownSeen {
+		s.Select(selectedFields...)
+	}
+	return nil
+}
+
+type seriesPaginateArgs struct {
+	first, last   *int
+	after, before *Cursor
+	opts          []SeriesPaginateOption
+}
+
+func newSeriesPaginateArgs(rv map[string]any) *seriesPaginateArgs {
+	args := &seriesPaginateArgs{}
+	if rv == nil {
+		return args
+	}
+	if v := rv[firstField]; v != nil {
+		args.first = v.(*int)
+	}
+	if v := rv[lastField]; v != nil {
+		args.last = v.(*int)
+	}
+	if v := rv[afterField]; v != nil {
+		args.after = v.(*Cursor)
+	}
+	if v := rv[beforeField]; v != nil {
+		args.before = v.(*Cursor)
+	}
+	if v, ok := rv[orderByField]; ok {
+		switch v := v.(type) {
+		case []*SeriesOrder:
+			args.opts = append(args.opts, WithSeriesOrder(v))
+		case []any:
+			var orders []*SeriesOrder
+			for i := range v {
+				mv, ok := v[i].(map[string]any)
+				if !ok {
+					continue
+				}
+				var (
+					err1, err2 error
+					order      = &SeriesOrder{Field: &SeriesOrderField{}, Direction: entgql.OrderDirectionAsc}
+				)
+				if d, ok := mv[directionField]; ok {
+					err1 = order.Direction.UnmarshalGQL(d)
+				}
+				if f, ok := mv[fieldField]; ok {
+					err2 = order.Field.UnmarshalGQL(f)
+				}
+				if err1 == nil && err2 == nil {
+					orders = append(orders, order)
+				}
+			}
+			args.opts = append(args.opts, WithSeriesOrder(orders))
+		}
+	}
+	if v, ok := rv[whereField].(*SeriesWhereInput); ok {
+		args.opts = append(args.opts, WithSeriesFilter(v.Filter))
+	}
+	return args
+}
+
+// CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
+func (sb *SeriesBookQuery) CollectFields(ctx context.Context, satisfies ...string) (*SeriesBookQuery, error) {
+	fc := graphql.GetFieldContext(ctx)
+	if fc == nil {
+		return sb, nil
+	}
+	if err := sb.collectField(ctx, graphql.GetOperationContext(ctx), fc.Field, nil, satisfies...); err != nil {
+		return nil, err
+	}
+	return sb, nil
+}
+
+func (sb *SeriesBookQuery) collectField(ctx context.Context, opCtx *graphql.OperationContext, collected graphql.CollectedField, path []string, satisfies ...string) error {
+	path = append([]string(nil), path...)
+	var (
+		unknownSeen    bool
+		fieldSeen      = make(map[string]struct{}, len(seriesbook.Columns))
+		selectedFields = []string{seriesbook.FieldID}
+	)
+	for _, field := range graphql.CollectFields(opCtx, collected.Selections, satisfies) {
+		switch field.Name {
+		case "series":
+			var (
+				alias = field.Alias
+				path  = append(path, alias)
+				query = (&SeriesClient{config: sb.config}).Query()
+			)
+			if err := query.collectField(ctx, opCtx, field, path, satisfies...); err != nil {
+				return err
+			}
+			sb.withSeries = query
+			if _, ok := fieldSeen[seriesbook.FieldSeriesID]; !ok {
+				selectedFields = append(selectedFields, seriesbook.FieldSeriesID)
+				fieldSeen[seriesbook.FieldSeriesID] = struct{}{}
+			}
+		case "book":
+			var (
+				alias = field.Alias
+				path  = append(path, alias)
+				query = (&BookClient{config: sb.config}).Query()
+			)
+			if err := query.collectField(ctx, opCtx, field, path, satisfies...); err != nil {
+				return err
+			}
+			sb.withBook = query
+			if _, ok := fieldSeen[seriesbook.FieldBookID]; !ok {
+				selectedFields = append(selectedFields, seriesbook.FieldBookID)
+				fieldSeen[seriesbook.FieldBookID] = struct{}{}
+			}
+		case "seriesIndex":
+			if _, ok := fieldSeen[seriesbook.FieldSeriesIndex]; !ok {
+				selectedFields = append(selectedFields, seriesbook.FieldSeriesIndex)
+				fieldSeen[seriesbook.FieldSeriesIndex] = struct{}{}
+			}
+		case "seriesID":
+			if _, ok := fieldSeen[seriesbook.FieldSeriesID]; !ok {
+				selectedFields = append(selectedFields, seriesbook.FieldSeriesID)
+				fieldSeen[seriesbook.FieldSeriesID] = struct{}{}
+			}
+		case "bookID":
+			if _, ok := fieldSeen[seriesbook.FieldBookID]; !ok {
+				selectedFields = append(selectedFields, seriesbook.FieldBookID)
+				fieldSeen[seriesbook.FieldBookID] = struct{}{}
+			}
+		case "id":
+		case "__typename":
+		default:
+			unknownSeen = true
+		}
+	}
+	if !unknownSeen {
+		sb.Select(selectedFields...)
+	}
+	return nil
+}
+
+type seriesbookPaginateArgs struct {
+	first, last   *int
+	after, before *Cursor
+	opts          []SeriesBookPaginateOption
+}
+
+func newSeriesBookPaginateArgs(rv map[string]any) *seriesbookPaginateArgs {
+	args := &seriesbookPaginateArgs{}
+	if rv == nil {
+		return args
+	}
+	if v := rv[firstField]; v != nil {
+		args.first = v.(*int)
+	}
+	if v := rv[lastField]; v != nil {
+		args.last = v.(*int)
+	}
+	if v := rv[afterField]; v != nil {
+		args.after = v.(*Cursor)
+	}
+	if v := rv[beforeField]; v != nil {
+		args.before = v.(*Cursor)
+	}
+	if v, ok := rv[whereField].(*SeriesBookWhereInput); ok {
+		args.opts = append(args.opts, WithSeriesBookFilter(v.Filter))
+	}
+	return args
+}
+
+// CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
+func (s *ShelfQuery) CollectFields(ctx context.Context, satisfies ...string) (*ShelfQuery, error) {
+	fc := graphql.GetFieldContext(ctx)
+	if fc == nil {
+		return s, nil
+	}
+	if err := s.collectField(ctx, graphql.GetOperationContext(ctx), fc.Field, nil, satisfies...); err != nil {
+		return nil, err
+	}
+	return s, nil
+}
+
+func (s *ShelfQuery) collectField(ctx context.Context, opCtx *graphql.OperationContext, collected graphql.CollectedField, path []string, satisfies ...string) error {
+	path = append([]string(nil), path...)
+	var (
+		unknownSeen    bool
+		fieldSeen      = make(map[string]struct{}, len(shelf.Columns))
+		selectedFields = []string{shelf.FieldID}
+	)
+	for _, field := range graphql.CollectFields(opCtx, collected.Selections, satisfies) {
+		switch field.Name {
+		case "books":
+			var (
+				alias = field.Alias
+				path  = append(path, alias)
+				query = (&BookClient{config: s.config}).Query()
+			)
+			args := newBookPaginateArgs(fieldArgs(ctx, new(BookWhereInput), path...))
+			if err := validateFirstLast(args.first, args.last); err != nil {
+				return fmt.Errorf("validate first and last in path %q: %w", path, err)
+			}
+			pager, err := newBookPager(args.opts, args.last != nil)
+			if err != nil {
+				return fmt.Errorf("create new pager in path %q: %w", path, err)
+			}
+			if query, err = pager.applyFilter(query); err != nil {
+				return err
+			}
+			ignoredEdges := !hasCollectedField(ctx, append(path, edgesField)...)
+			if hasCollectedField(ctx, append(path, totalCountField)...) || hasCollectedField(ctx, append(path, pageInfoField)...) {
+				hasPagination := args.after != nil || args.first != nil || args.before != nil || args.last != nil
+				if hasPagination || ignoredEdges {
+					query := query.Clone()
+					s.loadTotal = append(s.loadTotal, func(ctx context.Context, nodes []*Shelf) error {
+						ids := make([]driver.Value, len(nodes))
+						for i := range nodes {
+							ids[i] = nodes[i].ID
+						}
+						var v []struct {
+							NodeID ksuid.ID `sql:"shelf_id"`
+							Count  int      `sql:"count"`
+						}
+						query.Where(func(s *sql.Selector) {
+							joinT := sql.Table(shelf.BooksTable)
+							s.Join(joinT).On(s.C(book.FieldID), joinT.C(shelf.BooksPrimaryKey[1]))
+							s.Where(sql.InValues(joinT.C(shelf.BooksPrimaryKey[0]), ids...))
+							s.Select(joinT.C(shelf.BooksPrimaryKey[0]), sql.Count("*"))
+							s.GroupBy(joinT.C(shelf.BooksPrimaryKey[0]))
+						})
+						if err := query.Select().Scan(ctx, &v); err != nil {
+							return err
+						}
+						m := make(map[ksuid.ID]int, len(v))
+						for i := range v {
+							m[v[i].NodeID] = v[i].Count
+						}
+						for i := range nodes {
+							n := m[nodes[i].ID]
+							if nodes[i].Edges.totalCount[0] == nil {
+								nodes[i].Edges.totalCount[0] = make(map[string]int)
+							}
+							nodes[i].Edges.totalCount[0][alias] = n
+						}
+						return nil
+					})
+				} else {
+					s.loadTotal = append(s.loadTotal, func(_ context.Context, nodes []*Shelf) error {
+						for i := range nodes {
+							n := len(nodes[i].Edges.Books)
+							if nodes[i].Edges.totalCount[0] == nil {
+								nodes[i].Edges.totalCount[0] = make(map[string]int)
+							}
+							nodes[i].Edges.totalCount[0][alias] = n
+						}
+						return nil
+					})
+				}
+			}
+			if ignoredEdges || (args.first != nil && *args.first == 0) || (args.last != nil && *args.last == 0) {
+				continue
+			}
+			if query, err = pager.applyCursors(query, args.after, args.before); err != nil {
+				return err
+			}
+			path = append(path, edgesField, nodeField)
+			if field := collectedField(ctx, path...); field != nil {
+				if err := query.collectField(ctx, opCtx, *field, path, mayAddCondition(satisfies, "Book")...); err != nil {
+					return err
+				}
+			}
+			if limit := paginateLimit(args.first, args.last); limit > 0 {
+				modify := limitRows(shelf.BooksPrimaryKey[0], limit, pager.orderExpr(query))
+				query.modifiers = append(query.modifiers, modify)
+			} else {
+				query = pager.applyOrder(query)
+			}
+			s.WithNamedBooks(alias, func(wq *BookQuery) {
+				*wq = *query
+			})
+		case "owner":
+			var (
+				alias = field.Alias
+				path  = append(path, alias)
+				query = (&UserClient{config: s.config}).Query()
+			)
+			if err := query.collectField(ctx, opCtx, field, path, satisfies...); err != nil {
+				return err
+			}
+			s.withOwner = query
+		case "name":
+			if _, ok := fieldSeen[shelf.FieldName]; !ok {
+				selectedFields = append(selectedFields, shelf.FieldName)
+				fieldSeen[shelf.FieldName] = struct{}{}
+			}
+		case "description":
+			if _, ok := fieldSeen[shelf.FieldDescription]; !ok {
+				selectedFields = append(selectedFields, shelf.FieldDescription)
+				fieldSeen[shelf.FieldDescription] = struct{}{}
+			}
+		case "public":
+			if _, ok := fieldSeen[shelf.FieldPublic]; !ok {
+				selectedFields = append(selectedFields, shelf.FieldPublic)
+				fieldSeen[shelf.FieldPublic] = struct{}{}
+			}
+		case "id":
+		case "__typename":
+		default:
+			unknownSeen = true
+		}
+	}
+	if !unknownSeen {
+		s.Select(selectedFields...)
+	}
+	return nil
+}
+
+type shelfPaginateArgs struct {
+	first, last   *int
+	after, before *Cursor
+	opts          []ShelfPaginateOption
+}
+
+func newShelfPaginateArgs(rv map[string]any) *shelfPaginateArgs {
+	args := &shelfPaginateArgs{}
+	if rv == nil {
+		return args
+	}
+	if v := rv[firstField]; v != nil {
+		args.first = v.(*int)
+	}
+	if v := rv[lastField]; v != nil {
+		args.last = v.(*int)
+	}
+	if v := rv[afterField]; v != nil {
+		args.after = v.(*Cursor)
+	}
+	if v := rv[beforeField]; v != nil {
+		args.before = v.(*Cursor)
+	}
+	if v, ok := rv[orderByField]; ok {
+		switch v := v.(type) {
+		case []*ShelfOrder:
+			args.opts = append(args.opts, WithShelfOrder(v))
+		case []any:
+			var orders []*ShelfOrder
+			for i := range v {
+				mv, ok := v[i].(map[string]any)
+				if !ok {
+					continue
+				}
+				var (
+					err1, err2 error
+					order      = &ShelfOrder{Field: &ShelfOrderField{}, Direction: entgql.OrderDirectionAsc}
+				)
+				if d, ok := mv[directionField]; ok {
+					err1 = order.Direction.UnmarshalGQL(d)
+				}
+				if f, ok := mv[fieldField]; ok {
+					err2 = order.Field.UnmarshalGQL(f)
+				}
+				if err1 == nil && err2 == nil {
+					orders = append(orders, order)
+				}
+			}
+			args.opts = append(args.opts, WithShelfOrder(orders))
+		}
+	}
+	if v, ok := rv[whereField].(*ShelfWhereInput); ok {
+		args.opts = append(args.opts, WithShelfFilter(v.Filter))
+	}
+	return args
+}
+
+// CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
+func (t *TagQuery) CollectFields(ctx context.Context, satisfies ...string) (*TagQuery, error) {
+	fc := graphql.GetFieldContext(ctx)
+	if fc == nil {
+		return t, nil
+	}
+	if err := t.collectField(ctx, graphql.GetOperationContext(ctx), fc.Field, nil, satisfies...); err != nil {
+		return nil, err
+	}
+	return t, nil
+}
+
+func (t *TagQuery) collectField(ctx context.Context, opCtx *graphql.OperationContext, collected graphql.CollectedField, path []string, satisfies ...string) error {
+	path = append([]string(nil), path...)
+	var (
+		unknownSeen    bool
+		fieldSeen      = make(map[string]struct{}, len(tag.Columns))
+		selectedFields = []string{tag.FieldID}
+	)
+	for _, field := range graphql.CollectFields(opCtx, collected.Selections, satisfies) {
+		switch field.Name {
+		case "books":
+			var (
+				alias = field.Alias
+				path  = append(path, alias)
+				query = (&BookClient{config: t.config}).Query()
+			)
+			args := newBookPaginateArgs(fieldArgs(ctx, new(BookWhereInput), path...))
+			if err := validateFirstLast(args.first, args.last); err != nil {
+				return fmt.Errorf("validate first and last in path %q: %w", path, err)
+			}
+			pager, err := newBookPager(args.opts, args.last != nil)
+			if err != nil {
+				return fmt.Errorf("create new pager in path %q: %w", path, err)
+			}
+			if query, err = pager.applyFilter(query); err != nil {
+				return err
+			}
+			ignoredEdges := !hasCollectedField(ctx, append(path, edgesField)...)
+			if hasCollectedField(ctx, append(path, totalCountField)...) || hasCollectedField(ctx, append(path, pageInfoField)...) {
+				hasPagination := args.after != nil || args.first != nil || args.before != nil || args.last != nil
+				if hasPagination || ignoredEdges {
+					query := query.Clone()
+					t.loadTotal = append(t.loadTotal, func(ctx context.Context, nodes []*Tag) error {
+						ids := make([]driver.Value, len(nodes))
+						for i := range nodes {
+							ids[i] = nodes[i].ID
+						}
+						var v []struct {
+							NodeID ksuid.ID `sql:"tag_books"`
+							Count  int      `sql:"count"`
+						}
+						query.Where(func(s *sql.Selector) {
+							s.Where(sql.InValues(s.C(tag.BooksColumn), ids...))
+						})
+						if err := query.GroupBy(tag.BooksColumn).Aggregate(Count()).Scan(ctx, &v); err != nil {
+							return err
+						}
+						m := make(map[ksuid.ID]int, len(v))
+						for i := range v {
+							m[v[i].NodeID] = v[i].Count
+						}
+						for i := range nodes {
+							n := m[nodes[i].ID]
+							if nodes[i].Edges.totalCount[0] == nil {
+								nodes[i].Edges.totalCount[0] = make(map[string]int)
+							}
+							nodes[i].Edges.totalCount[0][alias] = n
+						}
+						return nil
+					})
+				} else {
+					t.loadTotal = append(t.loadTotal, func(_ context.Context, nodes []*Tag) error {
+						for i := range nodes {
+							n := len(nodes[i].Edges.Books)
+							if nodes[i].Edges.totalCount[0] == nil {
+								nodes[i].Edges.totalCount[0] = make(map[string]int)
+							}
+							nodes[i].Edges.totalCount[0][alias] = n
+						}
+						return nil
+					})
+				}
+			}
+			if ignoredEdges || (args.first != nil && *args.first == 0) || (args.last != nil && *args.last == 0) {
+				continue
+			}
+			if query, err = pager.applyCursors(query, args.after, args.before); err != nil {
+				return err
+			}
+			path = append(path, edgesField, nodeField)
+			if field := collectedField(ctx, path...); field != nil {
+				if err := query.collectField(ctx, opCtx, *field, path, mayAddCondition(satisfies, "Book")...); err != nil {
+					return err
+				}
+			}
+			if limit := paginateLimit(args.first, args.last); limit > 0 {
+				modify := limitRows(tag.BooksColumn, limit, pager.orderExpr(query))
+				query.modifiers = append(query.modifiers, modify)
+			} else {
+				query = pager.applyOrder(query)
+			}
+			t.WithNamedBooks(alias, func(wq *BookQuery) {
+				*wq = *query
+			})
+		case "name":
+			if _, ok := fieldSeen[tag.FieldName]; !ok {
+				selectedFields = append(selectedFields, tag.FieldName)
+				fieldSeen[tag.FieldName] = struct{}{}
+			}
+		case "id":
+		case "__typename":
+		default:
+			unknownSeen = true
+		}
+	}
+	if !unknownSeen {
+		t.Select(selectedFields...)
+	}
+	return nil
+}
+
+type tagPaginateArgs struct {
+	first, last   *int
+	after, before *Cursor
+	opts          []TagPaginateOption
+}
+
+func newTagPaginateArgs(rv map[string]any) *tagPaginateArgs {
+	args := &tagPaginateArgs{}
+	if rv == nil {
+		return args
+	}
+	if v := rv[firstField]; v != nil {
+		args.first = v.(*int)
+	}
+	if v := rv[lastField]; v != nil {
+		args.last = v.(*int)
+	}
+	if v := rv[afterField]; v != nil {
+		args.after = v.(*Cursor)
+	}
+	if v := rv[beforeField]; v != nil {
+		args.before = v.(*Cursor)
+	}
+	if v, ok := rv[orderByField]; ok {
+		switch v := v.(type) {
+		case []*TagOrder:
+			args.opts = append(args.opts, WithTagOrder(v))
+		case []any:
+			var orders []*TagOrder
+			for i := range v {
+				mv, ok := v[i].(map[string]any)
+				if !ok {
+					continue
+				}
+				var (
+					err1, err2 error
+					order      = &TagOrder{Field: &TagOrderField{}, Direction: entgql.OrderDirectionAsc}
+				)
+				if d, ok := mv[directionField]; ok {
+					err1 = order.Direction.UnmarshalGQL(d)
+				}
+				if f, ok := mv[fieldField]; ok {
+					err2 = order.Field.UnmarshalGQL(f)
+				}
+				if err1 == nil && err2 == nil {
+					orders = append(orders, order)
+				}
+			}
+			args.opts = append(args.opts, WithTagOrder(orders))
+		}
+	}
+	if v, ok := rv[whereField].(*TagWhereInput); ok {
+		args.opts = append(args.opts, WithTagFilter(v.Filter))
+	}
+	return args
+}
+
+// CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
+func (u *UserQuery) CollectFields(ctx context.Context, satisfies ...string) (*UserQuery, error) {
+	fc := graphql.GetFieldContext(ctx)
+	if fc == nil {
+		return u, nil
+	}
+	if err := u.collectField(ctx, graphql.GetOperationContext(ctx), fc.Field, nil, satisfies...); err != nil {
+		return nil, err
+	}
+	return u, nil
+}
+
+func (u *UserQuery) collectField(ctx context.Context, opCtx *graphql.OperationContext, collected graphql.CollectedField, path []string, satisfies ...string) error {
+	path = append([]string(nil), path...)
+	var (
+		unknownSeen    bool
+		fieldSeen      = make(map[string]struct{}, len(user.Columns))
+		selectedFields = []string{user.FieldID}
+	)
+	for _, field := range graphql.CollectFields(opCtx, collected.Selections, satisfies) {
+		switch field.Name {
+		case "shelves":
+			var (
+				alias = field.Alias
+				path  = append(path, alias)
+				query = (&ShelfClient{config: u.config}).Query()
+			)
+			args := newShelfPaginateArgs(fieldArgs(ctx, new(ShelfWhereInput), path...))
+			if err := validateFirstLast(args.first, args.last); err != nil {
+				return fmt.Errorf("validate first and last in path %q: %w", path, err)
+			}
+			pager, err := newShelfPager(args.opts, args.last != nil)
+			if err != nil {
+				return fmt.Errorf("create new pager in path %q: %w", path, err)
+			}
+			if query, err = pager.applyFilter(query); err != nil {
+				return err
+			}
+			ignoredEdges := !hasCollectedField(ctx, append(path, edgesField)...)
+			if hasCollectedField(ctx, append(path, totalCountField)...) || hasCollectedField(ctx, append(path, pageInfoField)...) {
+				hasPagination := args.after != nil || args.first != nil || args.before != nil || args.last != nil
+				if hasPagination || ignoredEdges {
+					query := query.Clone()
+					u.loadTotal = append(u.loadTotal, func(ctx context.Context, nodes []*User) error {
+						ids := make([]driver.Value, len(nodes))
+						for i := range nodes {
+							ids[i] = nodes[i].ID
+						}
+						var v []struct {
+							NodeID ksuid.ID `sql:"user_shelves"`
+							Count  int      `sql:"count"`
+						}
+						query.Where(func(s *sql.Selector) {
+							s.Where(sql.InValues(s.C(user.ShelvesColumn), ids...))
+						})
+						if err := query.GroupBy(user.ShelvesColumn).Aggregate(Count()).Scan(ctx, &v); err != nil {
+							return err
+						}
+						m := make(map[ksuid.ID]int, len(v))
+						for i := range v {
+							m[v[i].NodeID] = v[i].Count
+						}
+						for i := range nodes {
+							n := m[nodes[i].ID]
+							if nodes[i].Edges.totalCount[0] == nil {
+								nodes[i].Edges.totalCount[0] = make(map[string]int)
+							}
+							nodes[i].Edges.totalCount[0][alias] = n
+						}
+						return nil
+					})
+				} else {
+					u.loadTotal = append(u.loadTotal, func(_ context.Context, nodes []*User) error {
+						for i := range nodes {
+							n := len(nodes[i].Edges.Shelves)
+							if nodes[i].Edges.totalCount[0] == nil {
+								nodes[i].Edges.totalCount[0] = make(map[string]int)
+							}
+							nodes[i].Edges.totalCount[0][alias] = n
+						}
+						return nil
+					})
+				}
+			}
+			if ignoredEdges || (args.first != nil && *args.first == 0) || (args.last != nil && *args.last == 0) {
+				continue
+			}
+			if query, err = pager.applyCursors(query, args.after, args.before); err != nil {
+				return err
+			}
+			path = append(path, edgesField, nodeField)
+			if field := collectedField(ctx, path...); field != nil {
+				if err := query.collectField(ctx, opCtx, *field, path, mayAddCondition(satisfies, "Shelf")...); err != nil {
+					return err
+				}
+			}
+			if limit := paginateLimit(args.first, args.last); limit > 0 {
+				modify := limitRows(user.ShelvesColumn, limit, pager.orderExpr(query))
+				query.modifiers = append(query.modifiers, modify)
+			} else {
+				query = pager.applyOrder(query)
+			}
+			u.WithNamedShelves(alias, func(wq *ShelfQuery) {
+				*wq = *query
+			})
+		case "username":
+			if _, ok := fieldSeen[user.FieldUsername]; !ok {
+				selectedFields = append(selectedFields, user.FieldUsername)
+				fieldSeen[user.FieldUsername] = struct{}{}
+			}
+		case "email":
+			if _, ok := fieldSeen[user.FieldEmail]; !ok {
+				selectedFields = append(selectedFields, user.FieldEmail)
+				fieldSeen[user.FieldEmail] = struct{}{}
+			}
+		case "id":
+		case "__typename":
+		default:
+			unknownSeen = true
+		}
+	}
+	if !unknownSeen {
+		u.Select(selectedFields...)
+	}
+	return nil
+}
+
+type userPaginateArgs struct {
+	first, last   *int
+	after, before *Cursor
+	opts          []UserPaginateOption
+}
+
+func newUserPaginateArgs(rv map[string]any) *userPaginateArgs {
+	args := &userPaginateArgs{}
+	if rv == nil {
+		return args
+	}
+	if v := rv[firstField]; v != nil {
+		args.first = v.(*int)
+	}
+	if v := rv[lastField]; v != nil {
+		args.last = v.(*int)
+	}
+	if v := rv[afterField]; v != nil {
+		args.after = v.(*Cursor)
+	}
+	if v := rv[beforeField]; v != nil {
+		args.before = v.(*Cursor)
+	}
+	if v, ok := rv[orderByField]; ok {
+		switch v := v.(type) {
+		case map[string]any:
+			var (
+				err1, err2 error
+				order      = &UserOrder{Field: &UserOrderField{}, Direction: entgql.OrderDirectionAsc}
+			)
+			if d, ok := v[directionField]; ok {
+				err1 = order.Direction.UnmarshalGQL(d)
+			}
+			if f, ok := v[fieldField]; ok {
+				err2 = order.Field.UnmarshalGQL(f)
+			}
+			if err1 == nil && err2 == nil {
+				args.opts = append(args.opts, WithUserOrder(order))
+			}
+		case *UserOrder:
+			if v != nil {
+				args.opts = append(args.opts, WithUserOrder(v))
+			}
+		}
+	}
+	if v, ok := rv[whereField].(*UserWhereInput); ok {
+		args.opts = append(args.opts, WithUserFilter(v.Filter))
 	}
 	return args
 }

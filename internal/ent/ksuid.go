@@ -7,13 +7,29 @@ import (
 	"fmt"
 	"lybbrio/internal/ent/author"
 	"lybbrio/internal/ent/book"
+	"lybbrio/internal/ent/identifier"
+	"lybbrio/internal/ent/language"
+	"lybbrio/internal/ent/publisher"
 	"lybbrio/internal/ent/schema/ksuid"
+	"lybbrio/internal/ent/series"
+	"lybbrio/internal/ent/seriesbook"
+	"lybbrio/internal/ent/shelf"
+	"lybbrio/internal/ent/tag"
+	"lybbrio/internal/ent/user"
 )
 
 // prefixMap maps KSUID prefixes to table names.
 var prefixMap = map[ksuid.ID]string{
 	"atr": author.Table,
 	"bok": book.Table,
+	"idn": identifier.Table,
+	"lng": language.Table,
+	"pub": publisher.Table,
+	"srs": series.Table,
+	"sbx": seriesbook.Table,
+	"shf": shelf.Table,
+	"tag": tag.Table,
+	"usr": user.Table,
 }
 
 // IDToType maps a pulid.ID to the underlying table.a

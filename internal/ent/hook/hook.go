@@ -32,6 +32,102 @@ func (f BookFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error)
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.BookMutation", m)
 }
 
+// The IdentifierFunc type is an adapter to allow the use of ordinary
+// function as Identifier mutator.
+type IdentifierFunc func(context.Context, *ent.IdentifierMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f IdentifierFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.IdentifierMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.IdentifierMutation", m)
+}
+
+// The LanguageFunc type is an adapter to allow the use of ordinary
+// function as Language mutator.
+type LanguageFunc func(context.Context, *ent.LanguageMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f LanguageFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.LanguageMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.LanguageMutation", m)
+}
+
+// The PublisherFunc type is an adapter to allow the use of ordinary
+// function as Publisher mutator.
+type PublisherFunc func(context.Context, *ent.PublisherMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f PublisherFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.PublisherMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.PublisherMutation", m)
+}
+
+// The SeriesFunc type is an adapter to allow the use of ordinary
+// function as Series mutator.
+type SeriesFunc func(context.Context, *ent.SeriesMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f SeriesFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.SeriesMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.SeriesMutation", m)
+}
+
+// The SeriesBookFunc type is an adapter to allow the use of ordinary
+// function as SeriesBook mutator.
+type SeriesBookFunc func(context.Context, *ent.SeriesBookMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f SeriesBookFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.SeriesBookMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.SeriesBookMutation", m)
+}
+
+// The ShelfFunc type is an adapter to allow the use of ordinary
+// function as Shelf mutator.
+type ShelfFunc func(context.Context, *ent.ShelfMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f ShelfFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.ShelfMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ShelfMutation", m)
+}
+
+// The TagFunc type is an adapter to allow the use of ordinary
+// function as Tag mutator.
+type TagFunc func(context.Context, *ent.TagMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f TagFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.TagMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.TagMutation", m)
+}
+
+// The UserFunc type is an adapter to allow the use of ordinary
+// function as User mutator.
+type UserFunc func(context.Context, *ent.UserMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f UserFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.UserMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.UserMutation", m)
+}
+
 // Condition is a hook condition function.
 type Condition func(context.Context, ent.Mutation) bool
 

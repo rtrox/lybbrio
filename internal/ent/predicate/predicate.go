@@ -11,3 +11,27 @@ type Author func(*sql.Selector)
 
 // Book is the predicate function for book builders.
 type Book func(*sql.Selector)
+
+// Identifier is the predicate function for identifier builders.
+type Identifier func(*sql.Selector)
+
+// Language is the predicate function for language builders.
+type Language func(*sql.Selector)
+
+// Publisher is the predicate function for publisher builders.
+type Publisher func(*sql.Selector)
+
+// Series is the predicate function for series builders.
+type Series func(*sql.Selector)
+
+// SeriesBook is the predicate function for seriesbook builders.
+type SeriesBook func(*sql.Selector)
+
+// Shelf is the predicate function for shelf builders.
+type Shelf func(*sql.Selector)
+
+// Tag is the predicate function for tag builders.
+type Tag func(*sql.Selector)
+
+// User is the predicate function for user builders.
+type User func(*sql.Selector)

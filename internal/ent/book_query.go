@@ -8,8 +8,12 @@ import (
 	"fmt"
 	"lybbrio/internal/ent/author"
 	"lybbrio/internal/ent/book"
+	"lybbrio/internal/ent/identifier"
+	"lybbrio/internal/ent/language"
 	"lybbrio/internal/ent/predicate"
 	"lybbrio/internal/ent/schema/ksuid"
+	"lybbrio/internal/ent/series"
+	"lybbrio/internal/ent/shelf"
 	"math"
 
 	"entgo.io/ent/dialect/sql"
@@ -20,14 +24,22 @@ import (
 // BookQuery is the builder for querying Book entities.
 type BookQuery struct {
 	config
-	ctx              *QueryContext
-	order            []book.OrderOption
-	inters           []Interceptor
-	predicates       []predicate.Book
-	withAuthors      *AuthorQuery
-	modifiers        []func(*sql.Selector)
-	loadTotal        []func(context.Context, []*Book) error
-	withNamedAuthors map[string]*AuthorQuery
+	ctx                 *QueryContext
+	order               []book.OrderOption
+	inters              []Interceptor
+	predicates          []predicate.Book
+	withAuthors         *AuthorQuery
+	withSeries          *SeriesQuery
+	withIdentifier      *IdentifierQuery
+	withLanguage        *LanguageQuery
+	withShelf           *ShelfQuery
+	withFKs             bool
+	modifiers           []func(*sql.Selector)
+	loadTotal           []func(context.Context, []*Book) error
+	withNamedAuthors    map[string]*AuthorQuery
+	withNamedSeries     map[string]*SeriesQuery
+	withNamedIdentifier map[string]*IdentifierQuery
+	withNamedShelf      map[string]*ShelfQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -79,6 +91,94 @@ func (bq *BookQuery) QueryAuthors() *AuthorQuery {
 			sqlgraph.From(book.Table, book.FieldID, selector),
 			sqlgraph.To(author.Table, author.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, true, book.AuthorsTable, book.AuthorsPrimaryKey...),
+		)
+		fromU = sqlgraph.SetNeighbors(bq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QuerySeries chains the current query on the "series" edge.
+func (bq *BookQuery) QuerySeries() *SeriesQuery {
+	query := (&SeriesClient{config: bq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := bq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := bq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(book.Table, book.FieldID, selector),
+			sqlgraph.To(series.Table, series.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, book.SeriesTable, book.SeriesPrimaryKey...),
+		)
+		fromU = sqlgraph.SetNeighbors(bq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryIdentifier chains the current query on the "identifier" edge.
+func (bq *BookQuery) QueryIdentifier() *IdentifierQuery {
+	query := (&IdentifierClient{config: bq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := bq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := bq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(book.Table, book.FieldID, selector),
+			sqlgraph.To(identifier.Table, identifier.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, book.IdentifierTable, book.IdentifierColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(bq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryLanguage chains the current query on the "language" edge.
+func (bq *BookQuery) QueryLanguage() *LanguageQuery {
+	query := (&LanguageClient{config: bq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := bq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := bq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(book.Table, book.FieldID, selector),
+			sqlgraph.To(language.Table, language.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, book.LanguageTable, book.LanguageColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(bq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryShelf chains the current query on the "shelf" edge.
+func (bq *BookQuery) QueryShelf() *ShelfQuery {
+	query := (&ShelfClient{config: bq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := bq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := bq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(book.Table, book.FieldID, selector),
+			sqlgraph.To(shelf.Table, shelf.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, book.ShelfTable, book.ShelfPrimaryKey...),
 		)
 		fromU = sqlgraph.SetNeighbors(bq.driver.Dialect(), step)
 		return fromU, nil
@@ -273,12 +373,16 @@ func (bq *BookQuery) Clone() *BookQuery {
 		return nil
 	}
 	return &BookQuery{
-		config:      bq.config,
-		ctx:         bq.ctx.Clone(),
-		order:       append([]book.OrderOption{}, bq.order...),
-		inters:      append([]Interceptor{}, bq.inters...),
-		predicates:  append([]predicate.Book{}, bq.predicates...),
-		withAuthors: bq.withAuthors.Clone(),
+		config:         bq.config,
+		ctx:            bq.ctx.Clone(),
+		order:          append([]book.OrderOption{}, bq.order...),
+		inters:         append([]Interceptor{}, bq.inters...),
+		predicates:     append([]predicate.Book{}, bq.predicates...),
+		withAuthors:    bq.withAuthors.Clone(),
+		withSeries:     bq.withSeries.Clone(),
+		withIdentifier: bq.withIdentifier.Clone(),
+		withLanguage:   bq.withLanguage.Clone(),
+		withShelf:      bq.withShelf.Clone(),
 		// clone intermediate query.
 		sql:  bq.sql.Clone(),
 		path: bq.path,
@@ -293,6 +397,50 @@ func (bq *BookQuery) WithAuthors(opts ...func(*AuthorQuery)) *BookQuery {
 		opt(query)
 	}
 	bq.withAuthors = query
+	return bq
+}
+
+// WithSeries tells the query-builder to eager-load the nodes that are connected to
+// the "series" edge. The optional arguments are used to configure the query builder of the edge.
+func (bq *BookQuery) WithSeries(opts ...func(*SeriesQuery)) *BookQuery {
+	query := (&SeriesClient{config: bq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	bq.withSeries = query
+	return bq
+}
+
+// WithIdentifier tells the query-builder to eager-load the nodes that are connected to
+// the "identifier" edge. The optional arguments are used to configure the query builder of the edge.
+func (bq *BookQuery) WithIdentifier(opts ...func(*IdentifierQuery)) *BookQuery {
+	query := (&IdentifierClient{config: bq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	bq.withIdentifier = query
+	return bq
+}
+
+// WithLanguage tells the query-builder to eager-load the nodes that are connected to
+// the "language" edge. The optional arguments are used to configure the query builder of the edge.
+func (bq *BookQuery) WithLanguage(opts ...func(*LanguageQuery)) *BookQuery {
+	query := (&LanguageClient{config: bq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	bq.withLanguage = query
+	return bq
+}
+
+// WithShelf tells the query-builder to eager-load the nodes that are connected to
+// the "shelf" edge. The optional arguments are used to configure the query builder of the edge.
+func (bq *BookQuery) WithShelf(opts ...func(*ShelfQuery)) *BookQuery {
+	query := (&ShelfClient{config: bq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	bq.withShelf = query
 	return bq
 }
 
@@ -373,11 +521,22 @@ func (bq *BookQuery) prepareQuery(ctx context.Context) error {
 func (bq *BookQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Book, error) {
 	var (
 		nodes       = []*Book{}
+		withFKs     = bq.withFKs
 		_spec       = bq.querySpec()
-		loadedTypes = [1]bool{
+		loadedTypes = [5]bool{
 			bq.withAuthors != nil,
+			bq.withSeries != nil,
+			bq.withIdentifier != nil,
+			bq.withLanguage != nil,
+			bq.withShelf != nil,
 		}
 	)
+	if bq.withLanguage != nil {
+		withFKs = true
+	}
+	if withFKs {
+		_spec.Node.Columns = append(_spec.Node.Columns, book.ForeignKeys...)
+	}
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*Book).scanValues(nil, columns)
 	}
@@ -406,10 +565,58 @@ func (bq *BookQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Book, e
 			return nil, err
 		}
 	}
+	if query := bq.withSeries; query != nil {
+		if err := bq.loadSeries(ctx, query, nodes,
+			func(n *Book) { n.Edges.Series = []*Series{} },
+			func(n *Book, e *Series) { n.Edges.Series = append(n.Edges.Series, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := bq.withIdentifier; query != nil {
+		if err := bq.loadIdentifier(ctx, query, nodes,
+			func(n *Book) { n.Edges.Identifier = []*Identifier{} },
+			func(n *Book, e *Identifier) { n.Edges.Identifier = append(n.Edges.Identifier, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := bq.withLanguage; query != nil {
+		if err := bq.loadLanguage(ctx, query, nodes, nil,
+			func(n *Book, e *Language) { n.Edges.Language = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := bq.withShelf; query != nil {
+		if err := bq.loadShelf(ctx, query, nodes,
+			func(n *Book) { n.Edges.Shelf = []*Shelf{} },
+			func(n *Book, e *Shelf) { n.Edges.Shelf = append(n.Edges.Shelf, e) }); err != nil {
+			return nil, err
+		}
+	}
 	for name, query := range bq.withNamedAuthors {
 		if err := bq.loadAuthors(ctx, query, nodes,
 			func(n *Book) { n.appendNamedAuthors(name) },
 			func(n *Book, e *Author) { n.appendNamedAuthors(name, e) }); err != nil {
+			return nil, err
+		}
+	}
+	for name, query := range bq.withNamedSeries {
+		if err := bq.loadSeries(ctx, query, nodes,
+			func(n *Book) { n.appendNamedSeries(name) },
+			func(n *Book, e *Series) { n.appendNamedSeries(name, e) }); err != nil {
+			return nil, err
+		}
+	}
+	for name, query := range bq.withNamedIdentifier {
+		if err := bq.loadIdentifier(ctx, query, nodes,
+			func(n *Book) { n.appendNamedIdentifier(name) },
+			func(n *Book, e *Identifier) { n.appendNamedIdentifier(name, e) }); err != nil {
+			return nil, err
+		}
+	}
+	for name, query := range bq.withNamedShelf {
+		if err := bq.loadShelf(ctx, query, nodes,
+			func(n *Book) { n.appendNamedShelf(name) },
+			func(n *Book, e *Shelf) { n.appendNamedShelf(name, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -475,6 +682,191 @@ func (bq *BookQuery) loadAuthors(ctx context.Context, query *AuthorQuery, nodes 
 		nodes, ok := nids[n.ID]
 		if !ok {
 			return fmt.Errorf(`unexpected "authors" node returned %v`, n.ID)
+		}
+		for kn := range nodes {
+			assign(kn, n)
+		}
+	}
+	return nil
+}
+func (bq *BookQuery) loadSeries(ctx context.Context, query *SeriesQuery, nodes []*Book, init func(*Book), assign func(*Book, *Series)) error {
+	edgeIDs := make([]driver.Value, len(nodes))
+	byID := make(map[ksuid.ID]*Book)
+	nids := make(map[ksuid.ID]map[*Book]struct{})
+	for i, node := range nodes {
+		edgeIDs[i] = node.ID
+		byID[node.ID] = node
+		if init != nil {
+			init(node)
+		}
+	}
+	query.Where(func(s *sql.Selector) {
+		joinT := sql.Table(book.SeriesTable)
+		s.Join(joinT).On(s.C(series.FieldID), joinT.C(book.SeriesPrimaryKey[0]))
+		s.Where(sql.InValues(joinT.C(book.SeriesPrimaryKey[1]), edgeIDs...))
+		columns := s.SelectedColumns()
+		s.Select(joinT.C(book.SeriesPrimaryKey[1]))
+		s.AppendSelect(columns...)
+		s.SetDistinct(false)
+	})
+	if err := query.prepareQuery(ctx); err != nil {
+		return err
+	}
+	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
+		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+			assign := spec.Assign
+			values := spec.ScanValues
+			spec.ScanValues = func(columns []string) ([]any, error) {
+				values, err := values(columns[1:])
+				if err != nil {
+					return nil, err
+				}
+				return append([]any{new(sql.NullString)}, values...), nil
+			}
+			spec.Assign = func(columns []string, values []any) error {
+				outValue := ksuid.ID(values[0].(*sql.NullString).String)
+				inValue := ksuid.ID(values[1].(*sql.NullString).String)
+				if nids[inValue] == nil {
+					nids[inValue] = map[*Book]struct{}{byID[outValue]: {}}
+					return assign(columns[1:], values[1:])
+				}
+				nids[inValue][byID[outValue]] = struct{}{}
+				return nil
+			}
+		})
+	})
+	neighbors, err := withInterceptors[[]*Series](ctx, query, qr, query.inters)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected "series" node returned %v`, n.ID)
+		}
+		for kn := range nodes {
+			assign(kn, n)
+		}
+	}
+	return nil
+}
+func (bq *BookQuery) loadIdentifier(ctx context.Context, query *IdentifierQuery, nodes []*Book, init func(*Book), assign func(*Book, *Identifier)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[ksuid.ID]*Book)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.Identifier(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(book.IdentifierColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.identifier_book
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "identifier_book" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "identifier_book" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (bq *BookQuery) loadLanguage(ctx context.Context, query *LanguageQuery, nodes []*Book, init func(*Book), assign func(*Book, *Language)) error {
+	ids := make([]ksuid.ID, 0, len(nodes))
+	nodeids := make(map[ksuid.ID][]*Book)
+	for i := range nodes {
+		if nodes[i].language_books == nil {
+			continue
+		}
+		fk := *nodes[i].language_books
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(language.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "language_books" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
+func (bq *BookQuery) loadShelf(ctx context.Context, query *ShelfQuery, nodes []*Book, init func(*Book), assign func(*Book, *Shelf)) error {
+	edgeIDs := make([]driver.Value, len(nodes))
+	byID := make(map[ksuid.ID]*Book)
+	nids := make(map[ksuid.ID]map[*Book]struct{})
+	for i, node := range nodes {
+		edgeIDs[i] = node.ID
+		byID[node.ID] = node
+		if init != nil {
+			init(node)
+		}
+	}
+	query.Where(func(s *sql.Selector) {
+		joinT := sql.Table(book.ShelfTable)
+		s.Join(joinT).On(s.C(shelf.FieldID), joinT.C(book.ShelfPrimaryKey[0]))
+		s.Where(sql.InValues(joinT.C(book.ShelfPrimaryKey[1]), edgeIDs...))
+		columns := s.SelectedColumns()
+		s.Select(joinT.C(book.ShelfPrimaryKey[1]))
+		s.AppendSelect(columns...)
+		s.SetDistinct(false)
+	})
+	if err := query.prepareQuery(ctx); err != nil {
+		return err
+	}
+	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
+		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+			assign := spec.Assign
+			values := spec.ScanValues
+			spec.ScanValues = func(columns []string) ([]any, error) {
+				values, err := values(columns[1:])
+				if err != nil {
+					return nil, err
+				}
+				return append([]any{new(sql.NullString)}, values...), nil
+			}
+			spec.Assign = func(columns []string, values []any) error {
+				outValue := ksuid.ID(values[0].(*sql.NullString).String)
+				inValue := ksuid.ID(values[1].(*sql.NullString).String)
+				if nids[inValue] == nil {
+					nids[inValue] = map[*Book]struct{}{byID[outValue]: {}}
+					return assign(columns[1:], values[1:])
+				}
+				nids[inValue][byID[outValue]] = struct{}{}
+				return nil
+			}
+		})
+	})
+	neighbors, err := withInterceptors[[]*Shelf](ctx, query, qr, query.inters)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected "shelf" node returned %v`, n.ID)
 		}
 		for kn := range nodes {
 			assign(kn, n)
@@ -578,6 +970,48 @@ func (bq *BookQuery) WithNamedAuthors(name string, opts ...func(*AuthorQuery)) *
 		bq.withNamedAuthors = make(map[string]*AuthorQuery)
 	}
 	bq.withNamedAuthors[name] = query
+	return bq
+}
+
+// WithNamedSeries tells the query-builder to eager-load the nodes that are connected to the "series"
+// edge with the given name. The optional arguments are used to configure the query builder of the edge.
+func (bq *BookQuery) WithNamedSeries(name string, opts ...func(*SeriesQuery)) *BookQuery {
+	query := (&SeriesClient{config: bq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	if bq.withNamedSeries == nil {
+		bq.withNamedSeries = make(map[string]*SeriesQuery)
+	}
+	bq.withNamedSeries[name] = query
+	return bq
+}
+
+// WithNamedIdentifier tells the query-builder to eager-load the nodes that are connected to the "identifier"
+// edge with the given name. The optional arguments are used to configure the query builder of the edge.
+func (bq *BookQuery) WithNamedIdentifier(name string, opts ...func(*IdentifierQuery)) *BookQuery {
+	query := (&IdentifierClient{config: bq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	if bq.withNamedIdentifier == nil {
+		bq.withNamedIdentifier = make(map[string]*IdentifierQuery)
+	}
+	bq.withNamedIdentifier[name] = query
+	return bq
+}
+
+// WithNamedShelf tells the query-builder to eager-load the nodes that are connected to the "shelf"
+// edge with the given name. The optional arguments are used to configure the query builder of the edge.
+func (bq *BookQuery) WithNamedShelf(name string, opts ...func(*ShelfQuery)) *BookQuery {
+	query := (&ShelfClient{config: bq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	if bq.withNamedShelf == nil {
+		bq.withNamedShelf = make(map[string]*ShelfQuery)
+	}
+	bq.withNamedShelf[name] = query
 	return bq
 }
 

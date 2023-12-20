@@ -5,6 +5,7 @@ package ent
 import (
 	"fmt"
 	"lybbrio/internal/ent/book"
+	"lybbrio/internal/ent/language"
 	"lybbrio/internal/ent/schema/ksuid"
 	"strings"
 	"time"
@@ -22,10 +23,10 @@ type Book struct {
 	Title string `json:"title,omitempty"`
 	// Sort holds the value of the "sort" field.
 	Sort string `json:"sort,omitempty"`
-	// AddedAt holds the value of the "addedAt" field.
-	AddedAt time.Time `json:"addedAt,omitempty"`
-	// PubDate holds the value of the "pubDate" field.
-	PubDate time.Time `json:"pubDate,omitempty"`
+	// AddedAt holds the value of the "added_at" field.
+	AddedAt time.Time `json:"added_at,omitempty"`
+	// PubDate holds the value of the "pub_date" field.
+	PubDate time.Time `json:"pub_date,omitempty"`
 	// Path holds the value of the "path" field.
 	Path string `json:"path,omitempty"`
 	// Isbn holds the value of the "isbn" field.
@@ -34,21 +35,35 @@ type Book struct {
 	Description string `json:"description,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the BookQuery when eager-loading is set.
-	Edges        BookEdges `json:"edges"`
-	selectValues sql.SelectValues
+	Edges           BookEdges `json:"edges"`
+	language_books  *ksuid.ID
+	publisher_books *ksuid.ID
+	tag_books       *ksuid.ID
+	selectValues    sql.SelectValues
 }
 
 // BookEdges holds the relations/edges for other nodes in the graph.
 type BookEdges struct {
 	// Authors holds the value of the authors edge.
 	Authors []*Author `json:"authors,omitempty"`
+	// Series holds the value of the series edge.
+	Series []*Series `json:"series,omitempty"`
+	// Identifier holds the value of the identifier edge.
+	Identifier []*Identifier `json:"identifier,omitempty"`
+	// Language holds the value of the language edge.
+	Language *Language `json:"language,omitempty"`
+	// Shelf holds the value of the shelf edge.
+	Shelf []*Shelf `json:"shelf,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [5]bool
 	// totalCount holds the count of the edges above.
-	totalCount [1]map[string]int
+	totalCount [5]map[string]int
 
-	namedAuthors map[string][]*Author
+	namedAuthors    map[string][]*Author
+	namedSeries     map[string][]*Series
+	namedIdentifier map[string][]*Identifier
+	namedShelf      map[string][]*Shelf
 }
 
 // AuthorsOrErr returns the Authors value or an error if the edge
@@ -60,6 +75,46 @@ func (e BookEdges) AuthorsOrErr() ([]*Author, error) {
 	return nil, &NotLoadedError{edge: "authors"}
 }
 
+// SeriesOrErr returns the Series value or an error if the edge
+// was not loaded in eager-loading.
+func (e BookEdges) SeriesOrErr() ([]*Series, error) {
+	if e.loadedTypes[1] {
+		return e.Series, nil
+	}
+	return nil, &NotLoadedError{edge: "series"}
+}
+
+// IdentifierOrErr returns the Identifier value or an error if the edge
+// was not loaded in eager-loading.
+func (e BookEdges) IdentifierOrErr() ([]*Identifier, error) {
+	if e.loadedTypes[2] {
+		return e.Identifier, nil
+	}
+	return nil, &NotLoadedError{edge: "identifier"}
+}
+
+// LanguageOrErr returns the Language value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e BookEdges) LanguageOrErr() (*Language, error) {
+	if e.loadedTypes[3] {
+		if e.Language == nil {
+			// Edge was loaded but was not found.
+			return nil, &NotFoundError{label: language.Label}
+		}
+		return e.Language, nil
+	}
+	return nil, &NotLoadedError{edge: "language"}
+}
+
+// ShelfOrErr returns the Shelf value or an error if the edge
+// was not loaded in eager-loading.
+func (e BookEdges) ShelfOrErr() ([]*Shelf, error) {
+	if e.loadedTypes[4] {
+		return e.Shelf, nil
+	}
+	return nil, &NotLoadedError{edge: "shelf"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*Book) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
@@ -69,6 +124,12 @@ func (*Book) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullString)
 		case book.FieldAddedAt, book.FieldPubDate:
 			values[i] = new(sql.NullTime)
+		case book.ForeignKeys[0]: // language_books
+			values[i] = new(sql.NullString)
+		case book.ForeignKeys[1]: // publisher_books
+			values[i] = new(sql.NullString)
+		case book.ForeignKeys[2]: // tag_books
+			values[i] = new(sql.NullString)
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -104,13 +165,13 @@ func (b *Book) assignValues(columns []string, values []any) error {
 			}
 		case book.FieldAddedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field addedAt", values[i])
+				return fmt.Errorf("unexpected type %T for field added_at", values[i])
 			} else if value.Valid {
 				b.AddedAt = value.Time
 			}
 		case book.FieldPubDate:
 			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field pubDate", values[i])
+				return fmt.Errorf("unexpected type %T for field pub_date", values[i])
 			} else if value.Valid {
 				b.PubDate = value.Time
 			}
@@ -132,6 +193,27 @@ func (b *Book) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				b.Description = value.String
 			}
+		case book.ForeignKeys[0]:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field language_books", values[i])
+			} else if value.Valid {
+				b.language_books = new(ksuid.ID)
+				*b.language_books = ksuid.ID(value.String)
+			}
+		case book.ForeignKeys[1]:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field publisher_books", values[i])
+			} else if value.Valid {
+				b.publisher_books = new(ksuid.ID)
+				*b.publisher_books = ksuid.ID(value.String)
+			}
+		case book.ForeignKeys[2]:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field tag_books", values[i])
+			} else if value.Valid {
+				b.tag_books = new(ksuid.ID)
+				*b.tag_books = ksuid.ID(value.String)
+			}
 		default:
 			b.selectValues.Set(columns[i], values[i])
 		}
@@ -148,6 +230,26 @@ func (b *Book) Value(name string) (ent.Value, error) {
 // QueryAuthors queries the "authors" edge of the Book entity.
 func (b *Book) QueryAuthors() *AuthorQuery {
 	return NewBookClient(b.config).QueryAuthors(b)
+}
+
+// QuerySeries queries the "series" edge of the Book entity.
+func (b *Book) QuerySeries() *SeriesQuery {
+	return NewBookClient(b.config).QuerySeries(b)
+}
+
+// QueryIdentifier queries the "identifier" edge of the Book entity.
+func (b *Book) QueryIdentifier() *IdentifierQuery {
+	return NewBookClient(b.config).QueryIdentifier(b)
+}
+
+// QueryLanguage queries the "language" edge of the Book entity.
+func (b *Book) QueryLanguage() *LanguageQuery {
+	return NewBookClient(b.config).QueryLanguage(b)
+}
+
+// QueryShelf queries the "shelf" edge of the Book entity.
+func (b *Book) QueryShelf() *ShelfQuery {
+	return NewBookClient(b.config).QueryShelf(b)
 }
 
 // Update returns a builder for updating this Book.
@@ -179,10 +281,10 @@ func (b *Book) String() string {
 	builder.WriteString("sort=")
 	builder.WriteString(b.Sort)
 	builder.WriteString(", ")
-	builder.WriteString("addedAt=")
+	builder.WriteString("added_at=")
 	builder.WriteString(b.AddedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
-	builder.WriteString("pubDate=")
+	builder.WriteString("pub_date=")
 	builder.WriteString(b.PubDate.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("path=")
@@ -218,6 +320,78 @@ func (b *Book) appendNamedAuthors(name string, edges ...*Author) {
 		b.Edges.namedAuthors[name] = []*Author{}
 	} else {
 		b.Edges.namedAuthors[name] = append(b.Edges.namedAuthors[name], edges...)
+	}
+}
+
+// NamedSeries returns the Series named value or an error if the edge was not
+// loaded in eager-loading with this name.
+func (b *Book) NamedSeries(name string) ([]*Series, error) {
+	if b.Edges.namedSeries == nil {
+		return nil, &NotLoadedError{edge: name}
+	}
+	nodes, ok := b.Edges.namedSeries[name]
+	if !ok {
+		return nil, &NotLoadedError{edge: name}
+	}
+	return nodes, nil
+}
+
+func (b *Book) appendNamedSeries(name string, edges ...*Series) {
+	if b.Edges.namedSeries == nil {
+		b.Edges.namedSeries = make(map[string][]*Series)
+	}
+	if len(edges) == 0 {
+		b.Edges.namedSeries[name] = []*Series{}
+	} else {
+		b.Edges.namedSeries[name] = append(b.Edges.namedSeries[name], edges...)
+	}
+}
+
+// NamedIdentifier returns the Identifier named value or an error if the edge was not
+// loaded in eager-loading with this name.
+func (b *Book) NamedIdentifier(name string) ([]*Identifier, error) {
+	if b.Edges.namedIdentifier == nil {
+		return nil, &NotLoadedError{edge: name}
+	}
+	nodes, ok := b.Edges.namedIdentifier[name]
+	if !ok {
+		return nil, &NotLoadedError{edge: name}
+	}
+	return nodes, nil
+}
+
+func (b *Book) appendNamedIdentifier(name string, edges ...*Identifier) {
+	if b.Edges.namedIdentifier == nil {
+		b.Edges.namedIdentifier = make(map[string][]*Identifier)
+	}
+	if len(edges) == 0 {
+		b.Edges.namedIdentifier[name] = []*Identifier{}
+	} else {
+		b.Edges.namedIdentifier[name] = append(b.Edges.namedIdentifier[name], edges...)
+	}
+}
+
+// NamedShelf returns the Shelf named value or an error if the edge was not
+// loaded in eager-loading with this name.
+func (b *Book) NamedShelf(name string) ([]*Shelf, error) {
+	if b.Edges.namedShelf == nil {
+		return nil, &NotLoadedError{edge: name}
+	}
+	nodes, ok := b.Edges.namedShelf[name]
+	if !ok {
+		return nil, &NotLoadedError{edge: name}
+	}
+	return nodes, nil
+}
+
+func (b *Book) appendNamedShelf(name string, edges ...*Shelf) {
+	if b.Edges.namedShelf == nil {
+		b.Edges.namedShelf = make(map[string][]*Shelf)
+	}
+	if len(edges) == 0 {
+		b.Edges.namedShelf[name] = []*Shelf{}
+	} else {
+		b.Edges.namedShelf[name] = append(b.Edges.namedShelf[name], edges...)
 	}
 }
 

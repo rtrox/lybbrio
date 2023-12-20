@@ -19,9 +19,9 @@ const (
 	FieldTitle = "title"
 	// FieldSort holds the string denoting the sort field in the database.
 	FieldSort = "sort"
-	// FieldAddedAt holds the string denoting the addedat field in the database.
+	// FieldAddedAt holds the string denoting the added_at field in the database.
 	FieldAddedAt = "added_at"
-	// FieldPubDate holds the string denoting the pubdate field in the database.
+	// FieldPubDate holds the string denoting the pub_date field in the database.
 	FieldPubDate = "pub_date"
 	// FieldPath holds the string denoting the path field in the database.
 	FieldPath = "path"
@@ -31,6 +31,14 @@ const (
 	FieldDescription = "description"
 	// EdgeAuthors holds the string denoting the authors edge name in mutations.
 	EdgeAuthors = "authors"
+	// EdgeSeries holds the string denoting the series edge name in mutations.
+	EdgeSeries = "series"
+	// EdgeIdentifier holds the string denoting the identifier edge name in mutations.
+	EdgeIdentifier = "identifier"
+	// EdgeLanguage holds the string denoting the language edge name in mutations.
+	EdgeLanguage = "language"
+	// EdgeShelf holds the string denoting the shelf edge name in mutations.
+	EdgeShelf = "shelf"
 	// Table holds the table name of the book in the database.
 	Table = "books"
 	// AuthorsTable is the table that holds the authors relation/edge. The primary key declared below.
@@ -38,6 +46,30 @@ const (
 	// AuthorsInverseTable is the table name for the Author entity.
 	// It exists in this package in order to avoid circular dependency with the "author" package.
 	AuthorsInverseTable = "authors"
+	// SeriesTable is the table that holds the series relation/edge. The primary key declared below.
+	SeriesTable = "series_books"
+	// SeriesInverseTable is the table name for the Series entity.
+	// It exists in this package in order to avoid circular dependency with the "series" package.
+	SeriesInverseTable = "series"
+	// IdentifierTable is the table that holds the identifier relation/edge.
+	IdentifierTable = "identifiers"
+	// IdentifierInverseTable is the table name for the Identifier entity.
+	// It exists in this package in order to avoid circular dependency with the "identifier" package.
+	IdentifierInverseTable = "identifiers"
+	// IdentifierColumn is the table column denoting the identifier relation/edge.
+	IdentifierColumn = "identifier_book"
+	// LanguageTable is the table that holds the language relation/edge.
+	LanguageTable = "books"
+	// LanguageInverseTable is the table name for the Language entity.
+	// It exists in this package in order to avoid circular dependency with the "language" package.
+	LanguageInverseTable = "languages"
+	// LanguageColumn is the table column denoting the language relation/edge.
+	LanguageColumn = "language_books"
+	// ShelfTable is the table that holds the shelf relation/edge. The primary key declared below.
+	ShelfTable = "shelf_books"
+	// ShelfInverseTable is the table name for the Shelf entity.
+	// It exists in this package in order to avoid circular dependency with the "shelf" package.
+	ShelfInverseTable = "shelves"
 )
 
 // Columns holds all SQL columns for book fields.
@@ -52,10 +84,24 @@ var Columns = []string{
 	FieldDescription,
 }
 
+// ForeignKeys holds the SQL foreign-keys that are owned by the "books"
+// table and are not defined as standalone fields in the schema.
+var ForeignKeys = []string{
+	"language_books",
+	"publisher_books",
+	"tag_books",
+}
+
 var (
 	// AuthorsPrimaryKey and AuthorsColumn2 are the table columns denoting the
 	// primary key for the authors relation (M2M).
 	AuthorsPrimaryKey = []string{"author_id", "book_id"}
+	// SeriesPrimaryKey and SeriesColumn2 are the table columns denoting the
+	// primary key for the series relation (M2M).
+	SeriesPrimaryKey = []string{"series_id", "book_id"}
+	// ShelfPrimaryKey and ShelfColumn2 are the table columns denoting the
+	// primary key for the shelf relation (M2M).
+	ShelfPrimaryKey = []string{"shelf_id", "book_id"}
 )
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -65,13 +111,18 @@ func ValidColumn(column string) bool {
 			return true
 		}
 	}
+	for i := range ForeignKeys {
+		if column == ForeignKeys[i] {
+			return true
+		}
+	}
 	return false
 }
 
 var (
 	// TitleValidator is a validator for the "title" field. It is called by the builders before save.
 	TitleValidator func(string) error
-	// DefaultAddedAt holds the default value on creation for the "addedAt" field.
+	// DefaultAddedAt holds the default value on creation for the "added_at" field.
 	DefaultAddedAt func() time.Time
 	// PathValidator is a validator for the "path" field. It is called by the builders before save.
 	PathValidator func(string) error
@@ -97,12 +148,12 @@ func BySort(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldSort, opts...).ToFunc()
 }
 
-// ByAddedAt orders the results by the addedAt field.
+// ByAddedAt orders the results by the added_at field.
 func ByAddedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldAddedAt, opts...).ToFunc()
 }
 
-// ByPubDate orders the results by the pubDate field.
+// ByPubDate orders the results by the pub_date field.
 func ByPubDate(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldPubDate, opts...).ToFunc()
 }
@@ -135,10 +186,87 @@ func ByAuthors(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newAuthorsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// BySeriesCount orders the results by series count.
+func BySeriesCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newSeriesStep(), opts...)
+	}
+}
+
+// BySeries orders the results by series terms.
+func BySeries(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newSeriesStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByIdentifierCount orders the results by identifier count.
+func ByIdentifierCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newIdentifierStep(), opts...)
+	}
+}
+
+// ByIdentifier orders the results by identifier terms.
+func ByIdentifier(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newIdentifierStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByLanguageField orders the results by language field.
+func ByLanguageField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newLanguageStep(), sql.OrderByField(field, opts...))
+	}
+}
+
+// ByShelfCount orders the results by shelf count.
+func ByShelfCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newShelfStep(), opts...)
+	}
+}
+
+// ByShelf orders the results by shelf terms.
+func ByShelf(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newShelfStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newAuthorsStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(AuthorsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2M, true, AuthorsTable, AuthorsPrimaryKey...),
+	)
+}
+func newSeriesStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(SeriesInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2M, true, SeriesTable, SeriesPrimaryKey...),
+	)
+}
+func newIdentifierStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(IdentifierInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, true, IdentifierTable, IdentifierColumn),
+	)
+}
+func newLanguageStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(LanguageInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, true, LanguageTable, LanguageColumn),
+	)
+}
+func newShelfStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(ShelfInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2M, true, ShelfTable, ShelfPrimaryKey...),
 	)
 }

@@ -8,8 +8,12 @@ import (
 	"fmt"
 	"lybbrio/internal/ent/author"
 	"lybbrio/internal/ent/book"
+	"lybbrio/internal/ent/identifier"
+	"lybbrio/internal/ent/language"
 	"lybbrio/internal/ent/predicate"
 	"lybbrio/internal/ent/schema/ksuid"
+	"lybbrio/internal/ent/series"
+	"lybbrio/internal/ent/shelf"
 	"time"
 
 	"entgo.io/ent/dialect/sql"
@@ -58,13 +62,13 @@ func (bu *BookUpdate) SetNillableSort(s *string) *BookUpdate {
 	return bu
 }
 
-// SetAddedAt sets the "addedAt" field.
+// SetAddedAt sets the "added_at" field.
 func (bu *BookUpdate) SetAddedAt(t time.Time) *BookUpdate {
 	bu.mutation.SetAddedAt(t)
 	return bu
 }
 
-// SetNillableAddedAt sets the "addedAt" field if the given value is not nil.
+// SetNillableAddedAt sets the "added_at" field if the given value is not nil.
 func (bu *BookUpdate) SetNillableAddedAt(t *time.Time) *BookUpdate {
 	if t != nil {
 		bu.SetAddedAt(*t)
@@ -72,13 +76,13 @@ func (bu *BookUpdate) SetNillableAddedAt(t *time.Time) *BookUpdate {
 	return bu
 }
 
-// SetPubDate sets the "pubDate" field.
+// SetPubDate sets the "pub_date" field.
 func (bu *BookUpdate) SetPubDate(t time.Time) *BookUpdate {
 	bu.mutation.SetPubDate(t)
 	return bu
 }
 
-// SetNillablePubDate sets the "pubDate" field if the given value is not nil.
+// SetNillablePubDate sets the "pub_date" field if the given value is not nil.
 func (bu *BookUpdate) SetNillablePubDate(t *time.Time) *BookUpdate {
 	if t != nil {
 		bu.SetPubDate(*t)
@@ -86,7 +90,7 @@ func (bu *BookUpdate) SetNillablePubDate(t *time.Time) *BookUpdate {
 	return bu
 }
 
-// ClearPubDate clears the value of the "pubDate" field.
+// ClearPubDate clears the value of the "pub_date" field.
 func (bu *BookUpdate) ClearPubDate() *BookUpdate {
 	bu.mutation.ClearPubDate()
 	return bu
@@ -161,6 +165,70 @@ func (bu *BookUpdate) AddAuthors(a ...*Author) *BookUpdate {
 	return bu.AddAuthorIDs(ids...)
 }
 
+// AddSeriesIDs adds the "series" edge to the Series entity by IDs.
+func (bu *BookUpdate) AddSeriesIDs(ids ...ksuid.ID) *BookUpdate {
+	bu.mutation.AddSeriesIDs(ids...)
+	return bu
+}
+
+// AddSeries adds the "series" edges to the Series entity.
+func (bu *BookUpdate) AddSeries(s ...*Series) *BookUpdate {
+	ids := make([]ksuid.ID, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return bu.AddSeriesIDs(ids...)
+}
+
+// AddIdentifierIDs adds the "identifier" edge to the Identifier entity by IDs.
+func (bu *BookUpdate) AddIdentifierIDs(ids ...ksuid.ID) *BookUpdate {
+	bu.mutation.AddIdentifierIDs(ids...)
+	return bu
+}
+
+// AddIdentifier adds the "identifier" edges to the Identifier entity.
+func (bu *BookUpdate) AddIdentifier(i ...*Identifier) *BookUpdate {
+	ids := make([]ksuid.ID, len(i))
+	for j := range i {
+		ids[j] = i[j].ID
+	}
+	return bu.AddIdentifierIDs(ids...)
+}
+
+// SetLanguageID sets the "language" edge to the Language entity by ID.
+func (bu *BookUpdate) SetLanguageID(id ksuid.ID) *BookUpdate {
+	bu.mutation.SetLanguageID(id)
+	return bu
+}
+
+// SetNillableLanguageID sets the "language" edge to the Language entity by ID if the given value is not nil.
+func (bu *BookUpdate) SetNillableLanguageID(id *ksuid.ID) *BookUpdate {
+	if id != nil {
+		bu = bu.SetLanguageID(*id)
+	}
+	return bu
+}
+
+// SetLanguage sets the "language" edge to the Language entity.
+func (bu *BookUpdate) SetLanguage(l *Language) *BookUpdate {
+	return bu.SetLanguageID(l.ID)
+}
+
+// AddShelfIDs adds the "shelf" edge to the Shelf entity by IDs.
+func (bu *BookUpdate) AddShelfIDs(ids ...ksuid.ID) *BookUpdate {
+	bu.mutation.AddShelfIDs(ids...)
+	return bu
+}
+
+// AddShelf adds the "shelf" edges to the Shelf entity.
+func (bu *BookUpdate) AddShelf(s ...*Shelf) *BookUpdate {
+	ids := make([]ksuid.ID, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return bu.AddShelfIDs(ids...)
+}
+
 // Mutation returns the BookMutation object of the builder.
 func (bu *BookUpdate) Mutation() *BookMutation {
 	return bu.mutation
@@ -185,6 +253,75 @@ func (bu *BookUpdate) RemoveAuthors(a ...*Author) *BookUpdate {
 		ids[i] = a[i].ID
 	}
 	return bu.RemoveAuthorIDs(ids...)
+}
+
+// ClearSeries clears all "series" edges to the Series entity.
+func (bu *BookUpdate) ClearSeries() *BookUpdate {
+	bu.mutation.ClearSeries()
+	return bu
+}
+
+// RemoveSeriesIDs removes the "series" edge to Series entities by IDs.
+func (bu *BookUpdate) RemoveSeriesIDs(ids ...ksuid.ID) *BookUpdate {
+	bu.mutation.RemoveSeriesIDs(ids...)
+	return bu
+}
+
+// RemoveSeries removes "series" edges to Series entities.
+func (bu *BookUpdate) RemoveSeries(s ...*Series) *BookUpdate {
+	ids := make([]ksuid.ID, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return bu.RemoveSeriesIDs(ids...)
+}
+
+// ClearIdentifier clears all "identifier" edges to the Identifier entity.
+func (bu *BookUpdate) ClearIdentifier() *BookUpdate {
+	bu.mutation.ClearIdentifier()
+	return bu
+}
+
+// RemoveIdentifierIDs removes the "identifier" edge to Identifier entities by IDs.
+func (bu *BookUpdate) RemoveIdentifierIDs(ids ...ksuid.ID) *BookUpdate {
+	bu.mutation.RemoveIdentifierIDs(ids...)
+	return bu
+}
+
+// RemoveIdentifier removes "identifier" edges to Identifier entities.
+func (bu *BookUpdate) RemoveIdentifier(i ...*Identifier) *BookUpdate {
+	ids := make([]ksuid.ID, len(i))
+	for j := range i {
+		ids[j] = i[j].ID
+	}
+	return bu.RemoveIdentifierIDs(ids...)
+}
+
+// ClearLanguage clears the "language" edge to the Language entity.
+func (bu *BookUpdate) ClearLanguage() *BookUpdate {
+	bu.mutation.ClearLanguage()
+	return bu
+}
+
+// ClearShelf clears all "shelf" edges to the Shelf entity.
+func (bu *BookUpdate) ClearShelf() *BookUpdate {
+	bu.mutation.ClearShelf()
+	return bu
+}
+
+// RemoveShelfIDs removes the "shelf" edge to Shelf entities by IDs.
+func (bu *BookUpdate) RemoveShelfIDs(ids ...ksuid.ID) *BookUpdate {
+	bu.mutation.RemoveShelfIDs(ids...)
+	return bu
+}
+
+// RemoveShelf removes "shelf" edges to Shelf entities.
+func (bu *BookUpdate) RemoveShelf(s ...*Shelf) *BookUpdate {
+	ids := make([]ksuid.ID, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return bu.RemoveShelfIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -316,6 +453,170 @@ func (bu *BookUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if bu.mutation.SeriesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   book.SeriesTable,
+			Columns: book.SeriesPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(series.FieldID, field.TypeString),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := bu.mutation.RemovedSeriesIDs(); len(nodes) > 0 && !bu.mutation.SeriesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   book.SeriesTable,
+			Columns: book.SeriesPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(series.FieldID, field.TypeString),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := bu.mutation.SeriesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   book.SeriesTable,
+			Columns: book.SeriesPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(series.FieldID, field.TypeString),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if bu.mutation.IdentifierCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   book.IdentifierTable,
+			Columns: []string{book.IdentifierColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(identifier.FieldID, field.TypeString),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := bu.mutation.RemovedIdentifierIDs(); len(nodes) > 0 && !bu.mutation.IdentifierCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   book.IdentifierTable,
+			Columns: []string{book.IdentifierColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(identifier.FieldID, field.TypeString),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := bu.mutation.IdentifierIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   book.IdentifierTable,
+			Columns: []string{book.IdentifierColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(identifier.FieldID, field.TypeString),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if bu.mutation.LanguageCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   book.LanguageTable,
+			Columns: []string{book.LanguageColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(language.FieldID, field.TypeString),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := bu.mutation.LanguageIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   book.LanguageTable,
+			Columns: []string{book.LanguageColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(language.FieldID, field.TypeString),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if bu.mutation.ShelfCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   book.ShelfTable,
+			Columns: book.ShelfPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(shelf.FieldID, field.TypeString),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := bu.mutation.RemovedShelfIDs(); len(nodes) > 0 && !bu.mutation.ShelfCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   book.ShelfTable,
+			Columns: book.ShelfPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(shelf.FieldID, field.TypeString),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := bu.mutation.ShelfIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   book.ShelfTable,
+			Columns: book.ShelfPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(shelf.FieldID, field.TypeString),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, bu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{book.Label}
@@ -364,13 +665,13 @@ func (buo *BookUpdateOne) SetNillableSort(s *string) *BookUpdateOne {
 	return buo
 }
 
-// SetAddedAt sets the "addedAt" field.
+// SetAddedAt sets the "added_at" field.
 func (buo *BookUpdateOne) SetAddedAt(t time.Time) *BookUpdateOne {
 	buo.mutation.SetAddedAt(t)
 	return buo
 }
 
-// SetNillableAddedAt sets the "addedAt" field if the given value is not nil.
+// SetNillableAddedAt sets the "added_at" field if the given value is not nil.
 func (buo *BookUpdateOne) SetNillableAddedAt(t *time.Time) *BookUpdateOne {
 	if t != nil {
 		buo.SetAddedAt(*t)
@@ -378,13 +679,13 @@ func (buo *BookUpdateOne) SetNillableAddedAt(t *time.Time) *BookUpdateOne {
 	return buo
 }
 
-// SetPubDate sets the "pubDate" field.
+// SetPubDate sets the "pub_date" field.
 func (buo *BookUpdateOne) SetPubDate(t time.Time) *BookUpdateOne {
 	buo.mutation.SetPubDate(t)
 	return buo
 }
 
-// SetNillablePubDate sets the "pubDate" field if the given value is not nil.
+// SetNillablePubDate sets the "pub_date" field if the given value is not nil.
 func (buo *BookUpdateOne) SetNillablePubDate(t *time.Time) *BookUpdateOne {
 	if t != nil {
 		buo.SetPubDate(*t)
@@ -392,7 +693,7 @@ func (buo *BookUpdateOne) SetNillablePubDate(t *time.Time) *BookUpdateOne {
 	return buo
 }
 
-// ClearPubDate clears the value of the "pubDate" field.
+// ClearPubDate clears the value of the "pub_date" field.
 func (buo *BookUpdateOne) ClearPubDate() *BookUpdateOne {
 	buo.mutation.ClearPubDate()
 	return buo
@@ -467,6 +768,70 @@ func (buo *BookUpdateOne) AddAuthors(a ...*Author) *BookUpdateOne {
 	return buo.AddAuthorIDs(ids...)
 }
 
+// AddSeriesIDs adds the "series" edge to the Series entity by IDs.
+func (buo *BookUpdateOne) AddSeriesIDs(ids ...ksuid.ID) *BookUpdateOne {
+	buo.mutation.AddSeriesIDs(ids...)
+	return buo
+}
+
+// AddSeries adds the "series" edges to the Series entity.
+func (buo *BookUpdateOne) AddSeries(s ...*Series) *BookUpdateOne {
+	ids := make([]ksuid.ID, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return buo.AddSeriesIDs(ids...)
+}
+
+// AddIdentifierIDs adds the "identifier" edge to the Identifier entity by IDs.
+func (buo *BookUpdateOne) AddIdentifierIDs(ids ...ksuid.ID) *BookUpdateOne {
+	buo.mutation.AddIdentifierIDs(ids...)
+	return buo
+}
+
+// AddIdentifier adds the "identifier" edges to the Identifier entity.
+func (buo *BookUpdateOne) AddIdentifier(i ...*Identifier) *BookUpdateOne {
+	ids := make([]ksuid.ID, len(i))
+	for j := range i {
+		ids[j] = i[j].ID
+	}
+	return buo.AddIdentifierIDs(ids...)
+}
+
+// SetLanguageID sets the "language" edge to the Language entity by ID.
+func (buo *BookUpdateOne) SetLanguageID(id ksuid.ID) *BookUpdateOne {
+	buo.mutation.SetLanguageID(id)
+	return buo
+}
+
+// SetNillableLanguageID sets the "language" edge to the Language entity by ID if the given value is not nil.
+func (buo *BookUpdateOne) SetNillableLanguageID(id *ksuid.ID) *BookUpdateOne {
+	if id != nil {
+		buo = buo.SetLanguageID(*id)
+	}
+	return buo
+}
+
+// SetLanguage sets the "language" edge to the Language entity.
+func (buo *BookUpdateOne) SetLanguage(l *Language) *BookUpdateOne {
+	return buo.SetLanguageID(l.ID)
+}
+
+// AddShelfIDs adds the "shelf" edge to the Shelf entity by IDs.
+func (buo *BookUpdateOne) AddShelfIDs(ids ...ksuid.ID) *BookUpdateOne {
+	buo.mutation.AddShelfIDs(ids...)
+	return buo
+}
+
+// AddShelf adds the "shelf" edges to the Shelf entity.
+func (buo *BookUpdateOne) AddShelf(s ...*Shelf) *BookUpdateOne {
+	ids := make([]ksuid.ID, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return buo.AddShelfIDs(ids...)
+}
+
 // Mutation returns the BookMutation object of the builder.
 func (buo *BookUpdateOne) Mutation() *BookMutation {
 	return buo.mutation
@@ -491,6 +856,75 @@ func (buo *BookUpdateOne) RemoveAuthors(a ...*Author) *BookUpdateOne {
 		ids[i] = a[i].ID
 	}
 	return buo.RemoveAuthorIDs(ids...)
+}
+
+// ClearSeries clears all "series" edges to the Series entity.
+func (buo *BookUpdateOne) ClearSeries() *BookUpdateOne {
+	buo.mutation.ClearSeries()
+	return buo
+}
+
+// RemoveSeriesIDs removes the "series" edge to Series entities by IDs.
+func (buo *BookUpdateOne) RemoveSeriesIDs(ids ...ksuid.ID) *BookUpdateOne {
+	buo.mutation.RemoveSeriesIDs(ids...)
+	return buo
+}
+
+// RemoveSeries removes "series" edges to Series entities.
+func (buo *BookUpdateOne) RemoveSeries(s ...*Series) *BookUpdateOne {
+	ids := make([]ksuid.ID, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return buo.RemoveSeriesIDs(ids...)
+}
+
+// ClearIdentifier clears all "identifier" edges to the Identifier entity.
+func (buo *BookUpdateOne) ClearIdentifier() *BookUpdateOne {
+	buo.mutation.ClearIdentifier()
+	return buo
+}
+
+// RemoveIdentifierIDs removes the "identifier" edge to Identifier entities by IDs.
+func (buo *BookUpdateOne) RemoveIdentifierIDs(ids ...ksuid.ID) *BookUpdateOne {
+	buo.mutation.RemoveIdentifierIDs(ids...)
+	return buo
+}
+
+// RemoveIdentifier removes "identifier" edges to Identifier entities.
+func (buo *BookUpdateOne) RemoveIdentifier(i ...*Identifier) *BookUpdateOne {
+	ids := make([]ksuid.ID, len(i))
+	for j := range i {
+		ids[j] = i[j].ID
+	}
+	return buo.RemoveIdentifierIDs(ids...)
+}
+
+// ClearLanguage clears the "language" edge to the Language entity.
+func (buo *BookUpdateOne) ClearLanguage() *BookUpdateOne {
+	buo.mutation.ClearLanguage()
+	return buo
+}
+
+// ClearShelf clears all "shelf" edges to the Shelf entity.
+func (buo *BookUpdateOne) ClearShelf() *BookUpdateOne {
+	buo.mutation.ClearShelf()
+	return buo
+}
+
+// RemoveShelfIDs removes the "shelf" edge to Shelf entities by IDs.
+func (buo *BookUpdateOne) RemoveShelfIDs(ids ...ksuid.ID) *BookUpdateOne {
+	buo.mutation.RemoveShelfIDs(ids...)
+	return buo
+}
+
+// RemoveShelf removes "shelf" edges to Shelf entities.
+func (buo *BookUpdateOne) RemoveShelf(s ...*Shelf) *BookUpdateOne {
+	ids := make([]ksuid.ID, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return buo.RemoveShelfIDs(ids...)
 }
 
 // Where appends a list predicates to the BookUpdate builder.
@@ -645,6 +1079,170 @@ func (buo *BookUpdateOne) sqlSave(ctx context.Context) (_node *Book, err error) 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(author.FieldID, field.TypeString),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if buo.mutation.SeriesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   book.SeriesTable,
+			Columns: book.SeriesPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(series.FieldID, field.TypeString),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := buo.mutation.RemovedSeriesIDs(); len(nodes) > 0 && !buo.mutation.SeriesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   book.SeriesTable,
+			Columns: book.SeriesPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(series.FieldID, field.TypeString),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := buo.mutation.SeriesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   book.SeriesTable,
+			Columns: book.SeriesPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(series.FieldID, field.TypeString),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if buo.mutation.IdentifierCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   book.IdentifierTable,
+			Columns: []string{book.IdentifierColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(identifier.FieldID, field.TypeString),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := buo.mutation.RemovedIdentifierIDs(); len(nodes) > 0 && !buo.mutation.IdentifierCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   book.IdentifierTable,
+			Columns: []string{book.IdentifierColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(identifier.FieldID, field.TypeString),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := buo.mutation.IdentifierIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   book.IdentifierTable,
+			Columns: []string{book.IdentifierColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(identifier.FieldID, field.TypeString),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if buo.mutation.LanguageCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   book.LanguageTable,
+			Columns: []string{book.LanguageColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(language.FieldID, field.TypeString),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := buo.mutation.LanguageIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   book.LanguageTable,
+			Columns: []string{book.LanguageColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(language.FieldID, field.TypeString),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if buo.mutation.ShelfCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   book.ShelfTable,
+			Columns: book.ShelfPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(shelf.FieldID, field.TypeString),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := buo.mutation.RemovedShelfIDs(); len(nodes) > 0 && !buo.mutation.ShelfCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   book.ShelfTable,
+			Columns: book.ShelfPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(shelf.FieldID, field.TypeString),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := buo.mutation.ShelfIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   book.ShelfTable,
+			Columns: book.ShelfPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(shelf.FieldID, field.TypeString),
 			},
 		}
 		for _, k := range nodes {

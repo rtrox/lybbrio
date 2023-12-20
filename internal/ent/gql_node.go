@@ -7,7 +7,15 @@ import (
 	"fmt"
 	"lybbrio/internal/ent/author"
 	"lybbrio/internal/ent/book"
+	"lybbrio/internal/ent/identifier"
+	"lybbrio/internal/ent/language"
+	"lybbrio/internal/ent/publisher"
 	"lybbrio/internal/ent/schema/ksuid"
+	"lybbrio/internal/ent/series"
+	"lybbrio/internal/ent/seriesbook"
+	"lybbrio/internal/ent/shelf"
+	"lybbrio/internal/ent/tag"
+	"lybbrio/internal/ent/user"
 
 	"entgo.io/contrib/entgql"
 	"github.com/99designs/gqlgen/graphql"
@@ -24,6 +32,30 @@ func (n *Author) IsNode() {}
 
 // IsNode implements the Node interface check for GQLGen.
 func (n *Book) IsNode() {}
+
+// IsNode implements the Node interface check for GQLGen.
+func (n *Identifier) IsNode() {}
+
+// IsNode implements the Node interface check for GQLGen.
+func (n *Language) IsNode() {}
+
+// IsNode implements the Node interface check for GQLGen.
+func (n *Publisher) IsNode() {}
+
+// IsNode implements the Node interface check for GQLGen.
+func (n *Series) IsNode() {}
+
+// IsNode implements the Node interface check for GQLGen.
+func (n *SeriesBook) IsNode() {}
+
+// IsNode implements the Node interface check for GQLGen.
+func (n *Shelf) IsNode() {}
+
+// IsNode implements the Node interface check for GQLGen.
+func (n *Tag) IsNode() {}
+
+// IsNode implements the Node interface check for GQLGen.
+func (n *User) IsNode() {}
 
 var errNodeInvalidID = &NotFoundError{"node"}
 
@@ -107,6 +139,134 @@ func (c *Client) noder(ctx context.Context, table string, id ksuid.ID) (Noder, e
 		query := c.Book.Query().
 			Where(book.ID(uid))
 		query, err := query.CollectFields(ctx, "Book")
+		if err != nil {
+			return nil, err
+		}
+		n, err := query.Only(ctx)
+		if err != nil {
+			return nil, err
+		}
+		return n, nil
+	case identifier.Table:
+		var uid ksuid.ID
+		if err := uid.UnmarshalGQL(id); err != nil {
+			return nil, err
+		}
+		query := c.Identifier.Query().
+			Where(identifier.ID(uid))
+		query, err := query.CollectFields(ctx, "Identifier")
+		if err != nil {
+			return nil, err
+		}
+		n, err := query.Only(ctx)
+		if err != nil {
+			return nil, err
+		}
+		return n, nil
+	case language.Table:
+		var uid ksuid.ID
+		if err := uid.UnmarshalGQL(id); err != nil {
+			return nil, err
+		}
+		query := c.Language.Query().
+			Where(language.ID(uid))
+		query, err := query.CollectFields(ctx, "Language")
+		if err != nil {
+			return nil, err
+		}
+		n, err := query.Only(ctx)
+		if err != nil {
+			return nil, err
+		}
+		return n, nil
+	case publisher.Table:
+		var uid ksuid.ID
+		if err := uid.UnmarshalGQL(id); err != nil {
+			return nil, err
+		}
+		query := c.Publisher.Query().
+			Where(publisher.ID(uid))
+		query, err := query.CollectFields(ctx, "Publisher")
+		if err != nil {
+			return nil, err
+		}
+		n, err := query.Only(ctx)
+		if err != nil {
+			return nil, err
+		}
+		return n, nil
+	case series.Table:
+		var uid ksuid.ID
+		if err := uid.UnmarshalGQL(id); err != nil {
+			return nil, err
+		}
+		query := c.Series.Query().
+			Where(series.ID(uid))
+		query, err := query.CollectFields(ctx, "Series")
+		if err != nil {
+			return nil, err
+		}
+		n, err := query.Only(ctx)
+		if err != nil {
+			return nil, err
+		}
+		return n, nil
+	case seriesbook.Table:
+		var uid ksuid.ID
+		if err := uid.UnmarshalGQL(id); err != nil {
+			return nil, err
+		}
+		query := c.SeriesBook.Query().
+			Where(seriesbook.ID(uid))
+		query, err := query.CollectFields(ctx, "SeriesBook")
+		if err != nil {
+			return nil, err
+		}
+		n, err := query.Only(ctx)
+		if err != nil {
+			return nil, err
+		}
+		return n, nil
+	case shelf.Table:
+		var uid ksuid.ID
+		if err := uid.UnmarshalGQL(id); err != nil {
+			return nil, err
+		}
+		query := c.Shelf.Query().
+			Where(shelf.ID(uid))
+		query, err := query.CollectFields(ctx, "Shelf")
+		if err != nil {
+			return nil, err
+		}
+		n, err := query.Only(ctx)
+		if err != nil {
+			return nil, err
+		}
+		return n, nil
+	case tag.Table:
+		var uid ksuid.ID
+		if err := uid.UnmarshalGQL(id); err != nil {
+			return nil, err
+		}
+		query := c.Tag.Query().
+			Where(tag.ID(uid))
+		query, err := query.CollectFields(ctx, "Tag")
+		if err != nil {
+			return nil, err
+		}
+		n, err := query.Only(ctx)
+		if err != nil {
+			return nil, err
+		}
+		return n, nil
+	case user.Table:
+		var uid ksuid.ID
+		if err := uid.UnmarshalGQL(id); err != nil {
+			return nil, err
+		}
+		query := c.User.Query().
+			Where(user.ID(uid))
+		query, err := query.CollectFields(ctx, "User")
 		if err != nil {
 			return nil, err
 		}
@@ -208,6 +368,134 @@ func (c *Client) noders(ctx context.Context, table string, ids []ksuid.ID) ([]No
 		query := c.Book.Query().
 			Where(book.IDIn(ids...))
 		query, err := query.CollectFields(ctx, "Book")
+		if err != nil {
+			return nil, err
+		}
+		nodes, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, node := range nodes {
+			for _, noder := range idmap[node.ID] {
+				*noder = node
+			}
+		}
+	case identifier.Table:
+		query := c.Identifier.Query().
+			Where(identifier.IDIn(ids...))
+		query, err := query.CollectFields(ctx, "Identifier")
+		if err != nil {
+			return nil, err
+		}
+		nodes, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, node := range nodes {
+			for _, noder := range idmap[node.ID] {
+				*noder = node
+			}
+		}
+	case language.Table:
+		query := c.Language.Query().
+			Where(language.IDIn(ids...))
+		query, err := query.CollectFields(ctx, "Language")
+		if err != nil {
+			return nil, err
+		}
+		nodes, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, node := range nodes {
+			for _, noder := range idmap[node.ID] {
+				*noder = node
+			}
+		}
+	case publisher.Table:
+		query := c.Publisher.Query().
+			Where(publisher.IDIn(ids...))
+		query, err := query.CollectFields(ctx, "Publisher")
+		if err != nil {
+			return nil, err
+		}
+		nodes, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, node := range nodes {
+			for _, noder := range idmap[node.ID] {
+				*noder = node
+			}
+		}
+	case series.Table:
+		query := c.Series.Query().
+			Where(series.IDIn(ids...))
+		query, err := query.CollectFields(ctx, "Series")
+		if err != nil {
+			return nil, err
+		}
+		nodes, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, node := range nodes {
+			for _, noder := range idmap[node.ID] {
+				*noder = node
+			}
+		}
+	case seriesbook.Table:
+		query := c.SeriesBook.Query().
+			Where(seriesbook.IDIn(ids...))
+		query, err := query.CollectFields(ctx, "SeriesBook")
+		if err != nil {
+			return nil, err
+		}
+		nodes, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, node := range nodes {
+			for _, noder := range idmap[node.ID] {
+				*noder = node
+			}
+		}
+	case shelf.Table:
+		query := c.Shelf.Query().
+			Where(shelf.IDIn(ids...))
+		query, err := query.CollectFields(ctx, "Shelf")
+		if err != nil {
+			return nil, err
+		}
+		nodes, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, node := range nodes {
+			for _, noder := range idmap[node.ID] {
+				*noder = node
+			}
+		}
+	case tag.Table:
+		query := c.Tag.Query().
+			Where(tag.IDIn(ids...))
+		query, err := query.CollectFields(ctx, "Tag")
+		if err != nil {
+			return nil, err
+		}
+		nodes, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, node := range nodes {
+			for _, noder := range idmap[node.ID] {
+				*noder = node
+			}
+		}
+	case user.Table:
+		query := c.User.Query().
+			Where(user.IDIn(ids...))
+		query, err := query.CollectFields(ctx, "User")
 		if err != nil {
 			return nil, err
 		}

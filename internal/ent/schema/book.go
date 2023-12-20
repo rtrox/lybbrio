@@ -39,10 +39,10 @@ func (Book) Fields() []ent.Field {
 			Annotations(entgql.OrderField("TITLE")),
 		field.Text("sort").
 			Annotations(entgql.OrderField("SORT")),
-		field.Time("addedAt").
+		field.Time("added_at").
 			Default(time.Now).
 			Annotations(entgql.OrderField("ADDED_AT")),
-		field.Time("pubDate").
+		field.Time("pub_date").
 			Optional().
 			Annotations(entgql.OrderField("PUB_DATE")),
 		field.Text("path").
@@ -61,5 +61,13 @@ func (Book) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.From("authors", Author.Type).
 			Ref("books"),
+		edge.From("series", Series.Type).
+			Ref("books"),
+		edge.From("identifier", Identifier.Type).
+			Ref("book"),
+		edge.From("language", Language.Type).
+			Ref("books").Unique(),
+		edge.From("shelf", Shelf.Type).
+			Ref("books"), // TODO: will need privacy on this edge.
 	}
 }

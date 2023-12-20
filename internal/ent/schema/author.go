@@ -33,12 +33,12 @@ func (Author) Mixin() []ent.Mixin {
 // Fields of the Author.
 func (Author) Fields() []ent.Field {
 	return []ent.Field{
-		field.Text("name").
+		field.String("name").
 			NotEmpty().
 			Annotations(entgql.OrderField("NAME")),
-		field.Text("sort").
+		field.String("sort").
 			Annotations(entgql.OrderField("SORT")),
-		field.Text("link").
+		field.String("link").
 			Optional(),
 	}
 }
@@ -46,6 +46,7 @@ func (Author) Fields() []ent.Field {
 // Edges of the Author.
 func (Author) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("books", Book.Type),
+		edge.To("books", Book.Type).
+			Annotations(entgql.RelayConnection()),
 	}
 }

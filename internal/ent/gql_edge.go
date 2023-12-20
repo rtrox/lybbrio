@@ -8,16 +8,25 @@ import (
 	"github.com/99designs/gqlgen/graphql"
 )
 
-func (a *Author) Books(ctx context.Context) (result []*Book, err error) {
-	if fc := graphql.GetFieldContext(ctx); fc != nil && fc.Field.Alias != "" {
-		result, err = a.NamedBooks(graphql.GetFieldContext(ctx).Field.Alias)
-	} else {
-		result, err = a.Edges.BooksOrErr()
+func (a *Author) Books(
+	ctx context.Context, after *Cursor, first *int, before *Cursor, last *int, orderBy []*BookOrder, where *BookWhereInput,
+) (*BookConnection, error) {
+	opts := []BookPaginateOption{
+		WithBookOrder(orderBy),
+		WithBookFilter(where.Filter),
 	}
-	if IsNotLoaded(err) {
-		result, err = a.QueryBooks().All(ctx)
+	alias := graphql.GetFieldContext(ctx).Field.Alias
+	totalCount, hasTotalCount := a.Edges.totalCount[0][alias]
+	if nodes, err := a.NamedBooks(alias); err == nil || hasTotalCount {
+		pager, err := newBookPager(opts, last != nil)
+		if err != nil {
+			return nil, err
+		}
+		conn := &BookConnection{Edges: []*BookEdge{}, TotalCount: totalCount}
+		conn.build(nodes, pager, after, first, before, last)
+		return conn, nil
 	}
-	return result, err
+	return a.QueryBooks().Paginate(ctx, after, first, before, last, opts...)
 }
 
 func (b *Book) Authors(ctx context.Context) (result []*Author, err error) {
@@ -30,4 +39,226 @@ func (b *Book) Authors(ctx context.Context) (result []*Author, err error) {
 		result, err = b.QueryAuthors().All(ctx)
 	}
 	return result, err
+}
+
+func (b *Book) Series(ctx context.Context) (result []*Series, err error) {
+	if fc := graphql.GetFieldContext(ctx); fc != nil && fc.Field.Alias != "" {
+		result, err = b.NamedSeries(graphql.GetFieldContext(ctx).Field.Alias)
+	} else {
+		result, err = b.Edges.SeriesOrErr()
+	}
+	if IsNotLoaded(err) {
+		result, err = b.QuerySeries().All(ctx)
+	}
+	return result, err
+}
+
+func (b *Book) Identifier(ctx context.Context) (result []*Identifier, err error) {
+	if fc := graphql.GetFieldContext(ctx); fc != nil && fc.Field.Alias != "" {
+		result, err = b.NamedIdentifier(graphql.GetFieldContext(ctx).Field.Alias)
+	} else {
+		result, err = b.Edges.IdentifierOrErr()
+	}
+	if IsNotLoaded(err) {
+		result, err = b.QueryIdentifier().All(ctx)
+	}
+	return result, err
+}
+
+func (b *Book) Language(ctx context.Context) (*Language, error) {
+	result, err := b.Edges.LanguageOrErr()
+	if IsNotLoaded(err) {
+		result, err = b.QueryLanguage().Only(ctx)
+	}
+	return result, MaskNotFound(err)
+}
+
+func (b *Book) Shelf(ctx context.Context) (result []*Shelf, err error) {
+	if fc := graphql.GetFieldContext(ctx); fc != nil && fc.Field.Alias != "" {
+		result, err = b.NamedShelf(graphql.GetFieldContext(ctx).Field.Alias)
+	} else {
+		result, err = b.Edges.ShelfOrErr()
+	}
+	if IsNotLoaded(err) {
+		result, err = b.QueryShelf().All(ctx)
+	}
+	return result, err
+}
+
+func (i *Identifier) Book(ctx context.Context) (*Book, error) {
+	result, err := i.Edges.BookOrErr()
+	if IsNotLoaded(err) {
+		result, err = i.QueryBook().Only(ctx)
+	}
+	return result, err
+}
+
+func (l *Language) Books(
+	ctx context.Context, after *Cursor, first *int, before *Cursor, last *int, orderBy []*BookOrder, where *BookWhereInput,
+) (*BookConnection, error) {
+	opts := []BookPaginateOption{
+		WithBookOrder(orderBy),
+		WithBookFilter(where.Filter),
+	}
+	alias := graphql.GetFieldContext(ctx).Field.Alias
+	totalCount, hasTotalCount := l.Edges.totalCount[0][alias]
+	if nodes, err := l.NamedBooks(alias); err == nil || hasTotalCount {
+		pager, err := newBookPager(opts, last != nil)
+		if err != nil {
+			return nil, err
+		}
+		conn := &BookConnection{Edges: []*BookEdge{}, TotalCount: totalCount}
+		conn.build(nodes, pager, after, first, before, last)
+		return conn, nil
+	}
+	return l.QueryBooks().Paginate(ctx, after, first, before, last, opts...)
+}
+
+func (pu *Publisher) Books(
+	ctx context.Context, after *Cursor, first *int, before *Cursor, last *int, orderBy []*BookOrder, where *BookWhereInput,
+) (*BookConnection, error) {
+	opts := []BookPaginateOption{
+		WithBookOrder(orderBy),
+		WithBookFilter(where.Filter),
+	}
+	alias := graphql.GetFieldContext(ctx).Field.Alias
+	totalCount, hasTotalCount := pu.Edges.totalCount[0][alias]
+	if nodes, err := pu.NamedBooks(alias); err == nil || hasTotalCount {
+		pager, err := newBookPager(opts, last != nil)
+		if err != nil {
+			return nil, err
+		}
+		conn := &BookConnection{Edges: []*BookEdge{}, TotalCount: totalCount}
+		conn.build(nodes, pager, after, first, before, last)
+		return conn, nil
+	}
+	return pu.QueryBooks().Paginate(ctx, after, first, before, last, opts...)
+}
+
+func (s *Series) Books(
+	ctx context.Context, after *Cursor, first *int, before *Cursor, last *int, orderBy []*BookOrder, where *BookWhereInput,
+) (*BookConnection, error) {
+	opts := []BookPaginateOption{
+		WithBookOrder(orderBy),
+		WithBookFilter(where.Filter),
+	}
+	alias := graphql.GetFieldContext(ctx).Field.Alias
+	totalCount, hasTotalCount := s.Edges.totalCount[0][alias]
+	if nodes, err := s.NamedBooks(alias); err == nil || hasTotalCount {
+		pager, err := newBookPager(opts, last != nil)
+		if err != nil {
+			return nil, err
+		}
+		conn := &BookConnection{Edges: []*BookEdge{}, TotalCount: totalCount}
+		conn.build(nodes, pager, after, first, before, last)
+		return conn, nil
+	}
+	return s.QueryBooks().Paginate(ctx, after, first, before, last, opts...)
+}
+
+func (s *Series) SeriesBooks(
+	ctx context.Context, after *Cursor, first *int, before *Cursor, last *int, where *SeriesBookWhereInput,
+) (*SeriesBookConnection, error) {
+	opts := []SeriesBookPaginateOption{
+		WithSeriesBookFilter(where.Filter),
+	}
+	alias := graphql.GetFieldContext(ctx).Field.Alias
+	totalCount, hasTotalCount := s.Edges.totalCount[1][alias]
+	if nodes, err := s.NamedSeriesBooks(alias); err == nil || hasTotalCount {
+		pager, err := newSeriesBookPager(opts, last != nil)
+		if err != nil {
+			return nil, err
+		}
+		conn := &SeriesBookConnection{Edges: []*SeriesBookEdge{}, TotalCount: totalCount}
+		conn.build(nodes, pager, after, first, before, last)
+		return conn, nil
+	}
+	return s.QuerySeriesBooks().Paginate(ctx, after, first, before, last, opts...)
+}
+
+func (sb *SeriesBook) Series(ctx context.Context) (*Series, error) {
+	result, err := sb.Edges.SeriesOrErr()
+	if IsNotLoaded(err) {
+		result, err = sb.QuerySeries().Only(ctx)
+	}
+	return result, err
+}
+
+func (sb *SeriesBook) Book(ctx context.Context) (*Book, error) {
+	result, err := sb.Edges.BookOrErr()
+	if IsNotLoaded(err) {
+		result, err = sb.QueryBook().Only(ctx)
+	}
+	return result, err
+}
+
+func (s *Shelf) Books(
+	ctx context.Context, after *Cursor, first *int, before *Cursor, last *int, orderBy []*BookOrder, where *BookWhereInput,
+) (*BookConnection, error) {
+	opts := []BookPaginateOption{
+		WithBookOrder(orderBy),
+		WithBookFilter(where.Filter),
+	}
+	alias := graphql.GetFieldContext(ctx).Field.Alias
+	totalCount, hasTotalCount := s.Edges.totalCount[0][alias]
+	if nodes, err := s.NamedBooks(alias); err == nil || hasTotalCount {
+		pager, err := newBookPager(opts, last != nil)
+		if err != nil {
+			return nil, err
+		}
+		conn := &BookConnection{Edges: []*BookEdge{}, TotalCount: totalCount}
+		conn.build(nodes, pager, after, first, before, last)
+		return conn, nil
+	}
+	return s.QueryBooks().Paginate(ctx, after, first, before, last, opts...)
+}
+
+func (s *Shelf) Owner(ctx context.Context) (*User, error) {
+	result, err := s.Edges.OwnerOrErr()
+	if IsNotLoaded(err) {
+		result, err = s.QueryOwner().Only(ctx)
+	}
+	return result, MaskNotFound(err)
+}
+
+func (t *Tag) Books(
+	ctx context.Context, after *Cursor, first *int, before *Cursor, last *int, orderBy []*BookOrder, where *BookWhereInput,
+) (*BookConnection, error) {
+	opts := []BookPaginateOption{
+		WithBookOrder(orderBy),
+		WithBookFilter(where.Filter),
+	}
+	alias := graphql.GetFieldContext(ctx).Field.Alias
+	totalCount, hasTotalCount := t.Edges.totalCount[0][alias]
+	if nodes, err := t.NamedBooks(alias); err == nil || hasTotalCount {
+		pager, err := newBookPager(opts, last != nil)
+		if err != nil {
+			return nil, err
+		}
+		conn := &BookConnection{Edges: []*BookEdge{}, TotalCount: totalCount}
+		conn.build(nodes, pager, after, first, before, last)
+		return conn, nil
+	}
+	return t.QueryBooks().Paginate(ctx, after, first, before, last, opts...)
+}
+
+func (u *User) Shelves(
+	ctx context.Context, after *Cursor, first *int, before *Cursor, last *int, orderBy []*ShelfOrder, where *ShelfWhereInput,
+) (*ShelfConnection, error) {
+	opts := []ShelfPaginateOption{
+		WithShelfOrder(orderBy),
+		WithShelfFilter(where.Filter),
+	}
+	alias := graphql.GetFieldContext(ctx).Field.Alias
+	totalCount, hasTotalCount := u.Edges.totalCount[0][alias]
+	if nodes, err := u.NamedShelves(alias); err == nil || hasTotalCount {
+		pager, err := newShelfPager(opts, last != nil)
+		if err != nil {
+			return nil, err
+		}
+		conn := &ShelfConnection{Edges: []*ShelfEdge{}, TotalCount: totalCount}
+		conn.build(nodes, pager, after, first, before, last)
+		return conn, nil
+	}
+	return u.QueryShelves().Paginate(ctx, after, first, before, last, opts...)
 }
