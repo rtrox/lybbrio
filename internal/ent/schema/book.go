@@ -27,6 +27,7 @@ func (Book) Annotations() []schema.Annotation {
 
 func (Book) Mixin() []ent.Mixin {
 	return []ent.Mixin{
+		BaseMixin{},
 		ksuid.MixinWithPrefix("bok"),
 	}
 }

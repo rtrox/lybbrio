@@ -83,7 +83,9 @@ func (ac *AuthorCreate) Mutation() *AuthorMutation {
 
 // Save creates the Author in the database.
 func (ac *AuthorCreate) Save(ctx context.Context) (*Author, error) {
-	ac.defaults()
+	if err := ac.defaults(); err != nil {
+		return nil, err
+	}
 	return withHooks(ctx, ac.sqlSave, ac.mutation, ac.hooks)
 }
 
@@ -110,11 +112,15 @@ func (ac *AuthorCreate) ExecX(ctx context.Context) {
 }
 
 // defaults sets the default values of the builder before save.
-func (ac *AuthorCreate) defaults() {
+func (ac *AuthorCreate) defaults() error {
 	if _, ok := ac.mutation.ID(); !ok {
+		if author.DefaultID == nil {
+			return fmt.Errorf("ent: uninitialized author.DefaultID (forgotten import ent/runtime?)")
+		}
 		v := author.DefaultID()
 		ac.mutation.SetID(v)
 	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.

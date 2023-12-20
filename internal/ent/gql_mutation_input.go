@@ -492,7 +492,7 @@ type CreateShelfInput struct {
 	Description *string
 	Public      *bool
 	BookIDs     []ksuid.ID
-	OwnerID     *ksuid.ID
+	UserID      *ksuid.ID
 }
 
 // Mutate applies the CreateShelfInput on the ShelfMutation builder.
@@ -507,8 +507,8 @@ func (i *CreateShelfInput) Mutate(m *ShelfMutation) {
 	if v := i.BookIDs; len(v) > 0 {
 		m.AddBookIDs(v...)
 	}
-	if v := i.OwnerID; v != nil {
-		m.SetOwnerID(*v)
+	if v := i.UserID; v != nil {
+		m.SetUserID(*v)
 	}
 }
 
@@ -527,8 +527,8 @@ type UpdateShelfInput struct {
 	ClearBooks       bool
 	AddBookIDs       []ksuid.ID
 	RemoveBookIDs    []ksuid.ID
-	ClearOwner       bool
-	OwnerID          *ksuid.ID
+	ClearUser        bool
+	UserID           *ksuid.ID
 }
 
 // Mutate applies the UpdateShelfInput on the ShelfMutation builder.
@@ -554,11 +554,11 @@ func (i *UpdateShelfInput) Mutate(m *ShelfMutation) {
 	if v := i.RemoveBookIDs; len(v) > 0 {
 		m.RemoveBookIDs(v...)
 	}
-	if i.ClearOwner {
-		m.ClearOwner()
+	if i.ClearUser {
+		m.ClearUser()
 	}
-	if v := i.OwnerID; v != nil {
-		m.SetOwnerID(*v)
+	if v := i.UserID; v != nil {
+		m.SetUserID(*v)
 	}
 }
 
@@ -632,18 +632,22 @@ func (c *TagUpdateOne) SetInput(i UpdateTagInput) *TagUpdateOne {
 
 // UpdateUserInput represents a mutation input for updating users.
 type UpdateUserInput struct {
-	Username       *string
-	PasswordHash   *string
-	Email          *string
-	ClearShelves   bool
-	AddShelfIDs    []ksuid.ID
-	RemoveShelfIDs []ksuid.ID
+	Username          *string
+	ClearPasswordHash bool
+	PasswordHash      *string
+	Email             *string
+	ClearShelves      bool
+	AddShelfIDs       []ksuid.ID
+	RemoveShelfIDs    []ksuid.ID
 }
 
 // Mutate applies the UpdateUserInput on the UserMutation builder.
 func (i *UpdateUserInput) Mutate(m *UserMutation) {
 	if v := i.Username; v != nil {
 		m.SetUsername(*v)
+	}
+	if i.ClearPasswordHash {
+		m.ClearPasswordHash()
 	}
 	if v := i.PasswordHash; v != nil {
 		m.SetPasswordHash(*v)
@@ -676,20 +680,24 @@ func (c *UserUpdateOne) SetInput(i UpdateUserInput) *UserUpdateOne {
 
 // CreateUserInput represents a mutation input for creating users.
 type CreateUserInput struct {
-	Username     string
-	PasswordHash string
-	Email        string
-	ShelfIDs     []ksuid.ID
+	Username          string
+	PasswordHash      *string
+	Email             string
+	ShelfIDs          []ksuid.ID
+	UserPermissionsID ksuid.ID
 }
 
 // Mutate applies the CreateUserInput on the UserMutation builder.
 func (i *CreateUserInput) Mutate(m *UserMutation) {
 	m.SetUsername(i.Username)
-	m.SetPasswordHash(i.PasswordHash)
+	if v := i.PasswordHash; v != nil {
+		m.SetPasswordHash(*v)
+	}
 	m.SetEmail(i.Email)
 	if v := i.ShelfIDs; len(v) > 0 {
 		m.AddShelfIDs(v...)
 	}
+	m.SetUserPermissionsID(i.UserPermissionsID)
 }
 
 // SetInput applies the change-set in the CreateUserInput on the UserCreate builder.

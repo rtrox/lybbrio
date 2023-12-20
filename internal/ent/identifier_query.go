@@ -4,6 +4,7 @@ package ent
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"lybbrio/internal/ent/book"
 	"lybbrio/internal/ent/identifier"
@@ -365,6 +366,12 @@ func (iq *IdentifierQuery) prepareQuery(ctx context.Context) error {
 			return err
 		}
 		iq.sql = prev
+	}
+	if identifier.Policy == nil {
+		return errors.New("ent: uninitialized identifier.Policy (forgotten import ent/runtime?)")
+	}
+	if err := identifier.Policy.EvalQuery(ctx, iq); err != nil {
+		return err
 	}
 	return nil
 }

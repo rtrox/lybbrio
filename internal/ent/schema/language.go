@@ -26,6 +26,7 @@ func (Language) Annotations() []schema.Annotation {
 
 func (Language) Mixin() []ent.Mixin {
 	return []ent.Mixin{
+		BaseMixin{},
 		ksuid.MixinWithPrefix("lng"),
 	}
 }

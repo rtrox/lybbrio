@@ -5,6 +5,7 @@ package series
 import (
 	"lybbrio/internal/ent/schema/ksuid"
 
+	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 )
@@ -61,7 +62,14 @@ func ValidColumn(column string) bool {
 	return false
 }
 
+// Note that the variables below are initialized by the runtime
+// package on the initialization of the application. Therefore,
+// it should be imported in the main as follows:
+//
+//	import _ "lybbrio/internal/ent/runtime"
 var (
+	Hooks  [1]ent.Hook
+	Policy ent.Policy
 	// NameValidator is a validator for the "name" field. It is called by the builders before save.
 	NameValidator func(string) error
 	// SortValidator is a validator for the "sort" field. It is called by the builders before save.

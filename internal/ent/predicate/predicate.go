@@ -35,3 +35,6 @@ type Tag func(*sql.Selector)
 
 // User is the predicate function for user builders.
 type User func(*sql.Selector)
+
+// UserPermissions is the predicate function for userpermissions builders.
+type UserPermissions func(*sql.Selector)

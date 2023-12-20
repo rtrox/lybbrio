@@ -3,6 +3,7 @@ package auth
 import (
 	"lybbrio/internal/ent"
 	"lybbrio/internal/ent/user"
+	"lybbrio/internal/viewer"
 	"net/http"
 	"time"
 
@@ -13,7 +14,7 @@ import (
 
 func Routes(client *ent.Client, jwt *JWTProvider) http.Handler {
 	r := chi.NewRouter()
-	r.Get("/testAuthDONOTUSE", TestAuth(client, jwt))
+	r.Get("/testAuthDONOTUSE/{username}", TestAuth(client, jwt))
 	return r
 }
 
@@ -22,13 +23,21 @@ func TestAuth(client *ent.Client, jwt *JWTProvider) http.HandlerFunc {
 		ctx := r.Context()
 		var staticUser *ent.User
 		var err error
-		staticUser, err = client.User.Query().Where(user.Username("test")).First(ctx)
+		username := chi.URLParam(r, "username")
+		adminViewerCtx := viewer.NewSystemAdminContext(ctx)
+		staticUser, err = client.User.Query().Where(user.Username(username)).First(adminViewerCtx)
 		if err != nil {
+			perms, err := client.UserPermissions.Create().Save(adminViewerCtx)
+			if err != nil {
+				log.Error().Err(err).Msg("Failed to create static user permissions")
+				w.WriteHeader(http.StatusInternalServerError)
+				return
+			}
 			staticUser, err = client.User.Create().
-				SetUsername("test").
-				SetPasswordHash("asdf").
+				SetUsername(username).
 				SetEmail("not@arealemail.com").
-				Save(ctx)
+				SetUserPermissions(perms).
+				Save(adminViewerCtx)
 			if err != nil {
 				log.Error().Err(err).Msg("Failed to create static user")
 				w.WriteHeader(http.StatusInternalServerError)

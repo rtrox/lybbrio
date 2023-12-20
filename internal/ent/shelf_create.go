@@ -85,23 +85,23 @@ func (sc *ShelfCreate) AddBooks(b ...*Book) *ShelfCreate {
 	return sc.AddBookIDs(ids...)
 }
 
-// SetOwnerID sets the "owner" edge to the User entity by ID.
-func (sc *ShelfCreate) SetOwnerID(id ksuid.ID) *ShelfCreate {
-	sc.mutation.SetOwnerID(id)
+// SetUserID sets the "user" edge to the User entity by ID.
+func (sc *ShelfCreate) SetUserID(id ksuid.ID) *ShelfCreate {
+	sc.mutation.SetUserID(id)
 	return sc
 }
 
-// SetNillableOwnerID sets the "owner" edge to the User entity by ID if the given value is not nil.
-func (sc *ShelfCreate) SetNillableOwnerID(id *ksuid.ID) *ShelfCreate {
+// SetNillableUserID sets the "user" edge to the User entity by ID if the given value is not nil.
+func (sc *ShelfCreate) SetNillableUserID(id *ksuid.ID) *ShelfCreate {
 	if id != nil {
-		sc = sc.SetOwnerID(*id)
+		sc = sc.SetUserID(*id)
 	}
 	return sc
 }
 
-// SetOwner sets the "owner" edge to the User entity.
-func (sc *ShelfCreate) SetOwner(u *User) *ShelfCreate {
-	return sc.SetOwnerID(u.ID)
+// SetUser sets the "user" edge to the User entity.
+func (sc *ShelfCreate) SetUser(u *User) *ShelfCreate {
+	return sc.SetUserID(u.ID)
 }
 
 // Mutation returns the ShelfMutation object of the builder.
@@ -111,7 +111,9 @@ func (sc *ShelfCreate) Mutation() *ShelfMutation {
 
 // Save creates the Shelf in the database.
 func (sc *ShelfCreate) Save(ctx context.Context) (*Shelf, error) {
-	sc.defaults()
+	if err := sc.defaults(); err != nil {
+		return nil, err
+	}
 	return withHooks(ctx, sc.sqlSave, sc.mutation, sc.hooks)
 }
 
@@ -138,15 +140,19 @@ func (sc *ShelfCreate) ExecX(ctx context.Context) {
 }
 
 // defaults sets the default values of the builder before save.
-func (sc *ShelfCreate) defaults() {
+func (sc *ShelfCreate) defaults() error {
 	if _, ok := sc.mutation.Public(); !ok {
 		v := shelf.DefaultPublic
 		sc.mutation.SetPublic(v)
 	}
 	if _, ok := sc.mutation.ID(); !ok {
+		if shelf.DefaultID == nil {
+			return fmt.Errorf("ent: uninitialized shelf.DefaultID (forgotten import ent/runtime?)")
+		}
 		v := shelf.DefaultID()
 		sc.mutation.SetID(v)
 	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -225,12 +231,12 @@ func (sc *ShelfCreate) createSpec() (*Shelf, *sqlgraph.CreateSpec) {
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := sc.mutation.OwnerIDs(); len(nodes) > 0 {
+	if nodes := sc.mutation.UserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   shelf.OwnerTable,
-			Columns: []string{shelf.OwnerColumn},
+			Table:   shelf.UserTable,
+			Columns: []string{shelf.UserColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeString),

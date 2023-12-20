@@ -85,7 +85,9 @@ func (sc *SeriesCreate) Mutation() *SeriesMutation {
 
 // Save creates the Series in the database.
 func (sc *SeriesCreate) Save(ctx context.Context) (*Series, error) {
-	sc.defaults()
+	if err := sc.defaults(); err != nil {
+		return nil, err
+	}
 	return withHooks(ctx, sc.sqlSave, sc.mutation, sc.hooks)
 }
 
@@ -112,11 +114,15 @@ func (sc *SeriesCreate) ExecX(ctx context.Context) {
 }
 
 // defaults sets the default values of the builder before save.
-func (sc *SeriesCreate) defaults() {
+func (sc *SeriesCreate) defaults() error {
 	if _, ok := sc.mutation.ID(); !ok {
+		if series.DefaultID == nil {
+			return fmt.Errorf("ent: uninitialized series.DefaultID (forgotten import ent/runtime?)")
+		}
 		v := series.DefaultID()
 		sc.mutation.SetID(v)
 	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -195,7 +201,7 @@ func (sc *SeriesCreate) createSpec() (*Series, *sqlgraph.CreateSpec) {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		createE := &SeriesBookCreate{config: sc.config, mutation: newSeriesBookMutation(sc.config, OpCreate)}
-		createE.defaults()
+		_ = createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
 		if specE.ID.Value != nil {

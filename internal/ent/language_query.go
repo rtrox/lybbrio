@@ -5,6 +5,7 @@ package ent
 import (
 	"context"
 	"database/sql/driver"
+	"errors"
 	"fmt"
 	"lybbrio/internal/ent/book"
 	"lybbrio/internal/ent/language"
@@ -366,6 +367,12 @@ func (lq *LanguageQuery) prepareQuery(ctx context.Context) error {
 			return err
 		}
 		lq.sql = prev
+	}
+	if language.Policy == nil {
+		return errors.New("ent: uninitialized language.Policy (forgotten import ent/runtime?)")
+	}
+	if err := language.Policy.EvalQuery(ctx, lq); err != nil {
+		return err
 	}
 	return nil
 }

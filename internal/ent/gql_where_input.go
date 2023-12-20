@@ -17,6 +17,7 @@ import (
 	"lybbrio/internal/ent/shelf"
 	"lybbrio/internal/ent/tag"
 	"lybbrio/internal/ent/user"
+	"lybbrio/internal/ent/userpermissions"
 	"time"
 )
 
@@ -2255,9 +2256,9 @@ type ShelfWhereInput struct {
 	HasBooks     *bool             `json:"hasBooks,omitempty"`
 	HasBooksWith []*BookWhereInput `json:"hasBooksWith,omitempty"`
 
-	// "owner" edge predicates.
-	HasOwner     *bool             `json:"hasOwner,omitempty"`
-	HasOwnerWith []*UserWhereInput `json:"hasOwnerWith,omitempty"`
+	// "user" edge predicates.
+	HasUser     *bool             `json:"hasUser,omitempty"`
+	HasUserWith []*UserWhereInput `json:"hasUserWith,omitempty"`
 }
 
 // AddPredicates adds custom predicates to the where input to be used during the filtering phase.
@@ -2464,23 +2465,23 @@ func (i *ShelfWhereInput) P() (predicate.Shelf, error) {
 		}
 		predicates = append(predicates, shelf.HasBooksWith(with...))
 	}
-	if i.HasOwner != nil {
-		p := shelf.HasOwner()
-		if !*i.HasOwner {
+	if i.HasUser != nil {
+		p := shelf.HasUser()
+		if !*i.HasUser {
 			p = shelf.Not(p)
 		}
 		predicates = append(predicates, p)
 	}
-	if len(i.HasOwnerWith) > 0 {
-		with := make([]predicate.User, 0, len(i.HasOwnerWith))
-		for _, w := range i.HasOwnerWith {
+	if len(i.HasUserWith) > 0 {
+		with := make([]predicate.User, 0, len(i.HasUserWith))
+		for _, w := range i.HasUserWith {
 			p, err := w.P()
 			if err != nil {
-				return nil, fmt.Errorf("%w: field 'HasOwnerWith'", err)
+				return nil, fmt.Errorf("%w: field 'HasUserWith'", err)
 			}
 			with = append(with, p)
 		}
-		predicates = append(predicates, shelf.HasOwnerWith(with...))
+		predicates = append(predicates, shelf.HasUserWith(with...))
 	}
 	switch len(predicates) {
 	case 0:
@@ -2736,6 +2737,8 @@ type UserWhereInput struct {
 	PasswordHashContains     *string  `json:"passwordhashContains,omitempty"`
 	PasswordHashHasPrefix    *string  `json:"passwordhashHasPrefix,omitempty"`
 	PasswordHashHasSuffix    *string  `json:"passwordhashHasSuffix,omitempty"`
+	PasswordHashIsNil        bool     `json:"passwordhashIsNil,omitempty"`
+	PasswordHashNotNil       bool     `json:"passwordhashNotNil,omitempty"`
 	PasswordHashEqualFold    *string  `json:"passwordhashEqualFold,omitempty"`
 	PasswordHashContainsFold *string  `json:"passwordhashContainsFold,omitempty"`
 
@@ -2757,6 +2760,10 @@ type UserWhereInput struct {
 	// "shelves" edge predicates.
 	HasShelves     *bool              `json:"hasShelves,omitempty"`
 	HasShelvesWith []*ShelfWhereInput `json:"hasShelvesWith,omitempty"`
+
+	// "userPermissions" edge predicates.
+	HasUserPermissions     *bool                        `json:"hasUserPermissions,omitempty"`
+	HasUserPermissionsWith []*UserPermissionsWhereInput `json:"hasUserPermissionsWith,omitempty"`
 }
 
 // AddPredicates adds custom predicates to the where input to be used during the filtering phase.
@@ -2926,6 +2933,12 @@ func (i *UserWhereInput) P() (predicate.User, error) {
 	if i.PasswordHashHasSuffix != nil {
 		predicates = append(predicates, user.PasswordHashHasSuffix(*i.PasswordHashHasSuffix))
 	}
+	if i.PasswordHashIsNil {
+		predicates = append(predicates, user.PasswordHashIsNil())
+	}
+	if i.PasswordHashNotNil {
+		predicates = append(predicates, user.PasswordHashNotNil())
+	}
 	if i.PasswordHashEqualFold != nil {
 		predicates = append(predicates, user.PasswordHashEqualFold(*i.PasswordHashEqualFold))
 	}
@@ -2990,6 +3003,24 @@ func (i *UserWhereInput) P() (predicate.User, error) {
 		}
 		predicates = append(predicates, user.HasShelvesWith(with...))
 	}
+	if i.HasUserPermissions != nil {
+		p := user.HasUserPermissions()
+		if !*i.HasUserPermissions {
+			p = user.Not(p)
+		}
+		predicates = append(predicates, p)
+	}
+	if len(i.HasUserPermissionsWith) > 0 {
+		with := make([]predicate.UserPermissions, 0, len(i.HasUserPermissionsWith))
+		for _, w := range i.HasUserPermissionsWith {
+			p, err := w.P()
+			if err != nil {
+				return nil, fmt.Errorf("%w: field 'HasUserPermissionsWith'", err)
+			}
+			with = append(with, p)
+		}
+		predicates = append(predicates, user.HasUserPermissionsWith(with...))
+	}
 	switch len(predicates) {
 	case 0:
 		return nil, ErrEmptyUserWhereInput
@@ -2997,5 +3028,161 @@ func (i *UserWhereInput) P() (predicate.User, error) {
 		return predicates[0], nil
 	default:
 		return user.And(predicates...), nil
+	}
+}
+
+// UserPermissionsWhereInput represents a where input for filtering UserPermissions queries.
+type UserPermissionsWhereInput struct {
+	Predicates []predicate.UserPermissions  `json:"-"`
+	Not        *UserPermissionsWhereInput   `json:"not,omitempty"`
+	Or         []*UserPermissionsWhereInput `json:"or,omitempty"`
+	And        []*UserPermissionsWhereInput `json:"and,omitempty"`
+
+	// "id" field predicates.
+	ID      *ksuid.ID  `json:"id,omitempty"`
+	IDNEQ   *ksuid.ID  `json:"idNEQ,omitempty"`
+	IDIn    []ksuid.ID `json:"idIn,omitempty"`
+	IDNotIn []ksuid.ID `json:"idNotIn,omitempty"`
+	IDGT    *ksuid.ID  `json:"idGT,omitempty"`
+	IDGTE   *ksuid.ID  `json:"idGTE,omitempty"`
+	IDLT    *ksuid.ID  `json:"idLT,omitempty"`
+	IDLTE   *ksuid.ID  `json:"idLTE,omitempty"`
+
+	// "admin" field predicates.
+	Admin    *bool `json:"admin,omitempty"`
+	AdminNEQ *bool `json:"adminNEQ,omitempty"`
+
+	// "user" edge predicates.
+	HasUser     *bool             `json:"hasUser,omitempty"`
+	HasUserWith []*UserWhereInput `json:"hasUserWith,omitempty"`
+}
+
+// AddPredicates adds custom predicates to the where input to be used during the filtering phase.
+func (i *UserPermissionsWhereInput) AddPredicates(predicates ...predicate.UserPermissions) {
+	i.Predicates = append(i.Predicates, predicates...)
+}
+
+// Filter applies the UserPermissionsWhereInput filter on the UserPermissionsQuery builder.
+func (i *UserPermissionsWhereInput) Filter(q *UserPermissionsQuery) (*UserPermissionsQuery, error) {
+	if i == nil {
+		return q, nil
+	}
+	p, err := i.P()
+	if err != nil {
+		if err == ErrEmptyUserPermissionsWhereInput {
+			return q, nil
+		}
+		return nil, err
+	}
+	return q.Where(p), nil
+}
+
+// ErrEmptyUserPermissionsWhereInput is returned in case the UserPermissionsWhereInput is empty.
+var ErrEmptyUserPermissionsWhereInput = errors.New("ent: empty predicate UserPermissionsWhereInput")
+
+// P returns a predicate for filtering userpermissionsslice.
+// An error is returned if the input is empty or invalid.
+func (i *UserPermissionsWhereInput) P() (predicate.UserPermissions, error) {
+	var predicates []predicate.UserPermissions
+	if i.Not != nil {
+		p, err := i.Not.P()
+		if err != nil {
+			return nil, fmt.Errorf("%w: field 'not'", err)
+		}
+		predicates = append(predicates, userpermissions.Not(p))
+	}
+	switch n := len(i.Or); {
+	case n == 1:
+		p, err := i.Or[0].P()
+		if err != nil {
+			return nil, fmt.Errorf("%w: field 'or'", err)
+		}
+		predicates = append(predicates, p)
+	case n > 1:
+		or := make([]predicate.UserPermissions, 0, n)
+		for _, w := range i.Or {
+			p, err := w.P()
+			if err != nil {
+				return nil, fmt.Errorf("%w: field 'or'", err)
+			}
+			or = append(or, p)
+		}
+		predicates = append(predicates, userpermissions.Or(or...))
+	}
+	switch n := len(i.And); {
+	case n == 1:
+		p, err := i.And[0].P()
+		if err != nil {
+			return nil, fmt.Errorf("%w: field 'and'", err)
+		}
+		predicates = append(predicates, p)
+	case n > 1:
+		and := make([]predicate.UserPermissions, 0, n)
+		for _, w := range i.And {
+			p, err := w.P()
+			if err != nil {
+				return nil, fmt.Errorf("%w: field 'and'", err)
+			}
+			and = append(and, p)
+		}
+		predicates = append(predicates, userpermissions.And(and...))
+	}
+	predicates = append(predicates, i.Predicates...)
+	if i.ID != nil {
+		predicates = append(predicates, userpermissions.IDEQ(*i.ID))
+	}
+	if i.IDNEQ != nil {
+		predicates = append(predicates, userpermissions.IDNEQ(*i.IDNEQ))
+	}
+	if len(i.IDIn) > 0 {
+		predicates = append(predicates, userpermissions.IDIn(i.IDIn...))
+	}
+	if len(i.IDNotIn) > 0 {
+		predicates = append(predicates, userpermissions.IDNotIn(i.IDNotIn...))
+	}
+	if i.IDGT != nil {
+		predicates = append(predicates, userpermissions.IDGT(*i.IDGT))
+	}
+	if i.IDGTE != nil {
+		predicates = append(predicates, userpermissions.IDGTE(*i.IDGTE))
+	}
+	if i.IDLT != nil {
+		predicates = append(predicates, userpermissions.IDLT(*i.IDLT))
+	}
+	if i.IDLTE != nil {
+		predicates = append(predicates, userpermissions.IDLTE(*i.IDLTE))
+	}
+	if i.Admin != nil {
+		predicates = append(predicates, userpermissions.AdminEQ(*i.Admin))
+	}
+	if i.AdminNEQ != nil {
+		predicates = append(predicates, userpermissions.AdminNEQ(*i.AdminNEQ))
+	}
+
+	if i.HasUser != nil {
+		p := userpermissions.HasUser()
+		if !*i.HasUser {
+			p = userpermissions.Not(p)
+		}
+		predicates = append(predicates, p)
+	}
+	if len(i.HasUserWith) > 0 {
+		with := make([]predicate.User, 0, len(i.HasUserWith))
+		for _, w := range i.HasUserWith {
+			p, err := w.P()
+			if err != nil {
+				return nil, fmt.Errorf("%w: field 'HasUserWith'", err)
+			}
+			with = append(with, p)
+		}
+		predicates = append(predicates, userpermissions.HasUserWith(with...))
+	}
+	switch len(predicates) {
+	case 0:
+		return nil, ErrEmptyUserPermissionsWhereInput
+	case 1:
+		return predicates[0], nil
+	default:
+		return userpermissions.And(predicates...), nil
 	}
 }

@@ -17,6 +17,7 @@ import (
 	"lybbrio/internal/ent/shelf"
 	"lybbrio/internal/ent/tag"
 	"lybbrio/internal/ent/user"
+	"lybbrio/internal/ent/userpermissions"
 
 	"entgo.io/contrib/entgql"
 	"entgo.io/ent/dialect/sql"
@@ -1358,7 +1359,7 @@ func (s *ShelfQuery) collectField(ctx context.Context, opCtx *graphql.OperationC
 			s.WithNamedBooks(alias, func(wq *BookQuery) {
 				*wq = *query
 			})
-		case "owner":
+		case "user":
 			var (
 				alias = field.Alias
 				path  = append(path, alias)
@@ -1367,7 +1368,7 @@ func (s *ShelfQuery) collectField(ctx context.Context, opCtx *graphql.OperationC
 			if err := query.collectField(ctx, opCtx, field, path, satisfies...); err != nil {
 				return err
 			}
-			s.withOwner = query
+			s.withUser = query
 		case "name":
 			if _, ok := fieldSeen[shelf.FieldName]; !ok {
 				selectedFields = append(selectedFields, shelf.FieldName)
@@ -1736,6 +1737,16 @@ func (u *UserQuery) collectField(ctx context.Context, opCtx *graphql.OperationCo
 			u.WithNamedShelves(alias, func(wq *ShelfQuery) {
 				*wq = *query
 			})
+		case "userpermissions":
+			var (
+				alias = field.Alias
+				path  = append(path, alias)
+				query = (&UserPermissionsClient{config: u.config}).Query()
+			)
+			if err := query.collectField(ctx, opCtx, field, path, satisfies...); err != nil {
+				return err
+			}
+			u.withUserPermissions = query
 		case "username":
 			if _, ok := fieldSeen[user.FieldUsername]; !ok {
 				selectedFields = append(selectedFields, user.FieldUsername)
@@ -1805,6 +1816,83 @@ func newUserPaginateArgs(rv map[string]any) *userPaginateArgs {
 	}
 	if v, ok := rv[whereField].(*UserWhereInput); ok {
 		args.opts = append(args.opts, WithUserFilter(v.Filter))
+	}
+	return args
+}
+
+// CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
+func (up *UserPermissionsQuery) CollectFields(ctx context.Context, satisfies ...string) (*UserPermissionsQuery, error) {
+	fc := graphql.GetFieldContext(ctx)
+	if fc == nil {
+		return up, nil
+	}
+	if err := up.collectField(ctx, graphql.GetOperationContext(ctx), fc.Field, nil, satisfies...); err != nil {
+		return nil, err
+	}
+	return up, nil
+}
+
+func (up *UserPermissionsQuery) collectField(ctx context.Context, opCtx *graphql.OperationContext, collected graphql.CollectedField, path []string, satisfies ...string) error {
+	path = append([]string(nil), path...)
+	var (
+		unknownSeen    bool
+		fieldSeen      = make(map[string]struct{}, len(userpermissions.Columns))
+		selectedFields = []string{userpermissions.FieldID}
+	)
+	for _, field := range graphql.CollectFields(opCtx, collected.Selections, satisfies) {
+		switch field.Name {
+		case "user":
+			var (
+				alias = field.Alias
+				path  = append(path, alias)
+				query = (&UserClient{config: up.config}).Query()
+			)
+			if err := query.collectField(ctx, opCtx, field, path, satisfies...); err != nil {
+				return err
+			}
+			up.withUser = query
+		case "admin":
+			if _, ok := fieldSeen[userpermissions.FieldAdmin]; !ok {
+				selectedFields = append(selectedFields, userpermissions.FieldAdmin)
+				fieldSeen[userpermissions.FieldAdmin] = struct{}{}
+			}
+		case "id":
+		case "__typename":
+		default:
+			unknownSeen = true
+		}
+	}
+	if !unknownSeen {
+		up.Select(selectedFields...)
+	}
+	return nil
+}
+
+type userpermissionsPaginateArgs struct {
+	first, last   *int
+	after, before *Cursor
+	opts          []UserPermissionsPaginateOption
+}
+
+func newUserPermissionsPaginateArgs(rv map[string]any) *userpermissionsPaginateArgs {
+	args := &userpermissionsPaginateArgs{}
+	if rv == nil {
+		return args
+	}
+	if v := rv[firstField]; v != nil {
+		args.first = v.(*int)
+	}
+	if v := rv[lastField]; v != nil {
+		args.last = v.(*int)
+	}
+	if v := rv[afterField]; v != nil {
+		args.after = v.(*Cursor)
+	}
+	if v := rv[beforeField]; v != nil {
+		args.before = v.(*Cursor)
+	}
+	if v, ok := rv[whereField].(*UserPermissionsWhereInput); ok {
+		args.opts = append(args.opts, WithUserPermissionsFilter(v.Filter))
 	}
 	return args
 }

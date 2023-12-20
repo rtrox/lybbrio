@@ -15,6 +15,7 @@ type SeriesBook struct {
 
 func (SeriesBook) Mixin() []ent.Mixin {
 	return []ent.Mixin{
+		BaseMixin{},
 		ksuid.MixinWithPrefix("sbx"),
 	}
 }

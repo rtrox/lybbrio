@@ -16,6 +16,7 @@ import (
 	"lybbrio/internal/ent/shelf"
 	"lybbrio/internal/ent/tag"
 	"lybbrio/internal/ent/user"
+	"lybbrio/internal/ent/userpermissions"
 
 	"entgo.io/contrib/entgql"
 	"github.com/99designs/gqlgen/graphql"
@@ -56,6 +57,9 @@ func (n *Tag) IsNode() {}
 
 // IsNode implements the Node interface check for GQLGen.
 func (n *User) IsNode() {}
+
+// IsNode implements the Node interface check for GQLGen.
+func (n *UserPermissions) IsNode() {}
 
 var errNodeInvalidID = &NotFoundError{"node"}
 
@@ -267,6 +271,22 @@ func (c *Client) noder(ctx context.Context, table string, id ksuid.ID) (Noder, e
 		query := c.User.Query().
 			Where(user.ID(uid))
 		query, err := query.CollectFields(ctx, "User")
+		if err != nil {
+			return nil, err
+		}
+		n, err := query.Only(ctx)
+		if err != nil {
+			return nil, err
+		}
+		return n, nil
+	case userpermissions.Table:
+		var uid ksuid.ID
+		if err := uid.UnmarshalGQL(id); err != nil {
+			return nil, err
+		}
+		query := c.UserPermissions.Query().
+			Where(userpermissions.ID(uid))
+		query, err := query.CollectFields(ctx, "UserPermissions")
 		if err != nil {
 			return nil, err
 		}
@@ -496,6 +516,22 @@ func (c *Client) noders(ctx context.Context, table string, ids []ksuid.ID) ([]No
 		query := c.User.Query().
 			Where(user.IDIn(ids...))
 		query, err := query.CollectFields(ctx, "User")
+		if err != nil {
+			return nil, err
+		}
+		nodes, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, node := range nodes {
+			for _, noder := range idmap[node.ID] {
+				*noder = node
+			}
+		}
+	case userpermissions.Table:
+		query := c.UserPermissions.Query().
+			Where(userpermissions.IDIn(ids...))
+		query, err := query.CollectFields(ctx, "UserPermissions")
 		if err != nil {
 			return nil, err
 		}

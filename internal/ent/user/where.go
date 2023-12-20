@@ -190,6 +190,16 @@ func PasswordHashHasSuffix(v string) predicate.User {
 	return predicate.User(sql.FieldHasSuffix(FieldPasswordHash, v))
 }
 
+// PasswordHashIsNil applies the IsNil predicate on the "passwordHash" field.
+func PasswordHashIsNil() predicate.User {
+	return predicate.User(sql.FieldIsNull(FieldPasswordHash))
+}
+
+// PasswordHashNotNil applies the NotNil predicate on the "passwordHash" field.
+func PasswordHashNotNil() predicate.User {
+	return predicate.User(sql.FieldNotNull(FieldPasswordHash))
+}
+
 // PasswordHashEqualFold applies the EqualFold predicate on the "passwordHash" field.
 func PasswordHashEqualFold(v string) predicate.User {
 	return predicate.User(sql.FieldEqualFold(FieldPasswordHash, v))
@@ -280,6 +290,29 @@ func HasShelves() predicate.User {
 func HasShelvesWith(preds ...predicate.Shelf) predicate.User {
 	return predicate.User(func(s *sql.Selector) {
 		step := newShelvesStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasUserPermissions applies the HasEdge predicate on the "userPermissions" edge.
+func HasUserPermissions() predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, UserPermissionsTable, UserPermissionsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasUserPermissionsWith applies the HasEdge predicate on the "userPermissions" edge with a given conditions (other predicates).
+func HasUserPermissionsWith(preds ...predicate.UserPermissions) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := newUserPermissionsStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

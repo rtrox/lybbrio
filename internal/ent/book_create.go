@@ -200,7 +200,9 @@ func (bc *BookCreate) Mutation() *BookMutation {
 
 // Save creates the Book in the database.
 func (bc *BookCreate) Save(ctx context.Context) (*Book, error) {
-	bc.defaults()
+	if err := bc.defaults(); err != nil {
+		return nil, err
+	}
 	return withHooks(ctx, bc.sqlSave, bc.mutation, bc.hooks)
 }
 
@@ -227,15 +229,22 @@ func (bc *BookCreate) ExecX(ctx context.Context) {
 }
 
 // defaults sets the default values of the builder before save.
-func (bc *BookCreate) defaults() {
+func (bc *BookCreate) defaults() error {
 	if _, ok := bc.mutation.AddedAt(); !ok {
+		if book.DefaultAddedAt == nil {
+			return fmt.Errorf("ent: uninitialized book.DefaultAddedAt (forgotten import ent/runtime?)")
+		}
 		v := book.DefaultAddedAt()
 		bc.mutation.SetAddedAt(v)
 	}
 	if _, ok := bc.mutation.ID(); !ok {
+		if book.DefaultID == nil {
+			return fmt.Errorf("ent: uninitialized book.DefaultID (forgotten import ent/runtime?)")
+		}
 		v := book.DefaultID()
 		bc.mutation.SetID(v)
 	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.

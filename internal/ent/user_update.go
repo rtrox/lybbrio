@@ -57,6 +57,12 @@ func (uu *UserUpdate) SetNillablePasswordHash(s *string) *UserUpdate {
 	return uu
 }
 
+// ClearPasswordHash clears the value of the "passwordHash" field.
+func (uu *UserUpdate) ClearPasswordHash() *UserUpdate {
+	uu.mutation.ClearPasswordHash()
+	return uu
+}
+
 // SetEmail sets the "email" field.
 func (uu *UserUpdate) SetEmail(s string) *UserUpdate {
 	uu.mutation.SetEmail(s)
@@ -146,15 +152,13 @@ func (uu *UserUpdate) check() error {
 			return &ValidationError{Name: "username", err: fmt.Errorf(`ent: validator failed for field "User.username": %w`, err)}
 		}
 	}
-	if v, ok := uu.mutation.PasswordHash(); ok {
-		if err := user.PasswordHashValidator(v); err != nil {
-			return &ValidationError{Name: "passwordHash", err: fmt.Errorf(`ent: validator failed for field "User.passwordHash": %w`, err)}
-		}
-	}
 	if v, ok := uu.mutation.Email(); ok {
 		if err := user.EmailValidator(v); err != nil {
 			return &ValidationError{Name: "email", err: fmt.Errorf(`ent: validator failed for field "User.email": %w`, err)}
 		}
+	}
+	if _, ok := uu.mutation.UserPermissionsID(); uu.mutation.UserPermissionsCleared() && !ok {
+		return errors.New(`ent: clearing a required unique edge "User.userPermissions"`)
 	}
 	return nil
 }
@@ -176,6 +180,9 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := uu.mutation.PasswordHash(); ok {
 		_spec.SetField(user.FieldPasswordHash, field.TypeString, value)
+	}
+	if uu.mutation.PasswordHashCleared() {
+		_spec.ClearField(user.FieldPasswordHash, field.TypeString)
 	}
 	if value, ok := uu.mutation.Email(); ok {
 		_spec.SetField(user.FieldEmail, field.TypeString, value)
@@ -270,6 +277,12 @@ func (uuo *UserUpdateOne) SetNillablePasswordHash(s *string) *UserUpdateOne {
 	if s != nil {
 		uuo.SetPasswordHash(*s)
 	}
+	return uuo
+}
+
+// ClearPasswordHash clears the value of the "passwordHash" field.
+func (uuo *UserUpdateOne) ClearPasswordHash() *UserUpdateOne {
+	uuo.mutation.ClearPasswordHash()
 	return uuo
 }
 
@@ -375,15 +388,13 @@ func (uuo *UserUpdateOne) check() error {
 			return &ValidationError{Name: "username", err: fmt.Errorf(`ent: validator failed for field "User.username": %w`, err)}
 		}
 	}
-	if v, ok := uuo.mutation.PasswordHash(); ok {
-		if err := user.PasswordHashValidator(v); err != nil {
-			return &ValidationError{Name: "passwordHash", err: fmt.Errorf(`ent: validator failed for field "User.passwordHash": %w`, err)}
-		}
-	}
 	if v, ok := uuo.mutation.Email(); ok {
 		if err := user.EmailValidator(v); err != nil {
 			return &ValidationError{Name: "email", err: fmt.Errorf(`ent: validator failed for field "User.email": %w`, err)}
 		}
+	}
+	if _, ok := uuo.mutation.UserPermissionsID(); uuo.mutation.UserPermissionsCleared() && !ok {
+		return errors.New(`ent: clearing a required unique edge "User.userPermissions"`)
 	}
 	return nil
 }
@@ -422,6 +433,9 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 	}
 	if value, ok := uuo.mutation.PasswordHash(); ok {
 		_spec.SetField(user.FieldPasswordHash, field.TypeString, value)
+	}
+	if uuo.mutation.PasswordHashCleared() {
+		_spec.ClearField(user.FieldPasswordHash, field.TypeString)
 	}
 	if value, ok := uuo.mutation.Email(); ok {
 		_spec.SetField(user.FieldEmail, field.TypeString, value)

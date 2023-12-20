@@ -5,6 +5,7 @@ package ent
 import (
 	"context"
 	"database/sql/driver"
+	"errors"
 	"fmt"
 	"lybbrio/internal/ent/author"
 	"lybbrio/internal/ent/book"
@@ -514,6 +515,12 @@ func (bq *BookQuery) prepareQuery(ctx context.Context) error {
 			return err
 		}
 		bq.sql = prev
+	}
+	if book.Policy == nil {
+		return errors.New("ent: uninitialized book.Policy (forgotten import ent/runtime?)")
+	}
+	if err := book.Policy.EvalQuery(ctx, bq); err != nil {
+		return err
 	}
 	return nil
 }

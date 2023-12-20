@@ -5,6 +5,7 @@ package shelf
 import (
 	"lybbrio/internal/ent/schema/ksuid"
 
+	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 )
@@ -22,8 +23,8 @@ const (
 	FieldPublic = "public"
 	// EdgeBooks holds the string denoting the books edge name in mutations.
 	EdgeBooks = "books"
-	// EdgeOwner holds the string denoting the owner edge name in mutations.
-	EdgeOwner = "owner"
+	// EdgeUser holds the string denoting the user edge name in mutations.
+	EdgeUser = "user"
 	// Table holds the table name of the shelf in the database.
 	Table = "shelves"
 	// BooksTable is the table that holds the books relation/edge. The primary key declared below.
@@ -31,13 +32,13 @@ const (
 	// BooksInverseTable is the table name for the Book entity.
 	// It exists in this package in order to avoid circular dependency with the "book" package.
 	BooksInverseTable = "books"
-	// OwnerTable is the table that holds the owner relation/edge.
-	OwnerTable = "shelves"
-	// OwnerInverseTable is the table name for the User entity.
+	// UserTable is the table that holds the user relation/edge.
+	UserTable = "shelves"
+	// UserInverseTable is the table name for the User entity.
 	// It exists in this package in order to avoid circular dependency with the "user" package.
-	OwnerInverseTable = "users"
-	// OwnerColumn is the table column denoting the owner relation/edge.
-	OwnerColumn = "user_shelves"
+	UserInverseTable = "users"
+	// UserColumn is the table column denoting the user relation/edge.
+	UserColumn = "user_shelves"
 )
 
 // Columns holds all SQL columns for shelf fields.
@@ -75,7 +76,14 @@ func ValidColumn(column string) bool {
 	return false
 }
 
+// Note that the variables below are initialized by the runtime
+// package on the initialization of the application. Therefore,
+// it should be imported in the main as follows:
+//
+//	import _ "lybbrio/internal/ent/runtime"
 var (
+	Hooks  [1]ent.Hook
+	Policy ent.Policy
 	// NameValidator is a validator for the "name" field. It is called by the builders before save.
 	NameValidator func(string) error
 	// DefaultPublic holds the default value on creation for the "public" field.
@@ -121,10 +129,10 @@ func ByBooks(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	}
 }
 
-// ByOwnerField orders the results by owner field.
-func ByOwnerField(field string, opts ...sql.OrderTermOption) OrderOption {
+// ByUserField orders the results by user field.
+func ByUserField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newOwnerStep(), sql.OrderByField(field, opts...))
+		sqlgraph.OrderByNeighborTerms(s, newUserStep(), sql.OrderByField(field, opts...))
 	}
 }
 func newBooksStep() *sqlgraph.Step {
@@ -134,10 +142,10 @@ func newBooksStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.M2M, false, BooksTable, BooksPrimaryKey...),
 	)
 }
-func newOwnerStep() *sqlgraph.Step {
+func newUserStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(OwnerInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2O, true, OwnerTable, OwnerColumn),
+		sqlgraph.To(UserInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, true, UserTable, UserColumn),
 	)
 }

@@ -5,6 +5,7 @@ package user
 import (
 	"lybbrio/internal/ent/schema/ksuid"
 
+	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 )
@@ -22,6 +23,8 @@ const (
 	FieldEmail = "email"
 	// EdgeShelves holds the string denoting the shelves edge name in mutations.
 	EdgeShelves = "shelves"
+	// EdgeUserPermissions holds the string denoting the userpermissions edge name in mutations.
+	EdgeUserPermissions = "userPermissions"
 	// Table holds the table name of the user in the database.
 	Table = "users"
 	// ShelvesTable is the table that holds the shelves relation/edge.
@@ -31,6 +34,13 @@ const (
 	ShelvesInverseTable = "shelves"
 	// ShelvesColumn is the table column denoting the shelves relation/edge.
 	ShelvesColumn = "user_shelves"
+	// UserPermissionsTable is the table that holds the userPermissions relation/edge.
+	UserPermissionsTable = "user_permissions"
+	// UserPermissionsInverseTable is the table name for the UserPermissions entity.
+	// It exists in this package in order to avoid circular dependency with the "userpermissions" package.
+	UserPermissionsInverseTable = "user_permissions"
+	// UserPermissionsColumn is the table column denoting the userPermissions relation/edge.
+	UserPermissionsColumn = "user_user_permissions"
 )
 
 // Columns holds all SQL columns for user fields.
@@ -51,11 +61,16 @@ func ValidColumn(column string) bool {
 	return false
 }
 
+// Note that the variables below are initialized by the runtime
+// package on the initialization of the application. Therefore,
+// it should be imported in the main as follows:
+//
+//	import _ "lybbrio/internal/ent/runtime"
 var (
+	Hooks  [1]ent.Hook
+	Policy ent.Policy
 	// UsernameValidator is a validator for the "username" field. It is called by the builders before save.
 	UsernameValidator func(string) error
-	// PasswordHashValidator is a validator for the "passwordHash" field. It is called by the builders before save.
-	PasswordHashValidator func(string) error
 	// EmailValidator is a validator for the "email" field. It is called by the builders before save.
 	EmailValidator func(string) error
 	// DefaultID holds the default value on creation for the "id" field.
@@ -98,10 +113,24 @@ func ByShelves(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newShelvesStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByUserPermissionsField orders the results by userPermissions field.
+func ByUserPermissionsField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newUserPermissionsStep(), sql.OrderByField(field, opts...))
+	}
+}
 func newShelvesStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(ShelvesInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, ShelvesTable, ShelvesColumn),
+	)
+}
+func newUserPermissionsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(UserPermissionsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2O, false, UserPermissionsTable, UserPermissionsColumn),
 	)
 }

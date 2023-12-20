@@ -207,7 +207,7 @@ func (su *SeriesUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			},
 		}
 		createE := &SeriesBookCreate{config: su.config, mutation: newSeriesBookMutation(su.config, OpCreate)}
-		createE.defaults()
+		_ = createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
 		if specE.ID.Value != nil {
@@ -230,7 +230,7 @@ func (su *SeriesUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		createE := &SeriesBookCreate{config: su.config, mutation: newSeriesBookMutation(su.config, OpCreate)}
-		createE.defaults()
+		_ = createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
 		if specE.ID.Value != nil {
@@ -253,7 +253,7 @@ func (su *SeriesUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		createE := &SeriesBookCreate{config: su.config, mutation: newSeriesBookMutation(su.config, OpCreate)}
-		createE.defaults()
+		_ = createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
 		if specE.ID.Value != nil {
@@ -533,7 +533,7 @@ func (suo *SeriesUpdateOne) sqlSave(ctx context.Context) (_node *Series, err err
 			},
 		}
 		createE := &SeriesBookCreate{config: suo.config, mutation: newSeriesBookMutation(suo.config, OpCreate)}
-		createE.defaults()
+		_ = createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
 		if specE.ID.Value != nil {
@@ -556,7 +556,7 @@ func (suo *SeriesUpdateOne) sqlSave(ctx context.Context) (_node *Series, err err
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		createE := &SeriesBookCreate{config: suo.config, mutation: newSeriesBookMutation(suo.config, OpCreate)}
-		createE.defaults()
+		_ = createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
 		if specE.ID.Value != nil {
@@ -579,7 +579,7 @@ func (suo *SeriesUpdateOne) sqlSave(ctx context.Context) (_node *Series, err err
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		createE := &SeriesBookCreate{config: suo.config, mutation: newSeriesBookMutation(suo.config, OpCreate)}
-		createE.defaults()
+		_ = createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
 		if specE.ID.Value != nil {

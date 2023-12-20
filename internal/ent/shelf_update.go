@@ -93,23 +93,23 @@ func (su *ShelfUpdate) AddBooks(b ...*Book) *ShelfUpdate {
 	return su.AddBookIDs(ids...)
 }
 
-// SetOwnerID sets the "owner" edge to the User entity by ID.
-func (su *ShelfUpdate) SetOwnerID(id ksuid.ID) *ShelfUpdate {
-	su.mutation.SetOwnerID(id)
+// SetUserID sets the "user" edge to the User entity by ID.
+func (su *ShelfUpdate) SetUserID(id ksuid.ID) *ShelfUpdate {
+	su.mutation.SetUserID(id)
 	return su
 }
 
-// SetNillableOwnerID sets the "owner" edge to the User entity by ID if the given value is not nil.
-func (su *ShelfUpdate) SetNillableOwnerID(id *ksuid.ID) *ShelfUpdate {
+// SetNillableUserID sets the "user" edge to the User entity by ID if the given value is not nil.
+func (su *ShelfUpdate) SetNillableUserID(id *ksuid.ID) *ShelfUpdate {
 	if id != nil {
-		su = su.SetOwnerID(*id)
+		su = su.SetUserID(*id)
 	}
 	return su
 }
 
-// SetOwner sets the "owner" edge to the User entity.
-func (su *ShelfUpdate) SetOwner(u *User) *ShelfUpdate {
-	return su.SetOwnerID(u.ID)
+// SetUser sets the "user" edge to the User entity.
+func (su *ShelfUpdate) SetUser(u *User) *ShelfUpdate {
+	return su.SetUserID(u.ID)
 }
 
 // Mutation returns the ShelfMutation object of the builder.
@@ -138,9 +138,9 @@ func (su *ShelfUpdate) RemoveBooks(b ...*Book) *ShelfUpdate {
 	return su.RemoveBookIDs(ids...)
 }
 
-// ClearOwner clears the "owner" edge to the User entity.
-func (su *ShelfUpdate) ClearOwner() *ShelfUpdate {
-	su.mutation.ClearOwner()
+// ClearUser clears the "user" edge to the User entity.
+func (su *ShelfUpdate) ClearUser() *ShelfUpdate {
+	su.mutation.ClearUser()
 	return su
 }
 
@@ -250,12 +250,12 @@ func (su *ShelfUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if su.mutation.OwnerCleared() {
+	if su.mutation.UserCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   shelf.OwnerTable,
-			Columns: []string{shelf.OwnerColumn},
+			Table:   shelf.UserTable,
+			Columns: []string{shelf.UserColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeString),
@@ -263,12 +263,12 @@ func (su *ShelfUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := su.mutation.OwnerIDs(); len(nodes) > 0 {
+	if nodes := su.mutation.UserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   shelf.OwnerTable,
-			Columns: []string{shelf.OwnerColumn},
+			Table:   shelf.UserTable,
+			Columns: []string{shelf.UserColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeString),
@@ -362,23 +362,23 @@ func (suo *ShelfUpdateOne) AddBooks(b ...*Book) *ShelfUpdateOne {
 	return suo.AddBookIDs(ids...)
 }
 
-// SetOwnerID sets the "owner" edge to the User entity by ID.
-func (suo *ShelfUpdateOne) SetOwnerID(id ksuid.ID) *ShelfUpdateOne {
-	suo.mutation.SetOwnerID(id)
+// SetUserID sets the "user" edge to the User entity by ID.
+func (suo *ShelfUpdateOne) SetUserID(id ksuid.ID) *ShelfUpdateOne {
+	suo.mutation.SetUserID(id)
 	return suo
 }
 
-// SetNillableOwnerID sets the "owner" edge to the User entity by ID if the given value is not nil.
-func (suo *ShelfUpdateOne) SetNillableOwnerID(id *ksuid.ID) *ShelfUpdateOne {
+// SetNillableUserID sets the "user" edge to the User entity by ID if the given value is not nil.
+func (suo *ShelfUpdateOne) SetNillableUserID(id *ksuid.ID) *ShelfUpdateOne {
 	if id != nil {
-		suo = suo.SetOwnerID(*id)
+		suo = suo.SetUserID(*id)
 	}
 	return suo
 }
 
-// SetOwner sets the "owner" edge to the User entity.
-func (suo *ShelfUpdateOne) SetOwner(u *User) *ShelfUpdateOne {
-	return suo.SetOwnerID(u.ID)
+// SetUser sets the "user" edge to the User entity.
+func (suo *ShelfUpdateOne) SetUser(u *User) *ShelfUpdateOne {
+	return suo.SetUserID(u.ID)
 }
 
 // Mutation returns the ShelfMutation object of the builder.
@@ -407,9 +407,9 @@ func (suo *ShelfUpdateOne) RemoveBooks(b ...*Book) *ShelfUpdateOne {
 	return suo.RemoveBookIDs(ids...)
 }
 
-// ClearOwner clears the "owner" edge to the User entity.
-func (suo *ShelfUpdateOne) ClearOwner() *ShelfUpdateOne {
-	suo.mutation.ClearOwner()
+// ClearUser clears the "user" edge to the User entity.
+func (suo *ShelfUpdateOne) ClearUser() *ShelfUpdateOne {
+	suo.mutation.ClearUser()
 	return suo
 }
 
@@ -549,12 +549,12 @@ func (suo *ShelfUpdateOne) sqlSave(ctx context.Context) (_node *Shelf, err error
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if suo.mutation.OwnerCleared() {
+	if suo.mutation.UserCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   shelf.OwnerTable,
-			Columns: []string{shelf.OwnerColumn},
+			Table:   shelf.UserTable,
+			Columns: []string{shelf.UserColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeString),
@@ -562,12 +562,12 @@ func (suo *ShelfUpdateOne) sqlSave(ctx context.Context) (_node *Shelf, err error
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := suo.mutation.OwnerIDs(); len(nodes) > 0 {
+	if nodes := suo.mutation.UserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   shelf.OwnerTable,
-			Columns: []string{shelf.OwnerColumn},
+			Table:   shelf.UserTable,
+			Columns: []string{shelf.UserColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeString),

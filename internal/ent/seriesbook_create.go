@@ -79,7 +79,9 @@ func (sbc *SeriesBookCreate) Mutation() *SeriesBookMutation {
 
 // Save creates the SeriesBook in the database.
 func (sbc *SeriesBookCreate) Save(ctx context.Context) (*SeriesBook, error) {
-	sbc.defaults()
+	if err := sbc.defaults(); err != nil {
+		return nil, err
+	}
 	return withHooks(ctx, sbc.sqlSave, sbc.mutation, sbc.hooks)
 }
 
@@ -106,11 +108,15 @@ func (sbc *SeriesBookCreate) ExecX(ctx context.Context) {
 }
 
 // defaults sets the default values of the builder before save.
-func (sbc *SeriesBookCreate) defaults() {
+func (sbc *SeriesBookCreate) defaults() error {
 	if _, ok := sbc.mutation.ID(); !ok {
+		if seriesbook.DefaultID == nil {
+			return fmt.Errorf("ent: uninitialized seriesbook.DefaultID (forgotten import ent/runtime?)")
+		}
 		v := seriesbook.DefaultID()
 		sbc.mutation.SetID(v)
 	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.

@@ -9,6 +9,7 @@ import (
 	"lybbrio/internal/ent/schema/ksuid"
 	"lybbrio/internal/ent/shelf"
 	"lybbrio/internal/ent/user"
+	"lybbrio/internal/ent/userpermissions"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
@@ -30,6 +31,14 @@ func (uc *UserCreate) SetUsername(s string) *UserCreate {
 // SetPasswordHash sets the "passwordHash" field.
 func (uc *UserCreate) SetPasswordHash(s string) *UserCreate {
 	uc.mutation.SetPasswordHash(s)
+	return uc
+}
+
+// SetNillablePasswordHash sets the "passwordHash" field if the given value is not nil.
+func (uc *UserCreate) SetNillablePasswordHash(s *string) *UserCreate {
+	if s != nil {
+		uc.SetPasswordHash(*s)
+	}
 	return uc
 }
 
@@ -68,6 +77,17 @@ func (uc *UserCreate) AddShelves(s ...*Shelf) *UserCreate {
 	return uc.AddShelfIDs(ids...)
 }
 
+// SetUserPermissionsID sets the "userPermissions" edge to the UserPermissions entity by ID.
+func (uc *UserCreate) SetUserPermissionsID(id ksuid.ID) *UserCreate {
+	uc.mutation.SetUserPermissionsID(id)
+	return uc
+}
+
+// SetUserPermissions sets the "userPermissions" edge to the UserPermissions entity.
+func (uc *UserCreate) SetUserPermissions(u *UserPermissions) *UserCreate {
+	return uc.SetUserPermissionsID(u.ID)
+}
+
 // Mutation returns the UserMutation object of the builder.
 func (uc *UserCreate) Mutation() *UserMutation {
 	return uc.mutation
@@ -75,7 +95,9 @@ func (uc *UserCreate) Mutation() *UserMutation {
 
 // Save creates the User in the database.
 func (uc *UserCreate) Save(ctx context.Context) (*User, error) {
-	uc.defaults()
+	if err := uc.defaults(); err != nil {
+		return nil, err
+	}
 	return withHooks(ctx, uc.sqlSave, uc.mutation, uc.hooks)
 }
 
@@ -102,11 +124,15 @@ func (uc *UserCreate) ExecX(ctx context.Context) {
 }
 
 // defaults sets the default values of the builder before save.
-func (uc *UserCreate) defaults() {
+func (uc *UserCreate) defaults() error {
 	if _, ok := uc.mutation.ID(); !ok {
+		if user.DefaultID == nil {
+			return fmt.Errorf("ent: uninitialized user.DefaultID (forgotten import ent/runtime?)")
+		}
 		v := user.DefaultID()
 		uc.mutation.SetID(v)
 	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -119,14 +145,6 @@ func (uc *UserCreate) check() error {
 			return &ValidationError{Name: "username", err: fmt.Errorf(`ent: validator failed for field "User.username": %w`, err)}
 		}
 	}
-	if _, ok := uc.mutation.PasswordHash(); !ok {
-		return &ValidationError{Name: "passwordHash", err: errors.New(`ent: missing required field "User.passwordHash"`)}
-	}
-	if v, ok := uc.mutation.PasswordHash(); ok {
-		if err := user.PasswordHashValidator(v); err != nil {
-			return &ValidationError{Name: "passwordHash", err: fmt.Errorf(`ent: validator failed for field "User.passwordHash": %w`, err)}
-		}
-	}
 	if _, ok := uc.mutation.Email(); !ok {
 		return &ValidationError{Name: "email", err: errors.New(`ent: missing required field "User.email"`)}
 	}
@@ -134,6 +152,9 @@ func (uc *UserCreate) check() error {
 		if err := user.EmailValidator(v); err != nil {
 			return &ValidationError{Name: "email", err: fmt.Errorf(`ent: validator failed for field "User.email": %w`, err)}
 		}
+	}
+	if _, ok := uc.mutation.UserPermissionsID(); !ok {
+		return &ValidationError{Name: "userPermissions", err: errors.New(`ent: missing required edge "User.userPermissions"`)}
 	}
 	return nil
 }
@@ -191,6 +212,22 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(shelf.FieldID, field.TypeString),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := uc.mutation.UserPermissionsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   user.UserPermissionsTable,
+			Columns: []string{user.UserPermissionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(userpermissions.FieldID, field.TypeString),
 			},
 		}
 		for _, k := range nodes {

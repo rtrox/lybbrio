@@ -26,6 +26,7 @@ func (Tag) Annotations() []schema.Annotation {
 
 func (Tag) Mixin() []ent.Mixin {
 	return []ent.Mixin{
+		BaseMixin{},
 		ksuid.MixinWithPrefix("tag"),
 	}
 }

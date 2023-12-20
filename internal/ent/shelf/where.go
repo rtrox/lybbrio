@@ -243,21 +243,21 @@ func HasBooksWith(preds ...predicate.Book) predicate.Shelf {
 	})
 }
 
-// HasOwner applies the HasEdge predicate on the "owner" edge.
-func HasOwner() predicate.Shelf {
+// HasUser applies the HasEdge predicate on the "user" edge.
+func HasUser() predicate.Shelf {
 	return predicate.Shelf(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, OwnerTable, OwnerColumn),
+			sqlgraph.Edge(sqlgraph.M2O, true, UserTable, UserColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasOwnerWith applies the HasEdge predicate on the "owner" edge with a given conditions (other predicates).
-func HasOwnerWith(preds ...predicate.User) predicate.Shelf {
+// HasUserWith applies the HasEdge predicate on the "user" edge with a given conditions (other predicates).
+func HasUserWith(preds ...predicate.User) predicate.Shelf {
 	return predicate.Shelf(func(s *sql.Selector) {
-		step := newOwnerStep()
+		step := newUserStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

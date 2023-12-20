@@ -1,7 +1,9 @@
 package schema
 
 import (
+	"lybbrio/internal/ent/privacy"
 	"lybbrio/internal/ent/schema/ksuid"
+	"lybbrio/internal/rule"
 
 	"entgo.io/contrib/entgql"
 	"entgo.io/ent"
@@ -26,6 +28,7 @@ func (User) Annotations() []schema.Annotation {
 
 func (User) Mixin() []ent.Mixin {
 	return []ent.Mixin{
+		BaseMixin{},
 		ksuid.MixinWithPrefix("usr"),
 	}
 }
@@ -40,7 +43,7 @@ func (User) Fields() []ent.Field {
 				entgql.OrderField("USERNAME"),
 			),
 		field.String("passwordHash").
-			NotEmpty().
+			Optional().
 			Sensitive(),
 		field.String("email").
 			NotEmpty().
@@ -55,5 +58,20 @@ func (User) Fields() []ent.Field {
 func (User) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("shelves", Shelf.Type).Annotations(entgql.RelayConnection()),
+		edge.To("userPermissions", UserPermissions.Type).Unique().Required().Immutable(),
+	}
+}
+
+// Policy defines the privacy policy of the User.
+func (User) Policy() ent.Policy {
+	return privacy.Policy{
+		Mutation: privacy.MutationPolicy{
+			rule.DenyIfNoViewer(),
+			rule.AllowIfAdmin(),
+			privacy.AlwaysDenyRule(),
+		},
+		Query: privacy.QueryPolicy{
+			privacy.AlwaysAllowRule(),
+		},
 	}
 }

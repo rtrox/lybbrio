@@ -18,6 +18,7 @@ import (
 	"lybbrio/internal/ent/shelf"
 	"lybbrio/internal/ent/tag"
 	"lybbrio/internal/ent/user"
+	"lybbrio/internal/ent/userpermissions"
 	"sync"
 	"time"
 
@@ -34,16 +35,17 @@ const (
 	OpUpdateOne = ent.OpUpdateOne
 
 	// Node types.
-	TypeAuthor     = "Author"
-	TypeBook       = "Book"
-	TypeIdentifier = "Identifier"
-	TypeLanguage   = "Language"
-	TypePublisher  = "Publisher"
-	TypeSeries     = "Series"
-	TypeSeriesBook = "SeriesBook"
-	TypeShelf      = "Shelf"
-	TypeTag        = "Tag"
-	TypeUser       = "User"
+	TypeAuthor          = "Author"
+	TypeBook            = "Book"
+	TypeIdentifier      = "Identifier"
+	TypeLanguage        = "Language"
+	TypePublisher       = "Publisher"
+	TypeSeries          = "Series"
+	TypeSeriesBook      = "SeriesBook"
+	TypeShelf           = "Shelf"
+	TypeTag             = "Tag"
+	TypeUser            = "User"
+	TypeUserPermissions = "UserPermissions"
 )
 
 // AuthorMutation represents an operation that mutates the Author nodes in the graph.
@@ -4249,8 +4251,8 @@ type ShelfMutation struct {
 	books         map[ksuid.ID]struct{}
 	removedbooks  map[ksuid.ID]struct{}
 	clearedbooks  bool
-	owner         *ksuid.ID
-	clearedowner  bool
+	user          *ksuid.ID
+	cleareduser   bool
 	done          bool
 	oldValue      func(context.Context) (*Shelf, error)
 	predicates    []predicate.Shelf
@@ -4535,43 +4537,43 @@ func (m *ShelfMutation) ResetBooks() {
 	m.removedbooks = nil
 }
 
-// SetOwnerID sets the "owner" edge to the User entity by id.
-func (m *ShelfMutation) SetOwnerID(id ksuid.ID) {
-	m.owner = &id
+// SetUserID sets the "user" edge to the User entity by id.
+func (m *ShelfMutation) SetUserID(id ksuid.ID) {
+	m.user = &id
 }
 
-// ClearOwner clears the "owner" edge to the User entity.
-func (m *ShelfMutation) ClearOwner() {
-	m.clearedowner = true
+// ClearUser clears the "user" edge to the User entity.
+func (m *ShelfMutation) ClearUser() {
+	m.cleareduser = true
 }
 
-// OwnerCleared reports if the "owner" edge to the User entity was cleared.
-func (m *ShelfMutation) OwnerCleared() bool {
-	return m.clearedowner
+// UserCleared reports if the "user" edge to the User entity was cleared.
+func (m *ShelfMutation) UserCleared() bool {
+	return m.cleareduser
 }
 
-// OwnerID returns the "owner" edge ID in the mutation.
-func (m *ShelfMutation) OwnerID() (id ksuid.ID, exists bool) {
-	if m.owner != nil {
-		return *m.owner, true
+// UserID returns the "user" edge ID in the mutation.
+func (m *ShelfMutation) UserID() (id ksuid.ID, exists bool) {
+	if m.user != nil {
+		return *m.user, true
 	}
 	return
 }
 
-// OwnerIDs returns the "owner" edge IDs in the mutation.
+// UserIDs returns the "user" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// OwnerID instead. It exists only for internal usage by the builders.
-func (m *ShelfMutation) OwnerIDs() (ids []ksuid.ID) {
-	if id := m.owner; id != nil {
+// UserID instead. It exists only for internal usage by the builders.
+func (m *ShelfMutation) UserIDs() (ids []ksuid.ID) {
+	if id := m.user; id != nil {
 		ids = append(ids, *id)
 	}
 	return
 }
 
-// ResetOwner resets all changes to the "owner" edge.
-func (m *ShelfMutation) ResetOwner() {
-	m.owner = nil
-	m.clearedowner = false
+// ResetUser resets all changes to the "user" edge.
+func (m *ShelfMutation) ResetUser() {
+	m.user = nil
+	m.cleareduser = false
 }
 
 // Where appends a list predicates to the ShelfMutation builder.
@@ -4754,8 +4756,8 @@ func (m *ShelfMutation) AddedEdges() []string {
 	if m.books != nil {
 		edges = append(edges, shelf.EdgeBooks)
 	}
-	if m.owner != nil {
-		edges = append(edges, shelf.EdgeOwner)
+	if m.user != nil {
+		edges = append(edges, shelf.EdgeUser)
 	}
 	return edges
 }
@@ -4770,8 +4772,8 @@ func (m *ShelfMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case shelf.EdgeOwner:
-		if id := m.owner; id != nil {
+	case shelf.EdgeUser:
+		if id := m.user; id != nil {
 			return []ent.Value{*id}
 		}
 	}
@@ -4807,8 +4809,8 @@ func (m *ShelfMutation) ClearedEdges() []string {
 	if m.clearedbooks {
 		edges = append(edges, shelf.EdgeBooks)
 	}
-	if m.clearedowner {
-		edges = append(edges, shelf.EdgeOwner)
+	if m.cleareduser {
+		edges = append(edges, shelf.EdgeUser)
 	}
 	return edges
 }
@@ -4819,8 +4821,8 @@ func (m *ShelfMutation) EdgeCleared(name string) bool {
 	switch name {
 	case shelf.EdgeBooks:
 		return m.clearedbooks
-	case shelf.EdgeOwner:
-		return m.clearedowner
+	case shelf.EdgeUser:
+		return m.cleareduser
 	}
 	return false
 }
@@ -4829,8 +4831,8 @@ func (m *ShelfMutation) EdgeCleared(name string) bool {
 // if that edge is not defined in the schema.
 func (m *ShelfMutation) ClearEdge(name string) error {
 	switch name {
-	case shelf.EdgeOwner:
-		m.ClearOwner()
+	case shelf.EdgeUser:
+		m.ClearUser()
 		return nil
 	}
 	return fmt.Errorf("unknown Shelf unique edge %s", name)
@@ -4843,8 +4845,8 @@ func (m *ShelfMutation) ResetEdge(name string) error {
 	case shelf.EdgeBooks:
 		m.ResetBooks()
 		return nil
-	case shelf.EdgeOwner:
-		m.ResetOwner()
+	case shelf.EdgeUser:
+		m.ResetUser()
 		return nil
 	}
 	return fmt.Errorf("unknown Shelf edge %s", name)
@@ -5278,19 +5280,21 @@ func (m *TagMutation) ResetEdge(name string) error {
 // UserMutation represents an operation that mutates the User nodes in the graph.
 type UserMutation struct {
 	config
-	op             Op
-	typ            string
-	id             *ksuid.ID
-	username       *string
-	passwordHash   *string
-	email          *string
-	clearedFields  map[string]struct{}
-	shelves        map[ksuid.ID]struct{}
-	removedshelves map[ksuid.ID]struct{}
-	clearedshelves bool
-	done           bool
-	oldValue       func(context.Context) (*User, error)
-	predicates     []predicate.User
+	op                     Op
+	typ                    string
+	id                     *ksuid.ID
+	username               *string
+	passwordHash           *string
+	email                  *string
+	clearedFields          map[string]struct{}
+	shelves                map[ksuid.ID]struct{}
+	removedshelves         map[ksuid.ID]struct{}
+	clearedshelves         bool
+	userPermissions        *ksuid.ID
+	cleareduserPermissions bool
+	done                   bool
+	oldValue               func(context.Context) (*User, error)
+	predicates             []predicate.User
 }
 
 var _ ent.Mutation = (*UserMutation)(nil)
@@ -5464,9 +5468,22 @@ func (m *UserMutation) OldPasswordHash(ctx context.Context) (v string, err error
 	return oldValue.PasswordHash, nil
 }
 
+// ClearPasswordHash clears the value of the "passwordHash" field.
+func (m *UserMutation) ClearPasswordHash() {
+	m.passwordHash = nil
+	m.clearedFields[user.FieldPasswordHash] = struct{}{}
+}
+
+// PasswordHashCleared returns if the "passwordHash" field was cleared in this mutation.
+func (m *UserMutation) PasswordHashCleared() bool {
+	_, ok := m.clearedFields[user.FieldPasswordHash]
+	return ok
+}
+
 // ResetPasswordHash resets all changes to the "passwordHash" field.
 func (m *UserMutation) ResetPasswordHash() {
 	m.passwordHash = nil
+	delete(m.clearedFields, user.FieldPasswordHash)
 }
 
 // SetEmail sets the "email" field.
@@ -5557,6 +5574,45 @@ func (m *UserMutation) ResetShelves() {
 	m.shelves = nil
 	m.clearedshelves = false
 	m.removedshelves = nil
+}
+
+// SetUserPermissionsID sets the "userPermissions" edge to the UserPermissions entity by id.
+func (m *UserMutation) SetUserPermissionsID(id ksuid.ID) {
+	m.userPermissions = &id
+}
+
+// ClearUserPermissions clears the "userPermissions" edge to the UserPermissions entity.
+func (m *UserMutation) ClearUserPermissions() {
+	m.cleareduserPermissions = true
+}
+
+// UserPermissionsCleared reports if the "userPermissions" edge to the UserPermissions entity was cleared.
+func (m *UserMutation) UserPermissionsCleared() bool {
+	return m.cleareduserPermissions
+}
+
+// UserPermissionsID returns the "userPermissions" edge ID in the mutation.
+func (m *UserMutation) UserPermissionsID() (id ksuid.ID, exists bool) {
+	if m.userPermissions != nil {
+		return *m.userPermissions, true
+	}
+	return
+}
+
+// UserPermissionsIDs returns the "userPermissions" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// UserPermissionsID instead. It exists only for internal usage by the builders.
+func (m *UserMutation) UserPermissionsIDs() (ids []ksuid.ID) {
+	if id := m.userPermissions; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetUserPermissions resets all changes to the "userPermissions" edge.
+func (m *UserMutation) ResetUserPermissions() {
+	m.userPermissions = nil
+	m.cleareduserPermissions = false
 }
 
 // Where appends a list predicates to the UserMutation builder.
@@ -5691,7 +5747,11 @@ func (m *UserMutation) AddField(name string, value ent.Value) error {
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *UserMutation) ClearedFields() []string {
-	return nil
+	var fields []string
+	if m.FieldCleared(user.FieldPasswordHash) {
+		fields = append(fields, user.FieldPasswordHash)
+	}
+	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -5704,6 +5764,11 @@ func (m *UserMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *UserMutation) ClearField(name string) error {
+	switch name {
+	case user.FieldPasswordHash:
+		m.ClearPasswordHash()
+		return nil
+	}
 	return fmt.Errorf("unknown User nullable field %s", name)
 }
 
@@ -5726,9 +5791,12 @@ func (m *UserMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *UserMutation) AddedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
 	if m.shelves != nil {
 		edges = append(edges, user.EdgeShelves)
+	}
+	if m.userPermissions != nil {
+		edges = append(edges, user.EdgeUserPermissions)
 	}
 	return edges
 }
@@ -5743,13 +5811,17 @@ func (m *UserMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case user.EdgeUserPermissions:
+		if id := m.userPermissions; id != nil {
+			return []ent.Value{*id}
+		}
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *UserMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
 	if m.removedshelves != nil {
 		edges = append(edges, user.EdgeShelves)
 	}
@@ -5772,9 +5844,12 @@ func (m *UserMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *UserMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
 	if m.clearedshelves {
 		edges = append(edges, user.EdgeShelves)
+	}
+	if m.cleareduserPermissions {
+		edges = append(edges, user.EdgeUserPermissions)
 	}
 	return edges
 }
@@ -5785,6 +5860,8 @@ func (m *UserMutation) EdgeCleared(name string) bool {
 	switch name {
 	case user.EdgeShelves:
 		return m.clearedshelves
+	case user.EdgeUserPermissions:
+		return m.cleareduserPermissions
 	}
 	return false
 }
@@ -5793,6 +5870,9 @@ func (m *UserMutation) EdgeCleared(name string) bool {
 // if that edge is not defined in the schema.
 func (m *UserMutation) ClearEdge(name string) error {
 	switch name {
+	case user.EdgeUserPermissions:
+		m.ClearUserPermissions()
+		return nil
 	}
 	return fmt.Errorf("unknown User unique edge %s", name)
 }
@@ -5804,6 +5884,408 @@ func (m *UserMutation) ResetEdge(name string) error {
 	case user.EdgeShelves:
 		m.ResetShelves()
 		return nil
+	case user.EdgeUserPermissions:
+		m.ResetUserPermissions()
+		return nil
 	}
 	return fmt.Errorf("unknown User edge %s", name)
+}
+
+// UserPermissionsMutation represents an operation that mutates the UserPermissions nodes in the graph.
+type UserPermissionsMutation struct {
+	config
+	op            Op
+	typ           string
+	id            *ksuid.ID
+	admin         *bool
+	clearedFields map[string]struct{}
+	user          *ksuid.ID
+	cleareduser   bool
+	done          bool
+	oldValue      func(context.Context) (*UserPermissions, error)
+	predicates    []predicate.UserPermissions
+}
+
+var _ ent.Mutation = (*UserPermissionsMutation)(nil)
+
+// userpermissionsOption allows management of the mutation configuration using functional options.
+type userpermissionsOption func(*UserPermissionsMutation)
+
+// newUserPermissionsMutation creates new mutation for the UserPermissions entity.
+func newUserPermissionsMutation(c config, op Op, opts ...userpermissionsOption) *UserPermissionsMutation {
+	m := &UserPermissionsMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeUserPermissions,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withUserPermissionsID sets the ID field of the mutation.
+func withUserPermissionsID(id ksuid.ID) userpermissionsOption {
+	return func(m *UserPermissionsMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *UserPermissions
+		)
+		m.oldValue = func(ctx context.Context) (*UserPermissions, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().UserPermissions.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withUserPermissions sets the old UserPermissions of the mutation.
+func withUserPermissions(node *UserPermissions) userpermissionsOption {
+	return func(m *UserPermissionsMutation) {
+		m.oldValue = func(context.Context) (*UserPermissions, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m UserPermissionsMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m UserPermissionsMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of UserPermissions entities.
+func (m *UserPermissionsMutation) SetID(id ksuid.ID) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *UserPermissionsMutation) ID() (id ksuid.ID, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *UserPermissionsMutation) IDs(ctx context.Context) ([]ksuid.ID, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []ksuid.ID{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().UserPermissions.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetAdmin sets the "admin" field.
+func (m *UserPermissionsMutation) SetAdmin(b bool) {
+	m.admin = &b
+}
+
+// Admin returns the value of the "admin" field in the mutation.
+func (m *UserPermissionsMutation) Admin() (r bool, exists bool) {
+	v := m.admin
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAdmin returns the old "admin" field's value of the UserPermissions entity.
+// If the UserPermissions object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserPermissionsMutation) OldAdmin(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAdmin is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAdmin requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAdmin: %w", err)
+	}
+	return oldValue.Admin, nil
+}
+
+// ResetAdmin resets all changes to the "admin" field.
+func (m *UserPermissionsMutation) ResetAdmin() {
+	m.admin = nil
+}
+
+// SetUserID sets the "user" edge to the User entity by id.
+func (m *UserPermissionsMutation) SetUserID(id ksuid.ID) {
+	m.user = &id
+}
+
+// ClearUser clears the "user" edge to the User entity.
+func (m *UserPermissionsMutation) ClearUser() {
+	m.cleareduser = true
+}
+
+// UserCleared reports if the "user" edge to the User entity was cleared.
+func (m *UserPermissionsMutation) UserCleared() bool {
+	return m.cleareduser
+}
+
+// UserID returns the "user" edge ID in the mutation.
+func (m *UserPermissionsMutation) UserID() (id ksuid.ID, exists bool) {
+	if m.user != nil {
+		return *m.user, true
+	}
+	return
+}
+
+// UserIDs returns the "user" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// UserID instead. It exists only for internal usage by the builders.
+func (m *UserPermissionsMutation) UserIDs() (ids []ksuid.ID) {
+	if id := m.user; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetUser resets all changes to the "user" edge.
+func (m *UserPermissionsMutation) ResetUser() {
+	m.user = nil
+	m.cleareduser = false
+}
+
+// Where appends a list predicates to the UserPermissionsMutation builder.
+func (m *UserPermissionsMutation) Where(ps ...predicate.UserPermissions) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the UserPermissionsMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *UserPermissionsMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.UserPermissions, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *UserPermissionsMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *UserPermissionsMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (UserPermissions).
+func (m *UserPermissionsMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *UserPermissionsMutation) Fields() []string {
+	fields := make([]string, 0, 1)
+	if m.admin != nil {
+		fields = append(fields, userpermissions.FieldAdmin)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *UserPermissionsMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case userpermissions.FieldAdmin:
+		return m.Admin()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *UserPermissionsMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case userpermissions.FieldAdmin:
+		return m.OldAdmin(ctx)
+	}
+	return nil, fmt.Errorf("unknown UserPermissions field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *UserPermissionsMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case userpermissions.FieldAdmin:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAdmin(v)
+		return nil
+	}
+	return fmt.Errorf("unknown UserPermissions field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *UserPermissionsMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *UserPermissionsMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *UserPermissionsMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown UserPermissions numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *UserPermissionsMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *UserPermissionsMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *UserPermissionsMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown UserPermissions nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *UserPermissionsMutation) ResetField(name string) error {
+	switch name {
+	case userpermissions.FieldAdmin:
+		m.ResetAdmin()
+		return nil
+	}
+	return fmt.Errorf("unknown UserPermissions field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *UserPermissionsMutation) AddedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.user != nil {
+		edges = append(edges, userpermissions.EdgeUser)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *UserPermissionsMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case userpermissions.EdgeUser:
+		if id := m.user; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *UserPermissionsMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 1)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *UserPermissionsMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *UserPermissionsMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.cleareduser {
+		edges = append(edges, userpermissions.EdgeUser)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *UserPermissionsMutation) EdgeCleared(name string) bool {
+	switch name {
+	case userpermissions.EdgeUser:
+		return m.cleareduser
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *UserPermissionsMutation) ClearEdge(name string) error {
+	switch name {
+	case userpermissions.EdgeUser:
+		m.ClearUser()
+		return nil
+	}
+	return fmt.Errorf("unknown UserPermissions unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *UserPermissionsMutation) ResetEdge(name string) error {
+	switch name {
+	case userpermissions.EdgeUser:
+		m.ResetUser()
+		return nil
+	}
+	return fmt.Errorf("unknown UserPermissions edge %s", name)
 }

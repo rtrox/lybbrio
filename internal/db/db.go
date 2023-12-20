@@ -2,6 +2,9 @@ package db
 
 import (
 	"fmt"
+
+	_ "lybbrio/internal/ent/runtime"
+
 	"lybbrio/internal/config"
 	"lybbrio/internal/ent"
 

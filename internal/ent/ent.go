@@ -16,6 +16,7 @@ import (
 	"lybbrio/internal/ent/shelf"
 	"lybbrio/internal/ent/tag"
 	"lybbrio/internal/ent/user"
+	"lybbrio/internal/ent/userpermissions"
 	"reflect"
 	"sync"
 
@@ -82,16 +83,17 @@ var (
 func checkColumn(table, column string) error {
 	initCheck.Do(func() {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
-			author.Table:     author.ValidColumn,
-			book.Table:       book.ValidColumn,
-			identifier.Table: identifier.ValidColumn,
-			language.Table:   language.ValidColumn,
-			publisher.Table:  publisher.ValidColumn,
-			series.Table:     series.ValidColumn,
-			seriesbook.Table: seriesbook.ValidColumn,
-			shelf.Table:      shelf.ValidColumn,
-			tag.Table:        tag.ValidColumn,
-			user.Table:       user.ValidColumn,
+			author.Table:          author.ValidColumn,
+			book.Table:            book.ValidColumn,
+			identifier.Table:      identifier.ValidColumn,
+			language.Table:        language.ValidColumn,
+			publisher.Table:       publisher.ValidColumn,
+			series.Table:          series.ValidColumn,
+			seriesbook.Table:      seriesbook.ValidColumn,
+			shelf.Table:           shelf.ValidColumn,
+			tag.Table:             tag.ValidColumn,
+			user.Table:            user.ValidColumn,
+			userpermissions.Table: userpermissions.ValidColumn,
 		})
 	})
 	return columnCheck(table, column)

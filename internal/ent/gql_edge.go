@@ -213,10 +213,10 @@ func (s *Shelf) Books(
 	return s.QueryBooks().Paginate(ctx, after, first, before, last, opts...)
 }
 
-func (s *Shelf) Owner(ctx context.Context) (*User, error) {
-	result, err := s.Edges.OwnerOrErr()
+func (s *Shelf) User(ctx context.Context) (*User, error) {
+	result, err := s.Edges.UserOrErr()
 	if IsNotLoaded(err) {
-		result, err = s.QueryOwner().Only(ctx)
+		result, err = s.QueryUser().Only(ctx)
 	}
 	return result, MaskNotFound(err)
 }
@@ -261,4 +261,20 @@ func (u *User) Shelves(
 		return conn, nil
 	}
 	return u.QueryShelves().Paginate(ctx, after, first, before, last, opts...)
+}
+
+func (u *User) UserPermissions(ctx context.Context) (*UserPermissions, error) {
+	result, err := u.Edges.UserPermissionsOrErr()
+	if IsNotLoaded(err) {
+		result, err = u.QueryUserPermissions().Only(ctx)
+	}
+	return result, err
+}
+
+func (up *UserPermissions) User(ctx context.Context) (*User, error) {
+	result, err := up.Edges.UserOrErr()
+	if IsNotLoaded(err) {
+		result, err = up.QueryUser().Only(ctx)
+	}
+	return result, MaskNotFound(err)
 }

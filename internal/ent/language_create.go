@@ -69,7 +69,9 @@ func (lc *LanguageCreate) Mutation() *LanguageMutation {
 
 // Save creates the Language in the database.
 func (lc *LanguageCreate) Save(ctx context.Context) (*Language, error) {
-	lc.defaults()
+	if err := lc.defaults(); err != nil {
+		return nil, err
+	}
 	return withHooks(ctx, lc.sqlSave, lc.mutation, lc.hooks)
 }
 
@@ -96,11 +98,15 @@ func (lc *LanguageCreate) ExecX(ctx context.Context) {
 }
 
 // defaults sets the default values of the builder before save.
-func (lc *LanguageCreate) defaults() {
+func (lc *LanguageCreate) defaults() error {
 	if _, ok := lc.mutation.ID(); !ok {
+		if language.DefaultID == nil {
+			return fmt.Errorf("ent: uninitialized language.DefaultID (forgotten import ent/runtime?)")
+		}
 		v := language.DefaultID()
 		lc.mutation.SetID(v)
 	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.

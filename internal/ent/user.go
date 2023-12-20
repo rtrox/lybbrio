@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"lybbrio/internal/ent/schema/ksuid"
 	"lybbrio/internal/ent/user"
+	"lybbrio/internal/ent/userpermissions"
 	"strings"
 
 	"entgo.io/ent"
@@ -33,11 +34,13 @@ type User struct {
 type UserEdges struct {
 	// Shelves holds the value of the shelves edge.
 	Shelves []*Shelf `json:"shelves,omitempty"`
+	// UserPermissions holds the value of the userPermissions edge.
+	UserPermissions *UserPermissions `json:"userPermissions,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [2]bool
 	// totalCount holds the count of the edges above.
-	totalCount [1]map[string]int
+	totalCount [2]map[string]int
 
 	namedShelves map[string][]*Shelf
 }
@@ -49,6 +52,19 @@ func (e UserEdges) ShelvesOrErr() ([]*Shelf, error) {
 		return e.Shelves, nil
 	}
 	return nil, &NotLoadedError{edge: "shelves"}
+}
+
+// UserPermissionsOrErr returns the UserPermissions value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e UserEdges) UserPermissionsOrErr() (*UserPermissions, error) {
+	if e.loadedTypes[1] {
+		if e.UserPermissions == nil {
+			// Edge was loaded but was not found.
+			return nil, &NotFoundError{label: userpermissions.Label}
+		}
+		return e.UserPermissions, nil
+	}
+	return nil, &NotLoadedError{edge: "userPermissions"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -113,6 +129,11 @@ func (u *User) Value(name string) (ent.Value, error) {
 // QueryShelves queries the "shelves" edge of the User entity.
 func (u *User) QueryShelves() *ShelfQuery {
 	return NewUserClient(u.config).QueryShelves(u)
+}
+
+// QueryUserPermissions queries the "userPermissions" edge of the User entity.
+func (u *User) QueryUserPermissions() *UserPermissionsQuery {
+	return NewUserClient(u.config).QueryUserPermissions(u)
 }
 
 // Update returns a builder for updating this User.

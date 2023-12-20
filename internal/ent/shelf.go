@@ -35,8 +35,8 @@ type Shelf struct {
 type ShelfEdges struct {
 	// Books holds the value of the books edge.
 	Books []*Book `json:"books,omitempty"`
-	// Owner holds the value of the owner edge.
-	Owner *User `json:"owner,omitempty"`
+	// User holds the value of the user edge.
+	User *User `json:"user,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [2]bool
@@ -55,17 +55,17 @@ func (e ShelfEdges) BooksOrErr() ([]*Book, error) {
 	return nil, &NotLoadedError{edge: "books"}
 }
 
-// OwnerOrErr returns the Owner value or an error if the edge
+// UserOrErr returns the User value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
-func (e ShelfEdges) OwnerOrErr() (*User, error) {
+func (e ShelfEdges) UserOrErr() (*User, error) {
 	if e.loadedTypes[1] {
-		if e.Owner == nil {
+		if e.User == nil {
 			// Edge was loaded but was not found.
 			return nil, &NotFoundError{label: user.Label}
 		}
-		return e.Owner, nil
+		return e.User, nil
 	}
-	return nil, &NotLoadedError{edge: "owner"}
+	return nil, &NotLoadedError{edge: "user"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -143,9 +143,9 @@ func (s *Shelf) QueryBooks() *BookQuery {
 	return NewShelfClient(s.config).QueryBooks(s)
 }
 
-// QueryOwner queries the "owner" edge of the Shelf entity.
-func (s *Shelf) QueryOwner() *UserQuery {
-	return NewShelfClient(s.config).QueryOwner(s)
+// QueryUser queries the "user" edge of the Shelf entity.
+func (s *Shelf) QueryUser() *UserQuery {
+	return NewShelfClient(s.config).QueryUser(s)
 }
 
 // Update returns a builder for updating this Shelf.

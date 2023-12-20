@@ -1,6 +1,8 @@
 package main
 
-import "lybbrio/internal/commands"
+import (
+	"lybbrio/internal/commands"
+)
 
 var (
 	name      = "lybbrio"

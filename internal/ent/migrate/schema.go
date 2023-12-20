@@ -188,7 +188,7 @@ var (
 	UsersColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeString},
 		{Name: "username", Type: field.TypeString, Unique: true},
-		{Name: "password_hash", Type: field.TypeString},
+		{Name: "password_hash", Type: field.TypeString, Nullable: true},
 		{Name: "email", Type: field.TypeString, Unique: true},
 	}
 	// UsersTable holds the schema information for the "users" table.
@@ -196,6 +196,26 @@ var (
 		Name:       "users",
 		Columns:    UsersColumns,
 		PrimaryKey: []*schema.Column{UsersColumns[0]},
+	}
+	// UserPermissionsColumns holds the columns for the "user_permissions" table.
+	UserPermissionsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeString},
+		{Name: "admin", Type: field.TypeBool, Default: false},
+		{Name: "user_user_permissions", Type: field.TypeString, Unique: true, Nullable: true},
+	}
+	// UserPermissionsTable holds the schema information for the "user_permissions" table.
+	UserPermissionsTable = &schema.Table{
+		Name:       "user_permissions",
+		Columns:    UserPermissionsColumns,
+		PrimaryKey: []*schema.Column{UserPermissionsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "user_permissions_users_userPermissions",
+				Columns:    []*schema.Column{UserPermissionsColumns[2]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
 	}
 	// AuthorBooksColumns holds the columns for the "author_books" table.
 	AuthorBooksColumns = []*schema.Column{
@@ -259,6 +279,7 @@ var (
 		ShelvesTable,
 		TagsTable,
 		UsersTable,
+		UserPermissionsTable,
 		AuthorBooksTable,
 		ShelfBooksTable,
 	}
@@ -272,6 +293,7 @@ func init() {
 	SeriesBooksTable.ForeignKeys[0].RefTable = SeriesTable
 	SeriesBooksTable.ForeignKeys[1].RefTable = BooksTable
 	ShelvesTable.ForeignKeys[0].RefTable = UsersTable
+	UserPermissionsTable.ForeignKeys[0].RefTable = UsersTable
 	AuthorBooksTable.ForeignKeys[0].RefTable = AuthorsTable
 	AuthorBooksTable.ForeignKeys[1].RefTable = BooksTable
 	ShelfBooksTable.ForeignKeys[0].RefTable = ShelvesTable

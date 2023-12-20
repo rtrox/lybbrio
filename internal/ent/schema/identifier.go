@@ -26,6 +26,7 @@ func (Identifier) Annotations() []schema.Annotation {
 
 func (Identifier) Mixin() []ent.Mixin {
 	return []ent.Mixin{
+		BaseMixin{},
 		ksuid.MixinWithPrefix("idn"),
 	}
 }

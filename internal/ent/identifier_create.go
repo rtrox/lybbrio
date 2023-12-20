@@ -65,7 +65,9 @@ func (ic *IdentifierCreate) Mutation() *IdentifierMutation {
 
 // Save creates the Identifier in the database.
 func (ic *IdentifierCreate) Save(ctx context.Context) (*Identifier, error) {
-	ic.defaults()
+	if err := ic.defaults(); err != nil {
+		return nil, err
+	}
 	return withHooks(ctx, ic.sqlSave, ic.mutation, ic.hooks)
 }
 
@@ -92,11 +94,15 @@ func (ic *IdentifierCreate) ExecX(ctx context.Context) {
 }
 
 // defaults sets the default values of the builder before save.
-func (ic *IdentifierCreate) defaults() {
+func (ic *IdentifierCreate) defaults() error {
 	if _, ok := ic.mutation.ID(); !ok {
+		if identifier.DefaultID == nil {
+			return fmt.Errorf("ent: uninitialized identifier.DefaultID (forgotten import ent/runtime?)")
+		}
 		v := identifier.DefaultID()
 		ic.mutation.SetID(v)
 	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.

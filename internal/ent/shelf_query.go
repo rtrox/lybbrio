@@ -5,6 +5,7 @@ package ent
 import (
 	"context"
 	"database/sql/driver"
+	"errors"
 	"fmt"
 	"lybbrio/internal/ent/book"
 	"lybbrio/internal/ent/predicate"
@@ -26,7 +27,7 @@ type ShelfQuery struct {
 	inters         []Interceptor
 	predicates     []predicate.Shelf
 	withBooks      *BookQuery
-	withOwner      *UserQuery
+	withUser       *UserQuery
 	withFKs        bool
 	modifiers      []func(*sql.Selector)
 	loadTotal      []func(context.Context, []*Shelf) error
@@ -89,8 +90,8 @@ func (sq *ShelfQuery) QueryBooks() *BookQuery {
 	return query
 }
 
-// QueryOwner chains the current query on the "owner" edge.
-func (sq *ShelfQuery) QueryOwner() *UserQuery {
+// QueryUser chains the current query on the "user" edge.
+func (sq *ShelfQuery) QueryUser() *UserQuery {
 	query := (&UserClient{config: sq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := sq.prepareQuery(ctx); err != nil {
@@ -103,7 +104,7 @@ func (sq *ShelfQuery) QueryOwner() *UserQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(shelf.Table, shelf.FieldID, selector),
 			sqlgraph.To(user.Table, user.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, shelf.OwnerTable, shelf.OwnerColumn),
+			sqlgraph.Edge(sqlgraph.M2O, true, shelf.UserTable, shelf.UserColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(sq.driver.Dialect(), step)
 		return fromU, nil
@@ -304,7 +305,7 @@ func (sq *ShelfQuery) Clone() *ShelfQuery {
 		inters:     append([]Interceptor{}, sq.inters...),
 		predicates: append([]predicate.Shelf{}, sq.predicates...),
 		withBooks:  sq.withBooks.Clone(),
-		withOwner:  sq.withOwner.Clone(),
+		withUser:   sq.withUser.Clone(),
 		// clone intermediate query.
 		sql:  sq.sql.Clone(),
 		path: sq.path,
@@ -322,14 +323,14 @@ func (sq *ShelfQuery) WithBooks(opts ...func(*BookQuery)) *ShelfQuery {
 	return sq
 }
 
-// WithOwner tells the query-builder to eager-load the nodes that are connected to
-// the "owner" edge. The optional arguments are used to configure the query builder of the edge.
-func (sq *ShelfQuery) WithOwner(opts ...func(*UserQuery)) *ShelfQuery {
+// WithUser tells the query-builder to eager-load the nodes that are connected to
+// the "user" edge. The optional arguments are used to configure the query builder of the edge.
+func (sq *ShelfQuery) WithUser(opts ...func(*UserQuery)) *ShelfQuery {
 	query := (&UserClient{config: sq.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	sq.withOwner = query
+	sq.withUser = query
 	return sq
 }
 
@@ -404,6 +405,12 @@ func (sq *ShelfQuery) prepareQuery(ctx context.Context) error {
 		}
 		sq.sql = prev
 	}
+	if shelf.Policy == nil {
+		return errors.New("ent: uninitialized shelf.Policy (forgotten import ent/runtime?)")
+	}
+	if err := shelf.Policy.EvalQuery(ctx, sq); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -414,10 +421,10 @@ func (sq *ShelfQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Shelf,
 		_spec       = sq.querySpec()
 		loadedTypes = [2]bool{
 			sq.withBooks != nil,
-			sq.withOwner != nil,
+			sq.withUser != nil,
 		}
 	)
-	if sq.withOwner != nil {
+	if sq.withUser != nil {
 		withFKs = true
 	}
 	if withFKs {
@@ -451,9 +458,9 @@ func (sq *ShelfQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Shelf,
 			return nil, err
 		}
 	}
-	if query := sq.withOwner; query != nil {
-		if err := sq.loadOwner(ctx, query, nodes, nil,
-			func(n *Shelf, e *User) { n.Edges.Owner = e }); err != nil {
+	if query := sq.withUser; query != nil {
+		if err := sq.loadUser(ctx, query, nodes, nil,
+			func(n *Shelf, e *User) { n.Edges.User = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -533,7 +540,7 @@ func (sq *ShelfQuery) loadBooks(ctx context.Context, query *BookQuery, nodes []*
 	}
 	return nil
 }
-func (sq *ShelfQuery) loadOwner(ctx context.Context, query *UserQuery, nodes []*Shelf, init func(*Shelf), assign func(*Shelf, *User)) error {
+func (sq *ShelfQuery) loadUser(ctx context.Context, query *UserQuery, nodes []*Shelf, init func(*Shelf), assign func(*Shelf, *User)) error {
 	ids := make([]ksuid.ID, 0, len(nodes))
 	nodeids := make(map[ksuid.ID][]*Shelf)
 	for i := range nodes {

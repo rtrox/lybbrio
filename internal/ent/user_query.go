@@ -5,11 +5,13 @@ package ent
 import (
 	"context"
 	"database/sql/driver"
+	"errors"
 	"fmt"
 	"lybbrio/internal/ent/predicate"
 	"lybbrio/internal/ent/schema/ksuid"
 	"lybbrio/internal/ent/shelf"
 	"lybbrio/internal/ent/user"
+	"lybbrio/internal/ent/userpermissions"
 	"math"
 
 	"entgo.io/ent/dialect/sql"
@@ -20,14 +22,15 @@ import (
 // UserQuery is the builder for querying User entities.
 type UserQuery struct {
 	config
-	ctx              *QueryContext
-	order            []user.OrderOption
-	inters           []Interceptor
-	predicates       []predicate.User
-	withShelves      *ShelfQuery
-	modifiers        []func(*sql.Selector)
-	loadTotal        []func(context.Context, []*User) error
-	withNamedShelves map[string]*ShelfQuery
+	ctx                 *QueryContext
+	order               []user.OrderOption
+	inters              []Interceptor
+	predicates          []predicate.User
+	withShelves         *ShelfQuery
+	withUserPermissions *UserPermissionsQuery
+	modifiers           []func(*sql.Selector)
+	loadTotal           []func(context.Context, []*User) error
+	withNamedShelves    map[string]*ShelfQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -79,6 +82,28 @@ func (uq *UserQuery) QueryShelves() *ShelfQuery {
 			sqlgraph.From(user.Table, user.FieldID, selector),
 			sqlgraph.To(shelf.Table, shelf.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, user.ShelvesTable, user.ShelvesColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(uq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryUserPermissions chains the current query on the "userPermissions" edge.
+func (uq *UserQuery) QueryUserPermissions() *UserPermissionsQuery {
+	query := (&UserPermissionsClient{config: uq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := uq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := uq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, selector),
+			sqlgraph.To(userpermissions.Table, userpermissions.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, user.UserPermissionsTable, user.UserPermissionsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(uq.driver.Dialect(), step)
 		return fromU, nil
@@ -273,12 +298,13 @@ func (uq *UserQuery) Clone() *UserQuery {
 		return nil
 	}
 	return &UserQuery{
-		config:      uq.config,
-		ctx:         uq.ctx.Clone(),
-		order:       append([]user.OrderOption{}, uq.order...),
-		inters:      append([]Interceptor{}, uq.inters...),
-		predicates:  append([]predicate.User{}, uq.predicates...),
-		withShelves: uq.withShelves.Clone(),
+		config:              uq.config,
+		ctx:                 uq.ctx.Clone(),
+		order:               append([]user.OrderOption{}, uq.order...),
+		inters:              append([]Interceptor{}, uq.inters...),
+		predicates:          append([]predicate.User{}, uq.predicates...),
+		withShelves:         uq.withShelves.Clone(),
+		withUserPermissions: uq.withUserPermissions.Clone(),
 		// clone intermediate query.
 		sql:  uq.sql.Clone(),
 		path: uq.path,
@@ -293,6 +319,17 @@ func (uq *UserQuery) WithShelves(opts ...func(*ShelfQuery)) *UserQuery {
 		opt(query)
 	}
 	uq.withShelves = query
+	return uq
+}
+
+// WithUserPermissions tells the query-builder to eager-load the nodes that are connected to
+// the "userPermissions" edge. The optional arguments are used to configure the query builder of the edge.
+func (uq *UserQuery) WithUserPermissions(opts ...func(*UserPermissionsQuery)) *UserQuery {
+	query := (&UserPermissionsClient{config: uq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	uq.withUserPermissions = query
 	return uq
 }
 
@@ -367,6 +404,12 @@ func (uq *UserQuery) prepareQuery(ctx context.Context) error {
 		}
 		uq.sql = prev
 	}
+	if user.Policy == nil {
+		return errors.New("ent: uninitialized user.Policy (forgotten import ent/runtime?)")
+	}
+	if err := user.Policy.EvalQuery(ctx, uq); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -374,8 +417,9 @@ func (uq *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 	var (
 		nodes       = []*User{}
 		_spec       = uq.querySpec()
-		loadedTypes = [1]bool{
+		loadedTypes = [2]bool{
 			uq.withShelves != nil,
+			uq.withUserPermissions != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -403,6 +447,12 @@ func (uq *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 		if err := uq.loadShelves(ctx, query, nodes,
 			func(n *User) { n.Edges.Shelves = []*Shelf{} },
 			func(n *User, e *Shelf) { n.Edges.Shelves = append(n.Edges.Shelves, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := uq.withUserPermissions; query != nil {
+		if err := uq.loadUserPermissions(ctx, query, nodes, nil,
+			func(n *User, e *UserPermissions) { n.Edges.UserPermissions = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -447,6 +497,34 @@ func (uq *UserQuery) loadShelves(ctx context.Context, query *ShelfQuery, nodes [
 		node, ok := nodeids[*fk]
 		if !ok {
 			return fmt.Errorf(`unexpected referenced foreign-key "user_shelves" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (uq *UserQuery) loadUserPermissions(ctx context.Context, query *UserPermissionsQuery, nodes []*User, init func(*User), assign func(*User, *UserPermissions)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[ksuid.ID]*User)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+	}
+	query.withFKs = true
+	query.Where(predicate.UserPermissions(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(user.UserPermissionsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.user_user_permissions
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "user_user_permissions" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "user_user_permissions" returned %v for node %v`, *fk, n.ID)
 		}
 		assign(node, n)
 	}

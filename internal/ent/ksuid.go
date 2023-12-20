@@ -16,6 +16,7 @@ import (
 	"lybbrio/internal/ent/shelf"
 	"lybbrio/internal/ent/tag"
 	"lybbrio/internal/ent/user"
+	"lybbrio/internal/ent/userpermissions"
 )
 
 // prefixMap maps KSUID prefixes to table names.
@@ -30,6 +31,7 @@ var prefixMap = map[ksuid.ID]string{
 	"shf": shelf.Table,
 	"tag": tag.Table,
 	"usr": user.Table,
+	"prm": userpermissions.Table,
 }
 
 // IDToType maps a pulid.ID to the underlying table.a

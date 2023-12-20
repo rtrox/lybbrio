@@ -5,6 +5,7 @@ package ent
 import (
 	"context"
 	"database/sql/driver"
+	"errors"
 	"fmt"
 	"lybbrio/internal/ent/book"
 	"lybbrio/internal/ent/predicate"
@@ -366,6 +367,12 @@ func (tq *TagQuery) prepareQuery(ctx context.Context) error {
 			return err
 		}
 		tq.sql = prev
+	}
+	if tag.Policy == nil {
+		return errors.New("ent: uninitialized tag.Policy (forgotten import ent/runtime?)")
+	}
+	if err := tag.Policy.EvalQuery(ctx, tq); err != nil {
+		return err
 	}
 	return nil
 }

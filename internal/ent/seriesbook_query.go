@@ -4,6 +4,7 @@ package ent
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"lybbrio/internal/ent/book"
 	"lybbrio/internal/ent/predicate"
@@ -400,6 +401,12 @@ func (sbq *SeriesBookQuery) prepareQuery(ctx context.Context) error {
 			return err
 		}
 		sbq.sql = prev
+	}
+	if seriesbook.Policy == nil {
+		return errors.New("ent: uninitialized seriesbook.Policy (forgotten import ent/runtime?)")
+	}
+	if err := seriesbook.Policy.EvalQuery(ctx, sbq); err != nil {
+		return err
 	}
 	return nil
 }

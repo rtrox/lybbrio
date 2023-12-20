@@ -63,7 +63,9 @@ func (tc *TagCreate) Mutation() *TagMutation {
 
 // Save creates the Tag in the database.
 func (tc *TagCreate) Save(ctx context.Context) (*Tag, error) {
-	tc.defaults()
+	if err := tc.defaults(); err != nil {
+		return nil, err
+	}
 	return withHooks(ctx, tc.sqlSave, tc.mutation, tc.hooks)
 }
 
@@ -90,11 +92,15 @@ func (tc *TagCreate) ExecX(ctx context.Context) {
 }
 
 // defaults sets the default values of the builder before save.
-func (tc *TagCreate) defaults() {
+func (tc *TagCreate) defaults() error {
 	if _, ok := tc.mutation.ID(); !ok {
+		if tag.DefaultID == nil {
+			return fmt.Errorf("ent: uninitialized tag.DefaultID (forgotten import ent/runtime?)")
+		}
 		v := tag.DefaultID()
 		tc.mutation.SetID(v)
 	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.

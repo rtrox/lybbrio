@@ -63,7 +63,9 @@ func (pc *PublisherCreate) Mutation() *PublisherMutation {
 
 // Save creates the Publisher in the database.
 func (pc *PublisherCreate) Save(ctx context.Context) (*Publisher, error) {
-	pc.defaults()
+	if err := pc.defaults(); err != nil {
+		return nil, err
+	}
 	return withHooks(ctx, pc.sqlSave, pc.mutation, pc.hooks)
 }
 
@@ -90,11 +92,15 @@ func (pc *PublisherCreate) ExecX(ctx context.Context) {
 }
 
 // defaults sets the default values of the builder before save.
-func (pc *PublisherCreate) defaults() {
+func (pc *PublisherCreate) defaults() error {
 	if _, ok := pc.mutation.ID(); !ok {
+		if publisher.DefaultID == nil {
+			return fmt.Errorf("ent: uninitialized publisher.DefaultID (forgotten import ent/runtime?)")
+		}
 		v := publisher.DefaultID()
 		pc.mutation.SetID(v)
 	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.

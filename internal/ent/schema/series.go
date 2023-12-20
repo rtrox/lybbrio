@@ -26,6 +26,7 @@ func (Series) Annotations() []schema.Annotation {
 
 func (Series) Mixin() []ent.Mixin {
 	return []ent.Mixin{
+		BaseMixin{},
 		ksuid.MixinWithPrefix("srs"),
 	}
 }

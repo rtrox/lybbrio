@@ -22,6 +22,7 @@ import (
 	"lybbrio/internal/ent/shelf"
 	"lybbrio/internal/ent/tag"
 	"lybbrio/internal/ent/user"
+	"lybbrio/internal/ent/userpermissions"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect"
@@ -54,6 +55,8 @@ type Client struct {
 	Tag *TagClient
 	// User is the client for interacting with the User builders.
 	User *UserClient
+	// UserPermissions is the client for interacting with the UserPermissions builders.
+	UserPermissions *UserPermissionsClient
 }
 
 // NewClient creates a new client configured with the given options.
@@ -75,6 +78,7 @@ func (c *Client) init() {
 	c.Shelf = NewShelfClient(c.config)
 	c.Tag = NewTagClient(c.config)
 	c.User = NewUserClient(c.config)
+	c.UserPermissions = NewUserPermissionsClient(c.config)
 }
 
 type (
@@ -165,18 +169,19 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	cfg := c.config
 	cfg.driver = tx
 	return &Tx{
-		ctx:        ctx,
-		config:     cfg,
-		Author:     NewAuthorClient(cfg),
-		Book:       NewBookClient(cfg),
-		Identifier: NewIdentifierClient(cfg),
-		Language:   NewLanguageClient(cfg),
-		Publisher:  NewPublisherClient(cfg),
-		Series:     NewSeriesClient(cfg),
-		SeriesBook: NewSeriesBookClient(cfg),
-		Shelf:      NewShelfClient(cfg),
-		Tag:        NewTagClient(cfg),
-		User:       NewUserClient(cfg),
+		ctx:             ctx,
+		config:          cfg,
+		Author:          NewAuthorClient(cfg),
+		Book:            NewBookClient(cfg),
+		Identifier:      NewIdentifierClient(cfg),
+		Language:        NewLanguageClient(cfg),
+		Publisher:       NewPublisherClient(cfg),
+		Series:          NewSeriesClient(cfg),
+		SeriesBook:      NewSeriesBookClient(cfg),
+		Shelf:           NewShelfClient(cfg),
+		Tag:             NewTagClient(cfg),
+		User:            NewUserClient(cfg),
+		UserPermissions: NewUserPermissionsClient(cfg),
 	}, nil
 }
 
@@ -194,18 +199,19 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	cfg := c.config
 	cfg.driver = &txDriver{tx: tx, drv: c.driver}
 	return &Tx{
-		ctx:        ctx,
-		config:     cfg,
-		Author:     NewAuthorClient(cfg),
-		Book:       NewBookClient(cfg),
-		Identifier: NewIdentifierClient(cfg),
-		Language:   NewLanguageClient(cfg),
-		Publisher:  NewPublisherClient(cfg),
-		Series:     NewSeriesClient(cfg),
-		SeriesBook: NewSeriesBookClient(cfg),
-		Shelf:      NewShelfClient(cfg),
-		Tag:        NewTagClient(cfg),
-		User:       NewUserClient(cfg),
+		ctx:             ctx,
+		config:          cfg,
+		Author:          NewAuthorClient(cfg),
+		Book:            NewBookClient(cfg),
+		Identifier:      NewIdentifierClient(cfg),
+		Language:        NewLanguageClient(cfg),
+		Publisher:       NewPublisherClient(cfg),
+		Series:          NewSeriesClient(cfg),
+		SeriesBook:      NewSeriesBookClient(cfg),
+		Shelf:           NewShelfClient(cfg),
+		Tag:             NewTagClient(cfg),
+		User:            NewUserClient(cfg),
+		UserPermissions: NewUserPermissionsClient(cfg),
 	}, nil
 }
 
@@ -236,7 +242,7 @@ func (c *Client) Close() error {
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
 		c.Author, c.Book, c.Identifier, c.Language, c.Publisher, c.Series, c.SeriesBook,
-		c.Shelf, c.Tag, c.User,
+		c.Shelf, c.Tag, c.User, c.UserPermissions,
 	} {
 		n.Use(hooks...)
 	}
@@ -247,7 +253,7 @@ func (c *Client) Use(hooks ...Hook) {
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
 		c.Author, c.Book, c.Identifier, c.Language, c.Publisher, c.Series, c.SeriesBook,
-		c.Shelf, c.Tag, c.User,
+		c.Shelf, c.Tag, c.User, c.UserPermissions,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -276,6 +282,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.Tag.mutate(ctx, m)
 	case *UserMutation:
 		return c.User.mutate(ctx, m)
+	case *UserPermissionsMutation:
+		return c.UserPermissions.mutate(ctx, m)
 	default:
 		return nil, fmt.Errorf("ent: unknown mutation type %T", m)
 	}
@@ -407,7 +415,8 @@ func (c *AuthorClient) QueryBooks(a *Author) *BookQuery {
 
 // Hooks returns the client hooks.
 func (c *AuthorClient) Hooks() []Hook {
-	return c.hooks.Author
+	hooks := c.hooks.Author
+	return append(hooks[:len(hooks):len(hooks)], author.Hooks[:]...)
 }
 
 // Interceptors returns the client interceptors.
@@ -620,7 +629,8 @@ func (c *BookClient) QueryShelf(b *Book) *ShelfQuery {
 
 // Hooks returns the client hooks.
 func (c *BookClient) Hooks() []Hook {
-	return c.hooks.Book
+	hooks := c.hooks.Book
+	return append(hooks[:len(hooks):len(hooks)], book.Hooks[:]...)
 }
 
 // Interceptors returns the client interceptors.
@@ -769,7 +779,8 @@ func (c *IdentifierClient) QueryBook(i *Identifier) *BookQuery {
 
 // Hooks returns the client hooks.
 func (c *IdentifierClient) Hooks() []Hook {
-	return c.hooks.Identifier
+	hooks := c.hooks.Identifier
+	return append(hooks[:len(hooks):len(hooks)], identifier.Hooks[:]...)
 }
 
 // Interceptors returns the client interceptors.
@@ -918,7 +929,8 @@ func (c *LanguageClient) QueryBooks(l *Language) *BookQuery {
 
 // Hooks returns the client hooks.
 func (c *LanguageClient) Hooks() []Hook {
-	return c.hooks.Language
+	hooks := c.hooks.Language
+	return append(hooks[:len(hooks):len(hooks)], language.Hooks[:]...)
 }
 
 // Interceptors returns the client interceptors.
@@ -1067,7 +1079,8 @@ func (c *PublisherClient) QueryBooks(pu *Publisher) *BookQuery {
 
 // Hooks returns the client hooks.
 func (c *PublisherClient) Hooks() []Hook {
-	return c.hooks.Publisher
+	hooks := c.hooks.Publisher
+	return append(hooks[:len(hooks):len(hooks)], publisher.Hooks[:]...)
 }
 
 // Interceptors returns the client interceptors.
@@ -1232,7 +1245,8 @@ func (c *SeriesClient) QuerySeriesBooks(s *Series) *SeriesBookQuery {
 
 // Hooks returns the client hooks.
 func (c *SeriesClient) Hooks() []Hook {
-	return c.hooks.Series
+	hooks := c.hooks.Series
+	return append(hooks[:len(hooks):len(hooks)], series.Hooks[:]...)
 }
 
 // Interceptors returns the client interceptors.
@@ -1397,7 +1411,8 @@ func (c *SeriesBookClient) QueryBook(sb *SeriesBook) *BookQuery {
 
 // Hooks returns the client hooks.
 func (c *SeriesBookClient) Hooks() []Hook {
-	return c.hooks.SeriesBook
+	hooks := c.hooks.SeriesBook
+	return append(hooks[:len(hooks):len(hooks)], seriesbook.Hooks[:]...)
 }
 
 // Interceptors returns the client interceptors.
@@ -1544,15 +1559,15 @@ func (c *ShelfClient) QueryBooks(s *Shelf) *BookQuery {
 	return query
 }
 
-// QueryOwner queries the owner edge of a Shelf.
-func (c *ShelfClient) QueryOwner(s *Shelf) *UserQuery {
+// QueryUser queries the user edge of a Shelf.
+func (c *ShelfClient) QueryUser(s *Shelf) *UserQuery {
 	query := (&UserClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := s.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(shelf.Table, shelf.FieldID, id),
 			sqlgraph.To(user.Table, user.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, shelf.OwnerTable, shelf.OwnerColumn),
+			sqlgraph.Edge(sqlgraph.M2O, true, shelf.UserTable, shelf.UserColumn),
 		)
 		fromV = sqlgraph.Neighbors(s.driver.Dialect(), step)
 		return fromV, nil
@@ -1562,7 +1577,8 @@ func (c *ShelfClient) QueryOwner(s *Shelf) *UserQuery {
 
 // Hooks returns the client hooks.
 func (c *ShelfClient) Hooks() []Hook {
-	return c.hooks.Shelf
+	hooks := c.hooks.Shelf
+	return append(hooks[:len(hooks):len(hooks)], shelf.Hooks[:]...)
 }
 
 // Interceptors returns the client interceptors.
@@ -1711,7 +1727,8 @@ func (c *TagClient) QueryBooks(t *Tag) *BookQuery {
 
 // Hooks returns the client hooks.
 func (c *TagClient) Hooks() []Hook {
-	return c.hooks.Tag
+	hooks := c.hooks.Tag
+	return append(hooks[:len(hooks):len(hooks)], tag.Hooks[:]...)
 }
 
 // Interceptors returns the client interceptors.
@@ -1858,9 +1875,26 @@ func (c *UserClient) QueryShelves(u *User) *ShelfQuery {
 	return query
 }
 
+// QueryUserPermissions queries the userPermissions edge of a User.
+func (c *UserClient) QueryUserPermissions(u *User) *UserPermissionsQuery {
+	query := (&UserPermissionsClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := u.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, id),
+			sqlgraph.To(userpermissions.Table, userpermissions.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, user.UserPermissionsTable, user.UserPermissionsColumn),
+		)
+		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *UserClient) Hooks() []Hook {
-	return c.hooks.User
+	hooks := c.hooks.User
+	return append(hooks[:len(hooks):len(hooks)], user.Hooks[:]...)
 }
 
 // Interceptors returns the client interceptors.
@@ -1883,14 +1917,164 @@ func (c *UserClient) mutate(ctx context.Context, m *UserMutation) (Value, error)
 	}
 }
 
+// UserPermissionsClient is a client for the UserPermissions schema.
+type UserPermissionsClient struct {
+	config
+}
+
+// NewUserPermissionsClient returns a client for the UserPermissions from the given config.
+func NewUserPermissionsClient(c config) *UserPermissionsClient {
+	return &UserPermissionsClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `userpermissions.Hooks(f(g(h())))`.
+func (c *UserPermissionsClient) Use(hooks ...Hook) {
+	c.hooks.UserPermissions = append(c.hooks.UserPermissions, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `userpermissions.Intercept(f(g(h())))`.
+func (c *UserPermissionsClient) Intercept(interceptors ...Interceptor) {
+	c.inters.UserPermissions = append(c.inters.UserPermissions, interceptors...)
+}
+
+// Create returns a builder for creating a UserPermissions entity.
+func (c *UserPermissionsClient) Create() *UserPermissionsCreate {
+	mutation := newUserPermissionsMutation(c.config, OpCreate)
+	return &UserPermissionsCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of UserPermissions entities.
+func (c *UserPermissionsClient) CreateBulk(builders ...*UserPermissionsCreate) *UserPermissionsCreateBulk {
+	return &UserPermissionsCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *UserPermissionsClient) MapCreateBulk(slice any, setFunc func(*UserPermissionsCreate, int)) *UserPermissionsCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &UserPermissionsCreateBulk{err: fmt.Errorf("calling to UserPermissionsClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*UserPermissionsCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &UserPermissionsCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for UserPermissions.
+func (c *UserPermissionsClient) Update() *UserPermissionsUpdate {
+	mutation := newUserPermissionsMutation(c.config, OpUpdate)
+	return &UserPermissionsUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *UserPermissionsClient) UpdateOne(up *UserPermissions) *UserPermissionsUpdateOne {
+	mutation := newUserPermissionsMutation(c.config, OpUpdateOne, withUserPermissions(up))
+	return &UserPermissionsUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *UserPermissionsClient) UpdateOneID(id ksuid.ID) *UserPermissionsUpdateOne {
+	mutation := newUserPermissionsMutation(c.config, OpUpdateOne, withUserPermissionsID(id))
+	return &UserPermissionsUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for UserPermissions.
+func (c *UserPermissionsClient) Delete() *UserPermissionsDelete {
+	mutation := newUserPermissionsMutation(c.config, OpDelete)
+	return &UserPermissionsDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *UserPermissionsClient) DeleteOne(up *UserPermissions) *UserPermissionsDeleteOne {
+	return c.DeleteOneID(up.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *UserPermissionsClient) DeleteOneID(id ksuid.ID) *UserPermissionsDeleteOne {
+	builder := c.Delete().Where(userpermissions.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &UserPermissionsDeleteOne{builder}
+}
+
+// Query returns a query builder for UserPermissions.
+func (c *UserPermissionsClient) Query() *UserPermissionsQuery {
+	return &UserPermissionsQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeUserPermissions},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a UserPermissions entity by its id.
+func (c *UserPermissionsClient) Get(ctx context.Context, id ksuid.ID) (*UserPermissions, error) {
+	return c.Query().Where(userpermissions.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *UserPermissionsClient) GetX(ctx context.Context, id ksuid.ID) *UserPermissions {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryUser queries the user edge of a UserPermissions.
+func (c *UserPermissionsClient) QueryUser(up *UserPermissions) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := up.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(userpermissions.Table, userpermissions.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, true, userpermissions.UserTable, userpermissions.UserColumn),
+		)
+		fromV = sqlgraph.Neighbors(up.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *UserPermissionsClient) Hooks() []Hook {
+	hooks := c.hooks.UserPermissions
+	return append(hooks[:len(hooks):len(hooks)], userpermissions.Hooks[:]...)
+}
+
+// Interceptors returns the client interceptors.
+func (c *UserPermissionsClient) Interceptors() []Interceptor {
+	return c.inters.UserPermissions
+}
+
+func (c *UserPermissionsClient) mutate(ctx context.Context, m *UserPermissionsMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&UserPermissionsCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&UserPermissionsUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&UserPermissionsUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&UserPermissionsDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown UserPermissions mutation op: %q", m.Op())
+	}
+}
+
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
 		Author, Book, Identifier, Language, Publisher, Series, SeriesBook, Shelf, Tag,
-		User []ent.Hook
+		User, UserPermissions []ent.Hook
 	}
 	inters struct {
 		Author, Book, Identifier, Language, Publisher, Series, SeriesBook, Shelf, Tag,
-		User []ent.Interceptor
+		User, UserPermissions []ent.Interceptor
 	}
 )
