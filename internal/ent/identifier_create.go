@@ -22,8 +22,8 @@ type IdentifierCreate struct {
 }
 
 // SetType sets the "type" field.
-func (ic *IdentifierCreate) SetType(s string) *IdentifierCreate {
-	ic.mutation.SetType(s)
+func (ic *IdentifierCreate) SetType(i identifier.Type) *IdentifierCreate {
+	ic.mutation.SetType(i)
 	return ic
 }
 
@@ -156,7 +156,7 @@ func (ic *IdentifierCreate) createSpec() (*Identifier, *sqlgraph.CreateSpec) {
 		_spec.ID.Value = id
 	}
 	if value, ok := ic.mutation.GetType(); ok {
-		_spec.SetField(identifier.FieldType, field.TypeString, value)
+		_spec.SetField(identifier.FieldType, field.TypeEnum, value)
 		_node.Type = value
 	}
 	if value, ok := ic.mutation.Value(); ok {

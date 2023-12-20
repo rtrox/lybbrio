@@ -1,10 +1,12 @@
 package config
 
 import (
+	"crypto/rand"
 	"fmt"
 	"strings"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/gookit/validate"
 	"github.com/knadh/koanf"
 	"github.com/knadh/koanf/providers/confmap"
@@ -61,6 +63,10 @@ type Config struct {
 
 	DB DatabaseConfig `koanf:"db"`
 
+	JWTSecret string        `koanf:"jwt-secret" validate:"required"`
+	JWTIssuer string        `koanf:"jwt-issuer" validate:"required"`
+	JWTExpiry time.Duration `koanf:"jwt-expiry" validate:"required"`
+
 	k *koanf.Koanf
 }
 
@@ -116,10 +122,19 @@ func LoadConfig(flagSet *flag.FlagSet) (*Config, error) {
 			"max-open-conns":    100,
 			"conn-max-lifetime": "1h",
 		},
+		"jwt-issuer": "http://localhost:8080",
+		"jwt-expiry": "1h",
 	}, "."), nil); err != nil {
 		return nil, err
 	}
 
+	if !k.Exists("jwt-secret") {
+		u, err := uuid.NewRandomFromReader(rand.Reader)
+		if err != nil {
+			return nil, err
+		}
+		k.Set("jwt-secret", u.String())
+	}
 	// Environment
 	if err := k.Load(env.Provider("", ".", func(s string) string {
 		return strings.ReplaceAll(strings.ReplaceAll(strings.ToLower(s), "__", "."), "_", "-")

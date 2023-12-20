@@ -64,7 +64,7 @@ var (
 	// IdentifiersColumns holds the columns for the "identifiers" table.
 	IdentifiersColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeString},
-		{Name: "type", Type: field.TypeString},
+		{Name: "type", Type: field.TypeEnum, Enums: []string{"goodreads", "amazon", "isbn", "lccn"}},
 		{Name: "value", Type: field.TypeString},
 		{Name: "identifier_book", Type: field.TypeString},
 	}

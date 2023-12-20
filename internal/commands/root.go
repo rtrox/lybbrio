@@ -14,6 +14,7 @@ import (
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/go-chi/chi"
 	chi_middleware "github.com/go-chi/chi/middleware"
+	"github.com/go-chi/render"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/collectors"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -21,10 +22,10 @@ import (
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 
+	"lybbrio/internal/auth"
 	"lybbrio/internal/config"
 	"lybbrio/internal/db"
 	"lybbrio/internal/graph"
-	"lybbrio/internal/handlers"
 	"lybbrio/internal/metrics"
 	"lybbrio/internal/middleware"
 )
@@ -165,7 +166,10 @@ func rootRun(cmd *cobra.Command, args []string) {
 	)
 
 	// Auth Provider
-
+	jwtProvider, err := auth.NewJWTProvider(conf.JWTSecret, conf.JWTIssuer, conf.JWTExpiry)
+	if err != nil {
+		log.Fatal().Err(err).Msg("Failed to initialize JWT Provider")
+	}
 	// HTTP
 	r := chi.NewRouter()
 
@@ -176,14 +180,15 @@ func rootRun(cmd *cobra.Command, args []string) {
 	r.Use(middleware.Prometheus(reg))
 	r.Use(chi_middleware.Recoverer)
 
-	r.Get("/healthz", handlers.Health)
+	r.Get("/healthz", func(w http.ResponseWriter, r *http.Request) {
+		render.JSON(w, r, map[string]string{"status": "ok"})
+	})
+
 	r.Handle("/metrics", promhttp.HandlerFor(reg, promhttp.HandlerOpts{}))
 
-	// TODO: Auth
-	// r.Mount("/auth", handlers.AuthRoutes(store, authProvider))
+	r.Mount("/auth", auth.Routes(client, jwtProvider))
 	r.Route("/graphql", func(r chi.Router) {
-		// r.Use(auth.Middleware())
-		r.Handle("/", graphqlHandler)
+		r.With(auth.Middleware(jwtProvider)).Handle("/", graphqlHandler)
 		r.Handle("/playground", playground.Handler("Lybbrio GraphQL playground", "/graphql"))
 	})
 

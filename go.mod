@@ -8,6 +8,8 @@ require (
 	github.com/99designs/gqlgen v0.17.41
 	github.com/go-chi/chi v1.5.5
 	github.com/go-chi/render v1.0.3
+	github.com/golang-jwt/jwt/v4 v4.5.0
+	github.com/google/uuid v1.3.0
 	github.com/gookit/validate v1.5.1
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/knadh/koanf v1.5.0
@@ -38,7 +40,6 @@ require (
 	github.com/go-openapi/inflect v0.19.0 // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/google/go-cmp v0.5.9 // indirect
-	github.com/google/uuid v1.3.0 // indirect
 	github.com/gookit/filter v1.2.0 // indirect
 	github.com/gookit/goutil v0.6.12 // indirect
 	github.com/gorilla/websocket v1.5.0 // indirect

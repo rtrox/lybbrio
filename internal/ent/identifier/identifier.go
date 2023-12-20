@@ -3,7 +3,10 @@
 package identifier
 
 import (
+	"fmt"
+	"io"
 	"lybbrio/internal/ent/schema/ksuid"
+	"strconv"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -60,13 +63,36 @@ func ValidColumn(column string) bool {
 }
 
 var (
-	// TypeValidator is a validator for the "type" field. It is called by the builders before save.
-	TypeValidator func(string) error
 	// ValueValidator is a validator for the "value" field. It is called by the builders before save.
 	ValueValidator func(string) error
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() ksuid.ID
 )
+
+// Type defines the type for the "type" enum field.
+type Type string
+
+// Type values.
+const (
+	TypeGoodreads Type = "goodreads"
+	TypeAmazon    Type = "amazon"
+	TypeIsbn      Type = "isbn"
+	TypeLccn      Type = "lccn"
+)
+
+func (_type Type) String() string {
+	return string(_type)
+}
+
+// TypeValidator is a validator for the "type" field enum values. It is called by the builders before save.
+func TypeValidator(_type Type) error {
+	switch _type {
+	case TypeGoodreads, TypeAmazon, TypeIsbn, TypeLccn:
+		return nil
+	default:
+		return fmt.Errorf("identifier: invalid enum value for type field: %q", _type)
+	}
+}
 
 // OrderOption defines the ordering options for the Identifier queries.
 type OrderOption func(*sql.Selector)
@@ -98,4 +124,22 @@ func newBookStep() *sqlgraph.Step {
 		sqlgraph.To(BookInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2O, false, BookTable, BookColumn),
 	)
+}
+
+// MarshalGQL implements graphql.Marshaler interface.
+func (e Type) MarshalGQL(w io.Writer) {
+	io.WriteString(w, strconv.Quote(e.String()))
+}
+
+// UnmarshalGQL implements graphql.Unmarshaler interface.
+func (e *Type) UnmarshalGQL(val interface{}) error {
+	str, ok := val.(string)
+	if !ok {
+		return fmt.Errorf("enum %T must be a string", val)
+	}
+	*e = Type(str)
+	if err := TypeValidator(*e); err != nil {
+		return fmt.Errorf("%s is not a valid Type", str)
+	}
+	return nil
 }

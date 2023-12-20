@@ -950,19 +950,10 @@ type IdentifierWhereInput struct {
 	IDLTE   *ksuid.ID  `json:"idLTE,omitempty"`
 
 	// "type" field predicates.
-	Type             *string  `json:"type,omitempty"`
-	TypeNEQ          *string  `json:"typeNEQ,omitempty"`
-	TypeIn           []string `json:"typeIn,omitempty"`
-	TypeNotIn        []string `json:"typeNotIn,omitempty"`
-	TypeGT           *string  `json:"typeGT,omitempty"`
-	TypeGTE          *string  `json:"typeGTE,omitempty"`
-	TypeLT           *string  `json:"typeLT,omitempty"`
-	TypeLTE          *string  `json:"typeLTE,omitempty"`
-	TypeContains     *string  `json:"typeContains,omitempty"`
-	TypeHasPrefix    *string  `json:"typeHasPrefix,omitempty"`
-	TypeHasSuffix    *string  `json:"typeHasSuffix,omitempty"`
-	TypeEqualFold    *string  `json:"typeEqualFold,omitempty"`
-	TypeContainsFold *string  `json:"typeContainsFold,omitempty"`
+	Type      *identifier.Type  `json:"type,omitempty"`
+	TypeNEQ   *identifier.Type  `json:"typeNEQ,omitempty"`
+	TypeIn    []identifier.Type `json:"typeIn,omitempty"`
+	TypeNotIn []identifier.Type `json:"typeNotIn,omitempty"`
 
 	// "value" field predicates.
 	Value             *string  `json:"value,omitempty"`
@@ -1090,33 +1081,6 @@ func (i *IdentifierWhereInput) P() (predicate.Identifier, error) {
 	}
 	if len(i.TypeNotIn) > 0 {
 		predicates = append(predicates, identifier.TypeNotIn(i.TypeNotIn...))
-	}
-	if i.TypeGT != nil {
-		predicates = append(predicates, identifier.TypeGT(*i.TypeGT))
-	}
-	if i.TypeGTE != nil {
-		predicates = append(predicates, identifier.TypeGTE(*i.TypeGTE))
-	}
-	if i.TypeLT != nil {
-		predicates = append(predicates, identifier.TypeLT(*i.TypeLT))
-	}
-	if i.TypeLTE != nil {
-		predicates = append(predicates, identifier.TypeLTE(*i.TypeLTE))
-	}
-	if i.TypeContains != nil {
-		predicates = append(predicates, identifier.TypeContains(*i.TypeContains))
-	}
-	if i.TypeHasPrefix != nil {
-		predicates = append(predicates, identifier.TypeHasPrefix(*i.TypeHasPrefix))
-	}
-	if i.TypeHasSuffix != nil {
-		predicates = append(predicates, identifier.TypeHasSuffix(*i.TypeHasSuffix))
-	}
-	if i.TypeEqualFold != nil {
-		predicates = append(predicates, identifier.TypeEqualFold(*i.TypeEqualFold))
-	}
-	if i.TypeContainsFold != nil {
-		predicates = append(predicates, identifier.TypeContainsFold(*i.TypeContainsFold))
 	}
 	if i.Value != nil {
 		predicates = append(predicates, identifier.ValueEQ(*i.Value))

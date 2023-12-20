@@ -1724,7 +1724,7 @@ type IdentifierMutation struct {
 	op            Op
 	typ           string
 	id            *ksuid.ID
-	_type         *string
+	_type         *identifier.Type
 	value         *string
 	clearedFields map[string]struct{}
 	book          *ksuid.ID
@@ -1839,12 +1839,12 @@ func (m *IdentifierMutation) IDs(ctx context.Context) ([]ksuid.ID, error) {
 }
 
 // SetType sets the "type" field.
-func (m *IdentifierMutation) SetType(s string) {
-	m._type = &s
+func (m *IdentifierMutation) SetType(i identifier.Type) {
+	m._type = &i
 }
 
 // GetType returns the value of the "type" field in the mutation.
-func (m *IdentifierMutation) GetType() (r string, exists bool) {
+func (m *IdentifierMutation) GetType() (r identifier.Type, exists bool) {
 	v := m._type
 	if v == nil {
 		return
@@ -1855,7 +1855,7 @@ func (m *IdentifierMutation) GetType() (r string, exists bool) {
 // OldType returns the old "type" field's value of the Identifier entity.
 // If the Identifier object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *IdentifierMutation) OldType(ctx context.Context) (v string, err error) {
+func (m *IdentifierMutation) OldType(ctx context.Context) (v identifier.Type, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldType is only allowed on UpdateOne operations")
 	}
@@ -2025,7 +2025,7 @@ func (m *IdentifierMutation) OldField(ctx context.Context, name string) (ent.Val
 func (m *IdentifierMutation) SetField(name string, value ent.Value) error {
 	switch name {
 	case identifier.FieldType:
-		v, ok := value.(string)
+		v, ok := value.(identifier.Type)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}

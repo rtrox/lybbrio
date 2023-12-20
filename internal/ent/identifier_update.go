@@ -30,15 +30,15 @@ func (iu *IdentifierUpdate) Where(ps ...predicate.Identifier) *IdentifierUpdate 
 }
 
 // SetType sets the "type" field.
-func (iu *IdentifierUpdate) SetType(s string) *IdentifierUpdate {
-	iu.mutation.SetType(s)
+func (iu *IdentifierUpdate) SetType(i identifier.Type) *IdentifierUpdate {
+	iu.mutation.SetType(i)
 	return iu
 }
 
 // SetNillableType sets the "type" field if the given value is not nil.
-func (iu *IdentifierUpdate) SetNillableType(s *string) *IdentifierUpdate {
-	if s != nil {
-		iu.SetType(*s)
+func (iu *IdentifierUpdate) SetNillableType(i *identifier.Type) *IdentifierUpdate {
+	if i != nil {
+		iu.SetType(*i)
 	}
 	return iu
 }
@@ -137,7 +137,7 @@ func (iu *IdentifierUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 	}
 	if value, ok := iu.mutation.GetType(); ok {
-		_spec.SetField(identifier.FieldType, field.TypeString, value)
+		_spec.SetField(identifier.FieldType, field.TypeEnum, value)
 	}
 	if value, ok := iu.mutation.Value(); ok {
 		_spec.SetField(identifier.FieldValue, field.TypeString, value)
@@ -192,15 +192,15 @@ type IdentifierUpdateOne struct {
 }
 
 // SetType sets the "type" field.
-func (iuo *IdentifierUpdateOne) SetType(s string) *IdentifierUpdateOne {
-	iuo.mutation.SetType(s)
+func (iuo *IdentifierUpdateOne) SetType(i identifier.Type) *IdentifierUpdateOne {
+	iuo.mutation.SetType(i)
 	return iuo
 }
 
 // SetNillableType sets the "type" field if the given value is not nil.
-func (iuo *IdentifierUpdateOne) SetNillableType(s *string) *IdentifierUpdateOne {
-	if s != nil {
-		iuo.SetType(*s)
+func (iuo *IdentifierUpdateOne) SetNillableType(i *identifier.Type) *IdentifierUpdateOne {
+	if i != nil {
+		iuo.SetType(*i)
 	}
 	return iuo
 }
@@ -329,7 +329,7 @@ func (iuo *IdentifierUpdateOne) sqlSave(ctx context.Context) (_node *Identifier,
 		}
 	}
 	if value, ok := iuo.mutation.GetType(); ok {
-		_spec.SetField(identifier.FieldType, field.TypeString, value)
+		_spec.SetField(identifier.FieldType, field.TypeEnum, value)
 	}
 	if value, ok := iuo.mutation.Value(); ok {
 		_spec.SetField(identifier.FieldValue, field.TypeString, value)

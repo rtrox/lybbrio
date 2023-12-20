@@ -61,10 +61,6 @@ func init() {
 	_ = identifierMixinFields0
 	identifierFields := schema.Identifier{}.Fields()
 	_ = identifierFields
-	// identifierDescType is the schema descriptor for type field.
-	identifierDescType := identifierFields[0].Descriptor()
-	// identifier.TypeValidator is a validator for the "type" field. It is called by the builders before save.
-	identifier.TypeValidator = identifierDescType.Validators[0].(func(string) error)
 	// identifierDescValue is the schema descriptor for value field.
 	identifierDescValue := identifierFields[1].Descriptor()
 	// identifier.ValueValidator is a validator for the "value" field. It is called by the builders before save.

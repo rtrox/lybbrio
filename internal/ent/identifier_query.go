@@ -301,7 +301,7 @@ func (iq *IdentifierQuery) WithBook(opts ...func(*BookQuery)) *IdentifierQuery {
 // Example:
 //
 //	var v []struct {
-//		Type string `json:"type,omitempty"`
+//		Type identifier.Type `json:"type,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
@@ -324,7 +324,7 @@ func (iq *IdentifierQuery) GroupBy(field string, fields ...string) *IdentifierGr
 // Example:
 //
 //	var v []struct {
-//		Type string `json:"type,omitempty"`
+//		Type identifier.Type `json:"type,omitempty"`
 //	}
 //
 //	client.Identifier.Query().

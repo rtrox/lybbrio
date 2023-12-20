@@ -3,6 +3,7 @@
 package ent
 
 import (
+	"lybbrio/internal/ent/identifier"
 	"lybbrio/internal/ent/schema/ksuid"
 	"time"
 )
@@ -255,7 +256,7 @@ func (c *BookUpdateOne) SetInput(i UpdateBookInput) *BookUpdateOne {
 
 // CreateIdentifierInput represents a mutation input for creating identifiers.
 type CreateIdentifierInput struct {
-	Type   string
+	Type   identifier.Type
 	Value  string
 	BookID ksuid.ID
 }
@@ -275,7 +276,7 @@ func (c *IdentifierCreate) SetInput(i CreateIdentifierInput) *IdentifierCreate {
 
 // UpdateIdentifierInput represents a mutation input for updating identifiers.
 type UpdateIdentifierInput struct {
-	Type   *string
+	Type   *identifier.Type
 	Value  *string
 	BookID *ksuid.ID
 }

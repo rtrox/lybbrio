@@ -19,7 +19,7 @@ type Identifier struct {
 	// ID of the ent.
 	ID ksuid.ID `json:"id,omitempty"`
 	// Type holds the value of the "type" field.
-	Type string `json:"type,omitempty"`
+	Type identifier.Type `json:"type,omitempty"`
 	// Value holds the value of the "value" field.
 	Value string `json:"value,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -87,7 +87,7 @@ func (i *Identifier) assignValues(columns []string, values []any) error {
 			if value, ok := values[j].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field type", values[j])
 			} else if value.Valid {
-				i.Type = value.String
+				i.Type = identifier.Type(value.String)
 			}
 		case identifier.FieldValue:
 			if value, ok := values[j].(*sql.NullString); !ok {
@@ -144,7 +144,7 @@ func (i *Identifier) String() string {
 	builder.WriteString("Identifier(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", i.ID))
 	builder.WriteString("type=")
-	builder.WriteString(i.Type)
+	builder.WriteString(fmt.Sprintf("%v", i.Type))
 	builder.WriteString(", ")
 	builder.WriteString("value=")
 	builder.WriteString(i.Value)

@@ -33,7 +33,9 @@ func (Identifier) Mixin() []ent.Mixin {
 // Fields of the Identifier.
 func (Identifier) Fields() []ent.Field {
 	return []ent.Field{
-		field.String("type").NotEmpty().Annotations(entgql.OrderField("TYPE")), // TODO: Enum
+		field.Enum("type").
+			Values("goodreads", "amazon", "isbn", "lccn").
+			Annotations(entgql.OrderField("TYPE")), // TODO: Enum Values?
 		field.String("value").NotEmpty().Annotations(entgql.OrderField("VALUE")),
 	}
 }
