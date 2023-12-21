@@ -91,14 +91,6 @@ func (sc *ShelfCreate) SetUserID(id ksuid.ID) *ShelfCreate {
 	return sc
 }
 
-// SetNillableUserID sets the "user" edge to the User entity by ID if the given value is not nil.
-func (sc *ShelfCreate) SetNillableUserID(id *ksuid.ID) *ShelfCreate {
-	if id != nil {
-		sc = sc.SetUserID(*id)
-	}
-	return sc
-}
-
 // SetUser sets the "user" edge to the User entity.
 func (sc *ShelfCreate) SetUser(u *User) *ShelfCreate {
 	return sc.SetUserID(u.ID)
@@ -167,6 +159,9 @@ func (sc *ShelfCreate) check() error {
 	}
 	if _, ok := sc.mutation.Public(); !ok {
 		return &ValidationError{Name: "public", err: errors.New(`ent: missing required field "Shelf.public"`)}
+	}
+	if _, ok := sc.mutation.UserID(); !ok {
+		return &ValidationError{Name: "user", err: errors.New(`ent: missing required edge "Shelf.user"`)}
 	}
 	return nil
 }

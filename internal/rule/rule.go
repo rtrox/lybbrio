@@ -38,3 +38,25 @@ func AllowIfAdmin() privacy.QueryMutationRule {
 		return privacy.Skip
 	})
 }
+
+// func FilterTenantRule() privacy.QueryMutationRule {
+// 	type UserFilter interface {
+// 		WhereUserID(entql.StringP)
+// 	}
+// 	return privacy.FilterFunc(func(ctx context.Context, f privacy.Filter) error {
+// 		view := viewer.FromContext(ctx)
+// 		uid, ok := view.User()
+// 		if !ok {
+// 			return privacy.Denyf("missing user information in viewer-context")
+// 		}
+// 		uf, ok := f.(UserFilter)
+// 		if !ok {
+// 			return privacy.Denyf("filter does not implement UserFilter")
+// 		}
+// 		uf.WhereUserID(entql.StringEQ(uid))
+// 		if f, ok := f.(UserFilter); ok {
+// 			f.WhereUserID(view.UserID())
+// 		}
+// 		return privacy.Skip
+// 	})
+// }

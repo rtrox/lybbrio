@@ -492,7 +492,7 @@ type CreateShelfInput struct {
 	Description *string
 	Public      *bool
 	BookIDs     []ksuid.ID
-	UserID      *ksuid.ID
+	UserID      ksuid.ID
 }
 
 // Mutate applies the CreateShelfInput on the ShelfMutation builder.
@@ -507,9 +507,7 @@ func (i *CreateShelfInput) Mutate(m *ShelfMutation) {
 	if v := i.BookIDs; len(v) > 0 {
 		m.AddBookIDs(v...)
 	}
-	if v := i.UserID; v != nil {
-		m.SetUserID(*v)
-	}
+	m.SetUserID(i.UserID)
 }
 
 // SetInput applies the change-set in the CreateShelfInput on the ShelfCreate builder.
@@ -527,8 +525,6 @@ type UpdateShelfInput struct {
 	ClearBooks       bool
 	AddBookIDs       []ksuid.ID
 	RemoveBookIDs    []ksuid.ID
-	ClearUser        bool
-	UserID           *ksuid.ID
 }
 
 // Mutate applies the UpdateShelfInput on the ShelfMutation builder.
@@ -553,12 +549,6 @@ func (i *UpdateShelfInput) Mutate(m *ShelfMutation) {
 	}
 	if v := i.RemoveBookIDs; len(v) > 0 {
 		m.RemoveBookIDs(v...)
-	}
-	if i.ClearUser {
-		m.ClearUser()
-	}
-	if v := i.UserID; v != nil {
-		m.SetUserID(*v)
 	}
 }
 

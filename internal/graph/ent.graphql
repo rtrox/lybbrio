@@ -363,7 +363,7 @@ input CreateShelfInput {
   description: String
   public: Boolean
   bookIDs: [ID!]
-  userID: ID
+  userID: ID!
 }
 """
 CreateTagInput is used for create Tag object.
@@ -1016,7 +1016,7 @@ type Shelf implements Node {
     """Filtering options for Books returned from the connection."""
     where: BookWhereInput
   ): BookConnection!
-  user: User
+  user: User!
 }
 """A connection to a list of items."""
 type ShelfConnection {
@@ -1287,8 +1287,6 @@ input UpdateShelfInput {
   addBookIDs: [ID!]
   removeBookIDs: [ID!]
   clearBooks: Boolean
-  userID: ID
-  clearUser: Boolean
 }
 """
 UpdateTagInput is used for update Tag object.

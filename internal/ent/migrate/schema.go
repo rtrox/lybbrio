@@ -157,7 +157,7 @@ var (
 		{Name: "name", Type: field.TypeString},
 		{Name: "description", Type: field.TypeString, Nullable: true},
 		{Name: "public", Type: field.TypeBool, Default: false},
-		{Name: "user_shelves", Type: field.TypeString, Nullable: true},
+		{Name: "user_shelves", Type: field.TypeString},
 	}
 	// ShelvesTable holds the schema information for the "shelves" table.
 	ShelvesTable = &schema.Table{
@@ -169,7 +169,7 @@ var (
 				Symbol:     "shelves_users_shelves",
 				Columns:    []*schema.Column{ShelvesColumns[4]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
-				OnDelete:   schema.SetNull,
+				OnDelete:   schema.NoAction,
 			},
 		},
 	}

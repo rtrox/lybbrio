@@ -218,7 +218,7 @@ func (s *Shelf) User(ctx context.Context) (*User, error) {
 	if IsNotLoaded(err) {
 		result, err = s.QueryUser().Only(ctx)
 	}
-	return result, MaskNotFound(err)
+	return result, err
 }
 
 func (t *Tag) Books(

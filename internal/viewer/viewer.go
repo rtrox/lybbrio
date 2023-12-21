@@ -23,8 +23,11 @@ func (v UserViewer) IsAdmin() bool {
 	return v.p.Admin
 }
 
-func (v UserViewer) User() *ent.User {
-	return v.u
+func (v UserViewer) User() (*ent.User, bool) {
+	if v.u != nil {
+		return v.u, true
+	}
+	return nil, false
 }
 
 func NewContext(ctx context.Context, u *ent.User, p *ent.UserPermissions) context.Context {

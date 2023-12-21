@@ -1697,7 +1697,7 @@ input CreateShelfInput {
   description: String
   public: Boolean
   bookIDs: [ID!]
-  userID: ID
+  userID: ID!
 }
 """
 CreateTagInput is used for create Tag object.
@@ -2350,7 +2350,7 @@ type Shelf implements Node {
     """Filtering options for Books returned from the connection."""
     where: BookWhereInput
   ): BookConnection!
-  user: User
+  user: User!
 }
 """A connection to a list of items."""
 type ShelfConnection {
@@ -2621,8 +2621,6 @@ input UpdateShelfInput {
   addBookIDs: [ID!]
   removeBookIDs: [ID!]
   clearBooks: Boolean
-  userID: ID
-  clearUser: Boolean
 }
 """
 UpdateTagInput is used for update Tag object.
@@ -8561,11 +8559,14 @@ func (ec *executionContext) _Shelf_user(ctx context.Context, field graphql.Colle
 		return graphql.Null
 	}
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
 	res := resTmp.(*ent.User)
 	fc.Result = res
-	return ec.marshalOUser2ᚖlybbrioᚋinternalᚋentᚐUser(ctx, field.Selections, res)
+	return ec.marshalNUser2ᚖlybbrioᚋinternalᚋentᚐUser(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Shelf_user(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -12990,7 +12991,7 @@ func (ec *executionContext) unmarshalInputCreateShelfInput(ctx context.Context, 
 			it.BookIDs = data
 		case "userID":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("userID"))
-			data, err := ec.unmarshalOID2ᚖlybbrioᚋinternalᚋentᚋschemaᚋksuidᚐID(ctx, v)
+			data, err := ec.unmarshalNID2lybbrioᚋinternalᚋentᚋschemaᚋksuidᚐID(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -15517,7 +15518,7 @@ func (ec *executionContext) unmarshalInputUpdateShelfInput(ctx context.Context, 
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"name", "description", "clearDescription", "public", "addBookIDs", "removeBookIDs", "clearBooks", "userID", "clearUser"}
+	fieldsInOrder := [...]string{"name", "description", "clearDescription", "public", "addBookIDs", "removeBookIDs", "clearBooks"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -15573,20 +15574,6 @@ func (ec *executionContext) unmarshalInputUpdateShelfInput(ctx context.Context, 
 				return it, err
 			}
 			it.ClearBooks = data
-		case "userID":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("userID"))
-			data, err := ec.unmarshalOID2ᚖlybbrioᚋinternalᚋentᚋschemaᚋksuidᚐID(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.UserID = data
-		case "clearUser":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clearUser"))
-			data, err := ec.unmarshalOBoolean2bool(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.ClearUser = data
 		}
 	}
 
@@ -18043,6 +18030,9 @@ func (ec *executionContext) _Shelf(ctx context.Context, sel ast.SelectionSet, ob
 					}
 				}()
 				res = ec._Shelf_user(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
 				return res
 			}
 

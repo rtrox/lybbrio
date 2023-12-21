@@ -10,7 +10,6 @@ import (
 	"lybbrio/internal/ent/predicate"
 	"lybbrio/internal/ent/schema/ksuid"
 	"lybbrio/internal/ent/shelf"
-	"lybbrio/internal/ent/user"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -93,25 +92,6 @@ func (su *ShelfUpdate) AddBooks(b ...*Book) *ShelfUpdate {
 	return su.AddBookIDs(ids...)
 }
 
-// SetUserID sets the "user" edge to the User entity by ID.
-func (su *ShelfUpdate) SetUserID(id ksuid.ID) *ShelfUpdate {
-	su.mutation.SetUserID(id)
-	return su
-}
-
-// SetNillableUserID sets the "user" edge to the User entity by ID if the given value is not nil.
-func (su *ShelfUpdate) SetNillableUserID(id *ksuid.ID) *ShelfUpdate {
-	if id != nil {
-		su = su.SetUserID(*id)
-	}
-	return su
-}
-
-// SetUser sets the "user" edge to the User entity.
-func (su *ShelfUpdate) SetUser(u *User) *ShelfUpdate {
-	return su.SetUserID(u.ID)
-}
-
 // Mutation returns the ShelfMutation object of the builder.
 func (su *ShelfUpdate) Mutation() *ShelfMutation {
 	return su.mutation
@@ -136,12 +116,6 @@ func (su *ShelfUpdate) RemoveBooks(b ...*Book) *ShelfUpdate {
 		ids[i] = b[i].ID
 	}
 	return su.RemoveBookIDs(ids...)
-}
-
-// ClearUser clears the "user" edge to the User entity.
-func (su *ShelfUpdate) ClearUser() *ShelfUpdate {
-	su.mutation.ClearUser()
-	return su
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -177,6 +151,9 @@ func (su *ShelfUpdate) check() error {
 		if err := shelf.NameValidator(v); err != nil {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "Shelf.name": %w`, err)}
 		}
+	}
+	if _, ok := su.mutation.UserID(); su.mutation.UserCleared() && !ok {
+		return errors.New(`ent: clearing a required unique edge "Shelf.user"`)
 	}
 	return nil
 }
@@ -243,35 +220,6 @@ func (su *ShelfUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(book.FieldID, field.TypeString),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if su.mutation.UserCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   shelf.UserTable,
-			Columns: []string{shelf.UserColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeString),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := su.mutation.UserIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   shelf.UserTable,
-			Columns: []string{shelf.UserColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeString),
 			},
 		}
 		for _, k := range nodes {
@@ -362,25 +310,6 @@ func (suo *ShelfUpdateOne) AddBooks(b ...*Book) *ShelfUpdateOne {
 	return suo.AddBookIDs(ids...)
 }
 
-// SetUserID sets the "user" edge to the User entity by ID.
-func (suo *ShelfUpdateOne) SetUserID(id ksuid.ID) *ShelfUpdateOne {
-	suo.mutation.SetUserID(id)
-	return suo
-}
-
-// SetNillableUserID sets the "user" edge to the User entity by ID if the given value is not nil.
-func (suo *ShelfUpdateOne) SetNillableUserID(id *ksuid.ID) *ShelfUpdateOne {
-	if id != nil {
-		suo = suo.SetUserID(*id)
-	}
-	return suo
-}
-
-// SetUser sets the "user" edge to the User entity.
-func (suo *ShelfUpdateOne) SetUser(u *User) *ShelfUpdateOne {
-	return suo.SetUserID(u.ID)
-}
-
 // Mutation returns the ShelfMutation object of the builder.
 func (suo *ShelfUpdateOne) Mutation() *ShelfMutation {
 	return suo.mutation
@@ -405,12 +334,6 @@ func (suo *ShelfUpdateOne) RemoveBooks(b ...*Book) *ShelfUpdateOne {
 		ids[i] = b[i].ID
 	}
 	return suo.RemoveBookIDs(ids...)
-}
-
-// ClearUser clears the "user" edge to the User entity.
-func (suo *ShelfUpdateOne) ClearUser() *ShelfUpdateOne {
-	suo.mutation.ClearUser()
-	return suo
 }
 
 // Where appends a list predicates to the ShelfUpdate builder.
@@ -459,6 +382,9 @@ func (suo *ShelfUpdateOne) check() error {
 		if err := shelf.NameValidator(v); err != nil {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "Shelf.name": %w`, err)}
 		}
+	}
+	if _, ok := suo.mutation.UserID(); suo.mutation.UserCleared() && !ok {
+		return errors.New(`ent: clearing a required unique edge "Shelf.user"`)
 	}
 	return nil
 }
@@ -542,35 +468,6 @@ func (suo *ShelfUpdateOne) sqlSave(ctx context.Context) (_node *Shelf, err error
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(book.FieldID, field.TypeString),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if suo.mutation.UserCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   shelf.UserTable,
-			Columns: []string{shelf.UserColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeString),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := suo.mutation.UserIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   shelf.UserTable,
-			Columns: []string{shelf.UserColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeString),
 			},
 		}
 		for _, k := range nodes {

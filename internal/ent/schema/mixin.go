@@ -2,9 +2,13 @@ package schema
 
 import (
 	"lybbrio/internal/ent/privacy"
+	"lybbrio/internal/ent/schema/ksuid"
 	"lybbrio/internal/rule"
 
+	"entgo.io/contrib/entgql"
 	"entgo.io/ent"
+	"entgo.io/ent/schema/edge"
+	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/mixin"
 )
 
@@ -28,3 +32,32 @@ func (BaseMixin) Policy() ent.Policy {
 		},
 	}
 }
+
+type UserScopedMixin struct {
+	mixin.Schema
+}
+
+func (UserScopedMixin) Fields() []ent.Field {
+	return []ent.Field{
+		field.String("user_id").
+			GoType(ksuid.ID("")).
+			Immutable(),
+	}
+}
+
+func (UserScopedMixin) Edges() []ent.Edge {
+	return []ent.Edge{
+		edge.To("user", User.Type).
+			Field("user_id").
+			Unique().
+			Required().
+			Immutable().
+			Annotations(
+				entgql.OrderField("USER_USERNAME"),
+			),
+	}
+}
+
+// func (UserScopedMixin) Policy() ent.Policy {
+// 	return rule.
+// }
