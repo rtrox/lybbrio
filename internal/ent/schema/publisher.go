@@ -8,6 +8,7 @@ import (
 	"entgo.io/ent/schema"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
+	"entgo.io/ent/schema/index"
 )
 
 // Publisher holds the schema definition for the Publisher entity.
@@ -49,5 +50,12 @@ func (Publisher) Edges() []ent.Edge {
 				entgql.RelayConnection(),
 				entgql.OrderField("BOOKS_COUNT"),
 			),
+	}
+}
+
+// Indexes of the Publisher.
+func (Publisher) Indexes() []ent.Index {
+	return []ent.Index{
+		index.Fields("name"),
 	}
 }

@@ -8,6 +8,7 @@ import (
 	"entgo.io/ent/schema"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
+	"entgo.io/ent/schema/index"
 )
 
 // Author holds the schema definition for the Author entity.
@@ -36,9 +37,9 @@ func (Author) Fields() []ent.Field {
 	return []ent.Field{
 		field.String("name").
 			NotEmpty().
-			Annotations(entgql.OrderField("NAME")),
+			Unique(),
 		field.String("sort").
-			Annotations(entgql.OrderField("SORT")),
+			Annotations(entgql.OrderField("NAME")),
 		field.String("link").
 			Optional(),
 	}
@@ -49,5 +50,12 @@ func (Author) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("books", Book.Type).
 			Annotations(entgql.RelayConnection()),
+	}
+}
+
+func (Author) Indexes() []ent.Index {
+	return []ent.Index{
+		index.Fields("name"),
+		index.Fields("sort"),
 	}
 }

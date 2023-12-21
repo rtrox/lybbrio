@@ -10,6 +10,7 @@ import (
 	"entgo.io/ent/schema"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
+	"entgo.io/ent/schema/index"
 )
 
 // User holds the schema definition for the User entity.
@@ -47,10 +48,7 @@ func (User) Fields() []ent.Field {
 			Sensitive(),
 		field.String("email").
 			NotEmpty().
-			Unique().
-			Annotations(
-				entgql.OrderField("EMAIL"),
-			),
+			Unique(),
 	}
 }
 
@@ -77,5 +75,12 @@ func (User) Policy() ent.Policy {
 		Query: privacy.QueryPolicy{
 			privacy.AlwaysAllowRule(),
 		},
+	}
+}
+
+func (User) Indexes() []ent.Index {
+	return []ent.Index{
+		index.Fields("username"),
+		index.Fields("passwordHash"),
 	}
 }

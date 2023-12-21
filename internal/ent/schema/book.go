@@ -9,6 +9,7 @@ import (
 	"entgo.io/ent/schema"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
+	"entgo.io/ent/schema/index"
 )
 
 // Book holds the schema definition for the Book entity.
@@ -39,7 +40,7 @@ func (Book) Fields() []ent.Field {
 			NotEmpty().
 			Annotations(entgql.OrderField("TITLE")),
 		field.Text("sort").
-			Annotations(entgql.OrderField("SORT")),
+			Annotations(entgql.OrderField("NAME")),
 		field.Time("added_at").
 			Default(time.Now).
 			Annotations(entgql.OrderField("ADDED_AT")),
@@ -70,5 +71,15 @@ func (Book) Edges() []ent.Edge {
 			Ref("books").Unique(),
 		edge.From("shelf", Shelf.Type).
 			Ref("books"), // TODO: will need privacy on this edge.
+	}
+}
+
+func (Book) Indexes() []ent.Index {
+	return []ent.Index{
+		index.Fields("title"),
+		index.Fields("sort"),
+		index.Fields("added_at"),
+		index.Fields("pub_date"),
+		index.Fields("isbn"),
 	}
 }

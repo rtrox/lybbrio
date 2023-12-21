@@ -8,6 +8,7 @@ import (
 	"entgo.io/ent/schema"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
+	"entgo.io/ent/schema/index"
 )
 
 // Language holds the schema definition for the Language entity.
@@ -48,5 +49,12 @@ func (Language) Edges() []ent.Edge {
 				entgql.RelayConnection(),
 				entgql.OrderField("BOOKS_COUNT"),
 			),
+	}
+}
+
+func (Language) Indexes() []ent.Index {
+	return []ent.Index{
+		index.Fields("name"),
+		index.Fields("code"),
 	}
 }

@@ -7,7 +7,9 @@ package rule
 import (
 	"context"
 
+	"lybbrio/internal/ent"
 	"lybbrio/internal/ent/privacy"
+	"lybbrio/internal/ent/schema/ksuid"
 	"lybbrio/internal/viewer"
 
 	"entgo.io/ent/entql"
@@ -58,3 +60,37 @@ func FilterUserRule() privacy.QueryMutationRule {
 		return privacy.Skip
 	})
 }
+
+// DenyMismatchedUserRule is a rule that returns deny decision if the viewer
+// is not the same as the user on the object.
+func DenyMismatchedUserRule() privacy.MutationRule {
+	return privacy.MutationRuleFunc(func(ctx context.Context, m ent.Mutation) error {
+		view := viewer.FromContext(ctx)
+		user, ok := view.User()
+		if !ok {
+			return privacy.Denyf("missing user information in viewer-context")
+		}
+		mutationUserID, ok := m.Field("user_id")
+		if !ok {
+			return privacy.Denyf("missing user_id field in mutation")
+		} // temporary
+		if user.ID != mutationUserID.(ksuid.ID) {
+			return privacy.Denyf("cannot mutate objects owned by other users")
+		}
+		return privacy.Skip
+	})
+}
+
+// func FilterPublicRule() privacy.QueryRule {
+// 	type PublicFilter interface {
+// 		WherePublic(entql.BoolP)
+// 	}
+// 	return privacy.FilterFunc(func(ctx context.Context, f privacy.Filter) error {
+// 		pf, ok := f.(PublicFilter)
+// 		if !ok {
+// 			return privacy.Denyf("filter does not implement PublicFilter")
+// 		}
+// 		pf.Or().Where
+// 		return privacy.Skip
+// 	}
+// }

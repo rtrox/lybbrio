@@ -11,7 +11,7 @@ var (
 	// AuthorsColumns holds the columns for the "authors" table.
 	AuthorsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeString},
-		{Name: "name", Type: field.TypeString},
+		{Name: "name", Type: field.TypeString, Unique: true},
 		{Name: "sort", Type: field.TypeString},
 		{Name: "link", Type: field.TypeString, Nullable: true},
 	}
@@ -20,6 +20,18 @@ var (
 		Name:       "authors",
 		Columns:    AuthorsColumns,
 		PrimaryKey: []*schema.Column{AuthorsColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "author_name",
+				Unique:  false,
+				Columns: []*schema.Column{AuthorsColumns[1]},
+			},
+			{
+				Name:    "author_sort",
+				Unique:  false,
+				Columns: []*schema.Column{AuthorsColumns[2]},
+			},
+		},
 	}
 	// BooksColumns holds the columns for the "books" table.
 	BooksColumns = []*schema.Column{
@@ -60,6 +72,33 @@ var (
 				OnDelete:   schema.SetNull,
 			},
 		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "book_title",
+				Unique:  false,
+				Columns: []*schema.Column{BooksColumns[1]},
+			},
+			{
+				Name:    "book_sort",
+				Unique:  false,
+				Columns: []*schema.Column{BooksColumns[2]},
+			},
+			{
+				Name:    "book_added_at",
+				Unique:  false,
+				Columns: []*schema.Column{BooksColumns[3]},
+			},
+			{
+				Name:    "book_pub_date",
+				Unique:  false,
+				Columns: []*schema.Column{BooksColumns[4]},
+			},
+			{
+				Name:    "book_isbn",
+				Unique:  false,
+				Columns: []*schema.Column{BooksColumns[6]},
+			},
+		},
 	}
 	// IdentifiersColumns holds the columns for the "identifiers" table.
 	IdentifiersColumns = []*schema.Column{
@@ -81,6 +120,13 @@ var (
 				OnDelete:   schema.NoAction,
 			},
 		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "identifier_type_value",
+				Unique:  true,
+				Columns: []*schema.Column{IdentifiersColumns[1], IdentifiersColumns[2]},
+			},
+		},
 	}
 	// LanguagesColumns holds the columns for the "languages" table.
 	LanguagesColumns = []*schema.Column{
@@ -93,6 +139,18 @@ var (
 		Name:       "languages",
 		Columns:    LanguagesColumns,
 		PrimaryKey: []*schema.Column{LanguagesColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "language_name",
+				Unique:  false,
+				Columns: []*schema.Column{LanguagesColumns[1]},
+			},
+			{
+				Name:    "language_code",
+				Unique:  false,
+				Columns: []*schema.Column{LanguagesColumns[2]},
+			},
+		},
 	}
 	// PublishersColumns holds the columns for the "publishers" table.
 	PublishersColumns = []*schema.Column{
@@ -104,6 +162,13 @@ var (
 		Name:       "publishers",
 		Columns:    PublishersColumns,
 		PrimaryKey: []*schema.Column{PublishersColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "publisher_name",
+				Unique:  false,
+				Columns: []*schema.Column{PublishersColumns[1]},
+			},
+		},
 	}
 	// SeriesColumns holds the columns for the "series" table.
 	SeriesColumns = []*schema.Column{
@@ -116,6 +181,13 @@ var (
 		Name:       "series",
 		Columns:    SeriesColumns,
 		PrimaryKey: []*schema.Column{SeriesColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "series_name",
+				Unique:  false,
+				Columns: []*schema.Column{SeriesColumns[1]},
+			},
+		},
 	}
 	// SeriesBooksColumns holds the columns for the "series_books" table.
 	SeriesBooksColumns = []*schema.Column{
@@ -172,6 +244,13 @@ var (
 				OnDelete:   schema.NoAction,
 			},
 		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "shelf_name",
+				Unique:  false,
+				Columns: []*schema.Column{ShelvesColumns[1]},
+			},
+		},
 	}
 	// TagsColumns holds the columns for the "tags" table.
 	TagsColumns = []*schema.Column{
@@ -183,6 +262,13 @@ var (
 		Name:       "tags",
 		Columns:    TagsColumns,
 		PrimaryKey: []*schema.Column{TagsColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "tag_name",
+				Unique:  false,
+				Columns: []*schema.Column{TagsColumns[1]},
+			},
+		},
 	}
 	// UsersColumns holds the columns for the "users" table.
 	UsersColumns = []*schema.Column{
@@ -196,6 +282,18 @@ var (
 		Name:       "users",
 		Columns:    UsersColumns,
 		PrimaryKey: []*schema.Column{UsersColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "user_username",
+				Unique:  false,
+				Columns: []*schema.Column{UsersColumns[1]},
+			},
+			{
+				Name:    "user_password_hash",
+				Unique:  false,
+				Columns: []*schema.Column{UsersColumns[2]},
+			},
+		},
 	}
 	// UserPermissionsColumns holds the columns for the "user_permissions" table.
 	UserPermissionsColumns = []*schema.Column{

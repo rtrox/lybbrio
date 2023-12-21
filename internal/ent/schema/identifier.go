@@ -8,6 +8,7 @@ import (
 	"entgo.io/ent/schema"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
+	"entgo.io/ent/schema/index"
 )
 
 // Identifier holds the schema definition for the Identifier entity.
@@ -45,5 +46,11 @@ func (Identifier) Fields() []ent.Field {
 func (Identifier) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("book", Book.Type).Unique().Required(),
+	}
+}
+
+func (Identifier) Indexes() []ent.Index {
+	return []ent.Index{
+		index.Fields("type", "value").Unique(),
 	}
 }

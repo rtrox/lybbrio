@@ -1,6 +1,7 @@
 package schema
 
 import (
+	"lybbrio/internal/ent/privacy"
 	"lybbrio/internal/ent/schema/ksuid"
 
 	"entgo.io/contrib/entgql"
@@ -8,6 +9,7 @@ import (
 	"entgo.io/ent/schema"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
+	"entgo.io/ent/schema/index"
 )
 
 // Shelf holds the schema definition for the Shelf entity.
@@ -55,5 +57,22 @@ func (Shelf) Edges() []ent.Edge {
 				entgql.OrderField("BOOKS_COUNT"),
 				entgql.RelayConnection(),
 			),
+	}
+}
+
+func (Shelf) Policy() ent.Policy {
+	return privacy.Policy{
+		Query: privacy.QueryPolicy{
+			privacy.AlwaysAllowRule(),
+		},
+		Mutation: privacy.MutationPolicy{
+			privacy.AlwaysAllowRule(),
+		},
+	}
+}
+
+func (Shelf) Indexes() []ent.Index {
+	return []ent.Index{
+		index.Fields("name"),
 	}
 }

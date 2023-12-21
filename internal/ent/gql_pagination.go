@@ -351,20 +351,6 @@ func (a *AuthorQuery) Paginate(
 }
 
 var (
-	// AuthorOrderFieldName orders Author by name.
-	AuthorOrderFieldName = &AuthorOrderField{
-		Value: func(a *Author) (ent.Value, error) {
-			return a.Name, nil
-		},
-		column: author.FieldName,
-		toTerm: author.ByName,
-		toCursor: func(a *Author) Cursor {
-			return Cursor{
-				ID:    a.ID,
-				Value: a.Name,
-			}
-		},
-	}
 	// AuthorOrderFieldSort orders Author by sort.
 	AuthorOrderFieldSort = &AuthorOrderField{
 		Value: func(a *Author) (ent.Value, error) {
@@ -385,10 +371,8 @@ var (
 func (f AuthorOrderField) String() string {
 	var str string
 	switch f.column {
-	case AuthorOrderFieldName.column:
-		str = "NAME"
 	case AuthorOrderFieldSort.column:
-		str = "SORT"
+		str = "NAME"
 	}
 	return str
 }
@@ -406,8 +390,6 @@ func (f *AuthorOrderField) UnmarshalGQL(v interface{}) error {
 	}
 	switch str {
 	case "NAME":
-		*f = *AuthorOrderFieldName
-	case "SORT":
 		*f = *AuthorOrderFieldSort
 	default:
 		return fmt.Errorf("%s is not a valid AuthorOrderField", str)
@@ -777,7 +759,7 @@ func (f BookOrderField) String() string {
 	case BookOrderFieldTitle.column:
 		str = "TITLE"
 	case BookOrderFieldSort.column:
-		str = "SORT"
+		str = "NAME"
 	case BookOrderFieldAddedAt.column:
 		str = "ADDED_AT"
 	case BookOrderFieldPubDate.column:
@@ -802,7 +784,7 @@ func (f *BookOrderField) UnmarshalGQL(v interface{}) error {
 	switch str {
 	case "TITLE":
 		*f = *BookOrderFieldTitle
-	case "SORT":
+	case "NAME":
 		*f = *BookOrderFieldSort
 	case "ADDED_AT":
 		*f = *BookOrderFieldAddedAt
@@ -3129,6 +3111,20 @@ func (t *TagQuery) Paginate(
 }
 
 var (
+	// TagOrderFieldName orders Tag by name.
+	TagOrderFieldName = &TagOrderField{
+		Value: func(t *Tag) (ent.Value, error) {
+			return t.Name, nil
+		},
+		column: tag.FieldName,
+		toTerm: tag.ByName,
+		toCursor: func(t *Tag) Cursor {
+			return Cursor{
+				ID:    t.ID,
+				Value: t.Name,
+			}
+		},
+	}
 	// TagOrderFieldBooksCount orders by BOOKS_COUNT.
 	TagOrderFieldBooksCount = &TagOrderField{
 		Value: func(t *Tag) (ent.Value, error) {
@@ -3154,6 +3150,8 @@ var (
 func (f TagOrderField) String() string {
 	var str string
 	switch f.column {
+	case TagOrderFieldName.column:
+		str = "NAME"
 	case TagOrderFieldBooksCount.column:
 		str = "BOOKS_COUNT"
 	}
@@ -3172,6 +3170,8 @@ func (f *TagOrderField) UnmarshalGQL(v interface{}) error {
 		return fmt.Errorf("TagOrderField %T must be a string", v)
 	}
 	switch str {
+	case "NAME":
+		*f = *TagOrderFieldName
 	case "BOOKS_COUNT":
 		*f = *TagOrderFieldBooksCount
 	default:
@@ -3441,20 +3441,6 @@ var (
 			}
 		},
 	}
-	// UserOrderFieldEmail orders User by email.
-	UserOrderFieldEmail = &UserOrderField{
-		Value: func(u *User) (ent.Value, error) {
-			return u.Email, nil
-		},
-		column: user.FieldEmail,
-		toTerm: user.ByEmail,
-		toCursor: func(u *User) Cursor {
-			return Cursor{
-				ID:    u.ID,
-				Value: u.Email,
-			}
-		},
-	}
 )
 
 // String implement fmt.Stringer interface.
@@ -3463,8 +3449,6 @@ func (f UserOrderField) String() string {
 	switch f.column {
 	case UserOrderFieldUsername.column:
 		str = "USERNAME"
-	case UserOrderFieldEmail.column:
-		str = "EMAIL"
 	}
 	return str
 }
@@ -3483,8 +3467,6 @@ func (f *UserOrderField) UnmarshalGQL(v interface{}) error {
 	switch str {
 	case "USERNAME":
 		*f = *UserOrderFieldUsername
-	case "EMAIL":
-		*f = *UserOrderFieldEmail
 	default:
 		return fmt.Errorf("%s is not a valid UserOrderField", str)
 	}

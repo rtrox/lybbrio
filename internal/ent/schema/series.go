@@ -8,6 +8,7 @@ import (
 	"entgo.io/ent/schema"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
+	"entgo.io/ent/schema/index"
 )
 
 // Series holds the schema definition for the Series entity.
@@ -48,5 +49,11 @@ func (Series) Edges() []ent.Edge {
 		edge.To("books", Book.Type).
 			Through("series_books", SeriesBook.Type).
 			Annotations(entgql.RelayConnection()),
+	}
+}
+
+func (Series) Indexes() []ent.Index {
+	return []ent.Index{
+		index.Fields("name"),
 	}
 }

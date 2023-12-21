@@ -55,5 +55,13 @@ func (UserScopedMixin) Edges() []ent.Edge {
 }
 
 func (UserScopedMixin) Policy() ent.Policy {
-	return rule.FilterUserRule()
+	return privacy.Policy{
+		Query: privacy.QueryPolicy{
+			rule.FilterUserRule(),
+		},
+		Mutation: privacy.MutationPolicy{
+			rule.FilterUserRule(),
+			rule.DenyMismatchedUserRule(),
+		},
+	}
 }

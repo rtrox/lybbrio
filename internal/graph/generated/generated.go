@@ -1629,7 +1629,6 @@ input AuthorOrder {
 """Properties by which Author connections can be ordered."""
 enum AuthorOrderField {
   NAME
-  SORT
 }
 """
 AuthorWhereInput is used for filtering Author objects.
@@ -1737,7 +1736,7 @@ input BookOrder {
 """Properties by which Book connections can be ordered."""
 enum BookOrderField {
   TITLE
-  SORT
+  NAME
   ADDED_AT
   PUB_DATE
   ISBN
@@ -2744,6 +2743,7 @@ input TagOrder {
 }
 """Properties by which Tag connections can be ordered."""
 enum TagOrderField {
+  NAME
   BOOKS_COUNT
 }
 """
@@ -2920,7 +2920,6 @@ input UserOrder {
 """Properties by which User connections can be ordered."""
 enum UserOrderField {
   USERNAME
-  EMAIL
 }
 type UserPermissions implements Node {
   id: ID!
