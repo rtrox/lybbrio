@@ -190,7 +190,7 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if uu.mutation.ShelvesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
-			Inverse: false,
+			Inverse: true,
 			Table:   user.ShelvesTable,
 			Columns: []string{user.ShelvesColumn},
 			Bidi:    false,
@@ -203,7 +203,7 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if nodes := uu.mutation.RemovedShelvesIDs(); len(nodes) > 0 && !uu.mutation.ShelvesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
-			Inverse: false,
+			Inverse: true,
 			Table:   user.ShelvesTable,
 			Columns: []string{user.ShelvesColumn},
 			Bidi:    false,
@@ -219,7 +219,7 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if nodes := uu.mutation.ShelvesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
-			Inverse: false,
+			Inverse: true,
 			Table:   user.ShelvesTable,
 			Columns: []string{user.ShelvesColumn},
 			Bidi:    false,
@@ -443,7 +443,7 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 	if uuo.mutation.ShelvesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
-			Inverse: false,
+			Inverse: true,
 			Table:   user.ShelvesTable,
 			Columns: []string{user.ShelvesColumn},
 			Bidi:    false,
@@ -456,7 +456,7 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 	if nodes := uuo.mutation.RemovedShelvesIDs(); len(nodes) > 0 && !uuo.mutation.ShelvesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
-			Inverse: false,
+			Inverse: true,
 			Table:   user.ShelvesTable,
 			Columns: []string{user.ShelvesColumn},
 			Bidi:    false,
@@ -472,7 +472,7 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 	if nodes := uuo.mutation.ShelvesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
-			Inverse: false,
+			Inverse: true,
 			Table:   user.ShelvesTable,
 			Columns: []string{user.ShelvesColumn},
 			Bidi:    false,

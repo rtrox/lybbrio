@@ -491,8 +491,8 @@ type CreateShelfInput struct {
 	Name        string
 	Description *string
 	Public      *bool
-	BookIDs     []ksuid.ID
 	UserID      ksuid.ID
+	BookIDs     []ksuid.ID
 }
 
 // Mutate applies the CreateShelfInput on the ShelfMutation builder.
@@ -504,10 +504,10 @@ func (i *CreateShelfInput) Mutate(m *ShelfMutation) {
 	if v := i.Public; v != nil {
 		m.SetPublic(*v)
 	}
+	m.SetUserID(i.UserID)
 	if v := i.BookIDs; len(v) > 0 {
 		m.AddBookIDs(v...)
 	}
-	m.SetUserID(i.UserID)
 }
 
 // SetInput applies the change-set in the CreateShelfInput on the ShelfCreate builder.

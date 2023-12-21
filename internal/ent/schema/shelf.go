@@ -27,6 +27,7 @@ func (Shelf) Annotations() []schema.Annotation {
 func (Shelf) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		BaseMixin{},
+		UserScopedMixin{},
 		ksuid.MixinWithPrefix("shf"),
 	}
 }
@@ -54,11 +55,5 @@ func (Shelf) Edges() []ent.Edge {
 				entgql.OrderField("BOOKS_COUNT"),
 				entgql.RelayConnection(),
 			),
-		edge.From("user", User.Type).
-			Unique().
-			Ref("shelves").
-			Required().
-			Immutable().
-			Annotations(entgql.OrderField("USER_USERNAME")),
 	}
 }

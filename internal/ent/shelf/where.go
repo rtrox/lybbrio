@@ -55,6 +55,12 @@ func IDLTE(id ksuid.ID) predicate.Shelf {
 	return predicate.Shelf(sql.FieldLTE(FieldID, id))
 }
 
+// UserID applies equality check predicate on the "user_id" field. It's identical to UserIDEQ.
+func UserID(v ksuid.ID) predicate.Shelf {
+	vc := string(v)
+	return predicate.Shelf(sql.FieldEQ(FieldUserID, vc))
+}
+
 // Name applies equality check predicate on the "name" field. It's identical to NameEQ.
 func Name(v string) predicate.Shelf {
 	return predicate.Shelf(sql.FieldEQ(FieldName, v))
@@ -68,6 +74,90 @@ func Description(v string) predicate.Shelf {
 // Public applies equality check predicate on the "public" field. It's identical to PublicEQ.
 func Public(v bool) predicate.Shelf {
 	return predicate.Shelf(sql.FieldEQ(FieldPublic, v))
+}
+
+// UserIDEQ applies the EQ predicate on the "user_id" field.
+func UserIDEQ(v ksuid.ID) predicate.Shelf {
+	vc := string(v)
+	return predicate.Shelf(sql.FieldEQ(FieldUserID, vc))
+}
+
+// UserIDNEQ applies the NEQ predicate on the "user_id" field.
+func UserIDNEQ(v ksuid.ID) predicate.Shelf {
+	vc := string(v)
+	return predicate.Shelf(sql.FieldNEQ(FieldUserID, vc))
+}
+
+// UserIDIn applies the In predicate on the "user_id" field.
+func UserIDIn(vs ...ksuid.ID) predicate.Shelf {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = string(vs[i])
+	}
+	return predicate.Shelf(sql.FieldIn(FieldUserID, v...))
+}
+
+// UserIDNotIn applies the NotIn predicate on the "user_id" field.
+func UserIDNotIn(vs ...ksuid.ID) predicate.Shelf {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = string(vs[i])
+	}
+	return predicate.Shelf(sql.FieldNotIn(FieldUserID, v...))
+}
+
+// UserIDGT applies the GT predicate on the "user_id" field.
+func UserIDGT(v ksuid.ID) predicate.Shelf {
+	vc := string(v)
+	return predicate.Shelf(sql.FieldGT(FieldUserID, vc))
+}
+
+// UserIDGTE applies the GTE predicate on the "user_id" field.
+func UserIDGTE(v ksuid.ID) predicate.Shelf {
+	vc := string(v)
+	return predicate.Shelf(sql.FieldGTE(FieldUserID, vc))
+}
+
+// UserIDLT applies the LT predicate on the "user_id" field.
+func UserIDLT(v ksuid.ID) predicate.Shelf {
+	vc := string(v)
+	return predicate.Shelf(sql.FieldLT(FieldUserID, vc))
+}
+
+// UserIDLTE applies the LTE predicate on the "user_id" field.
+func UserIDLTE(v ksuid.ID) predicate.Shelf {
+	vc := string(v)
+	return predicate.Shelf(sql.FieldLTE(FieldUserID, vc))
+}
+
+// UserIDContains applies the Contains predicate on the "user_id" field.
+func UserIDContains(v ksuid.ID) predicate.Shelf {
+	vc := string(v)
+	return predicate.Shelf(sql.FieldContains(FieldUserID, vc))
+}
+
+// UserIDHasPrefix applies the HasPrefix predicate on the "user_id" field.
+func UserIDHasPrefix(v ksuid.ID) predicate.Shelf {
+	vc := string(v)
+	return predicate.Shelf(sql.FieldHasPrefix(FieldUserID, vc))
+}
+
+// UserIDHasSuffix applies the HasSuffix predicate on the "user_id" field.
+func UserIDHasSuffix(v ksuid.ID) predicate.Shelf {
+	vc := string(v)
+	return predicate.Shelf(sql.FieldHasSuffix(FieldUserID, vc))
+}
+
+// UserIDEqualFold applies the EqualFold predicate on the "user_id" field.
+func UserIDEqualFold(v ksuid.ID) predicate.Shelf {
+	vc := string(v)
+	return predicate.Shelf(sql.FieldEqualFold(FieldUserID, vc))
+}
+
+// UserIDContainsFold applies the ContainsFold predicate on the "user_id" field.
+func UserIDContainsFold(v ksuid.ID) predicate.Shelf {
+	vc := string(v)
+	return predicate.Shelf(sql.FieldContainsFold(FieldUserID, vc))
 }
 
 // NameEQ applies the EQ predicate on the "name" field.
@@ -220,6 +310,29 @@ func PublicNEQ(v bool) predicate.Shelf {
 	return predicate.Shelf(sql.FieldNEQ(FieldPublic, v))
 }
 
+// HasUser applies the HasEdge predicate on the "user" edge.
+func HasUser() predicate.Shelf {
+	return predicate.Shelf(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, UserTable, UserColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasUserWith applies the HasEdge predicate on the "user" edge with a given conditions (other predicates).
+func HasUserWith(preds ...predicate.User) predicate.Shelf {
+	return predicate.Shelf(func(s *sql.Selector) {
+		step := newUserStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // HasBooks applies the HasEdge predicate on the "books" edge.
 func HasBooks() predicate.Shelf {
 	return predicate.Shelf(func(s *sql.Selector) {
@@ -235,29 +348,6 @@ func HasBooks() predicate.Shelf {
 func HasBooksWith(preds ...predicate.Book) predicate.Shelf {
 	return predicate.Shelf(func(s *sql.Selector) {
 		step := newBooksStep()
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
-// HasUser applies the HasEdge predicate on the "user" edge.
-func HasUser() predicate.Shelf {
-	return predicate.Shelf(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, UserTable, UserColumn),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasUserWith applies the HasEdge predicate on the "user" edge with a given conditions (other predicates).
-func HasUserWith(preds ...predicate.User) predicate.Shelf {
-	return predicate.Shelf(func(s *sql.Selector) {
-		step := newUserStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

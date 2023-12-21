@@ -22,6 +22,12 @@ type ShelfCreate struct {
 	hooks    []Hook
 }
 
+// SetUserID sets the "user_id" field.
+func (sc *ShelfCreate) SetUserID(k ksuid.ID) *ShelfCreate {
+	sc.mutation.SetUserID(k)
+	return sc
+}
+
 // SetName sets the "name" field.
 func (sc *ShelfCreate) SetName(s string) *ShelfCreate {
 	sc.mutation.SetName(s)
@@ -70,6 +76,11 @@ func (sc *ShelfCreate) SetNillableID(k *ksuid.ID) *ShelfCreate {
 	return sc
 }
 
+// SetUser sets the "user" edge to the User entity.
+func (sc *ShelfCreate) SetUser(u *User) *ShelfCreate {
+	return sc.SetUserID(u.ID)
+}
+
 // AddBookIDs adds the "books" edge to the Book entity by IDs.
 func (sc *ShelfCreate) AddBookIDs(ids ...ksuid.ID) *ShelfCreate {
 	sc.mutation.AddBookIDs(ids...)
@@ -83,17 +94,6 @@ func (sc *ShelfCreate) AddBooks(b ...*Book) *ShelfCreate {
 		ids[i] = b[i].ID
 	}
 	return sc.AddBookIDs(ids...)
-}
-
-// SetUserID sets the "user" edge to the User entity by ID.
-func (sc *ShelfCreate) SetUserID(id ksuid.ID) *ShelfCreate {
-	sc.mutation.SetUserID(id)
-	return sc
-}
-
-// SetUser sets the "user" edge to the User entity.
-func (sc *ShelfCreate) SetUser(u *User) *ShelfCreate {
-	return sc.SetUserID(u.ID)
 }
 
 // Mutation returns the ShelfMutation object of the builder.
@@ -149,6 +149,9 @@ func (sc *ShelfCreate) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (sc *ShelfCreate) check() error {
+	if _, ok := sc.mutation.UserID(); !ok {
+		return &ValidationError{Name: "user_id", err: errors.New(`ent: missing required field "Shelf.user_id"`)}
+	}
 	if _, ok := sc.mutation.Name(); !ok {
 		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "Shelf.name"`)}
 	}
@@ -210,6 +213,23 @@ func (sc *ShelfCreate) createSpec() (*Shelf, *sqlgraph.CreateSpec) {
 		_spec.SetField(shelf.FieldPublic, field.TypeBool, value)
 		_node.Public = value
 	}
+	if nodes := sc.mutation.UserIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   shelf.UserTable,
+			Columns: []string{shelf.UserColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeString),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.UserID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
 	if nodes := sc.mutation.BooksIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
@@ -224,23 +244,6 @@ func (sc *ShelfCreate) createSpec() (*Shelf, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := sc.mutation.UserIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   shelf.UserTable,
-			Columns: []string{shelf.UserColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeString),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_node.user_shelves = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

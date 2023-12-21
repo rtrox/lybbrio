@@ -2664,7 +2664,7 @@ func (p *shelfPager) applyOrder(query *ShelfQuery) *ShelfQuery {
 			defaultOrdered = true
 		}
 		switch o.Field.column {
-		case ShelfOrderFieldBooksCount.column, UserOrderFieldUserUsername.column:
+		case ShelfOrderFieldBooksCount.column:
 		default:
 			if len(query.ctx.Fields) > 0 {
 				query.ctx.AppendFieldOnce(o.Field.column)
@@ -2684,7 +2684,7 @@ func (p *shelfPager) applyOrder(query *ShelfQuery) *ShelfQuery {
 func (p *shelfPager) orderExpr(query *ShelfQuery) sql.Querier {
 	for _, o := range p.order {
 		switch o.Field.column {
-		case ShelfOrderFieldBooksCount.column, UserOrderFieldUserUsername.column:
+		case ShelfOrderFieldBooksCount.column:
 			direction := o.Direction
 			if p.reverse {
 				direction = direction.Reverse()
@@ -2797,26 +2797,6 @@ var (
 			}
 		},
 	}
-	// UserOrderFieldUserUsername orders by USER_USERNAME.
-	UserOrderFieldUserUsername = &ShelfOrderField{
-		Value: func(s *Shelf) (ent.Value, error) {
-			return s.Value("user_username")
-		},
-		column: "user_username",
-		toTerm: func(opts ...sql.OrderTermOption) shelf.OrderOption {
-			return shelf.ByUserField(
-				user.FieldUsername,
-				append(opts, sql.OrderSelectAs("user_username"))...,
-			)
-		},
-		toCursor: func(s *Shelf) Cursor {
-			cv, _ := s.Value("user_username")
-			return Cursor{
-				ID:    s.ID,
-				Value: cv,
-			}
-		},
-	}
 )
 
 // String implement fmt.Stringer interface.
@@ -2827,8 +2807,6 @@ func (f ShelfOrderField) String() string {
 		str = "NAME"
 	case ShelfOrderFieldBooksCount.column:
 		str = "BOOKS_COUNT"
-	case UserOrderFieldUserUsername.column:
-		str = "USER_USERNAME"
 	}
 	return str
 }
@@ -2849,8 +2827,6 @@ func (f *ShelfOrderField) UnmarshalGQL(v interface{}) error {
 		*f = *ShelfOrderFieldName
 	case "BOOKS_COUNT":
 		*f = *ShelfOrderFieldBooksCount
-	case "USER_USERNAME":
-		*f = *UserOrderFieldUserUsername
 	default:
 		return fmt.Errorf("%s is not a valid ShelfOrderField", str)
 	}

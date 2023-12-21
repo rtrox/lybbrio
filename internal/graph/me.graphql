@@ -1,0 +1,4 @@
+extend type Query {
+    """Returns the currently logged in user"""
+    me: User!
+}

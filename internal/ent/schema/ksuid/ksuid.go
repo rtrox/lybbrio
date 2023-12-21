@@ -44,3 +44,7 @@ func (u *ID) Scan(src interface{}) error {
 func (u ID) Value() (interface{}, error) {
 	return string(u), nil
 }
+
+func (u ID) String() string {
+	return string(u)
+}

@@ -215,8 +215,8 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
-	shelfMixinFields1 := shelfMixin[1].Fields()
-	_ = shelfMixinFields1
+	shelfMixinFields2 := shelfMixin[2].Fields()
+	_ = shelfMixinFields2
 	shelfFields := schema.Shelf{}.Fields()
 	_ = shelfFields
 	// shelfDescName is the schema descriptor for name field.
@@ -228,7 +228,7 @@ func init() {
 	// shelf.DefaultPublic holds the default value on creation for the public field.
 	shelf.DefaultPublic = shelfDescPublic.Default.(bool)
 	// shelfDescID is the schema descriptor for id field.
-	shelfDescID := shelfMixinFields1[0].Descriptor()
+	shelfDescID := shelfMixinFields2[0].Descriptor()
 	// shelf.DefaultID holds the default value on creation for the id field.
 	shelf.DefaultID = shelfDescID.Default.(func() ksuid.ID)
 	tagMixin := schema.Tag{}.Mixin()

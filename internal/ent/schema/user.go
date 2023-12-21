@@ -57,8 +57,12 @@ func (User) Fields() []ent.Field {
 // Edges of the User.
 func (User) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("shelves", Shelf.Type).Annotations(entgql.RelayConnection()),
-		edge.To("userPermissions", UserPermissions.Type).Unique().Required().Immutable(),
+		edge.From("shelves", Shelf.Type).
+			Ref("user"),
+		edge.To("userPermissions", UserPermissions.Type).
+			Unique().
+			Required().
+			Immutable(),
 	}
 }
 

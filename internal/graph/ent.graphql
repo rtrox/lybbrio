@@ -362,8 +362,8 @@ input CreateShelfInput {
   name: String!
   description: String
   public: Boolean
-  bookIDs: [ID!]
   userID: ID!
+  bookIDs: [ID!]
 }
 """
 CreateTagInput is used for create Tag object.
@@ -994,9 +994,11 @@ input SeriesWhereInput {
 }
 type Shelf implements Node {
   id: ID!
+  userID: ID!
   name: String!
   description: String
   public: Boolean!
+  user: User!
   books(
     """Returns the elements in the list that come after the specified cursor."""
     after: Cursor
@@ -1016,7 +1018,6 @@ type Shelf implements Node {
     """Filtering options for Books returned from the connection."""
     where: BookWhereInput
   ): BookConnection!
-  user: User!
 }
 """A connection to a list of items."""
 type ShelfConnection {
@@ -1045,7 +1046,6 @@ input ShelfOrder {
 enum ShelfOrderField {
   NAME
   BOOKS_COUNT
-  USER_USERNAME
 }
 """
 ShelfWhereInput is used for filtering Shelf objects.
@@ -1064,6 +1064,20 @@ input ShelfWhereInput {
   idGTE: ID
   idLT: ID
   idLTE: ID
+  """user_id field predicates"""
+  userID: ID
+  userIDNEQ: ID
+  userIDIn: [ID!]
+  userIDNotIn: [ID!]
+  userIDGT: ID
+  userIDGTE: ID
+  userIDLT: ID
+  userIDLTE: ID
+  userIDContains: ID
+  userIDHasPrefix: ID
+  userIDHasSuffix: ID
+  userIDEqualFold: ID
+  userIDContainsFold: ID
   """name field predicates"""
   name: String
   nameNEQ: String
@@ -1097,12 +1111,12 @@ input ShelfWhereInput {
   """public field predicates"""
   public: Boolean
   publicNEQ: Boolean
-  """books edge predicates"""
-  hasBooks: Boolean
-  hasBooksWith: [BookWhereInput!]
   """user edge predicates"""
   hasUser: Boolean
   hasUserWith: [UserWhereInput!]
+  """books edge predicates"""
+  hasBooks: Boolean
+  hasBooksWith: [BookWhereInput!]
 }
 type Tag implements Node {
   id: ID!
@@ -1315,25 +1329,7 @@ type User implements Node {
   id: ID!
   username: String!
   email: String!
-  shelves(
-    """Returns the elements in the list that come after the specified cursor."""
-    after: Cursor
-
-    """Returns the first _n_ elements from the list."""
-    first: Int
-
-    """Returns the elements in the list that come before the specified cursor."""
-    before: Cursor
-
-    """Returns the last _n_ elements from the list."""
-    last: Int
-
-    """Ordering options for Shelves returned from the connection."""
-    orderBy: [ShelfOrder!]
-
-    """Filtering options for Shelves returned from the connection."""
-    where: ShelfWhereInput
-  ): ShelfConnection!
+  shelves: [Shelf!]
   userpermissions: UserPermissions! @goField(name: "UserPermissions", forceResolver: false)
 }
 """Ordering options for User connections"""

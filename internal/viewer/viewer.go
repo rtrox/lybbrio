@@ -11,7 +11,7 @@ const viewerCtxKey viewerCtxKeyType = "viewer"
 
 type Viewer interface {
 	IsAdmin() bool
-	User() *ent.User
+	User() (*ent.User, bool)
 }
 
 type UserViewer struct {
@@ -20,6 +20,9 @@ type UserViewer struct {
 }
 
 func (v UserViewer) IsAdmin() bool {
+	if v.p == nil {
+		return false
+	}
 	return v.p.Admin
 }
 
@@ -44,8 +47,8 @@ func (v SystemAdminViewer) IsAdmin() bool {
 	return true
 }
 
-func (v SystemAdminViewer) User() *ent.User {
-	return nil
+func (v SystemAdminViewer) User() (*ent.User, bool) {
+	return nil, false
 }
 
 func NewSystemAdminContext(ctx context.Context) context.Context {

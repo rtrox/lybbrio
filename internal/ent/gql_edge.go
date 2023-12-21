@@ -192,6 +192,14 @@ func (sb *SeriesBook) Book(ctx context.Context) (*Book, error) {
 	return result, err
 }
 
+func (s *Shelf) User(ctx context.Context) (*User, error) {
+	result, err := s.Edges.UserOrErr()
+	if IsNotLoaded(err) {
+		result, err = s.QueryUser().Only(ctx)
+	}
+	return result, err
+}
+
 func (s *Shelf) Books(
 	ctx context.Context, after *Cursor, first *int, before *Cursor, last *int, orderBy []*BookOrder, where *BookWhereInput,
 ) (*BookConnection, error) {
@@ -200,7 +208,7 @@ func (s *Shelf) Books(
 		WithBookFilter(where.Filter),
 	}
 	alias := graphql.GetFieldContext(ctx).Field.Alias
-	totalCount, hasTotalCount := s.Edges.totalCount[0][alias]
+	totalCount, hasTotalCount := s.Edges.totalCount[1][alias]
 	if nodes, err := s.NamedBooks(alias); err == nil || hasTotalCount {
 		pager, err := newBookPager(opts, last != nil)
 		if err != nil {
@@ -211,14 +219,6 @@ func (s *Shelf) Books(
 		return conn, nil
 	}
 	return s.QueryBooks().Paginate(ctx, after, first, before, last, opts...)
-}
-
-func (s *Shelf) User(ctx context.Context) (*User, error) {
-	result, err := s.Edges.UserOrErr()
-	if IsNotLoaded(err) {
-		result, err = s.QueryUser().Only(ctx)
-	}
-	return result, err
 }
 
 func (t *Tag) Books(
@@ -242,25 +242,16 @@ func (t *Tag) Books(
 	return t.QueryBooks().Paginate(ctx, after, first, before, last, opts...)
 }
 
-func (u *User) Shelves(
-	ctx context.Context, after *Cursor, first *int, before *Cursor, last *int, orderBy []*ShelfOrder, where *ShelfWhereInput,
-) (*ShelfConnection, error) {
-	opts := []ShelfPaginateOption{
-		WithShelfOrder(orderBy),
-		WithShelfFilter(where.Filter),
+func (u *User) Shelves(ctx context.Context) (result []*Shelf, err error) {
+	if fc := graphql.GetFieldContext(ctx); fc != nil && fc.Field.Alias != "" {
+		result, err = u.NamedShelves(graphql.GetFieldContext(ctx).Field.Alias)
+	} else {
+		result, err = u.Edges.ShelvesOrErr()
 	}
-	alias := graphql.GetFieldContext(ctx).Field.Alias
-	totalCount, hasTotalCount := u.Edges.totalCount[0][alias]
-	if nodes, err := u.NamedShelves(alias); err == nil || hasTotalCount {
-		pager, err := newShelfPager(opts, last != nil)
-		if err != nil {
-			return nil, err
-		}
-		conn := &ShelfConnection{Edges: []*ShelfEdge{}, TotalCount: totalCount}
-		conn.build(nodes, pager, after, first, before, last)
-		return conn, nil
+	if IsNotLoaded(err) {
+		result, err = u.QueryShelves().All(ctx)
 	}
-	return u.QueryShelves().Paginate(ctx, after, first, before, last, opts...)
+	return result, err
 }
 
 func (u *User) UserPermissions(ctx context.Context) (*UserPermissions, error) {

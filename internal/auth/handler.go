@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"fmt"
 	"lybbrio/internal/ent"
 	"lybbrio/internal/ent/user"
 	"lybbrio/internal/viewer"
@@ -35,7 +36,7 @@ func TestAuth(client *ent.Client, jwt *JWTProvider) http.HandlerFunc {
 			}
 			staticUser, err = client.User.Create().
 				SetUsername(username).
-				SetEmail("not@arealemail.com").
+				SetEmail(fmt.Sprintf("%s@notarealemail.com", username)).
 				SetUserPermissions(perms).
 				Save(adminViewerCtx)
 			if err != nil {

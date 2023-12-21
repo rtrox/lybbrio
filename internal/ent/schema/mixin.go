@@ -5,7 +5,6 @@ import (
 	"lybbrio/internal/ent/schema/ksuid"
 	"lybbrio/internal/rule"
 
-	"entgo.io/contrib/entgql"
 	"entgo.io/ent"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
@@ -51,10 +50,7 @@ func (UserScopedMixin) Edges() []ent.Edge {
 			Field("user_id").
 			Unique().
 			Required().
-			Immutable().
-			Annotations(
-				entgql.OrderField("USER_USERNAME"),
-			),
+			Immutable(),
 	}
 }
 

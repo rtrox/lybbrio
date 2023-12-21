@@ -81,7 +81,7 @@ func (uq *UserQuery) QueryShelves() *ShelfQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(user.Table, user.FieldID, selector),
 			sqlgraph.To(shelf.Table, shelf.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, user.ShelvesTable, user.ShelvesColumn),
+			sqlgraph.Edge(sqlgraph.O2M, true, user.ShelvesTable, user.ShelvesColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(uq.driver.Dialect(), step)
 		return fromU, nil
@@ -481,7 +481,9 @@ func (uq *UserQuery) loadShelves(ctx context.Context, query *ShelfQuery, nodes [
 			init(nodes[i])
 		}
 	}
-	query.withFKs = true
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(shelf.FieldUserID)
+	}
 	query.Where(predicate.Shelf(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(user.ShelvesColumn), fks...))
 	}))
@@ -490,13 +492,10 @@ func (uq *UserQuery) loadShelves(ctx context.Context, query *ShelfQuery, nodes [
 		return err
 	}
 	for _, n := range neighbors {
-		fk := n.user_shelves
-		if fk == nil {
-			return fmt.Errorf(`foreign-key "user_shelves" is nil for node %v`, n.ID)
-		}
-		node, ok := nodeids[*fk]
+		fk := n.UserID
+		node, ok := nodeids[fk]
 		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "user_shelves" returned %v for node %v`, *fk, n.ID)
+			return fmt.Errorf(`unexpected referenced foreign-key "user_id" returned %v for node %v`, fk, n.ID)
 		}
 		assign(node, n)
 	}

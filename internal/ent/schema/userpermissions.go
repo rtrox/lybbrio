@@ -1,7 +1,9 @@
 package schema
 
 import (
+	"lybbrio/internal/ent/privacy"
 	"lybbrio/internal/ent/schema/ksuid"
+	"lybbrio/internal/rule"
 
 	"entgo.io/ent"
 	"entgo.io/ent/schema/edge"
@@ -31,5 +33,23 @@ func (UserPermissions) Fields() []ent.Field {
 func (UserPermissions) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.From("user", User.Type).Ref("userPermissions").Unique(),
+	}
+}
+
+func (UserPermissions) Policy() ent.Policy {
+	// Users can query their own permissions, but not modify them.
+	// Admins can query and modify any user's permissions.
+	return privacy.Policy{
+		Query: privacy.QueryPolicy{
+			rule.DenyIfNoViewer(),
+			rule.AllowIfAdmin(),
+			// rule.FilterUserRule(),
+			privacy.AlwaysAllowRule(),
+		},
+		Mutation: privacy.MutationPolicy{
+			rule.DenyIfNoViewer(),
+			rule.AllowIfAdmin(),
+			privacy.AlwaysDenyRule(),
+		},
 	}
 }

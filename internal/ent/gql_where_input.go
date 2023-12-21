@@ -2216,6 +2216,21 @@ type ShelfWhereInput struct {
 	IDLT    *ksuid.ID  `json:"idLT,omitempty"`
 	IDLTE   *ksuid.ID  `json:"idLTE,omitempty"`
 
+	// "user_id" field predicates.
+	UserID             *ksuid.ID  `json:"userID,omitempty"`
+	UserIDNEQ          *ksuid.ID  `json:"userIDNEQ,omitempty"`
+	UserIDIn           []ksuid.ID `json:"userIDIn,omitempty"`
+	UserIDNotIn        []ksuid.ID `json:"userIDNotIn,omitempty"`
+	UserIDGT           *ksuid.ID  `json:"userIDGT,omitempty"`
+	UserIDGTE          *ksuid.ID  `json:"userIDGTE,omitempty"`
+	UserIDLT           *ksuid.ID  `json:"userIDLT,omitempty"`
+	UserIDLTE          *ksuid.ID  `json:"userIDLTE,omitempty"`
+	UserIDContains     *ksuid.ID  `json:"userIDContains,omitempty"`
+	UserIDHasPrefix    *ksuid.ID  `json:"userIDHasPrefix,omitempty"`
+	UserIDHasSuffix    *ksuid.ID  `json:"userIDHasSuffix,omitempty"`
+	UserIDEqualFold    *ksuid.ID  `json:"userIDEqualFold,omitempty"`
+	UserIDContainsFold *ksuid.ID  `json:"userIDContainsFold,omitempty"`
+
 	// "name" field predicates.
 	Name             *string  `json:"name,omitempty"`
 	NameNEQ          *string  `json:"nameNEQ,omitempty"`
@@ -2252,13 +2267,13 @@ type ShelfWhereInput struct {
 	Public    *bool `json:"public,omitempty"`
 	PublicNEQ *bool `json:"publicNEQ,omitempty"`
 
-	// "books" edge predicates.
-	HasBooks     *bool             `json:"hasBooks,omitempty"`
-	HasBooksWith []*BookWhereInput `json:"hasBooksWith,omitempty"`
-
 	// "user" edge predicates.
 	HasUser     *bool             `json:"hasUser,omitempty"`
 	HasUserWith []*UserWhereInput `json:"hasUserWith,omitempty"`
+
+	// "books" edge predicates.
+	HasBooks     *bool             `json:"hasBooks,omitempty"`
+	HasBooksWith []*BookWhereInput `json:"hasBooksWith,omitempty"`
 }
 
 // AddPredicates adds custom predicates to the where input to be used during the filtering phase.
@@ -2356,6 +2371,45 @@ func (i *ShelfWhereInput) P() (predicate.Shelf, error) {
 	if i.IDLTE != nil {
 		predicates = append(predicates, shelf.IDLTE(*i.IDLTE))
 	}
+	if i.UserID != nil {
+		predicates = append(predicates, shelf.UserIDEQ(*i.UserID))
+	}
+	if i.UserIDNEQ != nil {
+		predicates = append(predicates, shelf.UserIDNEQ(*i.UserIDNEQ))
+	}
+	if len(i.UserIDIn) > 0 {
+		predicates = append(predicates, shelf.UserIDIn(i.UserIDIn...))
+	}
+	if len(i.UserIDNotIn) > 0 {
+		predicates = append(predicates, shelf.UserIDNotIn(i.UserIDNotIn...))
+	}
+	if i.UserIDGT != nil {
+		predicates = append(predicates, shelf.UserIDGT(*i.UserIDGT))
+	}
+	if i.UserIDGTE != nil {
+		predicates = append(predicates, shelf.UserIDGTE(*i.UserIDGTE))
+	}
+	if i.UserIDLT != nil {
+		predicates = append(predicates, shelf.UserIDLT(*i.UserIDLT))
+	}
+	if i.UserIDLTE != nil {
+		predicates = append(predicates, shelf.UserIDLTE(*i.UserIDLTE))
+	}
+	if i.UserIDContains != nil {
+		predicates = append(predicates, shelf.UserIDContains(*i.UserIDContains))
+	}
+	if i.UserIDHasPrefix != nil {
+		predicates = append(predicates, shelf.UserIDHasPrefix(*i.UserIDHasPrefix))
+	}
+	if i.UserIDHasSuffix != nil {
+		predicates = append(predicates, shelf.UserIDHasSuffix(*i.UserIDHasSuffix))
+	}
+	if i.UserIDEqualFold != nil {
+		predicates = append(predicates, shelf.UserIDEqualFold(*i.UserIDEqualFold))
+	}
+	if i.UserIDContainsFold != nil {
+		predicates = append(predicates, shelf.UserIDContainsFold(*i.UserIDContainsFold))
+	}
 	if i.Name != nil {
 		predicates = append(predicates, shelf.NameEQ(*i.Name))
 	}
@@ -2447,24 +2501,6 @@ func (i *ShelfWhereInput) P() (predicate.Shelf, error) {
 		predicates = append(predicates, shelf.PublicNEQ(*i.PublicNEQ))
 	}
 
-	if i.HasBooks != nil {
-		p := shelf.HasBooks()
-		if !*i.HasBooks {
-			p = shelf.Not(p)
-		}
-		predicates = append(predicates, p)
-	}
-	if len(i.HasBooksWith) > 0 {
-		with := make([]predicate.Book, 0, len(i.HasBooksWith))
-		for _, w := range i.HasBooksWith {
-			p, err := w.P()
-			if err != nil {
-				return nil, fmt.Errorf("%w: field 'HasBooksWith'", err)
-			}
-			with = append(with, p)
-		}
-		predicates = append(predicates, shelf.HasBooksWith(with...))
-	}
 	if i.HasUser != nil {
 		p := shelf.HasUser()
 		if !*i.HasUser {
@@ -2482,6 +2518,24 @@ func (i *ShelfWhereInput) P() (predicate.Shelf, error) {
 			with = append(with, p)
 		}
 		predicates = append(predicates, shelf.HasUserWith(with...))
+	}
+	if i.HasBooks != nil {
+		p := shelf.HasBooks()
+		if !*i.HasBooks {
+			p = shelf.Not(p)
+		}
+		predicates = append(predicates, p)
+	}
+	if len(i.HasBooksWith) > 0 {
+		with := make([]predicate.Book, 0, len(i.HasBooksWith))
+		for _, w := range i.HasBooksWith {
+			p, err := w.P()
+			if err != nil {
+				return nil, fmt.Errorf("%w: field 'HasBooksWith'", err)
+			}
+			with = append(with, p)
+		}
+		predicates = append(predicates, shelf.HasBooksWith(with...))
 	}
 	switch len(predicates) {
 	case 0:

@@ -26,9 +26,8 @@ type ShelfQuery struct {
 	order          []shelf.OrderOption
 	inters         []Interceptor
 	predicates     []predicate.Shelf
-	withBooks      *BookQuery
 	withUser       *UserQuery
-	withFKs        bool
+	withBooks      *BookQuery
 	modifiers      []func(*sql.Selector)
 	loadTotal      []func(context.Context, []*Shelf) error
 	withNamedBooks map[string]*BookQuery
@@ -68,6 +67,28 @@ func (sq *ShelfQuery) Order(o ...shelf.OrderOption) *ShelfQuery {
 	return sq
 }
 
+// QueryUser chains the current query on the "user" edge.
+func (sq *ShelfQuery) QueryUser() *UserQuery {
+	query := (&UserClient{config: sq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := sq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := sq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(shelf.Table, shelf.FieldID, selector),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, shelf.UserTable, shelf.UserColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(sq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
 // QueryBooks chains the current query on the "books" edge.
 func (sq *ShelfQuery) QueryBooks() *BookQuery {
 	query := (&BookClient{config: sq.config}).Query()
@@ -83,28 +104,6 @@ func (sq *ShelfQuery) QueryBooks() *BookQuery {
 			sqlgraph.From(shelf.Table, shelf.FieldID, selector),
 			sqlgraph.To(book.Table, book.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, false, shelf.BooksTable, shelf.BooksPrimaryKey...),
-		)
-		fromU = sqlgraph.SetNeighbors(sq.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QueryUser chains the current query on the "user" edge.
-func (sq *ShelfQuery) QueryUser() *UserQuery {
-	query := (&UserClient{config: sq.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := sq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := sq.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(shelf.Table, shelf.FieldID, selector),
-			sqlgraph.To(user.Table, user.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, shelf.UserTable, shelf.UserColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(sq.driver.Dialect(), step)
 		return fromU, nil
@@ -304,23 +303,12 @@ func (sq *ShelfQuery) Clone() *ShelfQuery {
 		order:      append([]shelf.OrderOption{}, sq.order...),
 		inters:     append([]Interceptor{}, sq.inters...),
 		predicates: append([]predicate.Shelf{}, sq.predicates...),
-		withBooks:  sq.withBooks.Clone(),
 		withUser:   sq.withUser.Clone(),
+		withBooks:  sq.withBooks.Clone(),
 		// clone intermediate query.
 		sql:  sq.sql.Clone(),
 		path: sq.path,
 	}
-}
-
-// WithBooks tells the query-builder to eager-load the nodes that are connected to
-// the "books" edge. The optional arguments are used to configure the query builder of the edge.
-func (sq *ShelfQuery) WithBooks(opts ...func(*BookQuery)) *ShelfQuery {
-	query := (&BookClient{config: sq.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	sq.withBooks = query
-	return sq
 }
 
 // WithUser tells the query-builder to eager-load the nodes that are connected to
@@ -334,18 +322,29 @@ func (sq *ShelfQuery) WithUser(opts ...func(*UserQuery)) *ShelfQuery {
 	return sq
 }
 
+// WithBooks tells the query-builder to eager-load the nodes that are connected to
+// the "books" edge. The optional arguments are used to configure the query builder of the edge.
+func (sq *ShelfQuery) WithBooks(opts ...func(*BookQuery)) *ShelfQuery {
+	query := (&BookClient{config: sq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	sq.withBooks = query
+	return sq
+}
+
 // GroupBy is used to group vertices by one or more fields/columns.
 // It is often used with aggregate functions, like: count, max, mean, min, sum.
 //
 // Example:
 //
 //	var v []struct {
-//		Name string `json:"name,omitempty"`
+//		UserID ksuid.ID `json:"user_id,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.Shelf.Query().
-//		GroupBy(shelf.FieldName).
+//		GroupBy(shelf.FieldUserID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (sq *ShelfQuery) GroupBy(field string, fields ...string) *ShelfGroupBy {
@@ -363,11 +362,11 @@ func (sq *ShelfQuery) GroupBy(field string, fields ...string) *ShelfGroupBy {
 // Example:
 //
 //	var v []struct {
-//		Name string `json:"name,omitempty"`
+//		UserID ksuid.ID `json:"user_id,omitempty"`
 //	}
 //
 //	client.Shelf.Query().
-//		Select(shelf.FieldName).
+//		Select(shelf.FieldUserID).
 //		Scan(ctx, &v)
 func (sq *ShelfQuery) Select(fields ...string) *ShelfSelect {
 	sq.ctx.Fields = append(sq.ctx.Fields, fields...)
@@ -417,19 +416,12 @@ func (sq *ShelfQuery) prepareQuery(ctx context.Context) error {
 func (sq *ShelfQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Shelf, error) {
 	var (
 		nodes       = []*Shelf{}
-		withFKs     = sq.withFKs
 		_spec       = sq.querySpec()
 		loadedTypes = [2]bool{
-			sq.withBooks != nil,
 			sq.withUser != nil,
+			sq.withBooks != nil,
 		}
 	)
-	if sq.withUser != nil {
-		withFKs = true
-	}
-	if withFKs {
-		_spec.Node.Columns = append(_spec.Node.Columns, shelf.ForeignKeys...)
-	}
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*Shelf).scanValues(nil, columns)
 	}
@@ -451,16 +443,16 @@ func (sq *ShelfQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Shelf,
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
+	if query := sq.withUser; query != nil {
+		if err := sq.loadUser(ctx, query, nodes, nil,
+			func(n *Shelf, e *User) { n.Edges.User = e }); err != nil {
+			return nil, err
+		}
+	}
 	if query := sq.withBooks; query != nil {
 		if err := sq.loadBooks(ctx, query, nodes,
 			func(n *Shelf) { n.Edges.Books = []*Book{} },
 			func(n *Shelf, e *Book) { n.Edges.Books = append(n.Edges.Books, e) }); err != nil {
-			return nil, err
-		}
-	}
-	if query := sq.withUser; query != nil {
-		if err := sq.loadUser(ctx, query, nodes, nil,
-			func(n *Shelf, e *User) { n.Edges.User = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -479,6 +471,35 @@ func (sq *ShelfQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Shelf,
 	return nodes, nil
 }
 
+func (sq *ShelfQuery) loadUser(ctx context.Context, query *UserQuery, nodes []*Shelf, init func(*Shelf), assign func(*Shelf, *User)) error {
+	ids := make([]ksuid.ID, 0, len(nodes))
+	nodeids := make(map[ksuid.ID][]*Shelf)
+	for i := range nodes {
+		fk := nodes[i].UserID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(user.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "user_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
 func (sq *ShelfQuery) loadBooks(ctx context.Context, query *BookQuery, nodes []*Shelf, init func(*Shelf), assign func(*Shelf, *Book)) error {
 	edgeIDs := make([]driver.Value, len(nodes))
 	byID := make(map[ksuid.ID]*Shelf)
@@ -540,38 +561,6 @@ func (sq *ShelfQuery) loadBooks(ctx context.Context, query *BookQuery, nodes []*
 	}
 	return nil
 }
-func (sq *ShelfQuery) loadUser(ctx context.Context, query *UserQuery, nodes []*Shelf, init func(*Shelf), assign func(*Shelf, *User)) error {
-	ids := make([]ksuid.ID, 0, len(nodes))
-	nodeids := make(map[ksuid.ID][]*Shelf)
-	for i := range nodes {
-		if nodes[i].user_shelves == nil {
-			continue
-		}
-		fk := *nodes[i].user_shelves
-		if _, ok := nodeids[fk]; !ok {
-			ids = append(ids, fk)
-		}
-		nodeids[fk] = append(nodeids[fk], nodes[i])
-	}
-	if len(ids) == 0 {
-		return nil
-	}
-	query.Where(user.IDIn(ids...))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		nodes, ok := nodeids[n.ID]
-		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "user_shelves" returned %v`, n.ID)
-		}
-		for i := range nodes {
-			assign(nodes[i], n)
-		}
-	}
-	return nil
-}
 
 func (sq *ShelfQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := sq.querySpec()
@@ -600,6 +589,9 @@ func (sq *ShelfQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != shelf.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
+		}
+		if sq.withUser != nil {
+			_spec.Node.AddColumnOnce(shelf.FieldUserID)
 		}
 	}
 	if ps := sq.predicates; len(ps) > 0 {

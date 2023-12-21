@@ -33,7 +33,7 @@ const (
 	// It exists in this package in order to avoid circular dependency with the "shelf" package.
 	ShelvesInverseTable = "shelves"
 	// ShelvesColumn is the table column denoting the shelves relation/edge.
-	ShelvesColumn = "user_shelves"
+	ShelvesColumn = "user_id"
 	// UserPermissionsTable is the table that holds the userPermissions relation/edge.
 	UserPermissionsTable = "user_permissions"
 	// UserPermissionsInverseTable is the table name for the UserPermissions entity.
@@ -124,7 +124,7 @@ func newShelvesStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(ShelvesInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, false, ShelvesTable, ShelvesColumn),
+		sqlgraph.Edge(sqlgraph.O2M, true, ShelvesTable, ShelvesColumn),
 	)
 }
 func newUserPermissionsStep() *sqlgraph.Step {

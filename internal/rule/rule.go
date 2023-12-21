@@ -10,6 +10,7 @@ import (
 	"lybbrio/internal/ent/privacy"
 	"lybbrio/internal/viewer"
 
+	"entgo.io/ent/entql"
 	"github.com/rs/zerolog/log"
 )
 
@@ -39,24 +40,21 @@ func AllowIfAdmin() privacy.QueryMutationRule {
 	})
 }
 
-// func FilterTenantRule() privacy.QueryMutationRule {
-// 	type UserFilter interface {
-// 		WhereUserID(entql.StringP)
-// 	}
-// 	return privacy.FilterFunc(func(ctx context.Context, f privacy.Filter) error {
-// 		view := viewer.FromContext(ctx)
-// 		uid, ok := view.User()
-// 		if !ok {
-// 			return privacy.Denyf("missing user information in viewer-context")
-// 		}
-// 		uf, ok := f.(UserFilter)
-// 		if !ok {
-// 			return privacy.Denyf("filter does not implement UserFilter")
-// 		}
-// 		uf.WhereUserID(entql.StringEQ(uid))
-// 		if f, ok := f.(UserFilter); ok {
-// 			f.WhereUserID(view.UserID())
-// 		}
-// 		return privacy.Skip
-// 	})
-// }
+func FilterUserRule() privacy.QueryMutationRule {
+	type UserFilter interface {
+		WhereUserID(entql.StringP)
+	}
+	return privacy.FilterFunc(func(ctx context.Context, f privacy.Filter) error {
+		view := viewer.FromContext(ctx)
+		user, ok := view.User()
+		if !ok {
+			return privacy.Denyf("missing user information in viewer-context")
+		}
+		uf, ok := f.(UserFilter)
+		if !ok {
+			return privacy.Denyf("filter does not implement UserFilter")
+		}
+		uf.WhereUserID(entql.StringEQ(user.ID.String()))
+		return privacy.Skip
+	})
+}

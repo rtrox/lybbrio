@@ -4248,11 +4248,11 @@ type ShelfMutation struct {
 	description   *string
 	public        *bool
 	clearedFields map[string]struct{}
+	user          *ksuid.ID
+	cleareduser   bool
 	books         map[ksuid.ID]struct{}
 	removedbooks  map[ksuid.ID]struct{}
 	clearedbooks  bool
-	user          *ksuid.ID
-	cleareduser   bool
 	done          bool
 	oldValue      func(context.Context) (*Shelf, error)
 	predicates    []predicate.Shelf
@@ -4360,6 +4360,42 @@ func (m *ShelfMutation) IDs(ctx context.Context) ([]ksuid.ID, error) {
 	default:
 		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
 	}
+}
+
+// SetUserID sets the "user_id" field.
+func (m *ShelfMutation) SetUserID(k ksuid.ID) {
+	m.user = &k
+}
+
+// UserID returns the value of the "user_id" field in the mutation.
+func (m *ShelfMutation) UserID() (r ksuid.ID, exists bool) {
+	v := m.user
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUserID returns the old "user_id" field's value of the Shelf entity.
+// If the Shelf object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ShelfMutation) OldUserID(ctx context.Context) (v ksuid.ID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUserID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUserID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUserID: %w", err)
+	}
+	return oldValue.UserID, nil
+}
+
+// ResetUserID resets all changes to the "user_id" field.
+func (m *ShelfMutation) ResetUserID() {
+	m.user = nil
 }
 
 // SetName sets the "name" field.
@@ -4483,6 +4519,33 @@ func (m *ShelfMutation) ResetPublic() {
 	m.public = nil
 }
 
+// ClearUser clears the "user" edge to the User entity.
+func (m *ShelfMutation) ClearUser() {
+	m.cleareduser = true
+	m.clearedFields[shelf.FieldUserID] = struct{}{}
+}
+
+// UserCleared reports if the "user" edge to the User entity was cleared.
+func (m *ShelfMutation) UserCleared() bool {
+	return m.cleareduser
+}
+
+// UserIDs returns the "user" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// UserID instead. It exists only for internal usage by the builders.
+func (m *ShelfMutation) UserIDs() (ids []ksuid.ID) {
+	if id := m.user; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetUser resets all changes to the "user" edge.
+func (m *ShelfMutation) ResetUser() {
+	m.user = nil
+	m.cleareduser = false
+}
+
 // AddBookIDs adds the "books" edge to the Book entity by ids.
 func (m *ShelfMutation) AddBookIDs(ids ...ksuid.ID) {
 	if m.books == nil {
@@ -4537,45 +4600,6 @@ func (m *ShelfMutation) ResetBooks() {
 	m.removedbooks = nil
 }
 
-// SetUserID sets the "user" edge to the User entity by id.
-func (m *ShelfMutation) SetUserID(id ksuid.ID) {
-	m.user = &id
-}
-
-// ClearUser clears the "user" edge to the User entity.
-func (m *ShelfMutation) ClearUser() {
-	m.cleareduser = true
-}
-
-// UserCleared reports if the "user" edge to the User entity was cleared.
-func (m *ShelfMutation) UserCleared() bool {
-	return m.cleareduser
-}
-
-// UserID returns the "user" edge ID in the mutation.
-func (m *ShelfMutation) UserID() (id ksuid.ID, exists bool) {
-	if m.user != nil {
-		return *m.user, true
-	}
-	return
-}
-
-// UserIDs returns the "user" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// UserID instead. It exists only for internal usage by the builders.
-func (m *ShelfMutation) UserIDs() (ids []ksuid.ID) {
-	if id := m.user; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetUser resets all changes to the "user" edge.
-func (m *ShelfMutation) ResetUser() {
-	m.user = nil
-	m.cleareduser = false
-}
-
 // Where appends a list predicates to the ShelfMutation builder.
 func (m *ShelfMutation) Where(ps ...predicate.Shelf) {
 	m.predicates = append(m.predicates, ps...)
@@ -4610,7 +4634,10 @@ func (m *ShelfMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *ShelfMutation) Fields() []string {
-	fields := make([]string, 0, 3)
+	fields := make([]string, 0, 4)
+	if m.user != nil {
+		fields = append(fields, shelf.FieldUserID)
+	}
 	if m.name != nil {
 		fields = append(fields, shelf.FieldName)
 	}
@@ -4628,6 +4655,8 @@ func (m *ShelfMutation) Fields() []string {
 // schema.
 func (m *ShelfMutation) Field(name string) (ent.Value, bool) {
 	switch name {
+	case shelf.FieldUserID:
+		return m.UserID()
 	case shelf.FieldName:
 		return m.Name()
 	case shelf.FieldDescription:
@@ -4643,6 +4672,8 @@ func (m *ShelfMutation) Field(name string) (ent.Value, bool) {
 // database failed.
 func (m *ShelfMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
+	case shelf.FieldUserID:
+		return m.OldUserID(ctx)
 	case shelf.FieldName:
 		return m.OldName(ctx)
 	case shelf.FieldDescription:
@@ -4658,6 +4689,13 @@ func (m *ShelfMutation) OldField(ctx context.Context, name string) (ent.Value, e
 // type.
 func (m *ShelfMutation) SetField(name string, value ent.Value) error {
 	switch name {
+	case shelf.FieldUserID:
+		v, ok := value.(ksuid.ID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUserID(v)
+		return nil
 	case shelf.FieldName:
 		v, ok := value.(string)
 		if !ok {
@@ -4737,6 +4775,9 @@ func (m *ShelfMutation) ClearField(name string) error {
 // It returns an error if the field is not defined in the schema.
 func (m *ShelfMutation) ResetField(name string) error {
 	switch name {
+	case shelf.FieldUserID:
+		m.ResetUserID()
+		return nil
 	case shelf.FieldName:
 		m.ResetName()
 		return nil
@@ -4753,11 +4794,11 @@ func (m *ShelfMutation) ResetField(name string) error {
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *ShelfMutation) AddedEdges() []string {
 	edges := make([]string, 0, 2)
-	if m.books != nil {
-		edges = append(edges, shelf.EdgeBooks)
-	}
 	if m.user != nil {
 		edges = append(edges, shelf.EdgeUser)
+	}
+	if m.books != nil {
+		edges = append(edges, shelf.EdgeBooks)
 	}
 	return edges
 }
@@ -4766,16 +4807,16 @@ func (m *ShelfMutation) AddedEdges() []string {
 // name in this mutation.
 func (m *ShelfMutation) AddedIDs(name string) []ent.Value {
 	switch name {
+	case shelf.EdgeUser:
+		if id := m.user; id != nil {
+			return []ent.Value{*id}
+		}
 	case shelf.EdgeBooks:
 		ids := make([]ent.Value, 0, len(m.books))
 		for id := range m.books {
 			ids = append(ids, id)
 		}
 		return ids
-	case shelf.EdgeUser:
-		if id := m.user; id != nil {
-			return []ent.Value{*id}
-		}
 	}
 	return nil
 }
@@ -4806,11 +4847,11 @@ func (m *ShelfMutation) RemovedIDs(name string) []ent.Value {
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *ShelfMutation) ClearedEdges() []string {
 	edges := make([]string, 0, 2)
-	if m.clearedbooks {
-		edges = append(edges, shelf.EdgeBooks)
-	}
 	if m.cleareduser {
 		edges = append(edges, shelf.EdgeUser)
+	}
+	if m.clearedbooks {
+		edges = append(edges, shelf.EdgeBooks)
 	}
 	return edges
 }
@@ -4819,10 +4860,10 @@ func (m *ShelfMutation) ClearedEdges() []string {
 // was cleared in this mutation.
 func (m *ShelfMutation) EdgeCleared(name string) bool {
 	switch name {
-	case shelf.EdgeBooks:
-		return m.clearedbooks
 	case shelf.EdgeUser:
 		return m.cleareduser
+	case shelf.EdgeBooks:
+		return m.clearedbooks
 	}
 	return false
 }
@@ -4842,11 +4883,11 @@ func (m *ShelfMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *ShelfMutation) ResetEdge(name string) error {
 	switch name {
-	case shelf.EdgeBooks:
-		m.ResetBooks()
-		return nil
 	case shelf.EdgeUser:
 		m.ResetUser()
+		return nil
+	case shelf.EdgeBooks:
+		m.ResetBooks()
 		return nil
 	}
 	return fmt.Errorf("unknown Shelf edge %s", name)
