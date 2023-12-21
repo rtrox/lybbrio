@@ -206,7 +206,7 @@ func init() {
 	// seriesbook.DefaultID holds the default value on creation for the id field.
 	seriesbook.DefaultID = seriesbookDescID.Default.(func() ksuid.ID)
 	shelfMixin := schema.Shelf{}.Mixin()
-	shelf.Policy = privacy.NewPolicies(shelfMixin[0], schema.Shelf{})
+	shelf.Policy = privacy.NewPolicies(shelfMixin[0], shelfMixin[1], schema.Shelf{})
 	shelf.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 			if err := shelf.Policy.EvalMutation(ctx, m); err != nil {
@@ -294,7 +294,7 @@ func init() {
 	userpermissionsFields := schema.UserPermissions{}.Fields()
 	_ = userpermissionsFields
 	// userpermissionsDescAdmin is the schema descriptor for admin field.
-	userpermissionsDescAdmin := userpermissionsFields[0].Descriptor()
+	userpermissionsDescAdmin := userpermissionsFields[1].Descriptor()
 	// userpermissions.DefaultAdmin holds the default value on creation for the admin field.
 	userpermissions.DefaultAdmin = userpermissionsDescAdmin.Default.(bool)
 	// userpermissionsDescID is the schema descriptor for id field.

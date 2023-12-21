@@ -25,7 +25,6 @@ type UserPermissionsQuery struct {
 	inters     []Interceptor
 	predicates []predicate.UserPermissions
 	withUser   *UserQuery
-	withFKs    bool
 	modifiers  []func(*sql.Selector)
 	loadTotal  []func(context.Context, []*UserPermissions) error
 	// intermediate query (i.e. traversal path).
@@ -302,12 +301,12 @@ func (upq *UserPermissionsQuery) WithUser(opts ...func(*UserQuery)) *UserPermiss
 // Example:
 //
 //	var v []struct {
-//		Admin bool `json:"admin,omitempty"`
+//		UserID ksuid.ID `json:"user_id,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.UserPermissions.Query().
-//		GroupBy(userpermissions.FieldAdmin).
+//		GroupBy(userpermissions.FieldUserID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (upq *UserPermissionsQuery) GroupBy(field string, fields ...string) *UserPermissionsGroupBy {
@@ -325,11 +324,11 @@ func (upq *UserPermissionsQuery) GroupBy(field string, fields ...string) *UserPe
 // Example:
 //
 //	var v []struct {
-//		Admin bool `json:"admin,omitempty"`
+//		UserID ksuid.ID `json:"user_id,omitempty"`
 //	}
 //
 //	client.UserPermissions.Query().
-//		Select(userpermissions.FieldAdmin).
+//		Select(userpermissions.FieldUserID).
 //		Scan(ctx, &v)
 func (upq *UserPermissionsQuery) Select(fields ...string) *UserPermissionsSelect {
 	upq.ctx.Fields = append(upq.ctx.Fields, fields...)
@@ -379,18 +378,11 @@ func (upq *UserPermissionsQuery) prepareQuery(ctx context.Context) error {
 func (upq *UserPermissionsQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*UserPermissions, error) {
 	var (
 		nodes       = []*UserPermissions{}
-		withFKs     = upq.withFKs
 		_spec       = upq.querySpec()
 		loadedTypes = [1]bool{
 			upq.withUser != nil,
 		}
 	)
-	if upq.withUser != nil {
-		withFKs = true
-	}
-	if withFKs {
-		_spec.Node.Columns = append(_spec.Node.Columns, userpermissions.ForeignKeys...)
-	}
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*UserPermissions).scanValues(nil, columns)
 	}
@@ -430,10 +422,7 @@ func (upq *UserPermissionsQuery) loadUser(ctx context.Context, query *UserQuery,
 	ids := make([]ksuid.ID, 0, len(nodes))
 	nodeids := make(map[ksuid.ID][]*UserPermissions)
 	for i := range nodes {
-		if nodes[i].user_user_permissions == nil {
-			continue
-		}
-		fk := *nodes[i].user_user_permissions
+		fk := nodes[i].UserID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -450,7 +439,7 @@ func (upq *UserPermissionsQuery) loadUser(ctx context.Context, query *UserQuery,
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "user_user_permissions" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "user_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -486,6 +475,9 @@ func (upq *UserPermissionsQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != userpermissions.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
+		}
+		if upq.withUser != nil {
+			_spec.Node.AddColumnOnce(userpermissions.FieldUserID)
 		}
 	}
 	if ps := upq.predicates; len(ps) > 0 {

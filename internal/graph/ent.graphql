@@ -1346,6 +1346,7 @@ enum UserOrderField {
 }
 type UserPermissions implements Node {
   id: ID!
+  userID: ID
   admin: Boolean!
   user: User
 }
@@ -1366,6 +1367,22 @@ input UserPermissionsWhereInput {
   idGTE: ID
   idLT: ID
   idLTE: ID
+  """user_id field predicates"""
+  userID: ID
+  userIDNEQ: ID
+  userIDIn: [ID!]
+  userIDNotIn: [ID!]
+  userIDGT: ID
+  userIDGTE: ID
+  userIDLT: ID
+  userIDLTE: ID
+  userIDContains: ID
+  userIDHasPrefix: ID
+  userIDHasSuffix: ID
+  userIDIsNil: Boolean
+  userIDNotNil: Boolean
+  userIDEqualFold: ID
+  userIDContainsFold: ID
   """admin field predicates"""
   admin: Boolean
   adminNEQ: Boolean

@@ -25,6 +25,9 @@ func (UserPermissions) Mixin() []ent.Mixin {
 // Fields of the UserPermissions.
 func (UserPermissions) Fields() []ent.Field {
 	return []ent.Field{
+		field.String("user_id").
+			GoType(ksuid.ID("")).
+			Optional(),
 		field.Bool("admin").Default(false),
 	}
 }
@@ -32,7 +35,7 @@ func (UserPermissions) Fields() []ent.Field {
 // Edges of the UserPermissions.
 func (UserPermissions) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.From("user", User.Type).Ref("userPermissions").Unique(),
+		edge.From("user", User.Type).Field("user_id").Ref("userPermissions").Unique(),
 	}
 }
 
@@ -43,7 +46,7 @@ func (UserPermissions) Policy() ent.Policy {
 		Query: privacy.QueryPolicy{
 			rule.DenyIfNoViewer(),
 			rule.AllowIfAdmin(),
-			// rule.FilterUserRule(),
+			rule.FilterUserRule(),
 			privacy.AlwaysAllowRule(),
 		},
 		Mutation: privacy.MutationPolicy{

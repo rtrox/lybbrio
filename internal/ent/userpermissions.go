@@ -18,13 +18,14 @@ type UserPermissions struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID ksuid.ID `json:"id,omitempty"`
+	// UserID holds the value of the "user_id" field.
+	UserID ksuid.ID `json:"user_id,omitempty"`
 	// Admin holds the value of the "admin" field.
 	Admin bool `json:"admin,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the UserPermissionsQuery when eager-loading is set.
-	Edges                 UserPermissionsEdges `json:"edges"`
-	user_user_permissions *ksuid.ID
-	selectValues          sql.SelectValues
+	Edges        UserPermissionsEdges `json:"edges"`
+	selectValues sql.SelectValues
 }
 
 // UserPermissionsEdges holds the relations/edges for other nodes in the graph.
@@ -58,9 +59,7 @@ func (*UserPermissions) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case userpermissions.FieldAdmin:
 			values[i] = new(sql.NullBool)
-		case userpermissions.FieldID:
-			values[i] = new(sql.NullString)
-		case userpermissions.ForeignKeys[0]: // user_user_permissions
+		case userpermissions.FieldID, userpermissions.FieldUserID:
 			values[i] = new(sql.NullString)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -83,18 +82,17 @@ func (up *UserPermissions) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				up.ID = ksuid.ID(value.String)
 			}
+		case userpermissions.FieldUserID:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field user_id", values[i])
+			} else if value.Valid {
+				up.UserID = ksuid.ID(value.String)
+			}
 		case userpermissions.FieldAdmin:
 			if value, ok := values[i].(*sql.NullBool); !ok {
 				return fmt.Errorf("unexpected type %T for field admin", values[i])
 			} else if value.Valid {
 				up.Admin = value.Bool
-			}
-		case userpermissions.ForeignKeys[0]:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field user_user_permissions", values[i])
-			} else if value.Valid {
-				up.user_user_permissions = new(ksuid.ID)
-				*up.user_user_permissions = ksuid.ID(value.String)
 			}
 		default:
 			up.selectValues.Set(columns[i], values[i])
@@ -137,6 +135,9 @@ func (up *UserPermissions) String() string {
 	var builder strings.Builder
 	builder.WriteString("UserPermissions(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", up.ID))
+	builder.WriteString("user_id=")
+	builder.WriteString(fmt.Sprintf("%v", up.UserID))
+	builder.WriteString(", ")
 	builder.WriteString("admin=")
 	builder.WriteString(fmt.Sprintf("%v", up.Admin))
 	builder.WriteByte(')')

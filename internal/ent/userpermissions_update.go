@@ -29,6 +29,26 @@ func (upu *UserPermissionsUpdate) Where(ps ...predicate.UserPermissions) *UserPe
 	return upu
 }
 
+// SetUserID sets the "user_id" field.
+func (upu *UserPermissionsUpdate) SetUserID(k ksuid.ID) *UserPermissionsUpdate {
+	upu.mutation.SetUserID(k)
+	return upu
+}
+
+// SetNillableUserID sets the "user_id" field if the given value is not nil.
+func (upu *UserPermissionsUpdate) SetNillableUserID(k *ksuid.ID) *UserPermissionsUpdate {
+	if k != nil {
+		upu.SetUserID(*k)
+	}
+	return upu
+}
+
+// ClearUserID clears the value of the "user_id" field.
+func (upu *UserPermissionsUpdate) ClearUserID() *UserPermissionsUpdate {
+	upu.mutation.ClearUserID()
+	return upu
+}
+
 // SetAdmin sets the "admin" field.
 func (upu *UserPermissionsUpdate) SetAdmin(b bool) *UserPermissionsUpdate {
 	upu.mutation.SetAdmin(b)
@@ -39,20 +59,6 @@ func (upu *UserPermissionsUpdate) SetAdmin(b bool) *UserPermissionsUpdate {
 func (upu *UserPermissionsUpdate) SetNillableAdmin(b *bool) *UserPermissionsUpdate {
 	if b != nil {
 		upu.SetAdmin(*b)
-	}
-	return upu
-}
-
-// SetUserID sets the "user" edge to the User entity by ID.
-func (upu *UserPermissionsUpdate) SetUserID(id ksuid.ID) *UserPermissionsUpdate {
-	upu.mutation.SetUserID(id)
-	return upu
-}
-
-// SetNillableUserID sets the "user" edge to the User entity by ID if the given value is not nil.
-func (upu *UserPermissionsUpdate) SetNillableUserID(id *ksuid.ID) *UserPermissionsUpdate {
-	if id != nil {
-		upu = upu.SetUserID(*id)
 	}
 	return upu
 }
@@ -161,6 +167,26 @@ type UserPermissionsUpdateOne struct {
 	mutation *UserPermissionsMutation
 }
 
+// SetUserID sets the "user_id" field.
+func (upuo *UserPermissionsUpdateOne) SetUserID(k ksuid.ID) *UserPermissionsUpdateOne {
+	upuo.mutation.SetUserID(k)
+	return upuo
+}
+
+// SetNillableUserID sets the "user_id" field if the given value is not nil.
+func (upuo *UserPermissionsUpdateOne) SetNillableUserID(k *ksuid.ID) *UserPermissionsUpdateOne {
+	if k != nil {
+		upuo.SetUserID(*k)
+	}
+	return upuo
+}
+
+// ClearUserID clears the value of the "user_id" field.
+func (upuo *UserPermissionsUpdateOne) ClearUserID() *UserPermissionsUpdateOne {
+	upuo.mutation.ClearUserID()
+	return upuo
+}
+
 // SetAdmin sets the "admin" field.
 func (upuo *UserPermissionsUpdateOne) SetAdmin(b bool) *UserPermissionsUpdateOne {
 	upuo.mutation.SetAdmin(b)
@@ -171,20 +197,6 @@ func (upuo *UserPermissionsUpdateOne) SetAdmin(b bool) *UserPermissionsUpdateOne
 func (upuo *UserPermissionsUpdateOne) SetNillableAdmin(b *bool) *UserPermissionsUpdateOne {
 	if b != nil {
 		upuo.SetAdmin(*b)
-	}
-	return upuo
-}
-
-// SetUserID sets the "user" edge to the User entity by ID.
-func (upuo *UserPermissionsUpdateOne) SetUserID(id ksuid.ID) *UserPermissionsUpdateOne {
-	upuo.mutation.SetUserID(id)
-	return upuo
-}
-
-// SetNillableUserID sets the "user" edge to the User entity by ID if the given value is not nil.
-func (upuo *UserPermissionsUpdateOne) SetNillableUserID(id *ksuid.ID) *UserPermissionsUpdateOne {
-	if id != nil {
-		upuo = upuo.SetUserID(*id)
 	}
 	return upuo
 }

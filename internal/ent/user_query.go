@@ -508,7 +508,9 @@ func (uq *UserQuery) loadUserPermissions(ctx context.Context, query *UserPermiss
 		fks = append(fks, nodes[i].ID)
 		nodeids[nodes[i].ID] = nodes[i]
 	}
-	query.withFKs = true
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(userpermissions.FieldUserID)
+	}
 	query.Where(predicate.UserPermissions(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(user.UserPermissionsColumn), fks...))
 	}))
@@ -517,13 +519,10 @@ func (uq *UserQuery) loadUserPermissions(ctx context.Context, query *UserPermiss
 		return err
 	}
 	for _, n := range neighbors {
-		fk := n.user_user_permissions
-		if fk == nil {
-			return fmt.Errorf(`foreign-key "user_user_permissions" is nil for node %v`, n.ID)
-		}
-		node, ok := nodeids[*fk]
+		fk := n.UserID
+		node, ok := nodeids[fk]
 		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "user_user_permissions" returned %v for node %v`, *fk, n.ID)
+			return fmt.Errorf(`unexpected referenced foreign-key "user_id" returned %v for node %v`, fk, n.ID)
 		}
 		assign(node, n)
 	}

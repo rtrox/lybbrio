@@ -1788,6 +1788,15 @@ func (up *UserPermissionsQuery) collectField(ctx context.Context, opCtx *graphql
 				return err
 			}
 			up.withUser = query
+			if _, ok := fieldSeen[userpermissions.FieldUserID]; !ok {
+				selectedFields = append(selectedFields, userpermissions.FieldUserID)
+				fieldSeen[userpermissions.FieldUserID] = struct{}{}
+			}
+		case "userID":
+			if _, ok := fieldSeen[userpermissions.FieldUserID]; !ok {
+				selectedFields = append(selectedFields, userpermissions.FieldUserID)
+				fieldSeen[userpermissions.FieldUserID] = struct{}{}
+			}
 		case "admin":
 			if _, ok := fieldSeen[userpermissions.FieldAdmin]; !ok {
 				selectedFields = append(selectedFields, userpermissions.FieldAdmin)

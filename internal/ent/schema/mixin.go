@@ -54,6 +54,6 @@ func (UserScopedMixin) Edges() []ent.Edge {
 	}
 }
 
-// func (UserScopedMixin) Policy() ent.Policy {
-// 	return rule.
-// }
+func (UserScopedMixin) Policy() ent.Policy {
+	return rule.FilterUserRule()
+}

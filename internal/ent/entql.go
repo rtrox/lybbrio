@@ -194,7 +194,8 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "UserPermissions",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			userpermissions.FieldAdmin: {Type: field.TypeBool, Column: userpermissions.FieldAdmin},
+			userpermissions.FieldUserID: {Type: field.TypeString, Column: userpermissions.FieldUserID},
+			userpermissions.FieldAdmin:  {Type: field.TypeBool, Column: userpermissions.FieldAdmin},
 		},
 	}
 	graph.MustAddE(
@@ -1264,6 +1265,11 @@ func (f *UserPermissionsFilter) Where(p entql.P) {
 // WhereID applies the entql string predicate on the id field.
 func (f *UserPermissionsFilter) WhereID(p entql.StringP) {
 	f.Where(p.Field(userpermissions.FieldID))
+}
+
+// WhereUserID applies the entql string predicate on the user_id field.
+func (f *UserPermissionsFilter) WhereUserID(p entql.StringP) {
+	f.Where(p.Field(userpermissions.FieldUserID))
 }
 
 // WhereAdmin applies the entql bool predicate on the admin field.

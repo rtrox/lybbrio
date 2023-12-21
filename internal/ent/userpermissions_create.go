@@ -21,6 +21,20 @@ type UserPermissionsCreate struct {
 	hooks    []Hook
 }
 
+// SetUserID sets the "user_id" field.
+func (upc *UserPermissionsCreate) SetUserID(k ksuid.ID) *UserPermissionsCreate {
+	upc.mutation.SetUserID(k)
+	return upc
+}
+
+// SetNillableUserID sets the "user_id" field if the given value is not nil.
+func (upc *UserPermissionsCreate) SetNillableUserID(k *ksuid.ID) *UserPermissionsCreate {
+	if k != nil {
+		upc.SetUserID(*k)
+	}
+	return upc
+}
+
 // SetAdmin sets the "admin" field.
 func (upc *UserPermissionsCreate) SetAdmin(b bool) *UserPermissionsCreate {
 	upc.mutation.SetAdmin(b)
@@ -45,20 +59,6 @@ func (upc *UserPermissionsCreate) SetID(k ksuid.ID) *UserPermissionsCreate {
 func (upc *UserPermissionsCreate) SetNillableID(k *ksuid.ID) *UserPermissionsCreate {
 	if k != nil {
 		upc.SetID(*k)
-	}
-	return upc
-}
-
-// SetUserID sets the "user" edge to the User entity by ID.
-func (upc *UserPermissionsCreate) SetUserID(id ksuid.ID) *UserPermissionsCreate {
-	upc.mutation.SetUserID(id)
-	return upc
-}
-
-// SetNillableUserID sets the "user" edge to the User entity by ID if the given value is not nil.
-func (upc *UserPermissionsCreate) SetNillableUserID(id *ksuid.ID) *UserPermissionsCreate {
-	if id != nil {
-		upc = upc.SetUserID(*id)
 	}
 	return upc
 }
@@ -177,7 +177,7 @@ func (upc *UserPermissionsCreate) createSpec() (*UserPermissions, *sqlgraph.Crea
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.user_user_permissions = &nodes[0]
+		_node.UserID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

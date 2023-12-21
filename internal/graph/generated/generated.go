@@ -268,9 +268,10 @@ type ComplexityRoot struct {
 	}
 
 	UserPermissions struct {
-		Admin func(childComplexity int) int
-		ID    func(childComplexity int) int
-		User  func(childComplexity int) int
+		Admin  func(childComplexity int) int
+		ID     func(childComplexity int) int
+		User   func(childComplexity int) int
+		UserID func(childComplexity int) int
 	}
 }
 
@@ -1424,6 +1425,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.UserPermissions.User(childComplexity), true
+
+	case "UserPermissions.userID":
+		if e.complexity.UserPermissions.UserID == nil {
+			break
+		}
+
+		return e.complexity.UserPermissions.UserID(childComplexity), true
 
 	}
 	return 0, false
@@ -2916,6 +2924,7 @@ enum UserOrderField {
 }
 type UserPermissions implements Node {
   id: ID!
+  userID: ID
   admin: Boolean!
   user: User
 }
@@ -2936,6 +2945,22 @@ input UserPermissionsWhereInput {
   idGTE: ID
   idLT: ID
   idLTE: ID
+  """user_id field predicates"""
+  userID: ID
+  userIDNEQ: ID
+  userIDIn: [ID!]
+  userIDNotIn: [ID!]
+  userIDGT: ID
+  userIDGTE: ID
+  userIDLT: ID
+  userIDLTE: ID
+  userIDContains: ID
+  userIDHasPrefix: ID
+  userIDHasSuffix: ID
+  userIDIsNil: Boolean
+  userIDNotNil: Boolean
+  userIDEqualFold: ID
+  userIDContainsFold: ID
   """admin field predicates"""
   admin: Boolean
   adminNEQ: Boolean
@@ -11107,6 +11132,8 @@ func (ec *executionContext) fieldContext_User_userpermissions(ctx context.Contex
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_UserPermissions_id(ctx, field)
+			case "userID":
+				return ec.fieldContext_UserPermissions_userID(ctx, field)
 			case "admin":
 				return ec.fieldContext_UserPermissions_admin(ctx, field)
 			case "user":
@@ -11150,6 +11177,47 @@ func (ec *executionContext) _UserPermissions_id(ctx context.Context, field graph
 }
 
 func (ec *executionContext) fieldContext_UserPermissions_id(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "UserPermissions",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _UserPermissions_userID(ctx context.Context, field graphql.CollectedField, obj *ent.UserPermissions) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_UserPermissions_userID(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.UserID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(ksuid.ID)
+	fc.Result = res
+	return ec.marshalOID2lybbrioᚋinternalᚋentᚋschemaᚋksuidᚐID(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_UserPermissions_userID(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "UserPermissions",
 		Field:      field,
@@ -17477,7 +17545,7 @@ func (ec *executionContext) unmarshalInputUserPermissionsWhereInput(ctx context.
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "admin", "adminNEQ", "hasUser", "hasUserWith"}
+	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "userID", "userIDNEQ", "userIDIn", "userIDNotIn", "userIDGT", "userIDGTE", "userIDLT", "userIDLTE", "userIDContains", "userIDHasPrefix", "userIDHasSuffix", "userIDIsNil", "userIDNotNil", "userIDEqualFold", "userIDContainsFold", "admin", "adminNEQ", "hasUser", "hasUserWith"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -17561,6 +17629,111 @@ func (ec *executionContext) unmarshalInputUserPermissionsWhereInput(ctx context.
 				return it, err
 			}
 			it.IDLTE = data
+		case "userID":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("userID"))
+			data, err := ec.unmarshalOID2ᚖlybbrioᚋinternalᚋentᚋschemaᚋksuidᚐID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UserID = data
+		case "userIDNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("userIDNEQ"))
+			data, err := ec.unmarshalOID2ᚖlybbrioᚋinternalᚋentᚋschemaᚋksuidᚐID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UserIDNEQ = data
+		case "userIDIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("userIDIn"))
+			data, err := ec.unmarshalOID2ᚕlybbrioᚋinternalᚋentᚋschemaᚋksuidᚐIDᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UserIDIn = data
+		case "userIDNotIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("userIDNotIn"))
+			data, err := ec.unmarshalOID2ᚕlybbrioᚋinternalᚋentᚋschemaᚋksuidᚐIDᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UserIDNotIn = data
+		case "userIDGT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("userIDGT"))
+			data, err := ec.unmarshalOID2ᚖlybbrioᚋinternalᚋentᚋschemaᚋksuidᚐID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UserIDGT = data
+		case "userIDGTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("userIDGTE"))
+			data, err := ec.unmarshalOID2ᚖlybbrioᚋinternalᚋentᚋschemaᚋksuidᚐID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UserIDGTE = data
+		case "userIDLT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("userIDLT"))
+			data, err := ec.unmarshalOID2ᚖlybbrioᚋinternalᚋentᚋschemaᚋksuidᚐID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UserIDLT = data
+		case "userIDLTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("userIDLTE"))
+			data, err := ec.unmarshalOID2ᚖlybbrioᚋinternalᚋentᚋschemaᚋksuidᚐID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UserIDLTE = data
+		case "userIDContains":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("userIDContains"))
+			data, err := ec.unmarshalOID2ᚖlybbrioᚋinternalᚋentᚋschemaᚋksuidᚐID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UserIDContains = data
+		case "userIDHasPrefix":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("userIDHasPrefix"))
+			data, err := ec.unmarshalOID2ᚖlybbrioᚋinternalᚋentᚋschemaᚋksuidᚐID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UserIDHasPrefix = data
+		case "userIDHasSuffix":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("userIDHasSuffix"))
+			data, err := ec.unmarshalOID2ᚖlybbrioᚋinternalᚋentᚋschemaᚋksuidᚐID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UserIDHasSuffix = data
+		case "userIDIsNil":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("userIDIsNil"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UserIDIsNil = data
+		case "userIDNotNil":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("userIDNotNil"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UserIDNotNil = data
+		case "userIDEqualFold":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("userIDEqualFold"))
+			data, err := ec.unmarshalOID2ᚖlybbrioᚋinternalᚋentᚋschemaᚋksuidᚐID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UserIDEqualFold = data
+		case "userIDContainsFold":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("userIDContainsFold"))
+			data, err := ec.unmarshalOID2ᚖlybbrioᚋinternalᚋentᚋschemaᚋksuidᚐID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UserIDContainsFold = data
 		case "admin":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("admin"))
 			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
@@ -20293,6 +20466,8 @@ func (ec *executionContext) _UserPermissions(ctx context.Context, sel ast.Select
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
 			}
+		case "userID":
+			out.Values[i] = ec._UserPermissions_userID(ctx, field, obj)
 		case "admin":
 			out.Values[i] = ec._UserPermissions_admin(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -22048,6 +22223,16 @@ func (ec *executionContext) marshalOFloat2ᚖfloat64(ctx context.Context, sel as
 	}
 	res := graphql.MarshalFloatContext(*v)
 	return graphql.WrapContextMarshaler(ctx, res)
+}
+
+func (ec *executionContext) unmarshalOID2lybbrioᚋinternalᚋentᚋschemaᚋksuidᚐID(ctx context.Context, v interface{}) (ksuid.ID, error) {
+	var res ksuid.ID
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOID2lybbrioᚋinternalᚋentᚋschemaᚋksuidᚐID(ctx context.Context, sel ast.SelectionSet, v ksuid.ID) graphql.Marshaler {
+	return v
 }
 
 func (ec *executionContext) unmarshalOID2ᚕlybbrioᚋinternalᚋentᚋschemaᚋksuidᚐIDᚄ(ctx context.Context, v interface{}) ([]ksuid.ID, error) {

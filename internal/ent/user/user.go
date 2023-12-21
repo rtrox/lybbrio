@@ -40,7 +40,7 @@ const (
 	// It exists in this package in order to avoid circular dependency with the "userpermissions" package.
 	UserPermissionsInverseTable = "user_permissions"
 	// UserPermissionsColumn is the table column denoting the userPermissions relation/edge.
-	UserPermissionsColumn = "user_user_permissions"
+	UserPermissionsColumn = "user_id"
 )
 
 // Columns holds all SQL columns for user fields.

@@ -3102,6 +3102,23 @@ type UserPermissionsWhereInput struct {
 	IDLT    *ksuid.ID  `json:"idLT,omitempty"`
 	IDLTE   *ksuid.ID  `json:"idLTE,omitempty"`
 
+	// "user_id" field predicates.
+	UserID             *ksuid.ID  `json:"userID,omitempty"`
+	UserIDNEQ          *ksuid.ID  `json:"userIDNEQ,omitempty"`
+	UserIDIn           []ksuid.ID `json:"userIDIn,omitempty"`
+	UserIDNotIn        []ksuid.ID `json:"userIDNotIn,omitempty"`
+	UserIDGT           *ksuid.ID  `json:"userIDGT,omitempty"`
+	UserIDGTE          *ksuid.ID  `json:"userIDGTE,omitempty"`
+	UserIDLT           *ksuid.ID  `json:"userIDLT,omitempty"`
+	UserIDLTE          *ksuid.ID  `json:"userIDLTE,omitempty"`
+	UserIDContains     *ksuid.ID  `json:"userIDContains,omitempty"`
+	UserIDHasPrefix    *ksuid.ID  `json:"userIDHasPrefix,omitempty"`
+	UserIDHasSuffix    *ksuid.ID  `json:"userIDHasSuffix,omitempty"`
+	UserIDIsNil        bool       `json:"userIDIsNil,omitempty"`
+	UserIDNotNil       bool       `json:"userIDNotNil,omitempty"`
+	UserIDEqualFold    *ksuid.ID  `json:"userIDEqualFold,omitempty"`
+	UserIDContainsFold *ksuid.ID  `json:"userIDContainsFold,omitempty"`
+
 	// "admin" field predicates.
 	Admin    *bool `json:"admin,omitempty"`
 	AdminNEQ *bool `json:"adminNEQ,omitempty"`
@@ -3205,6 +3222,51 @@ func (i *UserPermissionsWhereInput) P() (predicate.UserPermissions, error) {
 	}
 	if i.IDLTE != nil {
 		predicates = append(predicates, userpermissions.IDLTE(*i.IDLTE))
+	}
+	if i.UserID != nil {
+		predicates = append(predicates, userpermissions.UserIDEQ(*i.UserID))
+	}
+	if i.UserIDNEQ != nil {
+		predicates = append(predicates, userpermissions.UserIDNEQ(*i.UserIDNEQ))
+	}
+	if len(i.UserIDIn) > 0 {
+		predicates = append(predicates, userpermissions.UserIDIn(i.UserIDIn...))
+	}
+	if len(i.UserIDNotIn) > 0 {
+		predicates = append(predicates, userpermissions.UserIDNotIn(i.UserIDNotIn...))
+	}
+	if i.UserIDGT != nil {
+		predicates = append(predicates, userpermissions.UserIDGT(*i.UserIDGT))
+	}
+	if i.UserIDGTE != nil {
+		predicates = append(predicates, userpermissions.UserIDGTE(*i.UserIDGTE))
+	}
+	if i.UserIDLT != nil {
+		predicates = append(predicates, userpermissions.UserIDLT(*i.UserIDLT))
+	}
+	if i.UserIDLTE != nil {
+		predicates = append(predicates, userpermissions.UserIDLTE(*i.UserIDLTE))
+	}
+	if i.UserIDContains != nil {
+		predicates = append(predicates, userpermissions.UserIDContains(*i.UserIDContains))
+	}
+	if i.UserIDHasPrefix != nil {
+		predicates = append(predicates, userpermissions.UserIDHasPrefix(*i.UserIDHasPrefix))
+	}
+	if i.UserIDHasSuffix != nil {
+		predicates = append(predicates, userpermissions.UserIDHasSuffix(*i.UserIDHasSuffix))
+	}
+	if i.UserIDIsNil {
+		predicates = append(predicates, userpermissions.UserIDIsNil())
+	}
+	if i.UserIDNotNil {
+		predicates = append(predicates, userpermissions.UserIDNotNil())
+	}
+	if i.UserIDEqualFold != nil {
+		predicates = append(predicates, userpermissions.UserIDEqualFold(*i.UserIDEqualFold))
+	}
+	if i.UserIDContainsFold != nil {
+		predicates = append(predicates, userpermissions.UserIDContainsFold(*i.UserIDContainsFold))
 	}
 	if i.Admin != nil {
 		predicates = append(predicates, userpermissions.AdminEQ(*i.Admin))

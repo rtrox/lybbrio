@@ -6051,6 +6051,55 @@ func (m *UserPermissionsMutation) IDs(ctx context.Context) ([]ksuid.ID, error) {
 	}
 }
 
+// SetUserID sets the "user_id" field.
+func (m *UserPermissionsMutation) SetUserID(k ksuid.ID) {
+	m.user = &k
+}
+
+// UserID returns the value of the "user_id" field in the mutation.
+func (m *UserPermissionsMutation) UserID() (r ksuid.ID, exists bool) {
+	v := m.user
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUserID returns the old "user_id" field's value of the UserPermissions entity.
+// If the UserPermissions object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserPermissionsMutation) OldUserID(ctx context.Context) (v ksuid.ID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUserID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUserID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUserID: %w", err)
+	}
+	return oldValue.UserID, nil
+}
+
+// ClearUserID clears the value of the "user_id" field.
+func (m *UserPermissionsMutation) ClearUserID() {
+	m.user = nil
+	m.clearedFields[userpermissions.FieldUserID] = struct{}{}
+}
+
+// UserIDCleared returns if the "user_id" field was cleared in this mutation.
+func (m *UserPermissionsMutation) UserIDCleared() bool {
+	_, ok := m.clearedFields[userpermissions.FieldUserID]
+	return ok
+}
+
+// ResetUserID resets all changes to the "user_id" field.
+func (m *UserPermissionsMutation) ResetUserID() {
+	m.user = nil
+	delete(m.clearedFields, userpermissions.FieldUserID)
+}
+
 // SetAdmin sets the "admin" field.
 func (m *UserPermissionsMutation) SetAdmin(b bool) {
 	m.admin = &b
@@ -6087,27 +6136,15 @@ func (m *UserPermissionsMutation) ResetAdmin() {
 	m.admin = nil
 }
 
-// SetUserID sets the "user" edge to the User entity by id.
-func (m *UserPermissionsMutation) SetUserID(id ksuid.ID) {
-	m.user = &id
-}
-
 // ClearUser clears the "user" edge to the User entity.
 func (m *UserPermissionsMutation) ClearUser() {
 	m.cleareduser = true
+	m.clearedFields[userpermissions.FieldUserID] = struct{}{}
 }
 
 // UserCleared reports if the "user" edge to the User entity was cleared.
 func (m *UserPermissionsMutation) UserCleared() bool {
-	return m.cleareduser
-}
-
-// UserID returns the "user" edge ID in the mutation.
-func (m *UserPermissionsMutation) UserID() (id ksuid.ID, exists bool) {
-	if m.user != nil {
-		return *m.user, true
-	}
-	return
+	return m.UserIDCleared() || m.cleareduser
 }
 
 // UserIDs returns the "user" edge IDs in the mutation.
@@ -6160,7 +6197,10 @@ func (m *UserPermissionsMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *UserPermissionsMutation) Fields() []string {
-	fields := make([]string, 0, 1)
+	fields := make([]string, 0, 2)
+	if m.user != nil {
+		fields = append(fields, userpermissions.FieldUserID)
+	}
 	if m.admin != nil {
 		fields = append(fields, userpermissions.FieldAdmin)
 	}
@@ -6172,6 +6212,8 @@ func (m *UserPermissionsMutation) Fields() []string {
 // schema.
 func (m *UserPermissionsMutation) Field(name string) (ent.Value, bool) {
 	switch name {
+	case userpermissions.FieldUserID:
+		return m.UserID()
 	case userpermissions.FieldAdmin:
 		return m.Admin()
 	}
@@ -6183,6 +6225,8 @@ func (m *UserPermissionsMutation) Field(name string) (ent.Value, bool) {
 // database failed.
 func (m *UserPermissionsMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
+	case userpermissions.FieldUserID:
+		return m.OldUserID(ctx)
 	case userpermissions.FieldAdmin:
 		return m.OldAdmin(ctx)
 	}
@@ -6194,6 +6238,13 @@ func (m *UserPermissionsMutation) OldField(ctx context.Context, name string) (en
 // type.
 func (m *UserPermissionsMutation) SetField(name string, value ent.Value) error {
 	switch name {
+	case userpermissions.FieldUserID:
+		v, ok := value.(ksuid.ID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUserID(v)
+		return nil
 	case userpermissions.FieldAdmin:
 		v, ok := value.(bool)
 		if !ok {
@@ -6230,7 +6281,11 @@ func (m *UserPermissionsMutation) AddField(name string, value ent.Value) error {
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *UserPermissionsMutation) ClearedFields() []string {
-	return nil
+	var fields []string
+	if m.FieldCleared(userpermissions.FieldUserID) {
+		fields = append(fields, userpermissions.FieldUserID)
+	}
+	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -6243,6 +6298,11 @@ func (m *UserPermissionsMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *UserPermissionsMutation) ClearField(name string) error {
+	switch name {
+	case userpermissions.FieldUserID:
+		m.ClearUserID()
+		return nil
+	}
 	return fmt.Errorf("unknown UserPermissions nullable field %s", name)
 }
 
@@ -6250,6 +6310,9 @@ func (m *UserPermissionsMutation) ClearField(name string) error {
 // It returns an error if the field is not defined in the schema.
 func (m *UserPermissionsMutation) ResetField(name string) error {
 	switch name {
+	case userpermissions.FieldUserID:
+		m.ResetUserID()
+		return nil
 	case userpermissions.FieldAdmin:
 		m.ResetAdmin()
 		return nil

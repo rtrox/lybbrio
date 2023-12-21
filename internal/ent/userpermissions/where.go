@@ -55,9 +55,109 @@ func IDLTE(id ksuid.ID) predicate.UserPermissions {
 	return predicate.UserPermissions(sql.FieldLTE(FieldID, id))
 }
 
+// UserID applies equality check predicate on the "user_id" field. It's identical to UserIDEQ.
+func UserID(v ksuid.ID) predicate.UserPermissions {
+	vc := string(v)
+	return predicate.UserPermissions(sql.FieldEQ(FieldUserID, vc))
+}
+
 // Admin applies equality check predicate on the "admin" field. It's identical to AdminEQ.
 func Admin(v bool) predicate.UserPermissions {
 	return predicate.UserPermissions(sql.FieldEQ(FieldAdmin, v))
+}
+
+// UserIDEQ applies the EQ predicate on the "user_id" field.
+func UserIDEQ(v ksuid.ID) predicate.UserPermissions {
+	vc := string(v)
+	return predicate.UserPermissions(sql.FieldEQ(FieldUserID, vc))
+}
+
+// UserIDNEQ applies the NEQ predicate on the "user_id" field.
+func UserIDNEQ(v ksuid.ID) predicate.UserPermissions {
+	vc := string(v)
+	return predicate.UserPermissions(sql.FieldNEQ(FieldUserID, vc))
+}
+
+// UserIDIn applies the In predicate on the "user_id" field.
+func UserIDIn(vs ...ksuid.ID) predicate.UserPermissions {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = string(vs[i])
+	}
+	return predicate.UserPermissions(sql.FieldIn(FieldUserID, v...))
+}
+
+// UserIDNotIn applies the NotIn predicate on the "user_id" field.
+func UserIDNotIn(vs ...ksuid.ID) predicate.UserPermissions {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = string(vs[i])
+	}
+	return predicate.UserPermissions(sql.FieldNotIn(FieldUserID, v...))
+}
+
+// UserIDGT applies the GT predicate on the "user_id" field.
+func UserIDGT(v ksuid.ID) predicate.UserPermissions {
+	vc := string(v)
+	return predicate.UserPermissions(sql.FieldGT(FieldUserID, vc))
+}
+
+// UserIDGTE applies the GTE predicate on the "user_id" field.
+func UserIDGTE(v ksuid.ID) predicate.UserPermissions {
+	vc := string(v)
+	return predicate.UserPermissions(sql.FieldGTE(FieldUserID, vc))
+}
+
+// UserIDLT applies the LT predicate on the "user_id" field.
+func UserIDLT(v ksuid.ID) predicate.UserPermissions {
+	vc := string(v)
+	return predicate.UserPermissions(sql.FieldLT(FieldUserID, vc))
+}
+
+// UserIDLTE applies the LTE predicate on the "user_id" field.
+func UserIDLTE(v ksuid.ID) predicate.UserPermissions {
+	vc := string(v)
+	return predicate.UserPermissions(sql.FieldLTE(FieldUserID, vc))
+}
+
+// UserIDContains applies the Contains predicate on the "user_id" field.
+func UserIDContains(v ksuid.ID) predicate.UserPermissions {
+	vc := string(v)
+	return predicate.UserPermissions(sql.FieldContains(FieldUserID, vc))
+}
+
+// UserIDHasPrefix applies the HasPrefix predicate on the "user_id" field.
+func UserIDHasPrefix(v ksuid.ID) predicate.UserPermissions {
+	vc := string(v)
+	return predicate.UserPermissions(sql.FieldHasPrefix(FieldUserID, vc))
+}
+
+// UserIDHasSuffix applies the HasSuffix predicate on the "user_id" field.
+func UserIDHasSuffix(v ksuid.ID) predicate.UserPermissions {
+	vc := string(v)
+	return predicate.UserPermissions(sql.FieldHasSuffix(FieldUserID, vc))
+}
+
+// UserIDIsNil applies the IsNil predicate on the "user_id" field.
+func UserIDIsNil() predicate.UserPermissions {
+	return predicate.UserPermissions(sql.FieldIsNull(FieldUserID))
+}
+
+// UserIDNotNil applies the NotNil predicate on the "user_id" field.
+func UserIDNotNil() predicate.UserPermissions {
+	return predicate.UserPermissions(sql.FieldNotNull(FieldUserID))
+}
+
+// UserIDEqualFold applies the EqualFold predicate on the "user_id" field.
+func UserIDEqualFold(v ksuid.ID) predicate.UserPermissions {
+	vc := string(v)
+	return predicate.UserPermissions(sql.FieldEqualFold(FieldUserID, vc))
+}
+
+// UserIDContainsFold applies the ContainsFold predicate on the "user_id" field.
+func UserIDContainsFold(v ksuid.ID) predicate.UserPermissions {
+	vc := string(v)
+	return predicate.UserPermissions(sql.FieldContainsFold(FieldUserID, vc))
 }
 
 // AdminEQ applies the EQ predicate on the "admin" field.
