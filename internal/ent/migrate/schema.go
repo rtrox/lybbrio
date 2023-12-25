@@ -38,11 +38,11 @@ var (
 		{Name: "id", Type: field.TypeString},
 		{Name: "title", Type: field.TypeString, Size: 2147483647},
 		{Name: "sort", Type: field.TypeString, Size: 2147483647},
-		{Name: "added_at", Type: field.TypeTime},
-		{Name: "pub_date", Type: field.TypeTime, Nullable: true},
+		{Name: "published_date", Type: field.TypeTime, Nullable: true},
 		{Name: "path", Type: field.TypeString, Size: 2147483647},
 		{Name: "isbn", Type: field.TypeString, Nullable: true, Size: 2147483647},
 		{Name: "description", Type: field.TypeString, Nullable: true, Size: 2147483647},
+		{Name: "series_index", Type: field.TypeInt, Nullable: true},
 		{Name: "language_books", Type: field.TypeString, Nullable: true},
 		{Name: "publisher_books", Type: field.TypeString, Nullable: true},
 		{Name: "tag_books", Type: field.TypeString, Nullable: true},
@@ -84,19 +84,14 @@ var (
 				Columns: []*schema.Column{BooksColumns[2]},
 			},
 			{
-				Name:    "book_added_at",
+				Name:    "book_published_date",
 				Unique:  false,
 				Columns: []*schema.Column{BooksColumns[3]},
 			},
 			{
-				Name:    "book_pub_date",
-				Unique:  false,
-				Columns: []*schema.Column{BooksColumns[4]},
-			},
-			{
 				Name:    "book_isbn",
 				Unique:  false,
-				Columns: []*schema.Column{BooksColumns[6]},
+				Columns: []*schema.Column{BooksColumns[5]},
 			},
 		},
 	}
@@ -186,32 +181,6 @@ var (
 				Name:    "series_name",
 				Unique:  false,
 				Columns: []*schema.Column{SeriesColumns[1]},
-			},
-		},
-	}
-	// SeriesBooksColumns holds the columns for the "series_books" table.
-	SeriesBooksColumns = []*schema.Column{
-		{Name: "series_index", Type: field.TypeFloat64, Nullable: true},
-		{Name: "series_id", Type: field.TypeString},
-		{Name: "book_id", Type: field.TypeString},
-	}
-	// SeriesBooksTable holds the schema information for the "series_books" table.
-	SeriesBooksTable = &schema.Table{
-		Name:       "series_books",
-		Columns:    SeriesBooksColumns,
-		PrimaryKey: []*schema.Column{SeriesBooksColumns[1], SeriesBooksColumns[2]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "series_books_series_series",
-				Columns:    []*schema.Column{SeriesBooksColumns[1]},
-				RefColumns: []*schema.Column{SeriesColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-			{
-				Symbol:     "series_books_books_book",
-				Columns:    []*schema.Column{SeriesBooksColumns[2]},
-				RefColumns: []*schema.Column{BooksColumns[0]},
-				OnDelete:   schema.NoAction,
 			},
 		},
 	}
@@ -333,6 +302,31 @@ var (
 			},
 		},
 	}
+	// SeriesBooksColumns holds the columns for the "series_books" table.
+	SeriesBooksColumns = []*schema.Column{
+		{Name: "series_id", Type: field.TypeString},
+		{Name: "book_id", Type: field.TypeString},
+	}
+	// SeriesBooksTable holds the schema information for the "series_books" table.
+	SeriesBooksTable = &schema.Table{
+		Name:       "series_books",
+		Columns:    SeriesBooksColumns,
+		PrimaryKey: []*schema.Column{SeriesBooksColumns[0], SeriesBooksColumns[1]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "series_books_series_id",
+				Columns:    []*schema.Column{SeriesBooksColumns[0]},
+				RefColumns: []*schema.Column{SeriesColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "series_books_book_id",
+				Columns:    []*schema.Column{SeriesBooksColumns[1]},
+				RefColumns: []*schema.Column{BooksColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+	}
 	// ShelfBooksColumns holds the columns for the "shelf_books" table.
 	ShelfBooksColumns = []*schema.Column{
 		{Name: "shelf_id", Type: field.TypeString},
@@ -366,12 +360,12 @@ var (
 		LanguagesTable,
 		PublishersTable,
 		SeriesTable,
-		SeriesBooksTable,
 		ShelvesTable,
 		TagsTable,
 		UsersTable,
 		UserPermissionsTable,
 		AuthorBooksTable,
+		SeriesBooksTable,
 		ShelfBooksTable,
 	}
 )
@@ -381,12 +375,12 @@ func init() {
 	BooksTable.ForeignKeys[1].RefTable = PublishersTable
 	BooksTable.ForeignKeys[2].RefTable = TagsTable
 	IdentifiersTable.ForeignKeys[0].RefTable = BooksTable
-	SeriesBooksTable.ForeignKeys[0].RefTable = SeriesTable
-	SeriesBooksTable.ForeignKeys[1].RefTable = BooksTable
 	ShelvesTable.ForeignKeys[0].RefTable = UsersTable
 	UserPermissionsTable.ForeignKeys[0].RefTable = UsersTable
 	AuthorBooksTable.ForeignKeys[0].RefTable = AuthorsTable
 	AuthorBooksTable.ForeignKeys[1].RefTable = BooksTable
+	SeriesBooksTable.ForeignKeys[0].RefTable = SeriesTable
+	SeriesBooksTable.ForeignKeys[1].RefTable = BooksTable
 	ShelfBooksTable.ForeignKeys[0].RefTable = ShelvesTable
 	ShelfBooksTable.ForeignKeys[1].RefTable = BooksTable
 }

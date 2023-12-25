@@ -12,12 +12,10 @@ import (
 	"lybbrio/internal/ent/schema"
 	"lybbrio/internal/ent/schema/ksuid"
 	"lybbrio/internal/ent/series"
-	"lybbrio/internal/ent/seriesbook"
 	"lybbrio/internal/ent/shelf"
 	"lybbrio/internal/ent/tag"
 	"lybbrio/internal/ent/user"
 	"lybbrio/internal/ent/userpermissions"
-	"time"
 
 	"entgo.io/ent"
 	"entgo.io/ent/privacy"
@@ -67,14 +65,14 @@ func init() {
 	bookDescTitle := bookFields[0].Descriptor()
 	// book.TitleValidator is a validator for the "title" field. It is called by the builders before save.
 	book.TitleValidator = bookDescTitle.Validators[0].(func(string) error)
-	// bookDescAddedAt is the schema descriptor for added_at field.
-	bookDescAddedAt := bookFields[2].Descriptor()
-	// book.DefaultAddedAt holds the default value on creation for the added_at field.
-	book.DefaultAddedAt = bookDescAddedAt.Default.(func() time.Time)
 	// bookDescPath is the schema descriptor for path field.
-	bookDescPath := bookFields[4].Descriptor()
+	bookDescPath := bookFields[3].Descriptor()
 	// book.PathValidator is a validator for the "path" field. It is called by the builders before save.
 	book.PathValidator = bookDescPath.Validators[0].(func(string) error)
+	// bookDescSeriesIndex is the schema descriptor for series_index field.
+	bookDescSeriesIndex := bookFields[6].Descriptor()
+	// book.SeriesIndexValidator is a validator for the "series_index" field. It is called by the builders before save.
+	book.SeriesIndexValidator = bookDescSeriesIndex.Validators[0].(func(int) error)
 	// bookDescID is the schema descriptor for id field.
 	bookDescID := bookMixinFields1[0].Descriptor()
 	// book.DefaultID holds the default value on creation for the id field.
@@ -175,30 +173,6 @@ func init() {
 	seriesDescID := seriesMixinFields1[0].Descriptor()
 	// series.DefaultID holds the default value on creation for the id field.
 	series.DefaultID = seriesDescID.Default.(func() ksuid.ID)
-	seriesbookMixin := schema.SeriesBook{}.Mixin()
-	seriesbook.Policy = privacy.NewPolicies(seriesbookMixin[0], schema.SeriesBook{})
-	seriesbook.Hooks[0] = func(next ent.Mutator) ent.Mutator {
-		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-			if err := seriesbook.Policy.EvalMutation(ctx, m); err != nil {
-				return nil, err
-			}
-			return next.Mutate(ctx, m)
-		})
-	}
-	seriesbookFields := schema.SeriesBook{}.Fields()
-	_ = seriesbookFields
-	// seriesbookDescSeriesIndex is the schema descriptor for series_index field.
-	seriesbookDescSeriesIndex := seriesbookFields[0].Descriptor()
-	// seriesbook.SeriesIndexValidator is a validator for the "series_index" field. It is called by the builders before save.
-	seriesbook.SeriesIndexValidator = seriesbookDescSeriesIndex.Validators[0].(func(float64) error)
-	// seriesbookDescSeriesID is the schema descriptor for series_id field.
-	seriesbookDescSeriesID := seriesbookFields[1].Descriptor()
-	// seriesbook.SeriesIDValidator is a validator for the "series_id" field. It is called by the builders before save.
-	seriesbook.SeriesIDValidator = seriesbookDescSeriesID.Validators[0].(func(string) error)
-	// seriesbookDescBookID is the schema descriptor for book_id field.
-	seriesbookDescBookID := seriesbookFields[2].Descriptor()
-	// seriesbook.BookIDValidator is a validator for the "book_id" field. It is called by the builders before save.
-	seriesbook.BookIDValidator = seriesbookDescBookID.Validators[0].(func(string) error)
 	shelfMixin := schema.Shelf{}.Mixin()
 	shelf.Policy = privacy.NewPolicies(shelfMixin[0], shelfMixin[1], schema.Shelf{})
 	shelf.Hooks[0] = func(next ent.Mutator) ent.Mutator {

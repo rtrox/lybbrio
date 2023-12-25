@@ -62,37 +62,23 @@ func (bu *BookUpdate) SetNillableSort(s *string) *BookUpdate {
 	return bu
 }
 
-// SetAddedAt sets the "added_at" field.
-func (bu *BookUpdate) SetAddedAt(t time.Time) *BookUpdate {
-	bu.mutation.SetAddedAt(t)
+// SetPublishedDate sets the "published_date" field.
+func (bu *BookUpdate) SetPublishedDate(t time.Time) *BookUpdate {
+	bu.mutation.SetPublishedDate(t)
 	return bu
 }
 
-// SetNillableAddedAt sets the "added_at" field if the given value is not nil.
-func (bu *BookUpdate) SetNillableAddedAt(t *time.Time) *BookUpdate {
+// SetNillablePublishedDate sets the "published_date" field if the given value is not nil.
+func (bu *BookUpdate) SetNillablePublishedDate(t *time.Time) *BookUpdate {
 	if t != nil {
-		bu.SetAddedAt(*t)
+		bu.SetPublishedDate(*t)
 	}
 	return bu
 }
 
-// SetPubDate sets the "pub_date" field.
-func (bu *BookUpdate) SetPubDate(t time.Time) *BookUpdate {
-	bu.mutation.SetPubDate(t)
-	return bu
-}
-
-// SetNillablePubDate sets the "pub_date" field if the given value is not nil.
-func (bu *BookUpdate) SetNillablePubDate(t *time.Time) *BookUpdate {
-	if t != nil {
-		bu.SetPubDate(*t)
-	}
-	return bu
-}
-
-// ClearPubDate clears the value of the "pub_date" field.
-func (bu *BookUpdate) ClearPubDate() *BookUpdate {
-	bu.mutation.ClearPubDate()
+// ClearPublishedDate clears the value of the "published_date" field.
+func (bu *BookUpdate) ClearPublishedDate() *BookUpdate {
+	bu.mutation.ClearPublishedDate()
 	return bu
 }
 
@@ -147,6 +133,33 @@ func (bu *BookUpdate) SetNillableDescription(s *string) *BookUpdate {
 // ClearDescription clears the value of the "description" field.
 func (bu *BookUpdate) ClearDescription() *BookUpdate {
 	bu.mutation.ClearDescription()
+	return bu
+}
+
+// SetSeriesIndex sets the "series_index" field.
+func (bu *BookUpdate) SetSeriesIndex(i int) *BookUpdate {
+	bu.mutation.ResetSeriesIndex()
+	bu.mutation.SetSeriesIndex(i)
+	return bu
+}
+
+// SetNillableSeriesIndex sets the "series_index" field if the given value is not nil.
+func (bu *BookUpdate) SetNillableSeriesIndex(i *int) *BookUpdate {
+	if i != nil {
+		bu.SetSeriesIndex(*i)
+	}
+	return bu
+}
+
+// AddSeriesIndex adds i to the "series_index" field.
+func (bu *BookUpdate) AddSeriesIndex(i int) *BookUpdate {
+	bu.mutation.AddSeriesIndex(i)
+	return bu
+}
+
+// ClearSeriesIndex clears the value of the "series_index" field.
+func (bu *BookUpdate) ClearSeriesIndex() *BookUpdate {
+	bu.mutation.ClearSeriesIndex()
 	return bu
 }
 
@@ -363,6 +376,11 @@ func (bu *BookUpdate) check() error {
 			return &ValidationError{Name: "path", err: fmt.Errorf(`ent: validator failed for field "Book.path": %w`, err)}
 		}
 	}
+	if v, ok := bu.mutation.SeriesIndex(); ok {
+		if err := book.SeriesIndexValidator(v); err != nil {
+			return &ValidationError{Name: "series_index", err: fmt.Errorf(`ent: validator failed for field "Book.series_index": %w`, err)}
+		}
+	}
 	return nil
 }
 
@@ -384,14 +402,11 @@ func (bu *BookUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := bu.mutation.Sort(); ok {
 		_spec.SetField(book.FieldSort, field.TypeString, value)
 	}
-	if value, ok := bu.mutation.AddedAt(); ok {
-		_spec.SetField(book.FieldAddedAt, field.TypeTime, value)
+	if value, ok := bu.mutation.PublishedDate(); ok {
+		_spec.SetField(book.FieldPublishedDate, field.TypeTime, value)
 	}
-	if value, ok := bu.mutation.PubDate(); ok {
-		_spec.SetField(book.FieldPubDate, field.TypeTime, value)
-	}
-	if bu.mutation.PubDateCleared() {
-		_spec.ClearField(book.FieldPubDate, field.TypeTime)
+	if bu.mutation.PublishedDateCleared() {
+		_spec.ClearField(book.FieldPublishedDate, field.TypeTime)
 	}
 	if value, ok := bu.mutation.Path(); ok {
 		_spec.SetField(book.FieldPath, field.TypeString, value)
@@ -407,6 +422,15 @@ func (bu *BookUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if bu.mutation.DescriptionCleared() {
 		_spec.ClearField(book.FieldDescription, field.TypeString)
+	}
+	if value, ok := bu.mutation.SeriesIndex(); ok {
+		_spec.SetField(book.FieldSeriesIndex, field.TypeInt, value)
+	}
+	if value, ok := bu.mutation.AddedSeriesIndex(); ok {
+		_spec.AddField(book.FieldSeriesIndex, field.TypeInt, value)
+	}
+	if bu.mutation.SeriesIndexCleared() {
+		_spec.ClearField(book.FieldSeriesIndex, field.TypeInt)
 	}
 	if bu.mutation.AuthorsCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -665,37 +689,23 @@ func (buo *BookUpdateOne) SetNillableSort(s *string) *BookUpdateOne {
 	return buo
 }
 
-// SetAddedAt sets the "added_at" field.
-func (buo *BookUpdateOne) SetAddedAt(t time.Time) *BookUpdateOne {
-	buo.mutation.SetAddedAt(t)
+// SetPublishedDate sets the "published_date" field.
+func (buo *BookUpdateOne) SetPublishedDate(t time.Time) *BookUpdateOne {
+	buo.mutation.SetPublishedDate(t)
 	return buo
 }
 
-// SetNillableAddedAt sets the "added_at" field if the given value is not nil.
-func (buo *BookUpdateOne) SetNillableAddedAt(t *time.Time) *BookUpdateOne {
+// SetNillablePublishedDate sets the "published_date" field if the given value is not nil.
+func (buo *BookUpdateOne) SetNillablePublishedDate(t *time.Time) *BookUpdateOne {
 	if t != nil {
-		buo.SetAddedAt(*t)
+		buo.SetPublishedDate(*t)
 	}
 	return buo
 }
 
-// SetPubDate sets the "pub_date" field.
-func (buo *BookUpdateOne) SetPubDate(t time.Time) *BookUpdateOne {
-	buo.mutation.SetPubDate(t)
-	return buo
-}
-
-// SetNillablePubDate sets the "pub_date" field if the given value is not nil.
-func (buo *BookUpdateOne) SetNillablePubDate(t *time.Time) *BookUpdateOne {
-	if t != nil {
-		buo.SetPubDate(*t)
-	}
-	return buo
-}
-
-// ClearPubDate clears the value of the "pub_date" field.
-func (buo *BookUpdateOne) ClearPubDate() *BookUpdateOne {
-	buo.mutation.ClearPubDate()
+// ClearPublishedDate clears the value of the "published_date" field.
+func (buo *BookUpdateOne) ClearPublishedDate() *BookUpdateOne {
+	buo.mutation.ClearPublishedDate()
 	return buo
 }
 
@@ -750,6 +760,33 @@ func (buo *BookUpdateOne) SetNillableDescription(s *string) *BookUpdateOne {
 // ClearDescription clears the value of the "description" field.
 func (buo *BookUpdateOne) ClearDescription() *BookUpdateOne {
 	buo.mutation.ClearDescription()
+	return buo
+}
+
+// SetSeriesIndex sets the "series_index" field.
+func (buo *BookUpdateOne) SetSeriesIndex(i int) *BookUpdateOne {
+	buo.mutation.ResetSeriesIndex()
+	buo.mutation.SetSeriesIndex(i)
+	return buo
+}
+
+// SetNillableSeriesIndex sets the "series_index" field if the given value is not nil.
+func (buo *BookUpdateOne) SetNillableSeriesIndex(i *int) *BookUpdateOne {
+	if i != nil {
+		buo.SetSeriesIndex(*i)
+	}
+	return buo
+}
+
+// AddSeriesIndex adds i to the "series_index" field.
+func (buo *BookUpdateOne) AddSeriesIndex(i int) *BookUpdateOne {
+	buo.mutation.AddSeriesIndex(i)
+	return buo
+}
+
+// ClearSeriesIndex clears the value of the "series_index" field.
+func (buo *BookUpdateOne) ClearSeriesIndex() *BookUpdateOne {
+	buo.mutation.ClearSeriesIndex()
 	return buo
 }
 
@@ -979,6 +1016,11 @@ func (buo *BookUpdateOne) check() error {
 			return &ValidationError{Name: "path", err: fmt.Errorf(`ent: validator failed for field "Book.path": %w`, err)}
 		}
 	}
+	if v, ok := buo.mutation.SeriesIndex(); ok {
+		if err := book.SeriesIndexValidator(v); err != nil {
+			return &ValidationError{Name: "series_index", err: fmt.Errorf(`ent: validator failed for field "Book.series_index": %w`, err)}
+		}
+	}
 	return nil
 }
 
@@ -1017,14 +1059,11 @@ func (buo *BookUpdateOne) sqlSave(ctx context.Context) (_node *Book, err error) 
 	if value, ok := buo.mutation.Sort(); ok {
 		_spec.SetField(book.FieldSort, field.TypeString, value)
 	}
-	if value, ok := buo.mutation.AddedAt(); ok {
-		_spec.SetField(book.FieldAddedAt, field.TypeTime, value)
+	if value, ok := buo.mutation.PublishedDate(); ok {
+		_spec.SetField(book.FieldPublishedDate, field.TypeTime, value)
 	}
-	if value, ok := buo.mutation.PubDate(); ok {
-		_spec.SetField(book.FieldPubDate, field.TypeTime, value)
-	}
-	if buo.mutation.PubDateCleared() {
-		_spec.ClearField(book.FieldPubDate, field.TypeTime)
+	if buo.mutation.PublishedDateCleared() {
+		_spec.ClearField(book.FieldPublishedDate, field.TypeTime)
 	}
 	if value, ok := buo.mutation.Path(); ok {
 		_spec.SetField(book.FieldPath, field.TypeString, value)
@@ -1040,6 +1079,15 @@ func (buo *BookUpdateOne) sqlSave(ctx context.Context) (_node *Book, err error) 
 	}
 	if buo.mutation.DescriptionCleared() {
 		_spec.ClearField(book.FieldDescription, field.TypeString)
+	}
+	if value, ok := buo.mutation.SeriesIndex(); ok {
+		_spec.SetField(book.FieldSeriesIndex, field.TypeInt, value)
+	}
+	if value, ok := buo.mutation.AddedSeriesIndex(); ok {
+		_spec.AddField(book.FieldSeriesIndex, field.TypeInt, value)
+	}
+	if buo.mutation.SeriesIndexCleared() {
+		_spec.ClearField(book.FieldSeriesIndex, field.TypeInt)
 	}
 	if buo.mutation.AuthorsCleared() {
 		edge := &sqlgraph.EdgeSpec{

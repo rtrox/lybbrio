@@ -7,6 +7,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"lybbrio"
 	"lybbrio/internal/ent"
 	"lybbrio/internal/ent/identifier"
 	"lybbrio/internal/ent/schema/ksuid"
@@ -70,19 +71,19 @@ type ComplexityRoot struct {
 	}
 
 	Book struct {
-		AddedAt     func(childComplexity int) int
-		Authors     func(childComplexity int) int
-		Description func(childComplexity int) int
-		ID          func(childComplexity int) int
-		Identifier  func(childComplexity int) int
-		Isbn        func(childComplexity int) int
-		Language    func(childComplexity int) int
-		Path        func(childComplexity int) int
-		PubDate     func(childComplexity int) int
-		Series      func(childComplexity int) int
-		Shelf       func(childComplexity int) int
-		Sort        func(childComplexity int) int
-		Title       func(childComplexity int) int
+		Authors       func(childComplexity int) int
+		Description   func(childComplexity int) int
+		ID            func(childComplexity int) int
+		Identifier    func(childComplexity int) int
+		Isbn          func(childComplexity int) int
+		Language      func(childComplexity int) int
+		Path          func(childComplexity int) int
+		PublishedDate func(childComplexity int) int
+		Series        func(childComplexity int) int
+		SeriesIndex   func(childComplexity int) int
+		Shelf         func(childComplexity int) int
+		Sort          func(childComplexity int) int
+		Title         func(childComplexity int) int
 	}
 
 	BookConnection struct {
@@ -139,7 +140,7 @@ type ComplexityRoot struct {
 		CreateLanguage   func(childComplexity int, input ent.CreateLanguageInput) int
 		CreatePublisher  func(childComplexity int, input ent.CreatePublisherInput) int
 		CreateSeries     func(childComplexity int, input ent.CreateSeriesInput) int
-		CreateShelf      func(childComplexity int, input ent.CreateShelfInput) int
+		CreateShelf      func(childComplexity int, input lybbrio.CreateShelfInput) int
 		CreateTag        func(childComplexity int, input ent.CreateTagInput) int
 		CreateUser       func(childComplexity int, input ent.CreateUserInput) int
 		UpdateAuthor     func(childComplexity int, id ksuid.ID, input ent.UpdateAuthorInput) int
@@ -270,7 +271,7 @@ type MutationResolver interface {
 	UpdateBook(ctx context.Context, id ksuid.ID, input ent.UpdateBookInput) (*ent.Book, error)
 	CreateAuthor(ctx context.Context, input ent.CreateAuthorInput) (*ent.Author, error)
 	UpdateAuthor(ctx context.Context, id ksuid.ID, input ent.UpdateAuthorInput) (*ent.Author, error)
-	CreateShelf(ctx context.Context, input ent.CreateShelfInput) (*ent.Shelf, error)
+	CreateShelf(ctx context.Context, input lybbrio.CreateShelfInput) (*ent.Shelf, error)
 	UpdateShelf(ctx context.Context, id ksuid.ID, input ent.UpdateShelfInput) (*ent.Shelf, error)
 	CreateTag(ctx context.Context, input ent.CreateTagInput) (*ent.Tag, error)
 	UpdateTag(ctx context.Context, id ksuid.ID, input ent.UpdateTagInput) (*ent.Tag, error)
@@ -394,13 +395,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.AuthorEdge.Node(childComplexity), true
 
-	case "Book.addedAt":
-		if e.complexity.Book.AddedAt == nil {
-			break
-		}
-
-		return e.complexity.Book.AddedAt(childComplexity), true
-
 	case "Book.authors":
 		if e.complexity.Book.Authors == nil {
 			break
@@ -450,12 +444,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Book.Path(childComplexity), true
 
-	case "Book.pubDate":
-		if e.complexity.Book.PubDate == nil {
+	case "Book.publishedDate":
+		if e.complexity.Book.PublishedDate == nil {
 			break
 		}
 
-		return e.complexity.Book.PubDate(childComplexity), true
+		return e.complexity.Book.PublishedDate(childComplexity), true
 
 	case "Book.series":
 		if e.complexity.Book.Series == nil {
@@ -463,6 +457,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Book.Series(childComplexity), true
+
+	case "Book.seriesIndex":
+		if e.complexity.Book.SeriesIndex == nil {
+			break
+		}
+
+		return e.complexity.Book.SeriesIndex(childComplexity), true
 
 	case "Book.shelf":
 		if e.complexity.Book.Shelf == nil {
@@ -733,7 +734,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.CreateShelf(childComplexity, args["input"].(ent.CreateShelfInput)), true
+		return e.complexity.Mutation.CreateShelf(childComplexity, args["input"].(lybbrio.CreateShelfInput)), true
 
 	case "Mutation.createTag":
 		if e.complexity.Mutation.CreateTag == nil {
@@ -1638,11 +1639,11 @@ type Book implements Node {
   id: ID!
   title: String!
   sort: String!
-  addedAt: Time!
-  pubDate: Time
+  publishedDate: Time
   path: String!
   isbn: String
   description: String
+  seriesIndex: Int
   authors: [Author!]
   series: [Series!]
   identifier: [Identifier!]
@@ -1676,7 +1677,6 @@ input BookOrder {
 enum BookOrderField {
   TITLE
   NAME
-  ADDED_AT
   PUB_DATE
   ISBN
 }
@@ -1725,26 +1725,17 @@ input BookWhereInput {
   sortHasSuffix: String
   sortEqualFold: String
   sortContainsFold: String
-  """added_at field predicates"""
-  addedAt: Time
-  addedAtNEQ: Time
-  addedAtIn: [Time!]
-  addedAtNotIn: [Time!]
-  addedAtGT: Time
-  addedAtGTE: Time
-  addedAtLT: Time
-  addedAtLTE: Time
-  """pub_date field predicates"""
-  pubDate: Time
-  pubDateNEQ: Time
-  pubDateIn: [Time!]
-  pubDateNotIn: [Time!]
-  pubDateGT: Time
-  pubDateGTE: Time
-  pubDateLT: Time
-  pubDateLTE: Time
-  pubDateIsNil: Boolean
-  pubDateNotNil: Boolean
+  """published_date field predicates"""
+  publishedDate: Time
+  publishedDateNEQ: Time
+  publishedDateIn: [Time!]
+  publishedDateNotIn: [Time!]
+  publishedDateGT: Time
+  publishedDateGTE: Time
+  publishedDateLT: Time
+  publishedDateLTE: Time
+  publishedDateIsNil: Boolean
+  publishedDateNotNil: Boolean
   """path field predicates"""
   path: String
   pathNEQ: String
@@ -1791,6 +1782,17 @@ input BookWhereInput {
   descriptionNotNil: Boolean
   descriptionEqualFold: String
   descriptionContainsFold: String
+  """series_index field predicates"""
+  seriesIndex: Int
+  seriesIndexNEQ: Int
+  seriesIndexIn: [Int!]
+  seriesIndexNotIn: [Int!]
+  seriesIndexGT: Int
+  seriesIndexGTE: Int
+  seriesIndexLT: Int
+  seriesIndexLTE: Int
+  seriesIndexIsNil: Boolean
+  seriesIndexNotNil: Boolean
   """authors edge predicates"""
   hasAuthors: Boolean
   hasAuthorsWith: [AuthorWhereInput!]
@@ -1824,11 +1826,11 @@ Input was generated by ent.
 input CreateBookInput {
   title: String!
   sort: String!
-  addedAt: Time
-  pubDate: Time
+  publishedDate: Time
   path: String!
   isbn: String
   description: String
+  seriesIndex: Int
   authorIDs: [ID!]
   seriesIDs: [ID!]
   identifierIDs: [ID!]
@@ -1868,17 +1870,6 @@ Input was generated by ent.
 input CreateSeriesInput {
   name: String!
   sort: String!
-  bookIDs: [ID!]
-}
-"""
-CreateShelfInput is used for create Shelf object.
-Input was generated by ent.
-"""
-input CreateShelfInput {
-  public: Boolean
-  name: String!
-  description: String
-  userID: ID!
   bookIDs: [ID!]
 }
 """
@@ -2683,14 +2674,15 @@ Input was generated by ent.
 input UpdateBookInput {
   title: String
   sort: String
-  addedAt: Time
-  pubDate: Time
-  clearPubDate: Boolean
+  publishedDate: Time
+  clearPublishedDate: Boolean
   path: String
   isbn: String
   clearIsbn: Boolean
   description: String
   clearDescription: Boolean
+  seriesIndex: Int
+  clearSeriesIndex: Boolean
   addAuthorIDs: [ID!]
   removeAuthorIDs: [ID!]
   clearAuthors: Boolean
@@ -2910,7 +2902,14 @@ input UserWhereInput {
     """Returns the currently logged in user"""
     me: User!
 }`, BuiltIn: false},
-	{Name: "../mutation.graphql", Input: `type Mutation {
+	{Name: "../mutation.graphql", Input: `input CreateShelfInput {
+    name: String!
+    description: String
+    public: Boolean
+    bookIDs: [ID!]
+}
+
+type Mutation {
     # The input and the output are types generated by Ent.
     createBook(input: CreateBookInput!): Book # Delete later, should only be createable from disk.
     updateBook(id: ID!, input: UpdateBookInput!): Book
@@ -3160,10 +3159,10 @@ func (ec *executionContext) field_Mutation_createSeries_args(ctx context.Context
 func (ec *executionContext) field_Mutation_createShelf_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 ent.CreateShelfInput
+	var arg0 lybbrio.CreateShelfInput
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg0, err = ec.unmarshalNCreateShelfInput2lybbrioᚋinternalᚋentᚐCreateShelfInput(ctx, tmp)
+		arg0, err = ec.unmarshalNCreateShelfInput2lybbrioᚐCreateShelfInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -4771,8 +4770,8 @@ func (ec *executionContext) fieldContext_Book_sort(ctx context.Context, field gr
 	return fc, nil
 }
 
-func (ec *executionContext) _Book_addedAt(ctx context.Context, field graphql.CollectedField, obj *ent.Book) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Book_addedAt(ctx, field)
+func (ec *executionContext) _Book_publishedDate(ctx context.Context, field graphql.CollectedField, obj *ent.Book) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Book_publishedDate(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -4785,51 +4784,7 @@ func (ec *executionContext) _Book_addedAt(ctx context.Context, field graphql.Col
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.AddedAt, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(time.Time)
-	fc.Result = res
-	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Book_addedAt(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Book",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Time does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Book_pubDate(ctx context.Context, field graphql.CollectedField, obj *ent.Book) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Book_pubDate(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.PubDate, nil
+		return obj.PublishedDate, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -4843,7 +4798,7 @@ func (ec *executionContext) _Book_pubDate(ctx context.Context, field graphql.Col
 	return ec.marshalOTime2timeᚐTime(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Book_pubDate(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Book_publishedDate(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Book",
 		Field:      field,
@@ -4977,6 +4932,47 @@ func (ec *executionContext) fieldContext_Book_description(ctx context.Context, f
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Book_seriesIndex(ctx context.Context, field graphql.CollectedField, obj *ent.Book) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Book_seriesIndex(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.SeriesIndex, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalOInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Book_seriesIndex(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Book",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
 		},
 	}
 	return fc, nil
@@ -5432,16 +5428,16 @@ func (ec *executionContext) fieldContext_BookEdge_node(ctx context.Context, fiel
 				return ec.fieldContext_Book_title(ctx, field)
 			case "sort":
 				return ec.fieldContext_Book_sort(ctx, field)
-			case "addedAt":
-				return ec.fieldContext_Book_addedAt(ctx, field)
-			case "pubDate":
-				return ec.fieldContext_Book_pubDate(ctx, field)
+			case "publishedDate":
+				return ec.fieldContext_Book_publishedDate(ctx, field)
 			case "path":
 				return ec.fieldContext_Book_path(ctx, field)
 			case "isbn":
 				return ec.fieldContext_Book_isbn(ctx, field)
 			case "description":
 				return ec.fieldContext_Book_description(ctx, field)
+			case "seriesIndex":
+				return ec.fieldContext_Book_seriesIndex(ctx, field)
 			case "authors":
 				return ec.fieldContext_Book_authors(ctx, field)
 			case "series":
@@ -5680,16 +5676,16 @@ func (ec *executionContext) fieldContext_Identifier_book(ctx context.Context, fi
 				return ec.fieldContext_Book_title(ctx, field)
 			case "sort":
 				return ec.fieldContext_Book_sort(ctx, field)
-			case "addedAt":
-				return ec.fieldContext_Book_addedAt(ctx, field)
-			case "pubDate":
-				return ec.fieldContext_Book_pubDate(ctx, field)
+			case "publishedDate":
+				return ec.fieldContext_Book_publishedDate(ctx, field)
 			case "path":
 				return ec.fieldContext_Book_path(ctx, field)
 			case "isbn":
 				return ec.fieldContext_Book_isbn(ctx, field)
 			case "description":
 				return ec.fieldContext_Book_description(ctx, field)
+			case "seriesIndex":
+				return ec.fieldContext_Book_seriesIndex(ctx, field)
 			case "authors":
 				return ec.fieldContext_Book_authors(ctx, field)
 			case "series":
@@ -6424,16 +6420,16 @@ func (ec *executionContext) fieldContext_Mutation_createBook(ctx context.Context
 				return ec.fieldContext_Book_title(ctx, field)
 			case "sort":
 				return ec.fieldContext_Book_sort(ctx, field)
-			case "addedAt":
-				return ec.fieldContext_Book_addedAt(ctx, field)
-			case "pubDate":
-				return ec.fieldContext_Book_pubDate(ctx, field)
+			case "publishedDate":
+				return ec.fieldContext_Book_publishedDate(ctx, field)
 			case "path":
 				return ec.fieldContext_Book_path(ctx, field)
 			case "isbn":
 				return ec.fieldContext_Book_isbn(ctx, field)
 			case "description":
 				return ec.fieldContext_Book_description(ctx, field)
+			case "seriesIndex":
+				return ec.fieldContext_Book_seriesIndex(ctx, field)
 			case "authors":
 				return ec.fieldContext_Book_authors(ctx, field)
 			case "series":
@@ -6504,16 +6500,16 @@ func (ec *executionContext) fieldContext_Mutation_updateBook(ctx context.Context
 				return ec.fieldContext_Book_title(ctx, field)
 			case "sort":
 				return ec.fieldContext_Book_sort(ctx, field)
-			case "addedAt":
-				return ec.fieldContext_Book_addedAt(ctx, field)
-			case "pubDate":
-				return ec.fieldContext_Book_pubDate(ctx, field)
+			case "publishedDate":
+				return ec.fieldContext_Book_publishedDate(ctx, field)
 			case "path":
 				return ec.fieldContext_Book_path(ctx, field)
 			case "isbn":
 				return ec.fieldContext_Book_isbn(ctx, field)
 			case "description":
 				return ec.fieldContext_Book_description(ctx, field)
+			case "seriesIndex":
+				return ec.fieldContext_Book_seriesIndex(ctx, field)
 			case "authors":
 				return ec.fieldContext_Book_authors(ctx, field)
 			case "series":
@@ -6684,7 +6680,7 @@ func (ec *executionContext) _Mutation_createShelf(ctx context.Context, field gra
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().CreateShelf(rctx, fc.Args["input"].(ent.CreateShelfInput))
+		return ec.resolvers.Mutation().CreateShelf(rctx, fc.Args["input"].(lybbrio.CreateShelfInput))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -9131,16 +9127,16 @@ func (ec *executionContext) fieldContext_Series_books(ctx context.Context, field
 				return ec.fieldContext_Book_title(ctx, field)
 			case "sort":
 				return ec.fieldContext_Book_sort(ctx, field)
-			case "addedAt":
-				return ec.fieldContext_Book_addedAt(ctx, field)
-			case "pubDate":
-				return ec.fieldContext_Book_pubDate(ctx, field)
+			case "publishedDate":
+				return ec.fieldContext_Book_publishedDate(ctx, field)
 			case "path":
 				return ec.fieldContext_Book_path(ctx, field)
 			case "isbn":
 				return ec.fieldContext_Book_isbn(ctx, field)
 			case "description":
 				return ec.fieldContext_Book_description(ctx, field)
+			case "seriesIndex":
+				return ec.fieldContext_Book_seriesIndex(ctx, field)
 			case "authors":
 				return ec.fieldContext_Book_authors(ctx, field)
 			case "series":
@@ -13094,7 +13090,7 @@ func (ec *executionContext) unmarshalInputBookWhereInput(ctx context.Context, ob
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "title", "titleNEQ", "titleIn", "titleNotIn", "titleGT", "titleGTE", "titleLT", "titleLTE", "titleContains", "titleHasPrefix", "titleHasSuffix", "titleEqualFold", "titleContainsFold", "sort", "sortNEQ", "sortIn", "sortNotIn", "sortGT", "sortGTE", "sortLT", "sortLTE", "sortContains", "sortHasPrefix", "sortHasSuffix", "sortEqualFold", "sortContainsFold", "addedAt", "addedAtNEQ", "addedAtIn", "addedAtNotIn", "addedAtGT", "addedAtGTE", "addedAtLT", "addedAtLTE", "pubDate", "pubDateNEQ", "pubDateIn", "pubDateNotIn", "pubDateGT", "pubDateGTE", "pubDateLT", "pubDateLTE", "pubDateIsNil", "pubDateNotNil", "path", "pathNEQ", "pathIn", "pathNotIn", "pathGT", "pathGTE", "pathLT", "pathLTE", "pathContains", "pathHasPrefix", "pathHasSuffix", "pathEqualFold", "pathContainsFold", "isbn", "isbnNEQ", "isbnIn", "isbnNotIn", "isbnGT", "isbnGTE", "isbnLT", "isbnLTE", "isbnContains", "isbnHasPrefix", "isbnHasSuffix", "isbnIsNil", "isbnNotNil", "isbnEqualFold", "isbnContainsFold", "description", "descriptionNEQ", "descriptionIn", "descriptionNotIn", "descriptionGT", "descriptionGTE", "descriptionLT", "descriptionLTE", "descriptionContains", "descriptionHasPrefix", "descriptionHasSuffix", "descriptionIsNil", "descriptionNotNil", "descriptionEqualFold", "descriptionContainsFold", "hasAuthors", "hasAuthorsWith", "hasSeries", "hasSeriesWith", "hasIdentifier", "hasIdentifierWith", "hasLanguage", "hasLanguageWith", "hasShelf", "hasShelfWith"}
+	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "title", "titleNEQ", "titleIn", "titleNotIn", "titleGT", "titleGTE", "titleLT", "titleLTE", "titleContains", "titleHasPrefix", "titleHasSuffix", "titleEqualFold", "titleContainsFold", "sort", "sortNEQ", "sortIn", "sortNotIn", "sortGT", "sortGTE", "sortLT", "sortLTE", "sortContains", "sortHasPrefix", "sortHasSuffix", "sortEqualFold", "sortContainsFold", "publishedDate", "publishedDateNEQ", "publishedDateIn", "publishedDateNotIn", "publishedDateGT", "publishedDateGTE", "publishedDateLT", "publishedDateLTE", "publishedDateIsNil", "publishedDateNotNil", "path", "pathNEQ", "pathIn", "pathNotIn", "pathGT", "pathGTE", "pathLT", "pathLTE", "pathContains", "pathHasPrefix", "pathHasSuffix", "pathEqualFold", "pathContainsFold", "isbn", "isbnNEQ", "isbnIn", "isbnNotIn", "isbnGT", "isbnGTE", "isbnLT", "isbnLTE", "isbnContains", "isbnHasPrefix", "isbnHasSuffix", "isbnIsNil", "isbnNotNil", "isbnEqualFold", "isbnContainsFold", "description", "descriptionNEQ", "descriptionIn", "descriptionNotIn", "descriptionGT", "descriptionGTE", "descriptionLT", "descriptionLTE", "descriptionContains", "descriptionHasPrefix", "descriptionHasSuffix", "descriptionIsNil", "descriptionNotNil", "descriptionEqualFold", "descriptionContainsFold", "seriesIndex", "seriesIndexNEQ", "seriesIndexIn", "seriesIndexNotIn", "seriesIndexGT", "seriesIndexGTE", "seriesIndexLT", "seriesIndexLTE", "seriesIndexIsNil", "seriesIndexNotNil", "hasAuthors", "hasAuthorsWith", "hasSeries", "hasSeriesWith", "hasIdentifier", "hasIdentifierWith", "hasLanguage", "hasLanguageWith", "hasShelf", "hasShelfWith"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -13360,132 +13356,76 @@ func (ec *executionContext) unmarshalInputBookWhereInput(ctx context.Context, ob
 				return it, err
 			}
 			it.SortContainsFold = data
-		case "addedAt":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("addedAt"))
+		case "publishedDate":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("publishedDate"))
 			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.AddedAt = data
-		case "addedAtNEQ":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("addedAtNEQ"))
+			it.PublishedDate = data
+		case "publishedDateNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("publishedDateNEQ"))
 			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.AddedAtNEQ = data
-		case "addedAtIn":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("addedAtIn"))
+			it.PublishedDateNEQ = data
+		case "publishedDateIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("publishedDateIn"))
 			data, err := ec.unmarshalOTime2ᚕtimeᚐTimeᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.AddedAtIn = data
-		case "addedAtNotIn":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("addedAtNotIn"))
+			it.PublishedDateIn = data
+		case "publishedDateNotIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("publishedDateNotIn"))
 			data, err := ec.unmarshalOTime2ᚕtimeᚐTimeᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.AddedAtNotIn = data
-		case "addedAtGT":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("addedAtGT"))
+			it.PublishedDateNotIn = data
+		case "publishedDateGT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("publishedDateGT"))
 			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.AddedAtGT = data
-		case "addedAtGTE":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("addedAtGTE"))
+			it.PublishedDateGT = data
+		case "publishedDateGTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("publishedDateGTE"))
 			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.AddedAtGTE = data
-		case "addedAtLT":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("addedAtLT"))
+			it.PublishedDateGTE = data
+		case "publishedDateLT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("publishedDateLT"))
 			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.AddedAtLT = data
-		case "addedAtLTE":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("addedAtLTE"))
+			it.PublishedDateLT = data
+		case "publishedDateLTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("publishedDateLTE"))
 			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.AddedAtLTE = data
-		case "pubDate":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pubDate"))
-			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.PubDate = data
-		case "pubDateNEQ":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pubDateNEQ"))
-			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.PubDateNEQ = data
-		case "pubDateIn":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pubDateIn"))
-			data, err := ec.unmarshalOTime2ᚕtimeᚐTimeᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.PubDateIn = data
-		case "pubDateNotIn":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pubDateNotIn"))
-			data, err := ec.unmarshalOTime2ᚕtimeᚐTimeᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.PubDateNotIn = data
-		case "pubDateGT":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pubDateGT"))
-			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.PubDateGT = data
-		case "pubDateGTE":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pubDateGTE"))
-			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.PubDateGTE = data
-		case "pubDateLT":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pubDateLT"))
-			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.PubDateLT = data
-		case "pubDateLTE":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pubDateLTE"))
-			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.PubDateLTE = data
-		case "pubDateIsNil":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pubDateIsNil"))
+			it.PublishedDateLTE = data
+		case "publishedDateIsNil":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("publishedDateIsNil"))
 			data, err := ec.unmarshalOBoolean2bool(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.PubDateIsNil = data
-		case "pubDateNotNil":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pubDateNotNil"))
+			it.PublishedDateIsNil = data
+		case "publishedDateNotNil":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("publishedDateNotNil"))
 			data, err := ec.unmarshalOBoolean2bool(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.PubDateNotNil = data
+			it.PublishedDateNotNil = data
 		case "path":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("path"))
 			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
@@ -13787,6 +13727,76 @@ func (ec *executionContext) unmarshalInputBookWhereInput(ctx context.Context, ob
 				return it, err
 			}
 			it.DescriptionContainsFold = data
+		case "seriesIndex":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("seriesIndex"))
+			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.SeriesIndex = data
+		case "seriesIndexNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("seriesIndexNEQ"))
+			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.SeriesIndexNEQ = data
+		case "seriesIndexIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("seriesIndexIn"))
+			data, err := ec.unmarshalOInt2ᚕintᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.SeriesIndexIn = data
+		case "seriesIndexNotIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("seriesIndexNotIn"))
+			data, err := ec.unmarshalOInt2ᚕintᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.SeriesIndexNotIn = data
+		case "seriesIndexGT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("seriesIndexGT"))
+			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.SeriesIndexGT = data
+		case "seriesIndexGTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("seriesIndexGTE"))
+			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.SeriesIndexGTE = data
+		case "seriesIndexLT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("seriesIndexLT"))
+			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.SeriesIndexLT = data
+		case "seriesIndexLTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("seriesIndexLTE"))
+			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.SeriesIndexLTE = data
+		case "seriesIndexIsNil":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("seriesIndexIsNil"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.SeriesIndexIsNil = data
+		case "seriesIndexNotNil":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("seriesIndexNotNil"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.SeriesIndexNotNil = data
 		case "hasAuthors":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasAuthors"))
 			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
@@ -13918,7 +13928,7 @@ func (ec *executionContext) unmarshalInputCreateBookInput(ctx context.Context, o
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"title", "sort", "addedAt", "pubDate", "path", "isbn", "description", "authorIDs", "seriesIDs", "identifierIDs", "languageID", "shelfIDs"}
+	fieldsInOrder := [...]string{"title", "sort", "publishedDate", "path", "isbn", "description", "seriesIndex", "authorIDs", "seriesIDs", "identifierIDs", "languageID", "shelfIDs"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -13939,20 +13949,13 @@ func (ec *executionContext) unmarshalInputCreateBookInput(ctx context.Context, o
 				return it, err
 			}
 			it.Sort = data
-		case "addedAt":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("addedAt"))
+		case "publishedDate":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("publishedDate"))
 			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.AddedAt = data
-		case "pubDate":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pubDate"))
-			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.PubDate = data
+			it.PublishedDate = data
 		case "path":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("path"))
 			data, err := ec.unmarshalNString2string(ctx, v)
@@ -13974,6 +13977,13 @@ func (ec *executionContext) unmarshalInputCreateBookInput(ctx context.Context, o
 				return it, err
 			}
 			it.Description = data
+		case "seriesIndex":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("seriesIndex"))
+			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.SeriesIndex = data
 		case "authorIDs":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("authorIDs"))
 			data, err := ec.unmarshalOID2ᚕlybbrioᚋinternalᚋentᚋschemaᚋksuidᚐIDᚄ(ctx, v)
@@ -14172,27 +14182,20 @@ func (ec *executionContext) unmarshalInputCreateSeriesInput(ctx context.Context,
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputCreateShelfInput(ctx context.Context, obj interface{}) (ent.CreateShelfInput, error) {
-	var it ent.CreateShelfInput
+func (ec *executionContext) unmarshalInputCreateShelfInput(ctx context.Context, obj interface{}) (lybbrio.CreateShelfInput, error) {
+	var it lybbrio.CreateShelfInput
 	asMap := map[string]interface{}{}
 	for k, v := range obj.(map[string]interface{}) {
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"public", "name", "description", "userID", "bookIDs"}
+	fieldsInOrder := [...]string{"name", "description", "public", "bookIDs"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
 			continue
 		}
 		switch k {
-		case "public":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("public"))
-			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Public = data
 		case "name":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
 			data, err := ec.unmarshalNString2string(ctx, v)
@@ -14207,13 +14210,13 @@ func (ec *executionContext) unmarshalInputCreateShelfInput(ctx context.Context, 
 				return it, err
 			}
 			it.Description = data
-		case "userID":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("userID"))
-			data, err := ec.unmarshalNID2lybbrioᚋinternalᚋentᚋschemaᚋksuidᚐID(ctx, v)
+		case "public":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("public"))
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.UserID = data
+			it.Public = data
 		case "bookIDs":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("bookIDs"))
 			data, err := ec.unmarshalOID2ᚕlybbrioᚋinternalᚋentᚋschemaᚋksuidᚐIDᚄ(ctx, v)
@@ -16266,7 +16269,7 @@ func (ec *executionContext) unmarshalInputUpdateBookInput(ctx context.Context, o
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"title", "sort", "addedAt", "pubDate", "clearPubDate", "path", "isbn", "clearIsbn", "description", "clearDescription", "addAuthorIDs", "removeAuthorIDs", "clearAuthors", "addSeriesIDs", "removeSeriesIDs", "clearSeries", "addIdentifierIDs", "removeIdentifierIDs", "clearIdentifier", "languageID", "clearLanguage", "addShelfIDs", "removeShelfIDs", "clearShelf"}
+	fieldsInOrder := [...]string{"title", "sort", "publishedDate", "clearPublishedDate", "path", "isbn", "clearIsbn", "description", "clearDescription", "seriesIndex", "clearSeriesIndex", "addAuthorIDs", "removeAuthorIDs", "clearAuthors", "addSeriesIDs", "removeSeriesIDs", "clearSeries", "addIdentifierIDs", "removeIdentifierIDs", "clearIdentifier", "languageID", "clearLanguage", "addShelfIDs", "removeShelfIDs", "clearShelf"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -16287,27 +16290,20 @@ func (ec *executionContext) unmarshalInputUpdateBookInput(ctx context.Context, o
 				return it, err
 			}
 			it.Sort = data
-		case "addedAt":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("addedAt"))
+		case "publishedDate":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("publishedDate"))
 			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.AddedAt = data
-		case "pubDate":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pubDate"))
-			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.PubDate = data
-		case "clearPubDate":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clearPubDate"))
+			it.PublishedDate = data
+		case "clearPublishedDate":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clearPublishedDate"))
 			data, err := ec.unmarshalOBoolean2bool(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.ClearPubDate = data
+			it.ClearPublishedDate = data
 		case "path":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("path"))
 			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
@@ -16343,6 +16339,20 @@ func (ec *executionContext) unmarshalInputUpdateBookInput(ctx context.Context, o
 				return it, err
 			}
 			it.ClearDescription = data
+		case "seriesIndex":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("seriesIndex"))
+			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.SeriesIndex = data
+		case "clearSeriesIndex":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clearSeriesIndex"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ClearSeriesIndex = data
 		case "addAuthorIDs":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("addAuthorIDs"))
 			data, err := ec.unmarshalOID2ᚕlybbrioᚋinternalᚋentᚋschemaᚋksuidᚐIDᚄ(ctx, v)
@@ -17688,13 +17698,8 @@ func (ec *executionContext) _Book(ctx context.Context, sel ast.SelectionSet, obj
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
 			}
-		case "addedAt":
-			out.Values[i] = ec._Book_addedAt(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&out.Invalids, 1)
-			}
-		case "pubDate":
-			out.Values[i] = ec._Book_pubDate(ctx, field, obj)
+		case "publishedDate":
+			out.Values[i] = ec._Book_publishedDate(ctx, field, obj)
 		case "path":
 			out.Values[i] = ec._Book_path(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -17704,6 +17709,8 @@ func (ec *executionContext) _Book(ctx context.Context, sel ast.SelectionSet, obj
 			out.Values[i] = ec._Book_isbn(ctx, field, obj)
 		case "description":
 			out.Values[i] = ec._Book_description(ctx, field, obj)
+		case "seriesIndex":
+			out.Values[i] = ec._Book_seriesIndex(ctx, field, obj)
 		case "authors":
 			field := field
 
@@ -20187,7 +20194,7 @@ func (ec *executionContext) unmarshalNCreateSeriesInput2lybbrioᚋinternalᚋent
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) unmarshalNCreateShelfInput2lybbrioᚋinternalᚋentᚐCreateShelfInput(ctx context.Context, v interface{}) (ent.CreateShelfInput, error) {
+func (ec *executionContext) unmarshalNCreateShelfInput2lybbrioᚐCreateShelfInput(ctx context.Context, v interface{}) (lybbrio.CreateShelfInput, error) {
 	res, err := ec.unmarshalInputCreateShelfInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
@@ -21660,6 +21667,54 @@ func (ec *executionContext) unmarshalOIdentifierWhereInput2ᚖlybbrioᚋinternal
 	}
 	res, err := ec.unmarshalInputIdentifierWhereInput(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalOInt2int(ctx context.Context, v interface{}) (int, error) {
+	res, err := graphql.UnmarshalInt(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOInt2int(ctx context.Context, sel ast.SelectionSet, v int) graphql.Marshaler {
+	res := graphql.MarshalInt(v)
+	return res
+}
+
+func (ec *executionContext) unmarshalOInt2ᚕintᚄ(ctx context.Context, v interface{}) ([]int, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var vSlice []interface{}
+	if v != nil {
+		vSlice = graphql.CoerceList(v)
+	}
+	var err error
+	res := make([]int, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNInt2int(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) marshalOInt2ᚕintᚄ(ctx context.Context, sel ast.SelectionSet, v []int) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	for i := range v {
+		ret[i] = ec.marshalNInt2int(ctx, sel, v[i])
+	}
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
 }
 
 func (ec *executionContext) unmarshalOInt2ᚖint(ctx context.Context, v interface{}) (*int, error) {

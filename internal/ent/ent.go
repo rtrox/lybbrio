@@ -12,7 +12,6 @@ import (
 	"lybbrio/internal/ent/language"
 	"lybbrio/internal/ent/publisher"
 	"lybbrio/internal/ent/series"
-	"lybbrio/internal/ent/seriesbook"
 	"lybbrio/internal/ent/shelf"
 	"lybbrio/internal/ent/tag"
 	"lybbrio/internal/ent/user"
@@ -89,7 +88,6 @@ func checkColumn(table, column string) error {
 			language.Table:        language.ValidColumn,
 			publisher.Table:       publisher.ValidColumn,
 			series.Table:          series.ValidColumn,
-			seriesbook.Table:      seriesbook.ValidColumn,
 			shelf.Table:           shelf.ValidColumn,
 			tag.Table:             tag.ValidColumn,
 			user.Table:            user.ValidColumn,

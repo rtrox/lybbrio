@@ -46,8 +46,7 @@ func (Series) Fields() []ent.Field {
 // Edges of the Series.
 func (Series) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("books", Book.Type).
-			Through("series_books", SeriesBook.Type),
+		edge.To("books", Book.Type),
 	}
 }
 

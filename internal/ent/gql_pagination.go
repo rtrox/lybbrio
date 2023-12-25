@@ -707,31 +707,17 @@ var (
 			}
 		},
 	}
-	// BookOrderFieldAddedAt orders Book by added_at.
-	BookOrderFieldAddedAt = &BookOrderField{
+	// BookOrderFieldPublishedDate orders Book by published_date.
+	BookOrderFieldPublishedDate = &BookOrderField{
 		Value: func(b *Book) (ent.Value, error) {
-			return b.AddedAt, nil
+			return b.PublishedDate, nil
 		},
-		column: book.FieldAddedAt,
-		toTerm: book.ByAddedAt,
+		column: book.FieldPublishedDate,
+		toTerm: book.ByPublishedDate,
 		toCursor: func(b *Book) Cursor {
 			return Cursor{
 				ID:    b.ID,
-				Value: b.AddedAt,
-			}
-		},
-	}
-	// BookOrderFieldPubDate orders Book by pub_date.
-	BookOrderFieldPubDate = &BookOrderField{
-		Value: func(b *Book) (ent.Value, error) {
-			return b.PubDate, nil
-		},
-		column: book.FieldPubDate,
-		toTerm: book.ByPubDate,
-		toCursor: func(b *Book) Cursor {
-			return Cursor{
-				ID:    b.ID,
-				Value: b.PubDate,
+				Value: b.PublishedDate,
 			}
 		},
 	}
@@ -759,9 +745,7 @@ func (f BookOrderField) String() string {
 		str = "TITLE"
 	case BookOrderFieldSort.column:
 		str = "NAME"
-	case BookOrderFieldAddedAt.column:
-		str = "ADDED_AT"
-	case BookOrderFieldPubDate.column:
+	case BookOrderFieldPublishedDate.column:
 		str = "PUB_DATE"
 	case BookOrderFieldIsbn.column:
 		str = "ISBN"
@@ -785,10 +769,8 @@ func (f *BookOrderField) UnmarshalGQL(v interface{}) error {
 		*f = *BookOrderFieldTitle
 	case "NAME":
 		*f = *BookOrderFieldSort
-	case "ADDED_AT":
-		*f = *BookOrderFieldAddedAt
 	case "PUB_DATE":
-		*f = *BookOrderFieldPubDate
+		*f = *BookOrderFieldPublishedDate
 	case "ISBN":
 		*f = *BookOrderFieldIsbn
 	default:

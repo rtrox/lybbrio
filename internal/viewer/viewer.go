@@ -46,7 +46,11 @@ func NewContext(ctx context.Context, u *ent.User, p *ent.UserPermissions) contex
 }
 
 func FromContext(ctx context.Context) Viewer {
-	return ctx.Value(viewerCtxKey).(Viewer)
+	view, ok := ctx.Value(viewerCtxKey).(Viewer)
+	if !ok {
+		return nil
+	}
+	return view
 }
 
 type SystemAdminViewer struct{}

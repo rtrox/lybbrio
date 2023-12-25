@@ -24,8 +24,6 @@ type Tx struct {
 	Publisher *PublisherClient
 	// Series is the client for interacting with the Series builders.
 	Series *SeriesClient
-	// SeriesBook is the client for interacting with the SeriesBook builders.
-	SeriesBook *SeriesBookClient
 	// Shelf is the client for interacting with the Shelf builders.
 	Shelf *ShelfClient
 	// Tag is the client for interacting with the Tag builders.
@@ -171,7 +169,6 @@ func (tx *Tx) init() {
 	tx.Language = NewLanguageClient(tx.config)
 	tx.Publisher = NewPublisherClient(tx.config)
 	tx.Series = NewSeriesClient(tx.config)
-	tx.SeriesBook = NewSeriesBookClient(tx.config)
 	tx.Shelf = NewShelfClient(tx.config)
 	tx.Tag = NewTagClient(tx.config)
 	tx.User = NewUserClient(tx.config)

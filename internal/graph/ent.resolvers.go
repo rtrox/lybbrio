@@ -28,6 +28,7 @@ func (r *queryResolver) Authors(ctx context.Context, after *entgql.Cursor[ksuid.
 	return r.client.Author.Query().
 		Paginate(ctx, after, first, before, last,
 			ent.WithAuthorOrder(orderBy),
+			ent.WithAuthorFilter(where.Filter),
 		)
 }
 
@@ -36,31 +37,44 @@ func (r *queryResolver) Books(ctx context.Context, after *entgql.Cursor[ksuid.ID
 	return r.client.Book.Query().
 		Paginate(ctx, after, first, before, last,
 			ent.WithBookOrder(orderBy),
+			ent.WithBookFilter(where.Filter),
 		)
 }
 
 // Identifiers is the resolver for the identifiers field.
 func (r *queryResolver) Identifiers(ctx context.Context, after *entgql.Cursor[ksuid.ID], first *int, before *entgql.Cursor[ksuid.ID], last *int, orderBy []*ent.IdentifierOrder, where *ent.IdentifierWhereInput) (*ent.IdentifierConnection, error) {
 	return r.client.Identifier.Query().
-		Paginate(ctx, after, first, before, last)
+		Paginate(ctx, after, first, before, last,
+			ent.WithIdentifierOrder(orderBy),
+			ent.WithIdentifierFilter(where.Filter),
+		)
 }
 
 // Languages is the resolver for the languages field.
 func (r *queryResolver) Languages(ctx context.Context, after *entgql.Cursor[ksuid.ID], first *int, before *entgql.Cursor[ksuid.ID], last *int, orderBy []*ent.LanguageOrder, where *ent.LanguageWhereInput) (*ent.LanguageConnection, error) {
 	return r.client.Language.Query().
-		Paginate(ctx, after, first, before, last)
+		Paginate(ctx, after, first, before, last,
+			ent.WithLanguageOrder(orderBy),
+			ent.WithLanguageFilter(where.Filter),
+		)
 }
 
 // Publishers is the resolver for the publishers field.
 func (r *queryResolver) Publishers(ctx context.Context, after *entgql.Cursor[ksuid.ID], first *int, before *entgql.Cursor[ksuid.ID], last *int, orderBy []*ent.PublisherOrder, where *ent.PublisherWhereInput) (*ent.PublisherConnection, error) {
 	return r.client.Publisher.Query().
-		Paginate(ctx, after, first, before, last)
+		Paginate(ctx, after, first, before, last,
+			ent.WithPublisherOrder(orderBy),
+			ent.WithPublisherFilter(where.Filter),
+		)
 }
 
 // SeriesSlice is the resolver for the seriesSlice field.
 func (r *queryResolver) SeriesSlice(ctx context.Context, after *entgql.Cursor[ksuid.ID], first *int, before *entgql.Cursor[ksuid.ID], last *int, orderBy []*ent.SeriesOrder, where *ent.SeriesWhereInput) (*ent.SeriesConnection, error) {
 	return r.client.Series.Query().
-		Paginate(ctx, after, first, before, last)
+		Paginate(ctx, after, first, before, last,
+			ent.WithSeriesOrder(orderBy),
+			ent.WithSeriesFilter(where.Filter),
+		)
 }
 
 // Shelves is the resolver for the shelves field.
@@ -68,13 +82,17 @@ func (r *queryResolver) Shelves(ctx context.Context, after *entgql.Cursor[ksuid.
 	return r.client.Shelf.Query().
 		Paginate(ctx, after, first, before, last,
 			ent.WithShelfOrder(orderBy),
+			ent.WithShelfFilter(where.Filter),
 		)
 }
 
 // Tags is the resolver for the tags field.
 func (r *queryResolver) Tags(ctx context.Context, after *entgql.Cursor[ksuid.ID], first *int, before *entgql.Cursor[ksuid.ID], last *int, orderBy []*ent.TagOrder, where *ent.TagWhereInput) (*ent.TagConnection, error) {
 	return r.client.Tag.Query().
-		Paginate(ctx, after, first, before, last)
+		Paginate(ctx, after, first, before, last,
+			ent.WithTagOrder(orderBy),
+			ent.WithTagFilter(where.Filter),
+		)
 }
 
 // Users is the resolver for the users field.

@@ -86,11 +86,11 @@ func (c *AuthorUpdateOne) SetInput(i UpdateAuthorInput) *AuthorUpdateOne {
 type CreateBookInput struct {
 	Title         string
 	Sort          string
-	AddedAt       *time.Time
-	PubDate       *time.Time
+	PublishedDate *time.Time
 	Path          string
 	Isbn          *string
 	Description   *string
+	SeriesIndex   *int
 	AuthorIDs     []ksuid.ID
 	SeriesIDs     []ksuid.ID
 	IdentifierIDs []ksuid.ID
@@ -102,11 +102,8 @@ type CreateBookInput struct {
 func (i *CreateBookInput) Mutate(m *BookMutation) {
 	m.SetTitle(i.Title)
 	m.SetSort(i.Sort)
-	if v := i.AddedAt; v != nil {
-		m.SetAddedAt(*v)
-	}
-	if v := i.PubDate; v != nil {
-		m.SetPubDate(*v)
+	if v := i.PublishedDate; v != nil {
+		m.SetPublishedDate(*v)
 	}
 	m.SetPath(i.Path)
 	if v := i.Isbn; v != nil {
@@ -114,6 +111,9 @@ func (i *CreateBookInput) Mutate(m *BookMutation) {
 	}
 	if v := i.Description; v != nil {
 		m.SetDescription(*v)
+	}
+	if v := i.SeriesIndex; v != nil {
+		m.SetSeriesIndex(*v)
 	}
 	if v := i.AuthorIDs; len(v) > 0 {
 		m.AddAuthorIDs(v...)
@@ -142,14 +142,15 @@ func (c *BookCreate) SetInput(i CreateBookInput) *BookCreate {
 type UpdateBookInput struct {
 	Title               *string
 	Sort                *string
-	AddedAt             *time.Time
-	ClearPubDate        bool
-	PubDate             *time.Time
+	ClearPublishedDate  bool
+	PublishedDate       *time.Time
 	Path                *string
 	ClearIsbn           bool
 	Isbn                *string
 	ClearDescription    bool
 	Description         *string
+	ClearSeriesIndex    bool
+	SeriesIndex         *int
 	ClearAuthors        bool
 	AddAuthorIDs        []ksuid.ID
 	RemoveAuthorIDs     []ksuid.ID
@@ -174,14 +175,11 @@ func (i *UpdateBookInput) Mutate(m *BookMutation) {
 	if v := i.Sort; v != nil {
 		m.SetSort(*v)
 	}
-	if v := i.AddedAt; v != nil {
-		m.SetAddedAt(*v)
+	if i.ClearPublishedDate {
+		m.ClearPublishedDate()
 	}
-	if i.ClearPubDate {
-		m.ClearPubDate()
-	}
-	if v := i.PubDate; v != nil {
-		m.SetPubDate(*v)
+	if v := i.PublishedDate; v != nil {
+		m.SetPublishedDate(*v)
 	}
 	if v := i.Path; v != nil {
 		m.SetPath(*v)
@@ -197,6 +195,12 @@ func (i *UpdateBookInput) Mutate(m *BookMutation) {
 	}
 	if v := i.Description; v != nil {
 		m.SetDescription(*v)
+	}
+	if i.ClearSeriesIndex {
+		m.ClearSeriesIndex()
+	}
+	if v := i.SeriesIndex; v != nil {
+		m.SetSeriesIndex(*v)
 	}
 	if i.ClearAuthors {
 		m.ClearAuthors()
@@ -482,36 +486,6 @@ func (c *SeriesUpdate) SetInput(i UpdateSeriesInput) *SeriesUpdate {
 
 // SetInput applies the change-set in the UpdateSeriesInput on the SeriesUpdateOne builder.
 func (c *SeriesUpdateOne) SetInput(i UpdateSeriesInput) *SeriesUpdateOne {
-	i.Mutate(c.Mutation())
-	return c
-}
-
-// CreateShelfInput represents a mutation input for creating shelves.
-type CreateShelfInput struct {
-	Public      *bool
-	Name        string
-	Description *string
-	UserID      ksuid.ID
-	BookIDs     []ksuid.ID
-}
-
-// Mutate applies the CreateShelfInput on the ShelfMutation builder.
-func (i *CreateShelfInput) Mutate(m *ShelfMutation) {
-	if v := i.Public; v != nil {
-		m.SetPublic(*v)
-	}
-	m.SetName(i.Name)
-	if v := i.Description; v != nil {
-		m.SetDescription(*v)
-	}
-	m.SetUserID(i.UserID)
-	if v := i.BookIDs; len(v) > 0 {
-		m.AddBookIDs(v...)
-	}
-}
-
-// SetInput applies the change-set in the CreateShelfInput on the ShelfCreate builder.
-func (c *ShelfCreate) SetInput(i CreateShelfInput) *ShelfCreate {
 	i.Mutate(c.Mutation())
 	return c
 }

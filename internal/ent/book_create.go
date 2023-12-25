@@ -38,30 +38,16 @@ func (bc *BookCreate) SetSort(s string) *BookCreate {
 	return bc
 }
 
-// SetAddedAt sets the "added_at" field.
-func (bc *BookCreate) SetAddedAt(t time.Time) *BookCreate {
-	bc.mutation.SetAddedAt(t)
+// SetPublishedDate sets the "published_date" field.
+func (bc *BookCreate) SetPublishedDate(t time.Time) *BookCreate {
+	bc.mutation.SetPublishedDate(t)
 	return bc
 }
 
-// SetNillableAddedAt sets the "added_at" field if the given value is not nil.
-func (bc *BookCreate) SetNillableAddedAt(t *time.Time) *BookCreate {
+// SetNillablePublishedDate sets the "published_date" field if the given value is not nil.
+func (bc *BookCreate) SetNillablePublishedDate(t *time.Time) *BookCreate {
 	if t != nil {
-		bc.SetAddedAt(*t)
-	}
-	return bc
-}
-
-// SetPubDate sets the "pub_date" field.
-func (bc *BookCreate) SetPubDate(t time.Time) *BookCreate {
-	bc.mutation.SetPubDate(t)
-	return bc
-}
-
-// SetNillablePubDate sets the "pub_date" field if the given value is not nil.
-func (bc *BookCreate) SetNillablePubDate(t *time.Time) *BookCreate {
-	if t != nil {
-		bc.SetPubDate(*t)
+		bc.SetPublishedDate(*t)
 	}
 	return bc
 }
@@ -96,6 +82,20 @@ func (bc *BookCreate) SetDescription(s string) *BookCreate {
 func (bc *BookCreate) SetNillableDescription(s *string) *BookCreate {
 	if s != nil {
 		bc.SetDescription(*s)
+	}
+	return bc
+}
+
+// SetSeriesIndex sets the "series_index" field.
+func (bc *BookCreate) SetSeriesIndex(i int) *BookCreate {
+	bc.mutation.SetSeriesIndex(i)
+	return bc
+}
+
+// SetNillableSeriesIndex sets the "series_index" field if the given value is not nil.
+func (bc *BookCreate) SetNillableSeriesIndex(i *int) *BookCreate {
+	if i != nil {
+		bc.SetSeriesIndex(*i)
 	}
 	return bc
 }
@@ -230,13 +230,6 @@ func (bc *BookCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (bc *BookCreate) defaults() error {
-	if _, ok := bc.mutation.AddedAt(); !ok {
-		if book.DefaultAddedAt == nil {
-			return fmt.Errorf("ent: uninitialized book.DefaultAddedAt (forgotten import ent/runtime?)")
-		}
-		v := book.DefaultAddedAt()
-		bc.mutation.SetAddedAt(v)
-	}
 	if _, ok := bc.mutation.ID(); !ok {
 		if book.DefaultID == nil {
 			return fmt.Errorf("ent: uninitialized book.DefaultID (forgotten import ent/runtime?)")
@@ -260,15 +253,17 @@ func (bc *BookCreate) check() error {
 	if _, ok := bc.mutation.Sort(); !ok {
 		return &ValidationError{Name: "sort", err: errors.New(`ent: missing required field "Book.sort"`)}
 	}
-	if _, ok := bc.mutation.AddedAt(); !ok {
-		return &ValidationError{Name: "added_at", err: errors.New(`ent: missing required field "Book.added_at"`)}
-	}
 	if _, ok := bc.mutation.Path(); !ok {
 		return &ValidationError{Name: "path", err: errors.New(`ent: missing required field "Book.path"`)}
 	}
 	if v, ok := bc.mutation.Path(); ok {
 		if err := book.PathValidator(v); err != nil {
 			return &ValidationError{Name: "path", err: fmt.Errorf(`ent: validator failed for field "Book.path": %w`, err)}
+		}
+	}
+	if v, ok := bc.mutation.SeriesIndex(); ok {
+		if err := book.SeriesIndexValidator(v); err != nil {
+			return &ValidationError{Name: "series_index", err: fmt.Errorf(`ent: validator failed for field "Book.series_index": %w`, err)}
 		}
 	}
 	return nil
@@ -314,13 +309,9 @@ func (bc *BookCreate) createSpec() (*Book, *sqlgraph.CreateSpec) {
 		_spec.SetField(book.FieldSort, field.TypeString, value)
 		_node.Sort = value
 	}
-	if value, ok := bc.mutation.AddedAt(); ok {
-		_spec.SetField(book.FieldAddedAt, field.TypeTime, value)
-		_node.AddedAt = value
-	}
-	if value, ok := bc.mutation.PubDate(); ok {
-		_spec.SetField(book.FieldPubDate, field.TypeTime, value)
-		_node.PubDate = value
+	if value, ok := bc.mutation.PublishedDate(); ok {
+		_spec.SetField(book.FieldPublishedDate, field.TypeTime, value)
+		_node.PublishedDate = value
 	}
 	if value, ok := bc.mutation.Path(); ok {
 		_spec.SetField(book.FieldPath, field.TypeString, value)
@@ -333,6 +324,10 @@ func (bc *BookCreate) createSpec() (*Book, *sqlgraph.CreateSpec) {
 	if value, ok := bc.mutation.Description(); ok {
 		_spec.SetField(book.FieldDescription, field.TypeString, value)
 		_node.Description = value
+	}
+	if value, ok := bc.mutation.SeriesIndex(); ok {
+		_spec.SetField(book.FieldSeriesIndex, field.TypeInt, value)
+		_node.SeriesIndex = value
 	}
 	if nodes := bc.mutation.AuthorsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

@@ -305,15 +305,10 @@ func (b *BookQuery) collectField(ctx context.Context, opCtx *graphql.OperationCo
 				selectedFields = append(selectedFields, book.FieldSort)
 				fieldSeen[book.FieldSort] = struct{}{}
 			}
-		case "addedAt":
-			if _, ok := fieldSeen[book.FieldAddedAt]; !ok {
-				selectedFields = append(selectedFields, book.FieldAddedAt)
-				fieldSeen[book.FieldAddedAt] = struct{}{}
-			}
-		case "pubDate":
-			if _, ok := fieldSeen[book.FieldPubDate]; !ok {
-				selectedFields = append(selectedFields, book.FieldPubDate)
-				fieldSeen[book.FieldPubDate] = struct{}{}
+		case "publishedDate":
+			if _, ok := fieldSeen[book.FieldPublishedDate]; !ok {
+				selectedFields = append(selectedFields, book.FieldPublishedDate)
+				fieldSeen[book.FieldPublishedDate] = struct{}{}
 			}
 		case "path":
 			if _, ok := fieldSeen[book.FieldPath]; !ok {
@@ -329,6 +324,11 @@ func (b *BookQuery) collectField(ctx context.Context, opCtx *graphql.OperationCo
 			if _, ok := fieldSeen[book.FieldDescription]; !ok {
 				selectedFields = append(selectedFields, book.FieldDescription)
 				fieldSeen[book.FieldDescription] = struct{}{}
+			}
+		case "seriesIndex":
+			if _, ok := fieldSeen[book.FieldSeriesIndex]; !ok {
+				selectedFields = append(selectedFields, book.FieldSeriesIndex)
+				fieldSeen[book.FieldSeriesIndex] = struct{}{}
 			}
 		case "id":
 		case "__typename":

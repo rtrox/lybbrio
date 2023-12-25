@@ -80,18 +80,6 @@ func (f SeriesFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, erro
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.SeriesMutation", m)
 }
 
-// The SeriesBookFunc type is an adapter to allow the use of ordinary
-// function as SeriesBook mutator.
-type SeriesBookFunc func(context.Context, *ent.SeriesBookMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f SeriesBookFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.SeriesBookMutation); ok {
-		return f(ctx, mv)
-	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.SeriesBookMutation", m)
-}
-
 // The ShelfFunc type is an adapter to allow the use of ordinary
 // function as Shelf mutator.
 type ShelfFunc func(context.Context, *ent.ShelfMutation) (ent.Value, error)

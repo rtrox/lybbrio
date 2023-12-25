@@ -66,14 +66,9 @@ func Sort(v string) predicate.Book {
 	return predicate.Book(sql.FieldEQ(FieldSort, v))
 }
 
-// AddedAt applies equality check predicate on the "added_at" field. It's identical to AddedAtEQ.
-func AddedAt(v time.Time) predicate.Book {
-	return predicate.Book(sql.FieldEQ(FieldAddedAt, v))
-}
-
-// PubDate applies equality check predicate on the "pub_date" field. It's identical to PubDateEQ.
-func PubDate(v time.Time) predicate.Book {
-	return predicate.Book(sql.FieldEQ(FieldPubDate, v))
+// PublishedDate applies equality check predicate on the "published_date" field. It's identical to PublishedDateEQ.
+func PublishedDate(v time.Time) predicate.Book {
+	return predicate.Book(sql.FieldEQ(FieldPublishedDate, v))
 }
 
 // Path applies equality check predicate on the "path" field. It's identical to PathEQ.
@@ -89,6 +84,11 @@ func Isbn(v string) predicate.Book {
 // Description applies equality check predicate on the "description" field. It's identical to DescriptionEQ.
 func Description(v string) predicate.Book {
 	return predicate.Book(sql.FieldEQ(FieldDescription, v))
+}
+
+// SeriesIndex applies equality check predicate on the "series_index" field. It's identical to SeriesIndexEQ.
+func SeriesIndex(v int) predicate.Book {
+	return predicate.Book(sql.FieldEQ(FieldSeriesIndex, v))
 }
 
 // TitleEQ applies the EQ predicate on the "title" field.
@@ -221,94 +221,54 @@ func SortContainsFold(v string) predicate.Book {
 	return predicate.Book(sql.FieldContainsFold(FieldSort, v))
 }
 
-// AddedAtEQ applies the EQ predicate on the "added_at" field.
-func AddedAtEQ(v time.Time) predicate.Book {
-	return predicate.Book(sql.FieldEQ(FieldAddedAt, v))
+// PublishedDateEQ applies the EQ predicate on the "published_date" field.
+func PublishedDateEQ(v time.Time) predicate.Book {
+	return predicate.Book(sql.FieldEQ(FieldPublishedDate, v))
 }
 
-// AddedAtNEQ applies the NEQ predicate on the "added_at" field.
-func AddedAtNEQ(v time.Time) predicate.Book {
-	return predicate.Book(sql.FieldNEQ(FieldAddedAt, v))
+// PublishedDateNEQ applies the NEQ predicate on the "published_date" field.
+func PublishedDateNEQ(v time.Time) predicate.Book {
+	return predicate.Book(sql.FieldNEQ(FieldPublishedDate, v))
 }
 
-// AddedAtIn applies the In predicate on the "added_at" field.
-func AddedAtIn(vs ...time.Time) predicate.Book {
-	return predicate.Book(sql.FieldIn(FieldAddedAt, vs...))
+// PublishedDateIn applies the In predicate on the "published_date" field.
+func PublishedDateIn(vs ...time.Time) predicate.Book {
+	return predicate.Book(sql.FieldIn(FieldPublishedDate, vs...))
 }
 
-// AddedAtNotIn applies the NotIn predicate on the "added_at" field.
-func AddedAtNotIn(vs ...time.Time) predicate.Book {
-	return predicate.Book(sql.FieldNotIn(FieldAddedAt, vs...))
+// PublishedDateNotIn applies the NotIn predicate on the "published_date" field.
+func PublishedDateNotIn(vs ...time.Time) predicate.Book {
+	return predicate.Book(sql.FieldNotIn(FieldPublishedDate, vs...))
 }
 
-// AddedAtGT applies the GT predicate on the "added_at" field.
-func AddedAtGT(v time.Time) predicate.Book {
-	return predicate.Book(sql.FieldGT(FieldAddedAt, v))
+// PublishedDateGT applies the GT predicate on the "published_date" field.
+func PublishedDateGT(v time.Time) predicate.Book {
+	return predicate.Book(sql.FieldGT(FieldPublishedDate, v))
 }
 
-// AddedAtGTE applies the GTE predicate on the "added_at" field.
-func AddedAtGTE(v time.Time) predicate.Book {
-	return predicate.Book(sql.FieldGTE(FieldAddedAt, v))
+// PublishedDateGTE applies the GTE predicate on the "published_date" field.
+func PublishedDateGTE(v time.Time) predicate.Book {
+	return predicate.Book(sql.FieldGTE(FieldPublishedDate, v))
 }
 
-// AddedAtLT applies the LT predicate on the "added_at" field.
-func AddedAtLT(v time.Time) predicate.Book {
-	return predicate.Book(sql.FieldLT(FieldAddedAt, v))
+// PublishedDateLT applies the LT predicate on the "published_date" field.
+func PublishedDateLT(v time.Time) predicate.Book {
+	return predicate.Book(sql.FieldLT(FieldPublishedDate, v))
 }
 
-// AddedAtLTE applies the LTE predicate on the "added_at" field.
-func AddedAtLTE(v time.Time) predicate.Book {
-	return predicate.Book(sql.FieldLTE(FieldAddedAt, v))
+// PublishedDateLTE applies the LTE predicate on the "published_date" field.
+func PublishedDateLTE(v time.Time) predicate.Book {
+	return predicate.Book(sql.FieldLTE(FieldPublishedDate, v))
 }
 
-// PubDateEQ applies the EQ predicate on the "pub_date" field.
-func PubDateEQ(v time.Time) predicate.Book {
-	return predicate.Book(sql.FieldEQ(FieldPubDate, v))
+// PublishedDateIsNil applies the IsNil predicate on the "published_date" field.
+func PublishedDateIsNil() predicate.Book {
+	return predicate.Book(sql.FieldIsNull(FieldPublishedDate))
 }
 
-// PubDateNEQ applies the NEQ predicate on the "pub_date" field.
-func PubDateNEQ(v time.Time) predicate.Book {
-	return predicate.Book(sql.FieldNEQ(FieldPubDate, v))
-}
-
-// PubDateIn applies the In predicate on the "pub_date" field.
-func PubDateIn(vs ...time.Time) predicate.Book {
-	return predicate.Book(sql.FieldIn(FieldPubDate, vs...))
-}
-
-// PubDateNotIn applies the NotIn predicate on the "pub_date" field.
-func PubDateNotIn(vs ...time.Time) predicate.Book {
-	return predicate.Book(sql.FieldNotIn(FieldPubDate, vs...))
-}
-
-// PubDateGT applies the GT predicate on the "pub_date" field.
-func PubDateGT(v time.Time) predicate.Book {
-	return predicate.Book(sql.FieldGT(FieldPubDate, v))
-}
-
-// PubDateGTE applies the GTE predicate on the "pub_date" field.
-func PubDateGTE(v time.Time) predicate.Book {
-	return predicate.Book(sql.FieldGTE(FieldPubDate, v))
-}
-
-// PubDateLT applies the LT predicate on the "pub_date" field.
-func PubDateLT(v time.Time) predicate.Book {
-	return predicate.Book(sql.FieldLT(FieldPubDate, v))
-}
-
-// PubDateLTE applies the LTE predicate on the "pub_date" field.
-func PubDateLTE(v time.Time) predicate.Book {
-	return predicate.Book(sql.FieldLTE(FieldPubDate, v))
-}
-
-// PubDateIsNil applies the IsNil predicate on the "pub_date" field.
-func PubDateIsNil() predicate.Book {
-	return predicate.Book(sql.FieldIsNull(FieldPubDate))
-}
-
-// PubDateNotNil applies the NotNil predicate on the "pub_date" field.
-func PubDateNotNil() predicate.Book {
-	return predicate.Book(sql.FieldNotNull(FieldPubDate))
+// PublishedDateNotNil applies the NotNil predicate on the "published_date" field.
+func PublishedDateNotNil() predicate.Book {
+	return predicate.Book(sql.FieldNotNull(FieldPublishedDate))
 }
 
 // PathEQ applies the EQ predicate on the "path" field.
@@ -524,6 +484,56 @@ func DescriptionEqualFold(v string) predicate.Book {
 // DescriptionContainsFold applies the ContainsFold predicate on the "description" field.
 func DescriptionContainsFold(v string) predicate.Book {
 	return predicate.Book(sql.FieldContainsFold(FieldDescription, v))
+}
+
+// SeriesIndexEQ applies the EQ predicate on the "series_index" field.
+func SeriesIndexEQ(v int) predicate.Book {
+	return predicate.Book(sql.FieldEQ(FieldSeriesIndex, v))
+}
+
+// SeriesIndexNEQ applies the NEQ predicate on the "series_index" field.
+func SeriesIndexNEQ(v int) predicate.Book {
+	return predicate.Book(sql.FieldNEQ(FieldSeriesIndex, v))
+}
+
+// SeriesIndexIn applies the In predicate on the "series_index" field.
+func SeriesIndexIn(vs ...int) predicate.Book {
+	return predicate.Book(sql.FieldIn(FieldSeriesIndex, vs...))
+}
+
+// SeriesIndexNotIn applies the NotIn predicate on the "series_index" field.
+func SeriesIndexNotIn(vs ...int) predicate.Book {
+	return predicate.Book(sql.FieldNotIn(FieldSeriesIndex, vs...))
+}
+
+// SeriesIndexGT applies the GT predicate on the "series_index" field.
+func SeriesIndexGT(v int) predicate.Book {
+	return predicate.Book(sql.FieldGT(FieldSeriesIndex, v))
+}
+
+// SeriesIndexGTE applies the GTE predicate on the "series_index" field.
+func SeriesIndexGTE(v int) predicate.Book {
+	return predicate.Book(sql.FieldGTE(FieldSeriesIndex, v))
+}
+
+// SeriesIndexLT applies the LT predicate on the "series_index" field.
+func SeriesIndexLT(v int) predicate.Book {
+	return predicate.Book(sql.FieldLT(FieldSeriesIndex, v))
+}
+
+// SeriesIndexLTE applies the LTE predicate on the "series_index" field.
+func SeriesIndexLTE(v int) predicate.Book {
+	return predicate.Book(sql.FieldLTE(FieldSeriesIndex, v))
+}
+
+// SeriesIndexIsNil applies the IsNil predicate on the "series_index" field.
+func SeriesIndexIsNil() predicate.Book {
+	return predicate.Book(sql.FieldIsNull(FieldSeriesIndex))
+}
+
+// SeriesIndexNotNil applies the NotNil predicate on the "series_index" field.
+func SeriesIndexNotNil() predicate.Book {
+	return predicate.Book(sql.FieldNotNull(FieldSeriesIndex))
 }
 
 // HasAuthors applies the HasEdge predicate on the "authors" edge.

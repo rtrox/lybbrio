@@ -32,6 +32,12 @@ func (BaseMixin) Policy() ent.Policy {
 	}
 }
 
+func (BaseMixin) Mixin() []ent.Mixin {
+	return []ent.Mixin{
+		mixin.Time{},
+	}
+}
+
 type UserScopedMixin struct {
 	mixin.Schema
 }
@@ -96,8 +102,8 @@ func (PublicableUserScopedMixin) Edges() []ent.Edge {
 func (PublicableUserScopedMixin) Policy() ent.Policy {
 	return privacy.Policy{
 		Query: privacy.QueryPolicy{
-			rule.AllowIfAdmin(),
 			rule.FilterUserOrPublicRule(),
+			rule.AllowIfAdmin(),
 		},
 		Mutation: privacy.MutationPolicy{
 			rule.AllowIfAdmin(),

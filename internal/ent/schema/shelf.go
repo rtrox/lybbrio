@@ -21,7 +21,7 @@ func (Shelf) Annotations() []schema.Annotation {
 	return []schema.Annotation{
 		entgql.RelayConnection(),
 		entgql.QueryField(),
-		entgql.Mutations(entgql.MutationCreate(), entgql.MutationUpdate()),
+		entgql.Mutations(entgql.MutationUpdate()),
 		entgql.MultiOrder(),
 	}
 }

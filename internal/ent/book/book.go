@@ -4,7 +4,6 @@ package book
 
 import (
 	"lybbrio/internal/ent/schema/ksuid"
-	"time"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
@@ -20,16 +19,16 @@ const (
 	FieldTitle = "title"
 	// FieldSort holds the string denoting the sort field in the database.
 	FieldSort = "sort"
-	// FieldAddedAt holds the string denoting the added_at field in the database.
-	FieldAddedAt = "added_at"
-	// FieldPubDate holds the string denoting the pub_date field in the database.
-	FieldPubDate = "pub_date"
+	// FieldPublishedDate holds the string denoting the published_date field in the database.
+	FieldPublishedDate = "published_date"
 	// FieldPath holds the string denoting the path field in the database.
 	FieldPath = "path"
 	// FieldIsbn holds the string denoting the isbn field in the database.
 	FieldIsbn = "isbn"
 	// FieldDescription holds the string denoting the description field in the database.
 	FieldDescription = "description"
+	// FieldSeriesIndex holds the string denoting the series_index field in the database.
+	FieldSeriesIndex = "series_index"
 	// EdgeAuthors holds the string denoting the authors edge name in mutations.
 	EdgeAuthors = "authors"
 	// EdgeSeries holds the string denoting the series edge name in mutations.
@@ -78,11 +77,11 @@ var Columns = []string{
 	FieldID,
 	FieldTitle,
 	FieldSort,
-	FieldAddedAt,
-	FieldPubDate,
+	FieldPublishedDate,
 	FieldPath,
 	FieldIsbn,
 	FieldDescription,
+	FieldSeriesIndex,
 }
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the "books"
@@ -130,10 +129,10 @@ var (
 	Policy ent.Policy
 	// TitleValidator is a validator for the "title" field. It is called by the builders before save.
 	TitleValidator func(string) error
-	// DefaultAddedAt holds the default value on creation for the "added_at" field.
-	DefaultAddedAt func() time.Time
 	// PathValidator is a validator for the "path" field. It is called by the builders before save.
 	PathValidator func(string) error
+	// SeriesIndexValidator is a validator for the "series_index" field. It is called by the builders before save.
+	SeriesIndexValidator func(int) error
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() ksuid.ID
 )
@@ -156,14 +155,9 @@ func BySort(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldSort, opts...).ToFunc()
 }
 
-// ByAddedAt orders the results by the added_at field.
-func ByAddedAt(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldAddedAt, opts...).ToFunc()
-}
-
-// ByPubDate orders the results by the pub_date field.
-func ByPubDate(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldPubDate, opts...).ToFunc()
+// ByPublishedDate orders the results by the published_date field.
+func ByPublishedDate(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldPublishedDate, opts...).ToFunc()
 }
 
 // ByPath orders the results by the path field.
@@ -179,6 +173,11 @@ func ByIsbn(opts ...sql.OrderTermOption) OrderOption {
 // ByDescription orders the results by the description field.
 func ByDescription(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldDescription, opts...).ToFunc()
+}
+
+// BySeriesIndex orders the results by the series_index field.
+func BySeriesIndex(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldSeriesIndex, opts...).ToFunc()
 }
 
 // ByAuthorsCount orders the results by authors count.

@@ -23,16 +23,16 @@ type Book struct {
 	Title string `json:"title,omitempty"`
 	// Sort holds the value of the "sort" field.
 	Sort string `json:"sort,omitempty"`
-	// AddedAt holds the value of the "added_at" field.
-	AddedAt time.Time `json:"added_at,omitempty"`
-	// PubDate holds the value of the "pub_date" field.
-	PubDate time.Time `json:"pub_date,omitempty"`
+	// PublishedDate holds the value of the "published_date" field.
+	PublishedDate time.Time `json:"published_date,omitempty"`
 	// Path holds the value of the "path" field.
 	Path string `json:"path,omitempty"`
 	// Isbn holds the value of the "isbn" field.
 	Isbn string `json:"isbn,omitempty"`
 	// Description holds the value of the "description" field.
 	Description string `json:"description,omitempty"`
+	// SeriesIndex holds the value of the "series_index" field.
+	SeriesIndex int `json:"series_index,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the BookQuery when eager-loading is set.
 	Edges           BookEdges `json:"edges"`
@@ -120,9 +120,11 @@ func (*Book) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case book.FieldSeriesIndex:
+			values[i] = new(sql.NullInt64)
 		case book.FieldID, book.FieldTitle, book.FieldSort, book.FieldPath, book.FieldIsbn, book.FieldDescription:
 			values[i] = new(sql.NullString)
-		case book.FieldAddedAt, book.FieldPubDate:
+		case book.FieldPublishedDate:
 			values[i] = new(sql.NullTime)
 		case book.ForeignKeys[0]: // language_books
 			values[i] = new(sql.NullString)
@@ -163,17 +165,11 @@ func (b *Book) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				b.Sort = value.String
 			}
-		case book.FieldAddedAt:
+		case book.FieldPublishedDate:
 			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field added_at", values[i])
+				return fmt.Errorf("unexpected type %T for field published_date", values[i])
 			} else if value.Valid {
-				b.AddedAt = value.Time
-			}
-		case book.FieldPubDate:
-			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field pub_date", values[i])
-			} else if value.Valid {
-				b.PubDate = value.Time
+				b.PublishedDate = value.Time
 			}
 		case book.FieldPath:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -192,6 +188,12 @@ func (b *Book) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field description", values[i])
 			} else if value.Valid {
 				b.Description = value.String
+			}
+		case book.FieldSeriesIndex:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field series_index", values[i])
+			} else if value.Valid {
+				b.SeriesIndex = int(value.Int64)
 			}
 		case book.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -281,11 +283,8 @@ func (b *Book) String() string {
 	builder.WriteString("sort=")
 	builder.WriteString(b.Sort)
 	builder.WriteString(", ")
-	builder.WriteString("added_at=")
-	builder.WriteString(b.AddedAt.Format(time.ANSIC))
-	builder.WriteString(", ")
-	builder.WriteString("pub_date=")
-	builder.WriteString(b.PubDate.Format(time.ANSIC))
+	builder.WriteString("published_date=")
+	builder.WriteString(b.PublishedDate.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("path=")
 	builder.WriteString(b.Path)
@@ -295,6 +294,9 @@ func (b *Book) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("description=")
 	builder.WriteString(b.Description)
+	builder.WriteString(", ")
+	builder.WriteString("series_index=")
+	builder.WriteString(fmt.Sprintf("%v", b.SeriesIndex))
 	builder.WriteByte(')')
 	return builder.String()
 }

@@ -15,11 +15,11 @@ import (
 
 func Routes(client *ent.Client, jwt *JWTProvider) http.Handler {
 	r := chi.NewRouter()
-	r.Get("/testAuthDONOTUSE/{username}", TestAuth(client, jwt))
+	r.Get("/testAuthDONOTUSE/{username}", TestAuthDONOTUSE(client, jwt))
 	return r
 }
 
-func TestAuth(client *ent.Client, jwt *JWTProvider) http.HandlerFunc {
+func TestAuthDONOTUSE(client *ent.Client, jwt *JWTProvider) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		var staticUser *ent.User
@@ -28,7 +28,11 @@ func TestAuth(client *ent.Client, jwt *JWTProvider) http.HandlerFunc {
 		adminViewerCtx := viewer.NewSystemAdminContext(ctx)
 		staticUser, err = client.User.Query().Where(user.Username(username)).First(adminViewerCtx)
 		if err != nil {
-			perms, err := client.UserPermissions.Create().Save(adminViewerCtx)
+			permsCreate := client.UserPermissions.Create()
+			if r.URL.Query().Get("admin") == "true" {
+				permsCreate.SetAdmin(true)
+			}
+			perms, err := permsCreate.Save(adminViewerCtx)
 			if err != nil {
 				log.Error().Err(err).Msg("Failed to create static user permissions")
 				w.WriteHeader(http.StatusInternalServerError)

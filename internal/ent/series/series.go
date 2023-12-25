@@ -21,8 +21,6 @@ const (
 	FieldSort = "sort"
 	// EdgeBooks holds the string denoting the books edge name in mutations.
 	EdgeBooks = "books"
-	// EdgeSeriesBooks holds the string denoting the series_books edge name in mutations.
-	EdgeSeriesBooks = "series_books"
 	// Table holds the table name of the series in the database.
 	Table = "series"
 	// BooksTable is the table that holds the books relation/edge. The primary key declared below.
@@ -30,13 +28,6 @@ const (
 	// BooksInverseTable is the table name for the Book entity.
 	// It exists in this package in order to avoid circular dependency with the "book" package.
 	BooksInverseTable = "books"
-	// SeriesBooksTable is the table that holds the series_books relation/edge.
-	SeriesBooksTable = "series_books"
-	// SeriesBooksInverseTable is the table name for the SeriesBook entity.
-	// It exists in this package in order to avoid circular dependency with the "seriesbook" package.
-	SeriesBooksInverseTable = "series_books"
-	// SeriesBooksColumn is the table column denoting the series_books relation/edge.
-	SeriesBooksColumn = "series_id"
 )
 
 // Columns holds all SQL columns for series fields.
@@ -109,31 +100,10 @@ func ByBooks(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newBooksStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
-
-// BySeriesBooksCount orders the results by series_books count.
-func BySeriesBooksCount(opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newSeriesBooksStep(), opts...)
-	}
-}
-
-// BySeriesBooks orders the results by series_books terms.
-func BySeriesBooks(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newSeriesBooksStep(), append([]sql.OrderTerm{term}, terms...)...)
-	}
-}
 func newBooksStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(BooksInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2M, false, BooksTable, BooksPrimaryKey...),
-	)
-}
-func newSeriesBooksStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(SeriesBooksInverseTable, SeriesBooksColumn),
-		sqlgraph.Edge(sqlgraph.O2M, true, SeriesBooksTable, SeriesBooksColumn),
 	)
 }

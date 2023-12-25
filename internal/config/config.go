@@ -133,7 +133,9 @@ func LoadConfig(flagSet *flag.FlagSet) (*Config, error) {
 		if err != nil {
 			return nil, err
 		}
-		k.Set("jwt-secret", u.String())
+		if err := k.Set("jwt-secret", u.String()); err != nil {
+			return nil, err
+		}
 	}
 	// Environment
 	if err := k.Load(env.Provider("", ".", func(s string) string {

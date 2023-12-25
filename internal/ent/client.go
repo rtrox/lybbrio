@@ -18,7 +18,6 @@ import (
 	"lybbrio/internal/ent/language"
 	"lybbrio/internal/ent/publisher"
 	"lybbrio/internal/ent/series"
-	"lybbrio/internal/ent/seriesbook"
 	"lybbrio/internal/ent/shelf"
 	"lybbrio/internal/ent/tag"
 	"lybbrio/internal/ent/user"
@@ -47,8 +46,6 @@ type Client struct {
 	Publisher *PublisherClient
 	// Series is the client for interacting with the Series builders.
 	Series *SeriesClient
-	// SeriesBook is the client for interacting with the SeriesBook builders.
-	SeriesBook *SeriesBookClient
 	// Shelf is the client for interacting with the Shelf builders.
 	Shelf *ShelfClient
 	// Tag is the client for interacting with the Tag builders.
@@ -74,7 +71,6 @@ func (c *Client) init() {
 	c.Language = NewLanguageClient(c.config)
 	c.Publisher = NewPublisherClient(c.config)
 	c.Series = NewSeriesClient(c.config)
-	c.SeriesBook = NewSeriesBookClient(c.config)
 	c.Shelf = NewShelfClient(c.config)
 	c.Tag = NewTagClient(c.config)
 	c.User = NewUserClient(c.config)
@@ -177,7 +173,6 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		Language:        NewLanguageClient(cfg),
 		Publisher:       NewPublisherClient(cfg),
 		Series:          NewSeriesClient(cfg),
-		SeriesBook:      NewSeriesBookClient(cfg),
 		Shelf:           NewShelfClient(cfg),
 		Tag:             NewTagClient(cfg),
 		User:            NewUserClient(cfg),
@@ -207,7 +202,6 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		Language:        NewLanguageClient(cfg),
 		Publisher:       NewPublisherClient(cfg),
 		Series:          NewSeriesClient(cfg),
-		SeriesBook:      NewSeriesBookClient(cfg),
 		Shelf:           NewShelfClient(cfg),
 		Tag:             NewTagClient(cfg),
 		User:            NewUserClient(cfg),
@@ -241,8 +235,8 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
-		c.Author, c.Book, c.Identifier, c.Language, c.Publisher, c.Series, c.SeriesBook,
-		c.Shelf, c.Tag, c.User, c.UserPermissions,
+		c.Author, c.Book, c.Identifier, c.Language, c.Publisher, c.Series, c.Shelf,
+		c.Tag, c.User, c.UserPermissions,
 	} {
 		n.Use(hooks...)
 	}
@@ -252,8 +246,8 @@ func (c *Client) Use(hooks ...Hook) {
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
-		c.Author, c.Book, c.Identifier, c.Language, c.Publisher, c.Series, c.SeriesBook,
-		c.Shelf, c.Tag, c.User, c.UserPermissions,
+		c.Author, c.Book, c.Identifier, c.Language, c.Publisher, c.Series, c.Shelf,
+		c.Tag, c.User, c.UserPermissions,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -274,8 +268,6 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.Publisher.mutate(ctx, m)
 	case *SeriesMutation:
 		return c.Series.mutate(ctx, m)
-	case *SeriesBookMutation:
-		return c.SeriesBook.mutate(ctx, m)
 	case *ShelfMutation:
 		return c.Shelf.mutate(ctx, m)
 	case *TagMutation:
@@ -1227,22 +1219,6 @@ func (c *SeriesClient) QueryBooks(s *Series) *BookQuery {
 	return query
 }
 
-// QuerySeriesBooks queries the series_books edge of a Series.
-func (c *SeriesClient) QuerySeriesBooks(s *Series) *SeriesBookQuery {
-	query := (&SeriesBookClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := s.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(series.Table, series.FieldID, id),
-			sqlgraph.To(seriesbook.Table, seriesbook.SeriesColumn),
-			sqlgraph.Edge(sqlgraph.O2M, true, series.SeriesBooksTable, series.SeriesBooksColumn),
-		)
-		fromV = sqlgraph.Neighbors(s.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
 // Hooks returns the client hooks.
 func (c *SeriesClient) Hooks() []Hook {
 	hooks := c.hooks.Series
@@ -1266,123 +1242,6 @@ func (c *SeriesClient) mutate(ctx context.Context, m *SeriesMutation) (Value, er
 		return (&SeriesDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown Series mutation op: %q", m.Op())
-	}
-}
-
-// SeriesBookClient is a client for the SeriesBook schema.
-type SeriesBookClient struct {
-	config
-}
-
-// NewSeriesBookClient returns a client for the SeriesBook from the given config.
-func NewSeriesBookClient(c config) *SeriesBookClient {
-	return &SeriesBookClient{config: c}
-}
-
-// Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `seriesbook.Hooks(f(g(h())))`.
-func (c *SeriesBookClient) Use(hooks ...Hook) {
-	c.hooks.SeriesBook = append(c.hooks.SeriesBook, hooks...)
-}
-
-// Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `seriesbook.Intercept(f(g(h())))`.
-func (c *SeriesBookClient) Intercept(interceptors ...Interceptor) {
-	c.inters.SeriesBook = append(c.inters.SeriesBook, interceptors...)
-}
-
-// Create returns a builder for creating a SeriesBook entity.
-func (c *SeriesBookClient) Create() *SeriesBookCreate {
-	mutation := newSeriesBookMutation(c.config, OpCreate)
-	return &SeriesBookCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// CreateBulk returns a builder for creating a bulk of SeriesBook entities.
-func (c *SeriesBookClient) CreateBulk(builders ...*SeriesBookCreate) *SeriesBookCreateBulk {
-	return &SeriesBookCreateBulk{config: c.config, builders: builders}
-}
-
-// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
-// a builder and applies setFunc on it.
-func (c *SeriesBookClient) MapCreateBulk(slice any, setFunc func(*SeriesBookCreate, int)) *SeriesBookCreateBulk {
-	rv := reflect.ValueOf(slice)
-	if rv.Kind() != reflect.Slice {
-		return &SeriesBookCreateBulk{err: fmt.Errorf("calling to SeriesBookClient.MapCreateBulk with wrong type %T, need slice", slice)}
-	}
-	builders := make([]*SeriesBookCreate, rv.Len())
-	for i := 0; i < rv.Len(); i++ {
-		builders[i] = c.Create()
-		setFunc(builders[i], i)
-	}
-	return &SeriesBookCreateBulk{config: c.config, builders: builders}
-}
-
-// Update returns an update builder for SeriesBook.
-func (c *SeriesBookClient) Update() *SeriesBookUpdate {
-	mutation := newSeriesBookMutation(c.config, OpUpdate)
-	return &SeriesBookUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOne returns an update builder for the given entity.
-func (c *SeriesBookClient) UpdateOne(sb *SeriesBook) *SeriesBookUpdateOne {
-	mutation := newSeriesBookMutation(c.config, OpUpdateOne)
-	mutation.series = &sb.SeriesID
-	mutation.book = &sb.BookID
-	return &SeriesBookUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// Delete returns a delete builder for SeriesBook.
-func (c *SeriesBookClient) Delete() *SeriesBookDelete {
-	mutation := newSeriesBookMutation(c.config, OpDelete)
-	return &SeriesBookDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// Query returns a query builder for SeriesBook.
-func (c *SeriesBookClient) Query() *SeriesBookQuery {
-	return &SeriesBookQuery{
-		config: c.config,
-		ctx:    &QueryContext{Type: TypeSeriesBook},
-		inters: c.Interceptors(),
-	}
-}
-
-// QuerySeries queries the series edge of a SeriesBook.
-func (c *SeriesBookClient) QuerySeries(sb *SeriesBook) *SeriesQuery {
-	return c.Query().
-		Where(seriesbook.SeriesID(sb.SeriesID), seriesbook.BookID(sb.BookID)).
-		QuerySeries()
-}
-
-// QueryBook queries the book edge of a SeriesBook.
-func (c *SeriesBookClient) QueryBook(sb *SeriesBook) *BookQuery {
-	return c.Query().
-		Where(seriesbook.SeriesID(sb.SeriesID), seriesbook.BookID(sb.BookID)).
-		QueryBook()
-}
-
-// Hooks returns the client hooks.
-func (c *SeriesBookClient) Hooks() []Hook {
-	hooks := c.hooks.SeriesBook
-	return append(hooks[:len(hooks):len(hooks)], seriesbook.Hooks[:]...)
-}
-
-// Interceptors returns the client interceptors.
-func (c *SeriesBookClient) Interceptors() []Interceptor {
-	return c.inters.SeriesBook
-}
-
-func (c *SeriesBookClient) mutate(ctx context.Context, m *SeriesBookMutation) (Value, error) {
-	switch m.Op() {
-	case OpCreate:
-		return (&SeriesBookCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdate:
-		return (&SeriesBookUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdateOne:
-		return (&SeriesBookUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpDelete, OpDeleteOne:
-		return (&SeriesBookDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
-	default:
-		return nil, fmt.Errorf("ent: unknown SeriesBook mutation op: %q", m.Op())
 	}
 }
 
@@ -2021,11 +1880,11 @@ func (c *UserPermissionsClient) mutate(ctx context.Context, m *UserPermissionsMu
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		Author, Book, Identifier, Language, Publisher, Series, SeriesBook, Shelf, Tag,
-		User, UserPermissions []ent.Hook
+		Author, Book, Identifier, Language, Publisher, Series, Shelf, Tag, User,
+		UserPermissions []ent.Hook
 	}
 	inters struct {
-		Author, Book, Identifier, Language, Publisher, Series, SeriesBook, Shelf, Tag,
-		User, UserPermissions []ent.Interceptor
+		Author, Book, Identifier, Language, Publisher, Series, Shelf, Tag, User,
+		UserPermissions []ent.Interceptor
 	}
 )

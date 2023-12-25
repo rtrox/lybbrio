@@ -6,9 +6,12 @@ package graph
 
 import (
 	"context"
+	"fmt"
+	"lybbrio"
 	"lybbrio/internal/ent"
 	"lybbrio/internal/ent/schema/ksuid"
 	"lybbrio/internal/graph/generated"
+	"lybbrio/internal/viewer"
 )
 
 // CreateBook is the resolver for the createBook field.
@@ -36,9 +39,26 @@ func (r *mutationResolver) UpdateAuthor(ctx context.Context, id ksuid.ID, input 
 }
 
 // CreateShelf is the resolver for the createShelf field.
-func (r *mutationResolver) CreateShelf(ctx context.Context, input ent.CreateShelfInput) (*ent.Shelf, error) {
+func (r *mutationResolver) CreateShelf(ctx context.Context, input lybbrio.CreateShelfInput) (*ent.Shelf, error) {
 	client := ent.FromContext(ctx)
-	return client.Shelf.Create().SetInput(input).Save(ctx)
+	viewer := viewer.FromContext(ctx)
+	user, ok := viewer.User()
+	if !ok {
+		return nil, fmt.Errorf("viewer-context is missing user information")
+	}
+	shelf := client.Shelf.Create().
+		SetName(input.Name).
+		SetUser(user)
+	if input.Description != nil {
+		shelf.SetDescription(*input.Description)
+	}
+	if input.Public != nil {
+		shelf.SetPublic(*input.Public)
+	}
+	if input.BookIDs != nil {
+		shelf.AddBookIDs(input.BookIDs...)
+	}
+	return shelf.Save(ctx)
 }
 
 // UpdateShelf is the resolver for the updateShelf field.

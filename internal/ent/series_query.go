@@ -11,7 +11,6 @@ import (
 	"lybbrio/internal/ent/predicate"
 	"lybbrio/internal/ent/schema/ksuid"
 	"lybbrio/internal/ent/series"
-	"lybbrio/internal/ent/seriesbook"
 	"math"
 
 	"entgo.io/ent/dialect/sql"
@@ -22,16 +21,14 @@ import (
 // SeriesQuery is the builder for querying Series entities.
 type SeriesQuery struct {
 	config
-	ctx                  *QueryContext
-	order                []series.OrderOption
-	inters               []Interceptor
-	predicates           []predicate.Series
-	withBooks            *BookQuery
-	withSeriesBooks      *SeriesBookQuery
-	modifiers            []func(*sql.Selector)
-	loadTotal            []func(context.Context, []*Series) error
-	withNamedBooks       map[string]*BookQuery
-	withNamedSeriesBooks map[string]*SeriesBookQuery
+	ctx            *QueryContext
+	order          []series.OrderOption
+	inters         []Interceptor
+	predicates     []predicate.Series
+	withBooks      *BookQuery
+	modifiers      []func(*sql.Selector)
+	loadTotal      []func(context.Context, []*Series) error
+	withNamedBooks map[string]*BookQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -83,28 +80,6 @@ func (sq *SeriesQuery) QueryBooks() *BookQuery {
 			sqlgraph.From(series.Table, series.FieldID, selector),
 			sqlgraph.To(book.Table, book.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, false, series.BooksTable, series.BooksPrimaryKey...),
-		)
-		fromU = sqlgraph.SetNeighbors(sq.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QuerySeriesBooks chains the current query on the "series_books" edge.
-func (sq *SeriesQuery) QuerySeriesBooks() *SeriesBookQuery {
-	query := (&SeriesBookClient{config: sq.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := sq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := sq.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(series.Table, series.FieldID, selector),
-			sqlgraph.To(seriesbook.Table, seriesbook.SeriesColumn),
-			sqlgraph.Edge(sqlgraph.O2M, true, series.SeriesBooksTable, series.SeriesBooksColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(sq.driver.Dialect(), step)
 		return fromU, nil
@@ -299,13 +274,12 @@ func (sq *SeriesQuery) Clone() *SeriesQuery {
 		return nil
 	}
 	return &SeriesQuery{
-		config:          sq.config,
-		ctx:             sq.ctx.Clone(),
-		order:           append([]series.OrderOption{}, sq.order...),
-		inters:          append([]Interceptor{}, sq.inters...),
-		predicates:      append([]predicate.Series{}, sq.predicates...),
-		withBooks:       sq.withBooks.Clone(),
-		withSeriesBooks: sq.withSeriesBooks.Clone(),
+		config:     sq.config,
+		ctx:        sq.ctx.Clone(),
+		order:      append([]series.OrderOption{}, sq.order...),
+		inters:     append([]Interceptor{}, sq.inters...),
+		predicates: append([]predicate.Series{}, sq.predicates...),
+		withBooks:  sq.withBooks.Clone(),
 		// clone intermediate query.
 		sql:  sq.sql.Clone(),
 		path: sq.path,
@@ -320,17 +294,6 @@ func (sq *SeriesQuery) WithBooks(opts ...func(*BookQuery)) *SeriesQuery {
 		opt(query)
 	}
 	sq.withBooks = query
-	return sq
-}
-
-// WithSeriesBooks tells the query-builder to eager-load the nodes that are connected to
-// the "series_books" edge. The optional arguments are used to configure the query builder of the edge.
-func (sq *SeriesQuery) WithSeriesBooks(opts ...func(*SeriesBookQuery)) *SeriesQuery {
-	query := (&SeriesBookClient{config: sq.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	sq.withSeriesBooks = query
 	return sq
 }
 
@@ -418,9 +381,8 @@ func (sq *SeriesQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Serie
 	var (
 		nodes       = []*Series{}
 		_spec       = sq.querySpec()
-		loadedTypes = [2]bool{
+		loadedTypes = [1]bool{
 			sq.withBooks != nil,
-			sq.withSeriesBooks != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -451,24 +413,10 @@ func (sq *SeriesQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Serie
 			return nil, err
 		}
 	}
-	if query := sq.withSeriesBooks; query != nil {
-		if err := sq.loadSeriesBooks(ctx, query, nodes,
-			func(n *Series) { n.Edges.SeriesBooks = []*SeriesBook{} },
-			func(n *Series, e *SeriesBook) { n.Edges.SeriesBooks = append(n.Edges.SeriesBooks, e) }); err != nil {
-			return nil, err
-		}
-	}
 	for name, query := range sq.withNamedBooks {
 		if err := sq.loadBooks(ctx, query, nodes,
 			func(n *Series) { n.appendNamedBooks(name) },
 			func(n *Series, e *Book) { n.appendNamedBooks(name, e) }); err != nil {
-			return nil, err
-		}
-	}
-	for name, query := range sq.withNamedSeriesBooks {
-		if err := sq.loadSeriesBooks(ctx, query, nodes,
-			func(n *Series) { n.appendNamedSeriesBooks(name) },
-			func(n *Series, e *SeriesBook) { n.appendNamedSeriesBooks(name, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -538,36 +486,6 @@ func (sq *SeriesQuery) loadBooks(ctx context.Context, query *BookQuery, nodes []
 		for kn := range nodes {
 			assign(kn, n)
 		}
-	}
-	return nil
-}
-func (sq *SeriesQuery) loadSeriesBooks(ctx context.Context, query *SeriesBookQuery, nodes []*Series, init func(*Series), assign func(*Series, *SeriesBook)) error {
-	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[ksuid.ID]*Series)
-	for i := range nodes {
-		fks = append(fks, nodes[i].ID)
-		nodeids[nodes[i].ID] = nodes[i]
-		if init != nil {
-			init(nodes[i])
-		}
-	}
-	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(seriesbook.FieldSeriesID)
-	}
-	query.Where(predicate.SeriesBook(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(series.SeriesBooksColumn), fks...))
-	}))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		fk := n.SeriesID
-		node, ok := nodeids[fk]
-		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "series_id" returned %v for node %v`, fk, n)
-		}
-		assign(node, n)
 	}
 	return nil
 }
@@ -667,20 +585,6 @@ func (sq *SeriesQuery) WithNamedBooks(name string, opts ...func(*BookQuery)) *Se
 		sq.withNamedBooks = make(map[string]*BookQuery)
 	}
 	sq.withNamedBooks[name] = query
-	return sq
-}
-
-// WithNamedSeriesBooks tells the query-builder to eager-load the nodes that are connected to the "series_books"
-// edge with the given name. The optional arguments are used to configure the query builder of the edge.
-func (sq *SeriesQuery) WithNamedSeriesBooks(name string, opts ...func(*SeriesBookQuery)) *SeriesQuery {
-	query := (&SeriesBookClient{config: sq.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	if sq.withNamedSeriesBooks == nil {
-		sq.withNamedSeriesBooks = make(map[string]*SeriesBookQuery)
-	}
-	sq.withNamedSeriesBooks[name] = query
 	return sq
 }
 

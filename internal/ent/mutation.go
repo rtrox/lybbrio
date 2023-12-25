@@ -14,7 +14,6 @@ import (
 	"lybbrio/internal/ent/publisher"
 	"lybbrio/internal/ent/schema/ksuid"
 	"lybbrio/internal/ent/series"
-	"lybbrio/internal/ent/seriesbook"
 	"lybbrio/internal/ent/shelf"
 	"lybbrio/internal/ent/tag"
 	"lybbrio/internal/ent/user"
@@ -41,7 +40,6 @@ const (
 	TypeLanguage        = "Language"
 	TypePublisher       = "Publisher"
 	TypeSeries          = "Series"
-	TypeSeriesBook      = "SeriesBook"
 	TypeShelf           = "Shelf"
 	TypeTag             = "Tag"
 	TypeUser            = "User"
@@ -611,11 +609,12 @@ type BookMutation struct {
 	id                *ksuid.ID
 	title             *string
 	sort              *string
-	added_at          *time.Time
-	pub_date          *time.Time
+	published_date    *time.Time
 	_path             *string
 	isbn              *string
 	description       *string
+	series_index      *int
+	addseries_index   *int
 	clearedFields     map[string]struct{}
 	authors           map[ksuid.ID]struct{}
 	removedauthors    map[ksuid.ID]struct{}
@@ -812,89 +811,53 @@ func (m *BookMutation) ResetSort() {
 	m.sort = nil
 }
 
-// SetAddedAt sets the "added_at" field.
-func (m *BookMutation) SetAddedAt(t time.Time) {
-	m.added_at = &t
+// SetPublishedDate sets the "published_date" field.
+func (m *BookMutation) SetPublishedDate(t time.Time) {
+	m.published_date = &t
 }
 
-// AddedAt returns the value of the "added_at" field in the mutation.
-func (m *BookMutation) AddedAt() (r time.Time, exists bool) {
-	v := m.added_at
+// PublishedDate returns the value of the "published_date" field in the mutation.
+func (m *BookMutation) PublishedDate() (r time.Time, exists bool) {
+	v := m.published_date
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldAddedAt returns the old "added_at" field's value of the Book entity.
+// OldPublishedDate returns the old "published_date" field's value of the Book entity.
 // If the Book object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *BookMutation) OldAddedAt(ctx context.Context) (v time.Time, err error) {
+func (m *BookMutation) OldPublishedDate(ctx context.Context) (v time.Time, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldAddedAt is only allowed on UpdateOne operations")
+		return v, errors.New("OldPublishedDate is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldAddedAt requires an ID field in the mutation")
+		return v, errors.New("OldPublishedDate requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldAddedAt: %w", err)
+		return v, fmt.Errorf("querying old value for OldPublishedDate: %w", err)
 	}
-	return oldValue.AddedAt, nil
+	return oldValue.PublishedDate, nil
 }
 
-// ResetAddedAt resets all changes to the "added_at" field.
-func (m *BookMutation) ResetAddedAt() {
-	m.added_at = nil
+// ClearPublishedDate clears the value of the "published_date" field.
+func (m *BookMutation) ClearPublishedDate() {
+	m.published_date = nil
+	m.clearedFields[book.FieldPublishedDate] = struct{}{}
 }
 
-// SetPubDate sets the "pub_date" field.
-func (m *BookMutation) SetPubDate(t time.Time) {
-	m.pub_date = &t
-}
-
-// PubDate returns the value of the "pub_date" field in the mutation.
-func (m *BookMutation) PubDate() (r time.Time, exists bool) {
-	v := m.pub_date
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldPubDate returns the old "pub_date" field's value of the Book entity.
-// If the Book object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *BookMutation) OldPubDate(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldPubDate is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldPubDate requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldPubDate: %w", err)
-	}
-	return oldValue.PubDate, nil
-}
-
-// ClearPubDate clears the value of the "pub_date" field.
-func (m *BookMutation) ClearPubDate() {
-	m.pub_date = nil
-	m.clearedFields[book.FieldPubDate] = struct{}{}
-}
-
-// PubDateCleared returns if the "pub_date" field was cleared in this mutation.
-func (m *BookMutation) PubDateCleared() bool {
-	_, ok := m.clearedFields[book.FieldPubDate]
+// PublishedDateCleared returns if the "published_date" field was cleared in this mutation.
+func (m *BookMutation) PublishedDateCleared() bool {
+	_, ok := m.clearedFields[book.FieldPublishedDate]
 	return ok
 }
 
-// ResetPubDate resets all changes to the "pub_date" field.
-func (m *BookMutation) ResetPubDate() {
-	m.pub_date = nil
-	delete(m.clearedFields, book.FieldPubDate)
+// ResetPublishedDate resets all changes to the "published_date" field.
+func (m *BookMutation) ResetPublishedDate() {
+	m.published_date = nil
+	delete(m.clearedFields, book.FieldPublishedDate)
 }
 
 // SetPath sets the "path" field.
@@ -1029,6 +992,76 @@ func (m *BookMutation) DescriptionCleared() bool {
 func (m *BookMutation) ResetDescription() {
 	m.description = nil
 	delete(m.clearedFields, book.FieldDescription)
+}
+
+// SetSeriesIndex sets the "series_index" field.
+func (m *BookMutation) SetSeriesIndex(i int) {
+	m.series_index = &i
+	m.addseries_index = nil
+}
+
+// SeriesIndex returns the value of the "series_index" field in the mutation.
+func (m *BookMutation) SeriesIndex() (r int, exists bool) {
+	v := m.series_index
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSeriesIndex returns the old "series_index" field's value of the Book entity.
+// If the Book object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *BookMutation) OldSeriesIndex(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSeriesIndex is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSeriesIndex requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSeriesIndex: %w", err)
+	}
+	return oldValue.SeriesIndex, nil
+}
+
+// AddSeriesIndex adds i to the "series_index" field.
+func (m *BookMutation) AddSeriesIndex(i int) {
+	if m.addseries_index != nil {
+		*m.addseries_index += i
+	} else {
+		m.addseries_index = &i
+	}
+}
+
+// AddedSeriesIndex returns the value that was added to the "series_index" field in this mutation.
+func (m *BookMutation) AddedSeriesIndex() (r int, exists bool) {
+	v := m.addseries_index
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearSeriesIndex clears the value of the "series_index" field.
+func (m *BookMutation) ClearSeriesIndex() {
+	m.series_index = nil
+	m.addseries_index = nil
+	m.clearedFields[book.FieldSeriesIndex] = struct{}{}
+}
+
+// SeriesIndexCleared returns if the "series_index" field was cleared in this mutation.
+func (m *BookMutation) SeriesIndexCleared() bool {
+	_, ok := m.clearedFields[book.FieldSeriesIndex]
+	return ok
+}
+
+// ResetSeriesIndex resets all changes to the "series_index" field.
+func (m *BookMutation) ResetSeriesIndex() {
+	m.series_index = nil
+	m.addseries_index = nil
+	delete(m.clearedFields, book.FieldSeriesIndex)
 }
 
 // AddAuthorIDs adds the "authors" edge to the Author entity by ids.
@@ -1327,11 +1360,8 @@ func (m *BookMutation) Fields() []string {
 	if m.sort != nil {
 		fields = append(fields, book.FieldSort)
 	}
-	if m.added_at != nil {
-		fields = append(fields, book.FieldAddedAt)
-	}
-	if m.pub_date != nil {
-		fields = append(fields, book.FieldPubDate)
+	if m.published_date != nil {
+		fields = append(fields, book.FieldPublishedDate)
 	}
 	if m._path != nil {
 		fields = append(fields, book.FieldPath)
@@ -1341,6 +1371,9 @@ func (m *BookMutation) Fields() []string {
 	}
 	if m.description != nil {
 		fields = append(fields, book.FieldDescription)
+	}
+	if m.series_index != nil {
+		fields = append(fields, book.FieldSeriesIndex)
 	}
 	return fields
 }
@@ -1354,16 +1387,16 @@ func (m *BookMutation) Field(name string) (ent.Value, bool) {
 		return m.Title()
 	case book.FieldSort:
 		return m.Sort()
-	case book.FieldAddedAt:
-		return m.AddedAt()
-	case book.FieldPubDate:
-		return m.PubDate()
+	case book.FieldPublishedDate:
+		return m.PublishedDate()
 	case book.FieldPath:
 		return m.Path()
 	case book.FieldIsbn:
 		return m.Isbn()
 	case book.FieldDescription:
 		return m.Description()
+	case book.FieldSeriesIndex:
+		return m.SeriesIndex()
 	}
 	return nil, false
 }
@@ -1377,16 +1410,16 @@ func (m *BookMutation) OldField(ctx context.Context, name string) (ent.Value, er
 		return m.OldTitle(ctx)
 	case book.FieldSort:
 		return m.OldSort(ctx)
-	case book.FieldAddedAt:
-		return m.OldAddedAt(ctx)
-	case book.FieldPubDate:
-		return m.OldPubDate(ctx)
+	case book.FieldPublishedDate:
+		return m.OldPublishedDate(ctx)
 	case book.FieldPath:
 		return m.OldPath(ctx)
 	case book.FieldIsbn:
 		return m.OldIsbn(ctx)
 	case book.FieldDescription:
 		return m.OldDescription(ctx)
+	case book.FieldSeriesIndex:
+		return m.OldSeriesIndex(ctx)
 	}
 	return nil, fmt.Errorf("unknown Book field %s", name)
 }
@@ -1410,19 +1443,12 @@ func (m *BookMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetSort(v)
 		return nil
-	case book.FieldAddedAt:
+	case book.FieldPublishedDate:
 		v, ok := value.(time.Time)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetAddedAt(v)
-		return nil
-	case book.FieldPubDate:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetPubDate(v)
+		m.SetPublishedDate(v)
 		return nil
 	case book.FieldPath:
 		v, ok := value.(string)
@@ -1445,6 +1471,13 @@ func (m *BookMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetDescription(v)
 		return nil
+	case book.FieldSeriesIndex:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSeriesIndex(v)
+		return nil
 	}
 	return fmt.Errorf("unknown Book field %s", name)
 }
@@ -1452,13 +1485,21 @@ func (m *BookMutation) SetField(name string, value ent.Value) error {
 // AddedFields returns all numeric fields that were incremented/decremented during
 // this mutation.
 func (m *BookMutation) AddedFields() []string {
-	return nil
+	var fields []string
+	if m.addseries_index != nil {
+		fields = append(fields, book.FieldSeriesIndex)
+	}
+	return fields
 }
 
 // AddedField returns the numeric value that was incremented/decremented on a field
 // with the given name. The second boolean return value indicates that this field
 // was not set, or was not defined in the schema.
 func (m *BookMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case book.FieldSeriesIndex:
+		return m.AddedSeriesIndex()
+	}
 	return nil, false
 }
 
@@ -1467,6 +1508,13 @@ func (m *BookMutation) AddedField(name string) (ent.Value, bool) {
 // type.
 func (m *BookMutation) AddField(name string, value ent.Value) error {
 	switch name {
+	case book.FieldSeriesIndex:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddSeriesIndex(v)
+		return nil
 	}
 	return fmt.Errorf("unknown Book numeric field %s", name)
 }
@@ -1475,14 +1523,17 @@ func (m *BookMutation) AddField(name string, value ent.Value) error {
 // mutation.
 func (m *BookMutation) ClearedFields() []string {
 	var fields []string
-	if m.FieldCleared(book.FieldPubDate) {
-		fields = append(fields, book.FieldPubDate)
+	if m.FieldCleared(book.FieldPublishedDate) {
+		fields = append(fields, book.FieldPublishedDate)
 	}
 	if m.FieldCleared(book.FieldIsbn) {
 		fields = append(fields, book.FieldIsbn)
 	}
 	if m.FieldCleared(book.FieldDescription) {
 		fields = append(fields, book.FieldDescription)
+	}
+	if m.FieldCleared(book.FieldSeriesIndex) {
+		fields = append(fields, book.FieldSeriesIndex)
 	}
 	return fields
 }
@@ -1498,14 +1549,17 @@ func (m *BookMutation) FieldCleared(name string) bool {
 // error if the field is not defined in the schema.
 func (m *BookMutation) ClearField(name string) error {
 	switch name {
-	case book.FieldPubDate:
-		m.ClearPubDate()
+	case book.FieldPublishedDate:
+		m.ClearPublishedDate()
 		return nil
 	case book.FieldIsbn:
 		m.ClearIsbn()
 		return nil
 	case book.FieldDescription:
 		m.ClearDescription()
+		return nil
+	case book.FieldSeriesIndex:
+		m.ClearSeriesIndex()
 		return nil
 	}
 	return fmt.Errorf("unknown Book nullable field %s", name)
@@ -1521,11 +1575,8 @@ func (m *BookMutation) ResetField(name string) error {
 	case book.FieldSort:
 		m.ResetSort()
 		return nil
-	case book.FieldAddedAt:
-		m.ResetAddedAt()
-		return nil
-	case book.FieldPubDate:
-		m.ResetPubDate()
+	case book.FieldPublishedDate:
+		m.ResetPublishedDate()
 		return nil
 	case book.FieldPath:
 		m.ResetPath()
@@ -1535,6 +1586,9 @@ func (m *BookMutation) ResetField(name string) error {
 		return nil
 	case book.FieldDescription:
 		m.ResetDescription()
+		return nil
+	case book.FieldSeriesIndex:
+		m.ResetSeriesIndex()
 		return nil
 	}
 	return fmt.Errorf("unknown Book field %s", name)
@@ -3554,479 +3608,6 @@ func (m *SeriesMutation) ResetEdge(name string) error {
 		return nil
 	}
 	return fmt.Errorf("unknown Series edge %s", name)
-}
-
-// SeriesBookMutation represents an operation that mutates the SeriesBook nodes in the graph.
-type SeriesBookMutation struct {
-	config
-	op              Op
-	typ             string
-	series_index    *float64
-	addseries_index *float64
-	clearedFields   map[string]struct{}
-	series          *ksuid.ID
-	clearedseries   bool
-	book            *ksuid.ID
-	clearedbook     bool
-	done            bool
-	oldValue        func(context.Context) (*SeriesBook, error)
-	predicates      []predicate.SeriesBook
-}
-
-var _ ent.Mutation = (*SeriesBookMutation)(nil)
-
-// seriesbookOption allows management of the mutation configuration using functional options.
-type seriesbookOption func(*SeriesBookMutation)
-
-// newSeriesBookMutation creates new mutation for the SeriesBook entity.
-func newSeriesBookMutation(c config, op Op, opts ...seriesbookOption) *SeriesBookMutation {
-	m := &SeriesBookMutation{
-		config:        c,
-		op:            op,
-		typ:           TypeSeriesBook,
-		clearedFields: make(map[string]struct{}),
-	}
-	for _, opt := range opts {
-		opt(m)
-	}
-	return m
-}
-
-// Client returns a new `ent.Client` from the mutation. If the mutation was
-// executed in a transaction (ent.Tx), a transactional client is returned.
-func (m SeriesBookMutation) Client() *Client {
-	client := &Client{config: m.config}
-	client.init()
-	return client
-}
-
-// Tx returns an `ent.Tx` for mutations that were executed in transactions;
-// it returns an error otherwise.
-func (m SeriesBookMutation) Tx() (*Tx, error) {
-	if _, ok := m.driver.(*txDriver); !ok {
-		return nil, errors.New("ent: mutation is not running in a transaction")
-	}
-	tx := &Tx{config: m.config}
-	tx.init()
-	return tx, nil
-}
-
-// SetSeriesIndex sets the "series_index" field.
-func (m *SeriesBookMutation) SetSeriesIndex(f float64) {
-	m.series_index = &f
-	m.addseries_index = nil
-}
-
-// SeriesIndex returns the value of the "series_index" field in the mutation.
-func (m *SeriesBookMutation) SeriesIndex() (r float64, exists bool) {
-	v := m.series_index
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// AddSeriesIndex adds f to the "series_index" field.
-func (m *SeriesBookMutation) AddSeriesIndex(f float64) {
-	if m.addseries_index != nil {
-		*m.addseries_index += f
-	} else {
-		m.addseries_index = &f
-	}
-}
-
-// AddedSeriesIndex returns the value that was added to the "series_index" field in this mutation.
-func (m *SeriesBookMutation) AddedSeriesIndex() (r float64, exists bool) {
-	v := m.addseries_index
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// ClearSeriesIndex clears the value of the "series_index" field.
-func (m *SeriesBookMutation) ClearSeriesIndex() {
-	m.series_index = nil
-	m.addseries_index = nil
-	m.clearedFields[seriesbook.FieldSeriesIndex] = struct{}{}
-}
-
-// SeriesIndexCleared returns if the "series_index" field was cleared in this mutation.
-func (m *SeriesBookMutation) SeriesIndexCleared() bool {
-	_, ok := m.clearedFields[seriesbook.FieldSeriesIndex]
-	return ok
-}
-
-// ResetSeriesIndex resets all changes to the "series_index" field.
-func (m *SeriesBookMutation) ResetSeriesIndex() {
-	m.series_index = nil
-	m.addseries_index = nil
-	delete(m.clearedFields, seriesbook.FieldSeriesIndex)
-}
-
-// SetSeriesID sets the "series_id" field.
-func (m *SeriesBookMutation) SetSeriesID(k ksuid.ID) {
-	m.series = &k
-}
-
-// SeriesID returns the value of the "series_id" field in the mutation.
-func (m *SeriesBookMutation) SeriesID() (r ksuid.ID, exists bool) {
-	v := m.series
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// ResetSeriesID resets all changes to the "series_id" field.
-func (m *SeriesBookMutation) ResetSeriesID() {
-	m.series = nil
-}
-
-// SetBookID sets the "book_id" field.
-func (m *SeriesBookMutation) SetBookID(k ksuid.ID) {
-	m.book = &k
-}
-
-// BookID returns the value of the "book_id" field in the mutation.
-func (m *SeriesBookMutation) BookID() (r ksuid.ID, exists bool) {
-	v := m.book
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// ResetBookID resets all changes to the "book_id" field.
-func (m *SeriesBookMutation) ResetBookID() {
-	m.book = nil
-}
-
-// ClearSeries clears the "series" edge to the Series entity.
-func (m *SeriesBookMutation) ClearSeries() {
-	m.clearedseries = true
-	m.clearedFields[seriesbook.FieldSeriesID] = struct{}{}
-}
-
-// SeriesCleared reports if the "series" edge to the Series entity was cleared.
-func (m *SeriesBookMutation) SeriesCleared() bool {
-	return m.clearedseries
-}
-
-// SeriesIDs returns the "series" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// SeriesID instead. It exists only for internal usage by the builders.
-func (m *SeriesBookMutation) SeriesIDs() (ids []ksuid.ID) {
-	if id := m.series; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetSeries resets all changes to the "series" edge.
-func (m *SeriesBookMutation) ResetSeries() {
-	m.series = nil
-	m.clearedseries = false
-}
-
-// ClearBook clears the "book" edge to the Book entity.
-func (m *SeriesBookMutation) ClearBook() {
-	m.clearedbook = true
-	m.clearedFields[seriesbook.FieldBookID] = struct{}{}
-}
-
-// BookCleared reports if the "book" edge to the Book entity was cleared.
-func (m *SeriesBookMutation) BookCleared() bool {
-	return m.clearedbook
-}
-
-// BookIDs returns the "book" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// BookID instead. It exists only for internal usage by the builders.
-func (m *SeriesBookMutation) BookIDs() (ids []ksuid.ID) {
-	if id := m.book; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetBook resets all changes to the "book" edge.
-func (m *SeriesBookMutation) ResetBook() {
-	m.book = nil
-	m.clearedbook = false
-}
-
-// Where appends a list predicates to the SeriesBookMutation builder.
-func (m *SeriesBookMutation) Where(ps ...predicate.SeriesBook) {
-	m.predicates = append(m.predicates, ps...)
-}
-
-// WhereP appends storage-level predicates to the SeriesBookMutation builder. Using this method,
-// users can use type-assertion to append predicates that do not depend on any generated package.
-func (m *SeriesBookMutation) WhereP(ps ...func(*sql.Selector)) {
-	p := make([]predicate.SeriesBook, len(ps))
-	for i := range ps {
-		p[i] = ps[i]
-	}
-	m.Where(p...)
-}
-
-// Op returns the operation name.
-func (m *SeriesBookMutation) Op() Op {
-	return m.op
-}
-
-// SetOp allows setting the mutation operation.
-func (m *SeriesBookMutation) SetOp(op Op) {
-	m.op = op
-}
-
-// Type returns the node type of this mutation (SeriesBook).
-func (m *SeriesBookMutation) Type() string {
-	return m.typ
-}
-
-// Fields returns all fields that were changed during this mutation. Note that in
-// order to get all numeric fields that were incremented/decremented, call
-// AddedFields().
-func (m *SeriesBookMutation) Fields() []string {
-	fields := make([]string, 0, 3)
-	if m.series_index != nil {
-		fields = append(fields, seriesbook.FieldSeriesIndex)
-	}
-	if m.series != nil {
-		fields = append(fields, seriesbook.FieldSeriesID)
-	}
-	if m.book != nil {
-		fields = append(fields, seriesbook.FieldBookID)
-	}
-	return fields
-}
-
-// Field returns the value of a field with the given name. The second boolean
-// return value indicates that this field was not set, or was not defined in the
-// schema.
-func (m *SeriesBookMutation) Field(name string) (ent.Value, bool) {
-	switch name {
-	case seriesbook.FieldSeriesIndex:
-		return m.SeriesIndex()
-	case seriesbook.FieldSeriesID:
-		return m.SeriesID()
-	case seriesbook.FieldBookID:
-		return m.BookID()
-	}
-	return nil, false
-}
-
-// OldField returns the old value of the field from the database. An error is
-// returned if the mutation operation is not UpdateOne, or the query to the
-// database failed.
-func (m *SeriesBookMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
-	return nil, errors.New("edge schema SeriesBook does not support getting old values")
-}
-
-// SetField sets the value of a field with the given name. It returns an error if
-// the field is not defined in the schema, or if the type mismatched the field
-// type.
-func (m *SeriesBookMutation) SetField(name string, value ent.Value) error {
-	switch name {
-	case seriesbook.FieldSeriesIndex:
-		v, ok := value.(float64)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetSeriesIndex(v)
-		return nil
-	case seriesbook.FieldSeriesID:
-		v, ok := value.(ksuid.ID)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetSeriesID(v)
-		return nil
-	case seriesbook.FieldBookID:
-		v, ok := value.(ksuid.ID)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetBookID(v)
-		return nil
-	}
-	return fmt.Errorf("unknown SeriesBook field %s", name)
-}
-
-// AddedFields returns all numeric fields that were incremented/decremented during
-// this mutation.
-func (m *SeriesBookMutation) AddedFields() []string {
-	var fields []string
-	if m.addseries_index != nil {
-		fields = append(fields, seriesbook.FieldSeriesIndex)
-	}
-	return fields
-}
-
-// AddedField returns the numeric value that was incremented/decremented on a field
-// with the given name. The second boolean return value indicates that this field
-// was not set, or was not defined in the schema.
-func (m *SeriesBookMutation) AddedField(name string) (ent.Value, bool) {
-	switch name {
-	case seriesbook.FieldSeriesIndex:
-		return m.AddedSeriesIndex()
-	}
-	return nil, false
-}
-
-// AddField adds the value to the field with the given name. It returns an error if
-// the field is not defined in the schema, or if the type mismatched the field
-// type.
-func (m *SeriesBookMutation) AddField(name string, value ent.Value) error {
-	switch name {
-	case seriesbook.FieldSeriesIndex:
-		v, ok := value.(float64)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.AddSeriesIndex(v)
-		return nil
-	}
-	return fmt.Errorf("unknown SeriesBook numeric field %s", name)
-}
-
-// ClearedFields returns all nullable fields that were cleared during this
-// mutation.
-func (m *SeriesBookMutation) ClearedFields() []string {
-	var fields []string
-	if m.FieldCleared(seriesbook.FieldSeriesIndex) {
-		fields = append(fields, seriesbook.FieldSeriesIndex)
-	}
-	return fields
-}
-
-// FieldCleared returns a boolean indicating if a field with the given name was
-// cleared in this mutation.
-func (m *SeriesBookMutation) FieldCleared(name string) bool {
-	_, ok := m.clearedFields[name]
-	return ok
-}
-
-// ClearField clears the value of the field with the given name. It returns an
-// error if the field is not defined in the schema.
-func (m *SeriesBookMutation) ClearField(name string) error {
-	switch name {
-	case seriesbook.FieldSeriesIndex:
-		m.ClearSeriesIndex()
-		return nil
-	}
-	return fmt.Errorf("unknown SeriesBook nullable field %s", name)
-}
-
-// ResetField resets all changes in the mutation for the field with the given name.
-// It returns an error if the field is not defined in the schema.
-func (m *SeriesBookMutation) ResetField(name string) error {
-	switch name {
-	case seriesbook.FieldSeriesIndex:
-		m.ResetSeriesIndex()
-		return nil
-	case seriesbook.FieldSeriesID:
-		m.ResetSeriesID()
-		return nil
-	case seriesbook.FieldBookID:
-		m.ResetBookID()
-		return nil
-	}
-	return fmt.Errorf("unknown SeriesBook field %s", name)
-}
-
-// AddedEdges returns all edge names that were set/added in this mutation.
-func (m *SeriesBookMutation) AddedEdges() []string {
-	edges := make([]string, 0, 2)
-	if m.series != nil {
-		edges = append(edges, seriesbook.EdgeSeries)
-	}
-	if m.book != nil {
-		edges = append(edges, seriesbook.EdgeBook)
-	}
-	return edges
-}
-
-// AddedIDs returns all IDs (to other nodes) that were added for the given edge
-// name in this mutation.
-func (m *SeriesBookMutation) AddedIDs(name string) []ent.Value {
-	switch name {
-	case seriesbook.EdgeSeries:
-		if id := m.series; id != nil {
-			return []ent.Value{*id}
-		}
-	case seriesbook.EdgeBook:
-		if id := m.book; id != nil {
-			return []ent.Value{*id}
-		}
-	}
-	return nil
-}
-
-// RemovedEdges returns all edge names that were removed in this mutation.
-func (m *SeriesBookMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 2)
-	return edges
-}
-
-// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
-// the given name in this mutation.
-func (m *SeriesBookMutation) RemovedIDs(name string) []ent.Value {
-	return nil
-}
-
-// ClearedEdges returns all edge names that were cleared in this mutation.
-func (m *SeriesBookMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 2)
-	if m.clearedseries {
-		edges = append(edges, seriesbook.EdgeSeries)
-	}
-	if m.clearedbook {
-		edges = append(edges, seriesbook.EdgeBook)
-	}
-	return edges
-}
-
-// EdgeCleared returns a boolean which indicates if the edge with the given name
-// was cleared in this mutation.
-func (m *SeriesBookMutation) EdgeCleared(name string) bool {
-	switch name {
-	case seriesbook.EdgeSeries:
-		return m.clearedseries
-	case seriesbook.EdgeBook:
-		return m.clearedbook
-	}
-	return false
-}
-
-// ClearEdge clears the value of the edge with the given name. It returns an error
-// if that edge is not defined in the schema.
-func (m *SeriesBookMutation) ClearEdge(name string) error {
-	switch name {
-	case seriesbook.EdgeSeries:
-		m.ClearSeries()
-		return nil
-	case seriesbook.EdgeBook:
-		m.ClearBook()
-		return nil
-	}
-	return fmt.Errorf("unknown SeriesBook unique edge %s", name)
-}
-
-// ResetEdge resets all changes to the edge with the given name in this mutation.
-// It returns an error if the edge is not defined in the schema.
-func (m *SeriesBookMutation) ResetEdge(name string) error {
-	switch name {
-	case seriesbook.EdgeSeries:
-		m.ResetSeries()
-		return nil
-	case seriesbook.EdgeBook:
-		m.ResetBook()
-		return nil
-	}
-	return fmt.Errorf("unknown SeriesBook edge %s", name)
 }
 
 // ShelfMutation represents an operation that mutates the Shelf nodes in the graph.

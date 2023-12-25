@@ -10,7 +10,6 @@ import (
 	"lybbrio/internal/ent/predicate"
 	"lybbrio/internal/ent/publisher"
 	"lybbrio/internal/ent/series"
-	"lybbrio/internal/ent/seriesbook"
 	"lybbrio/internal/ent/shelf"
 	"lybbrio/internal/ent/tag"
 	"lybbrio/internal/ent/user"
@@ -24,7 +23,7 @@ import (
 
 // schemaGraph holds a representation of ent/schema at runtime.
 var schemaGraph = func() *sqlgraph.Schema {
-	graph := &sqlgraph.Schema{Nodes: make([]*sqlgraph.Node, 11)}
+	graph := &sqlgraph.Schema{Nodes: make([]*sqlgraph.Node, 10)}
 	graph.Nodes[0] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   author.Table,
@@ -52,13 +51,13 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "Book",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			book.FieldTitle:       {Type: field.TypeString, Column: book.FieldTitle},
-			book.FieldSort:        {Type: field.TypeString, Column: book.FieldSort},
-			book.FieldAddedAt:     {Type: field.TypeTime, Column: book.FieldAddedAt},
-			book.FieldPubDate:     {Type: field.TypeTime, Column: book.FieldPubDate},
-			book.FieldPath:        {Type: field.TypeString, Column: book.FieldPath},
-			book.FieldIsbn:        {Type: field.TypeString, Column: book.FieldIsbn},
-			book.FieldDescription: {Type: field.TypeString, Column: book.FieldDescription},
+			book.FieldTitle:         {Type: field.TypeString, Column: book.FieldTitle},
+			book.FieldSort:          {Type: field.TypeString, Column: book.FieldSort},
+			book.FieldPublishedDate: {Type: field.TypeTime, Column: book.FieldPublishedDate},
+			book.FieldPath:          {Type: field.TypeString, Column: book.FieldPath},
+			book.FieldIsbn:          {Type: field.TypeString, Column: book.FieldIsbn},
+			book.FieldDescription:   {Type: field.TypeString, Column: book.FieldDescription},
+			book.FieldSeriesIndex:   {Type: field.TypeInt, Column: book.FieldSeriesIndex},
 		},
 	}
 	graph.Nodes[2] = &sqlgraph.Node{
@@ -122,28 +121,6 @@ var schemaGraph = func() *sqlgraph.Schema {
 	}
 	graph.Nodes[6] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
-			Table:   seriesbook.Table,
-			Columns: seriesbook.Columns,
-			CompositeID: []*sqlgraph.FieldSpec{
-				{
-					Type:   field.TypeString,
-					Column: seriesbook.FieldSeriesID,
-				},
-				{
-					Type:   field.TypeString,
-					Column: seriesbook.FieldBookID,
-				},
-			},
-		},
-		Type: "SeriesBook",
-		Fields: map[string]*sqlgraph.FieldSpec{
-			seriesbook.FieldSeriesIndex: {Type: field.TypeFloat64, Column: seriesbook.FieldSeriesIndex},
-			seriesbook.FieldSeriesID:    {Type: field.TypeString, Column: seriesbook.FieldSeriesID},
-			seriesbook.FieldBookID:      {Type: field.TypeString, Column: seriesbook.FieldBookID},
-		},
-	}
-	graph.Nodes[7] = &sqlgraph.Node{
-		NodeSpec: sqlgraph.NodeSpec{
 			Table:   shelf.Table,
 			Columns: shelf.Columns,
 			ID: &sqlgraph.FieldSpec{
@@ -159,7 +136,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			shelf.FieldDescription: {Type: field.TypeString, Column: shelf.FieldDescription},
 		},
 	}
-	graph.Nodes[8] = &sqlgraph.Node{
+	graph.Nodes[7] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   tag.Table,
 			Columns: tag.Columns,
@@ -173,7 +150,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			tag.FieldName: {Type: field.TypeString, Column: tag.FieldName},
 		},
 	}
-	graph.Nodes[9] = &sqlgraph.Node{
+	graph.Nodes[8] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   user.Table,
 			Columns: user.Columns,
@@ -189,7 +166,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			user.FieldEmail:        {Type: field.TypeString, Column: user.FieldEmail},
 		},
 	}
-	graph.Nodes[10] = &sqlgraph.Node{
+	graph.Nodes[9] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   userpermissions.Table,
 			Columns: userpermissions.Columns,
@@ -323,42 +300,6 @@ var schemaGraph = func() *sqlgraph.Schema {
 			Bidi:    false,
 		},
 		"Series",
-		"Book",
-	)
-	graph.MustAddE(
-		"series_books",
-		&sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   series.SeriesBooksTable,
-			Columns: []string{series.SeriesBooksColumn},
-			Bidi:    false,
-		},
-		"Series",
-		"SeriesBook",
-	)
-	graph.MustAddE(
-		"series",
-		&sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   seriesbook.SeriesTable,
-			Columns: []string{seriesbook.SeriesColumn},
-			Bidi:    false,
-		},
-		"SeriesBook",
-		"Series",
-	)
-	graph.MustAddE(
-		"book",
-		&sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   seriesbook.BookTable,
-			Columns: []string{seriesbook.BookColumn},
-			Bidi:    false,
-		},
-		"SeriesBook",
 		"Book",
 	)
 	graph.MustAddE(
@@ -561,14 +502,9 @@ func (f *BookFilter) WhereSort(p entql.StringP) {
 	f.Where(p.Field(book.FieldSort))
 }
 
-// WhereAddedAt applies the entql time.Time predicate on the added_at field.
-func (f *BookFilter) WhereAddedAt(p entql.TimeP) {
-	f.Where(p.Field(book.FieldAddedAt))
-}
-
-// WherePubDate applies the entql time.Time predicate on the pub_date field.
-func (f *BookFilter) WherePubDate(p entql.TimeP) {
-	f.Where(p.Field(book.FieldPubDate))
+// WherePublishedDate applies the entql time.Time predicate on the published_date field.
+func (f *BookFilter) WherePublishedDate(p entql.TimeP) {
+	f.Where(p.Field(book.FieldPublishedDate))
 }
 
 // WherePath applies the entql string predicate on the path field.
@@ -584,6 +520,11 @@ func (f *BookFilter) WhereIsbn(p entql.StringP) {
 // WhereDescription applies the entql string predicate on the description field.
 func (f *BookFilter) WhereDescription(p entql.StringP) {
 	f.Where(p.Field(book.FieldDescription))
+}
+
+// WhereSeriesIndex applies the entql int predicate on the series_index field.
+func (f *BookFilter) WhereSeriesIndex(p entql.IntP) {
+	f.Where(p.Field(book.FieldSeriesIndex))
 }
 
 // WhereHasAuthors applies a predicate to check if query has an edge authors.
@@ -907,98 +848,6 @@ func (f *SeriesFilter) WhereHasBooksWith(preds ...predicate.Book) {
 	})))
 }
 
-// WhereHasSeriesBooks applies a predicate to check if query has an edge series_books.
-func (f *SeriesFilter) WhereHasSeriesBooks() {
-	f.Where(entql.HasEdge("series_books"))
-}
-
-// WhereHasSeriesBooksWith applies a predicate to check if query has an edge series_books with a given conditions (other predicates).
-func (f *SeriesFilter) WhereHasSeriesBooksWith(preds ...predicate.SeriesBook) {
-	f.Where(entql.HasEdgeWith("series_books", sqlgraph.WrapFunc(func(s *sql.Selector) {
-		for _, p := range preds {
-			p(s)
-		}
-	})))
-}
-
-// addPredicate implements the predicateAdder interface.
-func (sbq *SeriesBookQuery) addPredicate(pred func(s *sql.Selector)) {
-	sbq.predicates = append(sbq.predicates, pred)
-}
-
-// Filter returns a Filter implementation to apply filters on the SeriesBookQuery builder.
-func (sbq *SeriesBookQuery) Filter() *SeriesBookFilter {
-	return &SeriesBookFilter{config: sbq.config, predicateAdder: sbq}
-}
-
-// addPredicate implements the predicateAdder interface.
-func (m *SeriesBookMutation) addPredicate(pred func(s *sql.Selector)) {
-	m.predicates = append(m.predicates, pred)
-}
-
-// Filter returns an entql.Where implementation to apply filters on the SeriesBookMutation builder.
-func (m *SeriesBookMutation) Filter() *SeriesBookFilter {
-	return &SeriesBookFilter{config: m.config, predicateAdder: m}
-}
-
-// SeriesBookFilter provides a generic filtering capability at runtime for SeriesBookQuery.
-type SeriesBookFilter struct {
-	predicateAdder
-	config
-}
-
-// Where applies the entql predicate on the query filter.
-func (f *SeriesBookFilter) Where(p entql.P) {
-	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[6].Type, p, s); err != nil {
-			s.AddError(err)
-		}
-	})
-}
-
-// WhereSeriesIndex applies the entql float64 predicate on the series_index field.
-func (f *SeriesBookFilter) WhereSeriesIndex(p entql.Float64P) {
-	f.Where(p.Field(seriesbook.FieldSeriesIndex))
-}
-
-// WhereSeriesID applies the entql string predicate on the series_id field.
-func (f *SeriesBookFilter) WhereSeriesID(p entql.StringP) {
-	f.Where(p.Field(seriesbook.FieldSeriesID))
-}
-
-// WhereBookID applies the entql string predicate on the book_id field.
-func (f *SeriesBookFilter) WhereBookID(p entql.StringP) {
-	f.Where(p.Field(seriesbook.FieldBookID))
-}
-
-// WhereHasSeries applies a predicate to check if query has an edge series.
-func (f *SeriesBookFilter) WhereHasSeries() {
-	f.Where(entql.HasEdge("series"))
-}
-
-// WhereHasSeriesWith applies a predicate to check if query has an edge series with a given conditions (other predicates).
-func (f *SeriesBookFilter) WhereHasSeriesWith(preds ...predicate.Series) {
-	f.Where(entql.HasEdgeWith("series", sqlgraph.WrapFunc(func(s *sql.Selector) {
-		for _, p := range preds {
-			p(s)
-		}
-	})))
-}
-
-// WhereHasBook applies a predicate to check if query has an edge book.
-func (f *SeriesBookFilter) WhereHasBook() {
-	f.Where(entql.HasEdge("book"))
-}
-
-// WhereHasBookWith applies a predicate to check if query has an edge book with a given conditions (other predicates).
-func (f *SeriesBookFilter) WhereHasBookWith(preds ...predicate.Book) {
-	f.Where(entql.HasEdgeWith("book", sqlgraph.WrapFunc(func(s *sql.Selector) {
-		for _, p := range preds {
-			p(s)
-		}
-	})))
-}
-
 // addPredicate implements the predicateAdder interface.
 func (sq *ShelfQuery) addPredicate(pred func(s *sql.Selector)) {
 	sq.predicates = append(sq.predicates, pred)
@@ -1028,7 +877,7 @@ type ShelfFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *ShelfFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[7].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[6].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -1116,7 +965,7 @@ type TagFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *TagFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[8].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[7].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -1175,7 +1024,7 @@ type UserFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *UserFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[9].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[8].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -1258,7 +1107,7 @@ type UserPermissionsFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *UserPermissionsFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[10].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[9].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})

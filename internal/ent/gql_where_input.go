@@ -383,27 +383,17 @@ type BookWhereInput struct {
 	SortEqualFold    *string  `json:"sortEqualFold,omitempty"`
 	SortContainsFold *string  `json:"sortContainsFold,omitempty"`
 
-	// "added_at" field predicates.
-	AddedAt      *time.Time  `json:"addedAt,omitempty"`
-	AddedAtNEQ   *time.Time  `json:"addedAtNEQ,omitempty"`
-	AddedAtIn    []time.Time `json:"addedAtIn,omitempty"`
-	AddedAtNotIn []time.Time `json:"addedAtNotIn,omitempty"`
-	AddedAtGT    *time.Time  `json:"addedAtGT,omitempty"`
-	AddedAtGTE   *time.Time  `json:"addedAtGTE,omitempty"`
-	AddedAtLT    *time.Time  `json:"addedAtLT,omitempty"`
-	AddedAtLTE   *time.Time  `json:"addedAtLTE,omitempty"`
-
-	// "pub_date" field predicates.
-	PubDate       *time.Time  `json:"pubDate,omitempty"`
-	PubDateNEQ    *time.Time  `json:"pubDateNEQ,omitempty"`
-	PubDateIn     []time.Time `json:"pubDateIn,omitempty"`
-	PubDateNotIn  []time.Time `json:"pubDateNotIn,omitempty"`
-	PubDateGT     *time.Time  `json:"pubDateGT,omitempty"`
-	PubDateGTE    *time.Time  `json:"pubDateGTE,omitempty"`
-	PubDateLT     *time.Time  `json:"pubDateLT,omitempty"`
-	PubDateLTE    *time.Time  `json:"pubDateLTE,omitempty"`
-	PubDateIsNil  bool        `json:"pubDateIsNil,omitempty"`
-	PubDateNotNil bool        `json:"pubDateNotNil,omitempty"`
+	// "published_date" field predicates.
+	PublishedDate       *time.Time  `json:"publishedDate,omitempty"`
+	PublishedDateNEQ    *time.Time  `json:"publishedDateNEQ,omitempty"`
+	PublishedDateIn     []time.Time `json:"publishedDateIn,omitempty"`
+	PublishedDateNotIn  []time.Time `json:"publishedDateNotIn,omitempty"`
+	PublishedDateGT     *time.Time  `json:"publishedDateGT,omitempty"`
+	PublishedDateGTE    *time.Time  `json:"publishedDateGTE,omitempty"`
+	PublishedDateLT     *time.Time  `json:"publishedDateLT,omitempty"`
+	PublishedDateLTE    *time.Time  `json:"publishedDateLTE,omitempty"`
+	PublishedDateIsNil  bool        `json:"publishedDateIsNil,omitempty"`
+	PublishedDateNotNil bool        `json:"publishedDateNotNil,omitempty"`
 
 	// "path" field predicates.
 	Path             *string  `json:"path,omitempty"`
@@ -453,6 +443,18 @@ type BookWhereInput struct {
 	DescriptionNotNil       bool     `json:"descriptionNotNil,omitempty"`
 	DescriptionEqualFold    *string  `json:"descriptionEqualFold,omitempty"`
 	DescriptionContainsFold *string  `json:"descriptionContainsFold,omitempty"`
+
+	// "series_index" field predicates.
+	SeriesIndex       *int  `json:"seriesIndex,omitempty"`
+	SeriesIndexNEQ    *int  `json:"seriesIndexNEQ,omitempty"`
+	SeriesIndexIn     []int `json:"seriesIndexIn,omitempty"`
+	SeriesIndexNotIn  []int `json:"seriesIndexNotIn,omitempty"`
+	SeriesIndexGT     *int  `json:"seriesIndexGT,omitempty"`
+	SeriesIndexGTE    *int  `json:"seriesIndexGTE,omitempty"`
+	SeriesIndexLT     *int  `json:"seriesIndexLT,omitempty"`
+	SeriesIndexLTE    *int  `json:"seriesIndexLTE,omitempty"`
+	SeriesIndexIsNil  bool  `json:"seriesIndexIsNil,omitempty"`
+	SeriesIndexNotNil bool  `json:"seriesIndexNotNil,omitempty"`
 
 	// "authors" edge predicates.
 	HasAuthors     *bool               `json:"hasAuthors,omitempty"`
@@ -648,59 +650,35 @@ func (i *BookWhereInput) P() (predicate.Book, error) {
 	if i.SortContainsFold != nil {
 		predicates = append(predicates, book.SortContainsFold(*i.SortContainsFold))
 	}
-	if i.AddedAt != nil {
-		predicates = append(predicates, book.AddedAtEQ(*i.AddedAt))
+	if i.PublishedDate != nil {
+		predicates = append(predicates, book.PublishedDateEQ(*i.PublishedDate))
 	}
-	if i.AddedAtNEQ != nil {
-		predicates = append(predicates, book.AddedAtNEQ(*i.AddedAtNEQ))
+	if i.PublishedDateNEQ != nil {
+		predicates = append(predicates, book.PublishedDateNEQ(*i.PublishedDateNEQ))
 	}
-	if len(i.AddedAtIn) > 0 {
-		predicates = append(predicates, book.AddedAtIn(i.AddedAtIn...))
+	if len(i.PublishedDateIn) > 0 {
+		predicates = append(predicates, book.PublishedDateIn(i.PublishedDateIn...))
 	}
-	if len(i.AddedAtNotIn) > 0 {
-		predicates = append(predicates, book.AddedAtNotIn(i.AddedAtNotIn...))
+	if len(i.PublishedDateNotIn) > 0 {
+		predicates = append(predicates, book.PublishedDateNotIn(i.PublishedDateNotIn...))
 	}
-	if i.AddedAtGT != nil {
-		predicates = append(predicates, book.AddedAtGT(*i.AddedAtGT))
+	if i.PublishedDateGT != nil {
+		predicates = append(predicates, book.PublishedDateGT(*i.PublishedDateGT))
 	}
-	if i.AddedAtGTE != nil {
-		predicates = append(predicates, book.AddedAtGTE(*i.AddedAtGTE))
+	if i.PublishedDateGTE != nil {
+		predicates = append(predicates, book.PublishedDateGTE(*i.PublishedDateGTE))
 	}
-	if i.AddedAtLT != nil {
-		predicates = append(predicates, book.AddedAtLT(*i.AddedAtLT))
+	if i.PublishedDateLT != nil {
+		predicates = append(predicates, book.PublishedDateLT(*i.PublishedDateLT))
 	}
-	if i.AddedAtLTE != nil {
-		predicates = append(predicates, book.AddedAtLTE(*i.AddedAtLTE))
+	if i.PublishedDateLTE != nil {
+		predicates = append(predicates, book.PublishedDateLTE(*i.PublishedDateLTE))
 	}
-	if i.PubDate != nil {
-		predicates = append(predicates, book.PubDateEQ(*i.PubDate))
+	if i.PublishedDateIsNil {
+		predicates = append(predicates, book.PublishedDateIsNil())
 	}
-	if i.PubDateNEQ != nil {
-		predicates = append(predicates, book.PubDateNEQ(*i.PubDateNEQ))
-	}
-	if len(i.PubDateIn) > 0 {
-		predicates = append(predicates, book.PubDateIn(i.PubDateIn...))
-	}
-	if len(i.PubDateNotIn) > 0 {
-		predicates = append(predicates, book.PubDateNotIn(i.PubDateNotIn...))
-	}
-	if i.PubDateGT != nil {
-		predicates = append(predicates, book.PubDateGT(*i.PubDateGT))
-	}
-	if i.PubDateGTE != nil {
-		predicates = append(predicates, book.PubDateGTE(*i.PubDateGTE))
-	}
-	if i.PubDateLT != nil {
-		predicates = append(predicates, book.PubDateLT(*i.PubDateLT))
-	}
-	if i.PubDateLTE != nil {
-		predicates = append(predicates, book.PubDateLTE(*i.PubDateLTE))
-	}
-	if i.PubDateIsNil {
-		predicates = append(predicates, book.PubDateIsNil())
-	}
-	if i.PubDateNotNil {
-		predicates = append(predicates, book.PubDateNotNil())
+	if i.PublishedDateNotNil {
+		predicates = append(predicates, book.PublishedDateNotNil())
 	}
 	if i.Path != nil {
 		predicates = append(predicates, book.PathEQ(*i.Path))
@@ -830,6 +808,36 @@ func (i *BookWhereInput) P() (predicate.Book, error) {
 	}
 	if i.DescriptionContainsFold != nil {
 		predicates = append(predicates, book.DescriptionContainsFold(*i.DescriptionContainsFold))
+	}
+	if i.SeriesIndex != nil {
+		predicates = append(predicates, book.SeriesIndexEQ(*i.SeriesIndex))
+	}
+	if i.SeriesIndexNEQ != nil {
+		predicates = append(predicates, book.SeriesIndexNEQ(*i.SeriesIndexNEQ))
+	}
+	if len(i.SeriesIndexIn) > 0 {
+		predicates = append(predicates, book.SeriesIndexIn(i.SeriesIndexIn...))
+	}
+	if len(i.SeriesIndexNotIn) > 0 {
+		predicates = append(predicates, book.SeriesIndexNotIn(i.SeriesIndexNotIn...))
+	}
+	if i.SeriesIndexGT != nil {
+		predicates = append(predicates, book.SeriesIndexGT(*i.SeriesIndexGT))
+	}
+	if i.SeriesIndexGTE != nil {
+		predicates = append(predicates, book.SeriesIndexGTE(*i.SeriesIndexGTE))
+	}
+	if i.SeriesIndexLT != nil {
+		predicates = append(predicates, book.SeriesIndexLT(*i.SeriesIndexLT))
+	}
+	if i.SeriesIndexLTE != nil {
+		predicates = append(predicates, book.SeriesIndexLTE(*i.SeriesIndexLTE))
+	}
+	if i.SeriesIndexIsNil {
+		predicates = append(predicates, book.SeriesIndexIsNil())
+	}
+	if i.SeriesIndexNotNil {
+		predicates = append(predicates, book.SeriesIndexNotNil())
 	}
 
 	if i.HasAuthors != nil {

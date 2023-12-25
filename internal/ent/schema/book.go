@@ -2,7 +2,6 @@ package schema
 
 import (
 	"lybbrio/internal/ent/schema/ksuid"
-	"time"
 
 	"entgo.io/contrib/entgql"
 	"entgo.io/ent"
@@ -41,10 +40,7 @@ func (Book) Fields() []ent.Field {
 			Annotations(entgql.OrderField("TITLE")),
 		field.Text("sort").
 			Annotations(entgql.OrderField("NAME")),
-		field.Time("added_at").
-			Default(time.Now).
-			Annotations(entgql.OrderField("ADDED_AT")),
-		field.Time("pub_date").
+		field.Time("published_date").
 			Optional().
 			Annotations(entgql.OrderField("PUB_DATE")),
 		field.Text("path").
@@ -55,6 +51,9 @@ func (Book) Fields() []ent.Field {
 			Annotations(entgql.OrderField("ISBN")),
 		field.Text("description").
 			Optional(),
+		field.Int("series_index").
+			Optional().
+			Positive(),
 	}
 }
 
@@ -78,8 +77,7 @@ func (Book) Indexes() []ent.Index {
 	return []ent.Index{
 		index.Fields("title"),
 		index.Fields("sort"),
-		index.Fields("added_at"),
-		index.Fields("pub_date"),
+		index.Fields("published_date"),
 		index.Fields("isbn"),
 	}
 }

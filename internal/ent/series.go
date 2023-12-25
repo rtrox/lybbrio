@@ -31,16 +31,13 @@ type Series struct {
 type SeriesEdges struct {
 	// Books holds the value of the books edge.
 	Books []*Book `json:"books,omitempty"`
-	// SeriesBooks holds the value of the series_books edge.
-	SeriesBooks []*SeriesBook `json:"series_books,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
+	loadedTypes [1]bool
 	// totalCount holds the count of the edges above.
 	totalCount [1]map[string]int
 
-	namedBooks       map[string][]*Book
-	namedSeriesBooks map[string][]*SeriesBook
+	namedBooks map[string][]*Book
 }
 
 // BooksOrErr returns the Books value or an error if the edge
@@ -50,15 +47,6 @@ func (e SeriesEdges) BooksOrErr() ([]*Book, error) {
 		return e.Books, nil
 	}
 	return nil, &NotLoadedError{edge: "books"}
-}
-
-// SeriesBooksOrErr returns the SeriesBooks value or an error if the edge
-// was not loaded in eager-loading.
-func (e SeriesEdges) SeriesBooksOrErr() ([]*SeriesBook, error) {
-	if e.loadedTypes[1] {
-		return e.SeriesBooks, nil
-	}
-	return nil, &NotLoadedError{edge: "series_books"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -119,11 +107,6 @@ func (s *Series) QueryBooks() *BookQuery {
 	return NewSeriesClient(s.config).QueryBooks(s)
 }
 
-// QuerySeriesBooks queries the "series_books" edge of the Series entity.
-func (s *Series) QuerySeriesBooks() *SeriesBookQuery {
-	return NewSeriesClient(s.config).QuerySeriesBooks(s)
-}
-
 // Update returns a builder for updating this Series.
 // Note that you need to call Series.Unwrap() before calling this method if this Series
 // was returned from a transaction, and the transaction was committed or rolled back.
@@ -177,30 +160,6 @@ func (s *Series) appendNamedBooks(name string, edges ...*Book) {
 		s.Edges.namedBooks[name] = []*Book{}
 	} else {
 		s.Edges.namedBooks[name] = append(s.Edges.namedBooks[name], edges...)
-	}
-}
-
-// NamedSeriesBooks returns the SeriesBooks named value or an error if the edge was not
-// loaded in eager-loading with this name.
-func (s *Series) NamedSeriesBooks(name string) ([]*SeriesBook, error) {
-	if s.Edges.namedSeriesBooks == nil {
-		return nil, &NotLoadedError{edge: name}
-	}
-	nodes, ok := s.Edges.namedSeriesBooks[name]
-	if !ok {
-		return nil, &NotLoadedError{edge: name}
-	}
-	return nodes, nil
-}
-
-func (s *Series) appendNamedSeriesBooks(name string, edges ...*SeriesBook) {
-	if s.Edges.namedSeriesBooks == nil {
-		s.Edges.namedSeriesBooks = make(map[string][]*SeriesBook)
-	}
-	if len(edges) == 0 {
-		s.Edges.namedSeriesBooks[name] = []*SeriesBook{}
-	} else {
-		s.Edges.namedSeriesBooks[name] = append(s.Edges.namedSeriesBooks[name], edges...)
 	}
 }
 

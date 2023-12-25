@@ -24,9 +24,6 @@ type Publisher func(*sql.Selector)
 // Series is the predicate function for series builders.
 type Series func(*sql.Selector)
 
-// SeriesBook is the predicate function for seriesbook builders.
-type SeriesBook func(*sql.Selector)
-
 // Shelf is the predicate function for shelf builders.
 type Shelf func(*sql.Selector)
 
