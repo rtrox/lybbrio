@@ -15,7 +15,6 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
-	"entgo.io/ent/schema/field"
 )
 
 // SeriesBookQuery is the builder for querying SeriesBook entities.
@@ -77,7 +76,7 @@ func (sbq *SeriesBookQuery) QuerySeries() *SeriesQuery {
 			return nil, err
 		}
 		step := sqlgraph.NewStep(
-			sqlgraph.From(seriesbook.Table, seriesbook.FieldID, selector),
+			sqlgraph.From(seriesbook.Table, seriesbook.SeriesColumn, selector),
 			sqlgraph.To(series.Table, series.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, seriesbook.SeriesTable, seriesbook.SeriesColumn),
 		)
@@ -99,7 +98,7 @@ func (sbq *SeriesBookQuery) QueryBook() *BookQuery {
 			return nil, err
 		}
 		step := sqlgraph.NewStep(
-			sqlgraph.From(seriesbook.Table, seriesbook.FieldID, selector),
+			sqlgraph.From(seriesbook.Table, seriesbook.BookColumn, selector),
 			sqlgraph.To(book.Table, book.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, seriesbook.BookTable, seriesbook.BookColumn),
 		)
@@ -131,29 +130,6 @@ func (sbq *SeriesBookQuery) FirstX(ctx context.Context) *SeriesBook {
 	return node
 }
 
-// FirstID returns the first SeriesBook ID from the query.
-// Returns a *NotFoundError when no SeriesBook ID was found.
-func (sbq *SeriesBookQuery) FirstID(ctx context.Context) (id ksuid.ID, err error) {
-	var ids []ksuid.ID
-	if ids, err = sbq.Limit(1).IDs(setContextOp(ctx, sbq.ctx, "FirstID")); err != nil {
-		return
-	}
-	if len(ids) == 0 {
-		err = &NotFoundError{seriesbook.Label}
-		return
-	}
-	return ids[0], nil
-}
-
-// FirstIDX is like FirstID, but panics if an error occurs.
-func (sbq *SeriesBookQuery) FirstIDX(ctx context.Context) ksuid.ID {
-	id, err := sbq.FirstID(ctx)
-	if err != nil && !IsNotFound(err) {
-		panic(err)
-	}
-	return id
-}
-
 // Only returns a single SeriesBook entity found by the query, ensuring it only returns one.
 // Returns a *NotSingularError when more than one SeriesBook entity is found.
 // Returns a *NotFoundError when no SeriesBook entities are found.
@@ -181,34 +157,6 @@ func (sbq *SeriesBookQuery) OnlyX(ctx context.Context) *SeriesBook {
 	return node
 }
 
-// OnlyID is like Only, but returns the only SeriesBook ID in the query.
-// Returns a *NotSingularError when more than one SeriesBook ID is found.
-// Returns a *NotFoundError when no entities are found.
-func (sbq *SeriesBookQuery) OnlyID(ctx context.Context) (id ksuid.ID, err error) {
-	var ids []ksuid.ID
-	if ids, err = sbq.Limit(2).IDs(setContextOp(ctx, sbq.ctx, "OnlyID")); err != nil {
-		return
-	}
-	switch len(ids) {
-	case 1:
-		id = ids[0]
-	case 0:
-		err = &NotFoundError{seriesbook.Label}
-	default:
-		err = &NotSingularError{seriesbook.Label}
-	}
-	return
-}
-
-// OnlyIDX is like OnlyID, but panics if an error occurs.
-func (sbq *SeriesBookQuery) OnlyIDX(ctx context.Context) ksuid.ID {
-	id, err := sbq.OnlyID(ctx)
-	if err != nil {
-		panic(err)
-	}
-	return id
-}
-
 // All executes the query and returns a list of SeriesBooks.
 func (sbq *SeriesBookQuery) All(ctx context.Context) ([]*SeriesBook, error) {
 	ctx = setContextOp(ctx, sbq.ctx, "All")
@@ -226,27 +174,6 @@ func (sbq *SeriesBookQuery) AllX(ctx context.Context) []*SeriesBook {
 		panic(err)
 	}
 	return nodes
-}
-
-// IDs executes the query and returns a list of SeriesBook IDs.
-func (sbq *SeriesBookQuery) IDs(ctx context.Context) (ids []ksuid.ID, err error) {
-	if sbq.ctx.Unique == nil && sbq.path != nil {
-		sbq.Unique(true)
-	}
-	ctx = setContextOp(ctx, sbq.ctx, "IDs")
-	if err = sbq.Select(seriesbook.FieldID).Scan(ctx, &ids); err != nil {
-		return nil, err
-	}
-	return ids, nil
-}
-
-// IDsX is like IDs, but panics if an error occurs.
-func (sbq *SeriesBookQuery) IDsX(ctx context.Context) []ksuid.ID {
-	ids, err := sbq.IDs(ctx)
-	if err != nil {
-		panic(err)
-	}
-	return ids
 }
 
 // Count returns the count of the given query.
@@ -270,7 +197,7 @@ func (sbq *SeriesBookQuery) CountX(ctx context.Context) int {
 // Exist returns true if the query has elements in the graph.
 func (sbq *SeriesBookQuery) Exist(ctx context.Context) (bool, error) {
 	ctx = setContextOp(ctx, sbq.ctx, "Exist")
-	switch _, err := sbq.FirstID(ctx); {
+	switch _, err := sbq.First(ctx); {
 	case IsNotFound(err):
 		return false, nil
 	case err != nil:
@@ -525,15 +452,13 @@ func (sbq *SeriesBookQuery) sqlCount(ctx context.Context) (int, error) {
 	if len(sbq.modifiers) > 0 {
 		_spec.Modifiers = sbq.modifiers
 	}
-	_spec.Node.Columns = sbq.ctx.Fields
-	if len(sbq.ctx.Fields) > 0 {
-		_spec.Unique = sbq.ctx.Unique != nil && *sbq.ctx.Unique
-	}
+	_spec.Unique = false
+	_spec.Node.Columns = nil
 	return sqlgraph.CountNodes(ctx, sbq.driver, _spec)
 }
 
 func (sbq *SeriesBookQuery) querySpec() *sqlgraph.QuerySpec {
-	_spec := sqlgraph.NewQuerySpec(seriesbook.Table, seriesbook.Columns, sqlgraph.NewFieldSpec(seriesbook.FieldID, field.TypeString))
+	_spec := sqlgraph.NewQuerySpec(seriesbook.Table, seriesbook.Columns, nil)
 	_spec.From = sbq.sql
 	if unique := sbq.ctx.Unique; unique != nil {
 		_spec.Unique = *unique
@@ -542,11 +467,8 @@ func (sbq *SeriesBookQuery) querySpec() *sqlgraph.QuerySpec {
 	}
 	if fields := sbq.ctx.Fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
-		_spec.Node.Columns = append(_spec.Node.Columns, seriesbook.FieldID)
 		for i := range fields {
-			if fields[i] != seriesbook.FieldID {
-				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
-			}
+			_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 		}
 		if sbq.withSeries != nil {
 			_spec.Node.AddColumnOnce(seriesbook.FieldSeriesID)

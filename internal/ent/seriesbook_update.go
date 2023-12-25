@@ -169,7 +169,7 @@ func (sbu *SeriesBookUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if err := sbu.check(); err != nil {
 		return n, err
 	}
-	_spec := sqlgraph.NewUpdateSpec(seriesbook.Table, seriesbook.Columns, sqlgraph.NewFieldSpec(seriesbook.FieldID, field.TypeString))
+	_spec := sqlgraph.NewUpdateSpec(seriesbook.Table, seriesbook.Columns, sqlgraph.NewFieldSpec(seriesbook.FieldSeriesID, field.TypeString), sqlgraph.NewFieldSpec(seriesbook.FieldBookID, field.TypeString))
 	if ps := sbu.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
@@ -416,22 +416,24 @@ func (sbuo *SeriesBookUpdateOne) sqlSave(ctx context.Context) (_node *SeriesBook
 	if err := sbuo.check(); err != nil {
 		return _node, err
 	}
-	_spec := sqlgraph.NewUpdateSpec(seriesbook.Table, seriesbook.Columns, sqlgraph.NewFieldSpec(seriesbook.FieldID, field.TypeString))
-	id, ok := sbuo.mutation.ID()
-	if !ok {
-		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "SeriesBook.id" for update`)}
+	_spec := sqlgraph.NewUpdateSpec(seriesbook.Table, seriesbook.Columns, sqlgraph.NewFieldSpec(seriesbook.FieldSeriesID, field.TypeString), sqlgraph.NewFieldSpec(seriesbook.FieldBookID, field.TypeString))
+	if id, ok := sbuo.mutation.SeriesID(); !ok {
+		return nil, &ValidationError{Name: "series_id", err: errors.New(`ent: missing "SeriesBook.series_id" for update`)}
+	} else {
+		_spec.Node.CompositeID[0].Value = id
 	}
-	_spec.Node.ID.Value = id
+	if id, ok := sbuo.mutation.BookID(); !ok {
+		return nil, &ValidationError{Name: "book_id", err: errors.New(`ent: missing "SeriesBook.book_id" for update`)}
+	} else {
+		_spec.Node.CompositeID[1].Value = id
+	}
 	if fields := sbuo.fields; len(fields) > 0 {
-		_spec.Node.Columns = make([]string, 0, len(fields))
-		_spec.Node.Columns = append(_spec.Node.Columns, seriesbook.FieldID)
-		for _, f := range fields {
+		_spec.Node.Columns = make([]string, len(fields))
+		for i, f := range fields {
 			if !seriesbook.ValidColumn(f) {
 				return nil, &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
 			}
-			if f != seriesbook.FieldID {
-				_spec.Node.Columns = append(_spec.Node.Columns, f)
-			}
+			_spec.Node.Columns[i] = f
 		}
 	}
 	if ps := sbuo.mutation.predicates; len(ps) > 0 {

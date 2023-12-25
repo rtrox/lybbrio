@@ -124,9 +124,15 @@ var schemaGraph = func() *sqlgraph.Schema {
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   seriesbook.Table,
 			Columns: seriesbook.Columns,
-			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeString,
-				Column: seriesbook.FieldID,
+			CompositeID: []*sqlgraph.FieldSpec{
+				{
+					Type:   field.TypeString,
+					Column: seriesbook.FieldSeriesID,
+				},
+				{
+					Type:   field.TypeString,
+					Column: seriesbook.FieldBookID,
+				},
 			},
 		},
 		Type: "SeriesBook",
@@ -948,11 +954,6 @@ func (f *SeriesBookFilter) Where(p entql.P) {
 			s.AddError(err)
 		}
 	})
-}
-
-// WhereID applies the entql string predicate on the id field.
-func (f *SeriesBookFilter) WhereID(p entql.StringP) {
-	f.Where(p.Field(seriesbook.FieldID))
 }
 
 // WhereSeriesIndex applies the entql float64 predicate on the series_index field.

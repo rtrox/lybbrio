@@ -1234,7 +1234,7 @@ func (c *SeriesClient) QuerySeriesBooks(s *Series) *SeriesBookQuery {
 		id := s.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(series.Table, series.FieldID, id),
-			sqlgraph.To(seriesbook.Table, seriesbook.FieldID),
+			sqlgraph.To(seriesbook.Table, seriesbook.SeriesColumn),
 			sqlgraph.Edge(sqlgraph.O2M, true, series.SeriesBooksTable, series.SeriesBooksColumn),
 		)
 		fromV = sqlgraph.Neighbors(s.driver.Dialect(), step)
@@ -1325,13 +1325,9 @@ func (c *SeriesBookClient) Update() *SeriesBookUpdate {
 
 // UpdateOne returns an update builder for the given entity.
 func (c *SeriesBookClient) UpdateOne(sb *SeriesBook) *SeriesBookUpdateOne {
-	mutation := newSeriesBookMutation(c.config, OpUpdateOne, withSeriesBook(sb))
-	return &SeriesBookUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *SeriesBookClient) UpdateOneID(id ksuid.ID) *SeriesBookUpdateOne {
-	mutation := newSeriesBookMutation(c.config, OpUpdateOne, withSeriesBookID(id))
+	mutation := newSeriesBookMutation(c.config, OpUpdateOne)
+	mutation.series = &sb.SeriesID
+	mutation.book = &sb.BookID
 	return &SeriesBookUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
@@ -1339,19 +1335,6 @@ func (c *SeriesBookClient) UpdateOneID(id ksuid.ID) *SeriesBookUpdateOne {
 func (c *SeriesBookClient) Delete() *SeriesBookDelete {
 	mutation := newSeriesBookMutation(c.config, OpDelete)
 	return &SeriesBookDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a builder for deleting the given entity.
-func (c *SeriesBookClient) DeleteOne(sb *SeriesBook) *SeriesBookDeleteOne {
-	return c.DeleteOneID(sb.ID)
-}
-
-// DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *SeriesBookClient) DeleteOneID(id ksuid.ID) *SeriesBookDeleteOne {
-	builder := c.Delete().Where(seriesbook.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &SeriesBookDeleteOne{builder}
 }
 
 // Query returns a query builder for SeriesBook.
@@ -1363,50 +1346,18 @@ func (c *SeriesBookClient) Query() *SeriesBookQuery {
 	}
 }
 
-// Get returns a SeriesBook entity by its id.
-func (c *SeriesBookClient) Get(ctx context.Context, id ksuid.ID) (*SeriesBook, error) {
-	return c.Query().Where(seriesbook.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *SeriesBookClient) GetX(ctx context.Context, id ksuid.ID) *SeriesBook {
-	obj, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return obj
-}
-
 // QuerySeries queries the series edge of a SeriesBook.
 func (c *SeriesBookClient) QuerySeries(sb *SeriesBook) *SeriesQuery {
-	query := (&SeriesClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := sb.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(seriesbook.Table, seriesbook.FieldID, id),
-			sqlgraph.To(series.Table, series.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, seriesbook.SeriesTable, seriesbook.SeriesColumn),
-		)
-		fromV = sqlgraph.Neighbors(sb.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
+	return c.Query().
+		Where(seriesbook.SeriesID(sb.SeriesID), seriesbook.BookID(sb.BookID)).
+		QuerySeries()
 }
 
 // QueryBook queries the book edge of a SeriesBook.
 func (c *SeriesBookClient) QueryBook(sb *SeriesBook) *BookQuery {
-	query := (&BookClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := sb.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(seriesbook.Table, seriesbook.FieldID, id),
-			sqlgraph.To(book.Table, book.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, seriesbook.BookTable, seriesbook.BookColumn),
-		)
-		fromV = sqlgraph.Neighbors(sb.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
+	return c.Query().
+		Where(seriesbook.SeriesID(sb.SeriesID), seriesbook.BookID(sb.BookID)).
+		QueryBook()
 }
 
 // Hooks returns the client hooks.

@@ -185,8 +185,6 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
-	seriesbookMixinFields1 := seriesbookMixin[1].Fields()
-	_ = seriesbookMixinFields1
 	seriesbookFields := schema.SeriesBook{}.Fields()
 	_ = seriesbookFields
 	// seriesbookDescSeriesIndex is the schema descriptor for series_index field.
@@ -201,10 +199,6 @@ func init() {
 	seriesbookDescBookID := seriesbookFields[2].Descriptor()
 	// seriesbook.BookIDValidator is a validator for the "book_id" field. It is called by the builders before save.
 	seriesbook.BookIDValidator = seriesbookDescBookID.Validators[0].(func(string) error)
-	// seriesbookDescID is the schema descriptor for id field.
-	seriesbookDescID := seriesbookMixinFields1[0].Descriptor()
-	// seriesbook.DefaultID holds the default value on creation for the id field.
-	seriesbook.DefaultID = seriesbookDescID.Default.(func() ksuid.ID)
 	shelfMixin := schema.Shelf{}.Mixin()
 	shelf.Policy = privacy.NewPolicies(shelfMixin[0], shelfMixin[1], schema.Shelf{})
 	shelf.Hooks[0] = func(next ent.Mutator) ent.Mutator {

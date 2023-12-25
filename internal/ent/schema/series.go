@@ -47,8 +47,7 @@ func (Series) Fields() []ent.Field {
 func (Series) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("books", Book.Type).
-			Through("series_books", SeriesBook.Type).
-			Annotations(entgql.RelayConnection()),
+			Through("series_books", SeriesBook.Type),
 	}
 }
 

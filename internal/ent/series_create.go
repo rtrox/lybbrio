@@ -9,7 +9,6 @@ import (
 	"lybbrio/internal/ent/book"
 	"lybbrio/internal/ent/schema/ksuid"
 	"lybbrio/internal/ent/series"
-	"lybbrio/internal/ent/seriesbook"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
@@ -61,21 +60,6 @@ func (sc *SeriesCreate) AddBooks(b ...*Book) *SeriesCreate {
 		ids[i] = b[i].ID
 	}
 	return sc.AddBookIDs(ids...)
-}
-
-// AddSeriesBookIDs adds the "series_books" edge to the SeriesBook entity by IDs.
-func (sc *SeriesCreate) AddSeriesBookIDs(ids ...ksuid.ID) *SeriesCreate {
-	sc.mutation.AddSeriesBookIDs(ids...)
-	return sc
-}
-
-// AddSeriesBooks adds the "series_books" edges to the SeriesBook entity.
-func (sc *SeriesCreate) AddSeriesBooks(s ...*SeriesBook) *SeriesCreate {
-	ids := make([]ksuid.ID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
-	}
-	return sc.AddSeriesBookIDs(ids...)
 }
 
 // Mutation returns the SeriesMutation object of the builder.
@@ -195,29 +179,6 @@ func (sc *SeriesCreate) createSpec() (*Series, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(book.FieldID, field.TypeString),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		createE := &SeriesBookCreate{config: sc.config, mutation: newSeriesBookMutation(sc.config, OpCreate)}
-		_ = createE.defaults()
-		_, specE := createE.createSpec()
-		edge.Target.Fields = specE.Fields
-		if specE.ID.Value != nil {
-			edge.Target.Fields = append(edge.Target.Fields, specE.ID)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := sc.mutation.SeriesBooksIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   series.SeriesBooksTable,
-			Columns: []string{series.SeriesBooksColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(seriesbook.FieldID, field.TypeString),
 			},
 		}
 		for _, k := range nodes {

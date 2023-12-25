@@ -4,6 +4,7 @@ import (
 	"lybbrio/internal/ent/schema/ksuid"
 
 	"entgo.io/ent"
+	"entgo.io/ent/schema"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 )
@@ -16,6 +17,12 @@ type SeriesBook struct {
 func (SeriesBook) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		BaseMixin{},
+	}
+}
+
+func (SeriesBook) Annotations() []schema.Annotation {
+	return []schema.Annotation{
+		field.ID("series_id", "book_id"),
 	}
 }
 

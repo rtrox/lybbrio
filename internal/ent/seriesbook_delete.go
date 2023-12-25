@@ -9,7 +9,6 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
-	"entgo.io/ent/schema/field"
 )
 
 // SeriesBookDelete is the builder for deleting a SeriesBook entity.
@@ -40,7 +39,7 @@ func (sbd *SeriesBookDelete) ExecX(ctx context.Context) int {
 }
 
 func (sbd *SeriesBookDelete) sqlExec(ctx context.Context) (int, error) {
-	_spec := sqlgraph.NewDeleteSpec(seriesbook.Table, sqlgraph.NewFieldSpec(seriesbook.FieldID, field.TypeString))
+	_spec := sqlgraph.NewDeleteSpec(seriesbook.Table, nil)
 	if ps := sbd.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {

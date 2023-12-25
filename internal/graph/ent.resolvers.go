@@ -6,7 +6,6 @@ package graph
 
 import (
 	"context"
-	"fmt"
 	"lybbrio/internal/ent"
 	"lybbrio/internal/ent/schema/ksuid"
 	"lybbrio/internal/graph/generated"
@@ -83,16 +82,7 @@ func (r *queryResolver) Users(ctx context.Context) ([]*ent.User, error) {
 	return r.client.User.Query().All(ctx)
 }
 
-// SeriesBooks is the resolver for the seriesBooks field.
-func (r *seriesResolver) SeriesBooks(ctx context.Context, obj *ent.Series) ([]*ent.SeriesBook, error) {
-	panic(fmt.Errorf("not implemented: SeriesBooks - seriesBooks"))
-}
-
 // Query returns generated.QueryResolver implementation.
 func (r *Resolver) Query() generated.QueryResolver { return &queryResolver{r} }
 
-// Series returns generated.SeriesResolver implementation.
-func (r *Resolver) Series() generated.SeriesResolver { return &seriesResolver{r} }
-
 type queryResolver struct{ *Resolver }
-type seriesResolver struct{ *Resolver }

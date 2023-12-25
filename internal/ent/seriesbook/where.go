@@ -10,51 +10,6 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 )
 
-// ID filters vertices based on their ID field.
-func ID(id ksuid.ID) predicate.SeriesBook {
-	return predicate.SeriesBook(sql.FieldEQ(FieldID, id))
-}
-
-// IDEQ applies the EQ predicate on the ID field.
-func IDEQ(id ksuid.ID) predicate.SeriesBook {
-	return predicate.SeriesBook(sql.FieldEQ(FieldID, id))
-}
-
-// IDNEQ applies the NEQ predicate on the ID field.
-func IDNEQ(id ksuid.ID) predicate.SeriesBook {
-	return predicate.SeriesBook(sql.FieldNEQ(FieldID, id))
-}
-
-// IDIn applies the In predicate on the ID field.
-func IDIn(ids ...ksuid.ID) predicate.SeriesBook {
-	return predicate.SeriesBook(sql.FieldIn(FieldID, ids...))
-}
-
-// IDNotIn applies the NotIn predicate on the ID field.
-func IDNotIn(ids ...ksuid.ID) predicate.SeriesBook {
-	return predicate.SeriesBook(sql.FieldNotIn(FieldID, ids...))
-}
-
-// IDGT applies the GT predicate on the ID field.
-func IDGT(id ksuid.ID) predicate.SeriesBook {
-	return predicate.SeriesBook(sql.FieldGT(FieldID, id))
-}
-
-// IDGTE applies the GTE predicate on the ID field.
-func IDGTE(id ksuid.ID) predicate.SeriesBook {
-	return predicate.SeriesBook(sql.FieldGTE(FieldID, id))
-}
-
-// IDLT applies the LT predicate on the ID field.
-func IDLT(id ksuid.ID) predicate.SeriesBook {
-	return predicate.SeriesBook(sql.FieldLT(FieldID, id))
-}
-
-// IDLTE applies the LTE predicate on the ID field.
-func IDLTE(id ksuid.ID) predicate.SeriesBook {
-	return predicate.SeriesBook(sql.FieldLTE(FieldID, id))
-}
-
 // SeriesIndex applies equality check predicate on the "series_index" field. It's identical to SeriesIndexEQ.
 func SeriesIndex(v float64) predicate.SeriesBook {
 	return predicate.SeriesBook(sql.FieldEQ(FieldSeriesIndex, v))
@@ -294,7 +249,7 @@ func BookIDContainsFold(v ksuid.ID) predicate.SeriesBook {
 func HasSeries() predicate.SeriesBook {
 	return predicate.SeriesBook(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
+			sqlgraph.From(Table, SeriesColumn),
 			sqlgraph.Edge(sqlgraph.M2O, false, SeriesTable, SeriesColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
@@ -317,7 +272,7 @@ func HasSeriesWith(preds ...predicate.Series) predicate.SeriesBook {
 func HasBook() predicate.SeriesBook {
 	return predicate.SeriesBook(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
+			sqlgraph.From(Table, BookColumn),
 			sqlgraph.Edge(sqlgraph.M2O, false, BookTable, BookColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)

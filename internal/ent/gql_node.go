@@ -12,7 +12,6 @@ import (
 	"lybbrio/internal/ent/publisher"
 	"lybbrio/internal/ent/schema/ksuid"
 	"lybbrio/internal/ent/series"
-	"lybbrio/internal/ent/seriesbook"
 	"lybbrio/internal/ent/shelf"
 	"lybbrio/internal/ent/tag"
 	"lybbrio/internal/ent/user"
@@ -45,9 +44,6 @@ func (n *Publisher) IsNode() {}
 
 // IsNode implements the Node interface check for GQLGen.
 func (n *Series) IsNode() {}
-
-// IsNode implements the Node interface check for GQLGen.
-func (n *SeriesBook) IsNode() {}
 
 // IsNode implements the Node interface check for GQLGen.
 func (n *Shelf) IsNode() {}
@@ -207,22 +203,6 @@ func (c *Client) noder(ctx context.Context, table string, id ksuid.ID) (Noder, e
 		query := c.Series.Query().
 			Where(series.ID(uid))
 		query, err := query.CollectFields(ctx, "Series")
-		if err != nil {
-			return nil, err
-		}
-		n, err := query.Only(ctx)
-		if err != nil {
-			return nil, err
-		}
-		return n, nil
-	case seriesbook.Table:
-		var uid ksuid.ID
-		if err := uid.UnmarshalGQL(id); err != nil {
-			return nil, err
-		}
-		query := c.SeriesBook.Query().
-			Where(seriesbook.ID(uid))
-		query, err := query.CollectFields(ctx, "SeriesBook")
 		if err != nil {
 			return nil, err
 		}
@@ -452,22 +432,6 @@ func (c *Client) noders(ctx context.Context, table string, ids []ksuid.ID) ([]No
 		query := c.Series.Query().
 			Where(series.IDIn(ids...))
 		query, err := query.CollectFields(ctx, "Series")
-		if err != nil {
-			return nil, err
-		}
-		nodes, err := query.All(ctx)
-		if err != nil {
-			return nil, err
-		}
-		for _, node := range nodes {
-			for _, noder := range idmap[node.ID] {
-				*noder = node
-			}
-		}
-	case seriesbook.Table:
-		query := c.SeriesBook.Query().
-			Where(seriesbook.IDIn(ids...))
-		query, err := query.CollectFields(ctx, "SeriesBook")
 		if err != nil {
 			return nil, err
 		}

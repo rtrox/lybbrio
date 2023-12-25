@@ -17,8 +17,6 @@ import (
 // SeriesBook is the model entity for the SeriesBook schema.
 type SeriesBook struct {
 	config `json:"-"`
-	// ID of the ent.
-	ID ksuid.ID `json:"id,omitempty"`
 	// SeriesIndex holds the value of the "series_index" field.
 	SeriesIndex float64 `json:"series_index,omitempty"`
 	// SeriesID holds the value of the "series_id" field.
@@ -77,7 +75,7 @@ func (*SeriesBook) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case seriesbook.FieldSeriesIndex:
 			values[i] = new(sql.NullFloat64)
-		case seriesbook.FieldID, seriesbook.FieldSeriesID, seriesbook.FieldBookID:
+		case seriesbook.FieldSeriesID, seriesbook.FieldBookID:
 			values[i] = new(sql.NullString)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -94,12 +92,6 @@ func (sb *SeriesBook) assignValues(columns []string, values []any) error {
 	}
 	for i := range columns {
 		switch columns[i] {
-		case seriesbook.FieldID:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field id", values[i])
-			} else if value.Valid {
-				sb.ID = ksuid.ID(value.String)
-			}
 		case seriesbook.FieldSeriesIndex:
 			if value, ok := values[i].(*sql.NullFloat64); !ok {
 				return fmt.Errorf("unexpected type %T for field series_index", values[i])
@@ -163,7 +155,6 @@ func (sb *SeriesBook) Unwrap() *SeriesBook {
 func (sb *SeriesBook) String() string {
 	var builder strings.Builder
 	builder.WriteString("SeriesBook(")
-	builder.WriteString(fmt.Sprintf("id=%v, ", sb.ID))
 	builder.WriteString("series_index=")
 	builder.WriteString(fmt.Sprintf("%v", sb.SeriesIndex))
 	builder.WriteString(", ")

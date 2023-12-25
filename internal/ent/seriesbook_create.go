@@ -48,20 +48,6 @@ func (sbc *SeriesBookCreate) SetBookID(k ksuid.ID) *SeriesBookCreate {
 	return sbc
 }
 
-// SetID sets the "id" field.
-func (sbc *SeriesBookCreate) SetID(k ksuid.ID) *SeriesBookCreate {
-	sbc.mutation.SetID(k)
-	return sbc
-}
-
-// SetNillableID sets the "id" field if the given value is not nil.
-func (sbc *SeriesBookCreate) SetNillableID(k *ksuid.ID) *SeriesBookCreate {
-	if k != nil {
-		sbc.SetID(*k)
-	}
-	return sbc
-}
-
 // SetSeries sets the "series" edge to the Series entity.
 func (sbc *SeriesBookCreate) SetSeries(s *Series) *SeriesBookCreate {
 	return sbc.SetSeriesID(s.ID)
@@ -79,9 +65,6 @@ func (sbc *SeriesBookCreate) Mutation() *SeriesBookMutation {
 
 // Save creates the SeriesBook in the database.
 func (sbc *SeriesBookCreate) Save(ctx context.Context) (*SeriesBook, error) {
-	if err := sbc.defaults(); err != nil {
-		return nil, err
-	}
 	return withHooks(ctx, sbc.sqlSave, sbc.mutation, sbc.hooks)
 }
 
@@ -105,18 +88,6 @@ func (sbc *SeriesBookCreate) ExecX(ctx context.Context) {
 	if err := sbc.Exec(ctx); err != nil {
 		panic(err)
 	}
-}
-
-// defaults sets the default values of the builder before save.
-func (sbc *SeriesBookCreate) defaults() error {
-	if _, ok := sbc.mutation.ID(); !ok {
-		if seriesbook.DefaultID == nil {
-			return fmt.Errorf("ent: uninitialized seriesbook.DefaultID (forgotten import ent/runtime?)")
-		}
-		v := seriesbook.DefaultID()
-		sbc.mutation.SetID(v)
-	}
-	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -162,27 +133,14 @@ func (sbc *SeriesBookCreate) sqlSave(ctx context.Context) (*SeriesBook, error) {
 		}
 		return nil, err
 	}
-	if _spec.ID.Value != nil {
-		if id, ok := _spec.ID.Value.(ksuid.ID); ok {
-			_node.ID = id
-		} else {
-			return nil, fmt.Errorf("unexpected SeriesBook.ID type: %T", _spec.ID.Value)
-		}
-	}
-	sbc.mutation.id = &_node.ID
-	sbc.mutation.done = true
 	return _node, nil
 }
 
 func (sbc *SeriesBookCreate) createSpec() (*SeriesBook, *sqlgraph.CreateSpec) {
 	var (
 		_node = &SeriesBook{config: sbc.config}
-		_spec = sqlgraph.NewCreateSpec(seriesbook.Table, sqlgraph.NewFieldSpec(seriesbook.FieldID, field.TypeString))
+		_spec = sqlgraph.NewCreateSpec(seriesbook.Table, nil)
 	)
-	if id, ok := sbc.mutation.ID(); ok {
-		_node.ID = id
-		_spec.ID.Value = id
-	}
 	if value, ok := sbc.mutation.SeriesIndex(); ok {
 		_spec.SetField(seriesbook.FieldSeriesIndex, field.TypeFloat64, value)
 		_node.SeriesIndex = value
@@ -242,7 +200,6 @@ func (sbcb *SeriesBookCreateBulk) Save(ctx context.Context) ([]*SeriesBook, erro
 	for i := range sbcb.builders {
 		func(i int, root context.Context) {
 			builder := sbcb.builders[i]
-			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*SeriesBookMutation)
 				if !ok {
@@ -268,7 +225,6 @@ func (sbcb *SeriesBookCreateBulk) Save(ctx context.Context) ([]*SeriesBook, erro
 				if err != nil {
 					return nil, err
 				}
-				mutation.id = &nodes[i].ID
 				mutation.done = true
 				return nodes[i], nil
 			})

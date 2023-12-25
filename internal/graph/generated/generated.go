@@ -44,7 +44,6 @@ type Config struct {
 type ResolverRoot interface {
 	Mutation() MutationResolver
 	Query() QueryResolver
-	Series() SeriesResolver
 }
 
 type DirectiveRoot struct {
@@ -194,20 +193,10 @@ type ComplexityRoot struct {
 	}
 
 	Series struct {
-		Books       func(childComplexity int, after *entgql.Cursor[ksuid.ID], first *int, before *entgql.Cursor[ksuid.ID], last *int, orderBy []*ent.BookOrder, where *ent.BookWhereInput) int
-		ID          func(childComplexity int) int
-		Name        func(childComplexity int) int
-		SeriesBooks func(childComplexity int) int
-		Sort        func(childComplexity int) int
-	}
-
-	SeriesBook struct {
-		Book        func(childComplexity int) int
-		BookID      func(childComplexity int) int
-		ID          func(childComplexity int) int
-		Series      func(childComplexity int) int
-		SeriesID    func(childComplexity int) int
-		SeriesIndex func(childComplexity int) int
+		Books func(childComplexity int) int
+		ID    func(childComplexity int) int
+		Name  func(childComplexity int) int
+		Sort  func(childComplexity int) int
 	}
 
 	SeriesConnection struct {
@@ -309,9 +298,6 @@ type QueryResolver interface {
 	Tags(ctx context.Context, after *entgql.Cursor[ksuid.ID], first *int, before *entgql.Cursor[ksuid.ID], last *int, orderBy []*ent.TagOrder, where *ent.TagWhereInput) (*ent.TagConnection, error)
 	Users(ctx context.Context) ([]*ent.User, error)
 	Me(ctx context.Context) (*ent.User, error)
-}
-type SeriesResolver interface {
-	SeriesBooks(ctx context.Context, obj *ent.Series) ([]*ent.SeriesBook, error)
 }
 
 type executableSchema struct {
@@ -1109,12 +1095,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			break
 		}
 
-		args, err := ec.field_Series_books_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Series.Books(childComplexity, args["after"].(*entgql.Cursor[ksuid.ID]), args["first"].(*int), args["before"].(*entgql.Cursor[ksuid.ID]), args["last"].(*int), args["orderBy"].([]*ent.BookOrder), args["where"].(*ent.BookWhereInput)), true
+		return e.complexity.Series.Books(childComplexity), true
 
 	case "Series.id":
 		if e.complexity.Series.ID == nil {
@@ -1130,61 +1111,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Series.Name(childComplexity), true
 
-	case "Series.seriesBooks":
-		if e.complexity.Series.SeriesBooks == nil {
-			break
-		}
-
-		return e.complexity.Series.SeriesBooks(childComplexity), true
-
 	case "Series.sort":
 		if e.complexity.Series.Sort == nil {
 			break
 		}
 
 		return e.complexity.Series.Sort(childComplexity), true
-
-	case "SeriesBook.book":
-		if e.complexity.SeriesBook.Book == nil {
-			break
-		}
-
-		return e.complexity.SeriesBook.Book(childComplexity), true
-
-	case "SeriesBook.bookID":
-		if e.complexity.SeriesBook.BookID == nil {
-			break
-		}
-
-		return e.complexity.SeriesBook.BookID(childComplexity), true
-
-	case "SeriesBook.id":
-		if e.complexity.SeriesBook.ID == nil {
-			break
-		}
-
-		return e.complexity.SeriesBook.ID(childComplexity), true
-
-	case "SeriesBook.series":
-		if e.complexity.SeriesBook.Series == nil {
-			break
-		}
-
-		return e.complexity.SeriesBook.Series(childComplexity), true
-
-	case "SeriesBook.seriesID":
-		if e.complexity.SeriesBook.SeriesID == nil {
-			break
-		}
-
-		return e.complexity.SeriesBook.SeriesID(childComplexity), true
-
-	case "SeriesBook.seriesIndex":
-		if e.complexity.SeriesBook.SeriesIndex == nil {
-			break
-		}
-
-		return e.complexity.SeriesBook.SeriesIndex(childComplexity), true
 
 	case "SeriesConnection.edges":
 		if e.complexity.SeriesConnection.Edges == nil {
@@ -1468,7 +1400,6 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputLanguageWhereInput,
 		ec.unmarshalInputPublisherOrder,
 		ec.unmarshalInputPublisherWhereInput,
-		ec.unmarshalInputSeriesBookWhereInput,
 		ec.unmarshalInputSeriesOrder,
 		ec.unmarshalInputSeriesWhereInput,
 		ec.unmarshalInputShelfOrder,
@@ -2440,63 +2371,7 @@ type Series implements Node {
   id: ID!
   name: String!
   sort: String!
-  books(
-    """Returns the elements in the list that come after the specified cursor."""
-    after: Cursor
-
-    """Returns the first _n_ elements from the list."""
-    first: Int
-
-    """Returns the elements in the list that come before the specified cursor."""
-    before: Cursor
-
-    """Returns the last _n_ elements from the list."""
-    last: Int
-
-    """Ordering options for Books returned from the connection."""
-    orderBy: [BookOrder!]
-
-    """Filtering options for Books returned from the connection."""
-    where: BookWhereInput
-  ): BookConnection!
-  seriesBooks: [SeriesBook!]
-}
-type SeriesBook implements Node {
-  id: ID!
-  seriesIndex: Float
-  seriesID: ID!
-  bookID: ID!
-  series: Series!
-  book: Book!
-}
-"""
-SeriesBookWhereInput is used for filtering SeriesBook objects.
-Input was generated by ent.
-"""
-input SeriesBookWhereInput {
-  not: SeriesBookWhereInput
-  and: [SeriesBookWhereInput!]
-  or: [SeriesBookWhereInput!]
-  """id field predicates"""
-  id: ID
-  idNEQ: ID
-  idIn: [ID!]
-  idNotIn: [ID!]
-  idGT: ID
-  idGTE: ID
-  idLT: ID
-  idLTE: ID
-  """series_index field predicates"""
-  seriesIndex: Float
-  seriesIndexNEQ: Float
-  seriesIndexIn: [Float!]
-  seriesIndexNotIn: [Float!]
-  seriesIndexGT: Float
-  seriesIndexGTE: Float
-  seriesIndexLT: Float
-  seriesIndexLTE: Float
-  seriesIndexIsNil: Boolean
-  seriesIndexNotNil: Boolean
+  books: [Book!]
 }
 """A connection to a list of items."""
 type SeriesConnection {
@@ -2573,9 +2448,6 @@ input SeriesWhereInput {
   """books edge predicates"""
   hasBooks: Boolean
   hasBooksWith: [BookWhereInput!]
-  """series_books edge predicates"""
-  hasSeriesBooks: Boolean
-  hasSeriesBooksWith: [SeriesBookWhereInput!]
 }
 type Shelf implements Node {
   id: ID!
@@ -4131,66 +4003,6 @@ func (ec *executionContext) field_Query_tags_args(ctx context.Context, rawArgs m
 	return args, nil
 }
 
-func (ec *executionContext) field_Series_books_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 *entgql.Cursor[ksuid.ID]
-	if tmp, ok := rawArgs["after"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("after"))
-		arg0, err = ec.unmarshalOCursor2ᚖentgoᚗioᚋcontribᚋentgqlᚐCursor(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["after"] = arg0
-	var arg1 *int
-	if tmp, ok := rawArgs["first"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("first"))
-		arg1, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["first"] = arg1
-	var arg2 *entgql.Cursor[ksuid.ID]
-	if tmp, ok := rawArgs["before"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("before"))
-		arg2, err = ec.unmarshalOCursor2ᚖentgoᚗioᚋcontribᚋentgqlᚐCursor(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["before"] = arg2
-	var arg3 *int
-	if tmp, ok := rawArgs["last"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("last"))
-		arg3, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["last"] = arg3
-	var arg4 []*ent.BookOrder
-	if tmp, ok := rawArgs["orderBy"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("orderBy"))
-		arg4, err = ec.unmarshalOBookOrder2ᚕᚖlybbrioᚋinternalᚋentᚐBookOrderᚄ(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["orderBy"] = arg4
-	var arg5 *ent.BookWhereInput
-	if tmp, ok := rawArgs["where"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("where"))
-		arg5, err = ec.unmarshalOBookWhereInput2ᚖlybbrioᚋinternalᚋentᚐBookWhereInput(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["where"] = arg5
-	return args, nil
-}
-
 func (ec *executionContext) field_Shelf_books_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -5267,8 +5079,6 @@ func (ec *executionContext) fieldContext_Book_series(ctx context.Context, field 
 				return ec.fieldContext_Series_sort(ctx, field)
 			case "books":
 				return ec.fieldContext_Series_books(ctx, field)
-			case "seriesBooks":
-				return ec.fieldContext_Series_seriesBooks(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Series", field.Name)
 		},
@@ -7404,8 +7214,6 @@ func (ec *executionContext) fieldContext_Mutation_createSeries(ctx context.Conte
 				return ec.fieldContext_Series_sort(ctx, field)
 			case "books":
 				return ec.fieldContext_Series_books(ctx, field)
-			case "seriesBooks":
-				return ec.fieldContext_Series_seriesBooks(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Series", field.Name)
 		},
@@ -7468,8 +7276,6 @@ func (ec *executionContext) fieldContext_Mutation_updateSeries(ctx context.Conte
 				return ec.fieldContext_Series_sort(ctx, field)
 			case "books":
 				return ec.fieldContext_Series_books(ctx, field)
-			case "seriesBooks":
-				return ec.fieldContext_Series_seriesBooks(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Series", field.Name)
 		},
@@ -9297,373 +9103,23 @@ func (ec *executionContext) _Series_books(ctx context.Context, field graphql.Col
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Books(ctx, fc.Args["after"].(*entgql.Cursor[ksuid.ID]), fc.Args["first"].(*int), fc.Args["before"].(*entgql.Cursor[ksuid.ID]), fc.Args["last"].(*int), fc.Args["orderBy"].([]*ent.BookOrder), fc.Args["where"].(*ent.BookWhereInput))
+		return obj.Books(ctx)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
 		return graphql.Null
 	}
 	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
 		return graphql.Null
 	}
-	res := resTmp.(*ent.BookConnection)
+	res := resTmp.([]*ent.Book)
 	fc.Result = res
-	return ec.marshalNBookConnection2ᚖlybbrioᚋinternalᚋentᚐBookConnection(ctx, field.Selections, res)
+	return ec.marshalOBook2ᚕᚖlybbrioᚋinternalᚋentᚐBookᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Series_books(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Series",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "edges":
-				return ec.fieldContext_BookConnection_edges(ctx, field)
-			case "pageInfo":
-				return ec.fieldContext_BookConnection_pageInfo(ctx, field)
-			case "totalCount":
-				return ec.fieldContext_BookConnection_totalCount(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type BookConnection", field.Name)
-		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Series_books_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return fc, err
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Series_seriesBooks(ctx context.Context, field graphql.CollectedField, obj *ent.Series) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Series_seriesBooks(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Series().SeriesBooks(rctx, obj)
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.([]*ent.SeriesBook)
-	fc.Result = res
-	return ec.marshalOSeriesBook2ᚕᚖlybbrioᚋinternalᚋentᚐSeriesBookᚄ(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Series_seriesBooks(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Series",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "id":
-				return ec.fieldContext_SeriesBook_id(ctx, field)
-			case "seriesIndex":
-				return ec.fieldContext_SeriesBook_seriesIndex(ctx, field)
-			case "seriesID":
-				return ec.fieldContext_SeriesBook_seriesID(ctx, field)
-			case "bookID":
-				return ec.fieldContext_SeriesBook_bookID(ctx, field)
-			case "series":
-				return ec.fieldContext_SeriesBook_series(ctx, field)
-			case "book":
-				return ec.fieldContext_SeriesBook_book(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type SeriesBook", field.Name)
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _SeriesBook_id(ctx context.Context, field graphql.CollectedField, obj *ent.SeriesBook) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_SeriesBook_id(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.ID, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(ksuid.ID)
-	fc.Result = res
-	return ec.marshalNID2lybbrioᚋinternalᚋentᚋschemaᚋksuidᚐID(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_SeriesBook_id(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "SeriesBook",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type ID does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _SeriesBook_seriesIndex(ctx context.Context, field graphql.CollectedField, obj *ent.SeriesBook) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_SeriesBook_seriesIndex(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.SeriesIndex, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(float64)
-	fc.Result = res
-	return ec.marshalOFloat2float64(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_SeriesBook_seriesIndex(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "SeriesBook",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Float does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _SeriesBook_seriesID(ctx context.Context, field graphql.CollectedField, obj *ent.SeriesBook) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_SeriesBook_seriesID(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.SeriesID, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(ksuid.ID)
-	fc.Result = res
-	return ec.marshalNID2lybbrioᚋinternalᚋentᚋschemaᚋksuidᚐID(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_SeriesBook_seriesID(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "SeriesBook",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type ID does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _SeriesBook_bookID(ctx context.Context, field graphql.CollectedField, obj *ent.SeriesBook) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_SeriesBook_bookID(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.BookID, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(ksuid.ID)
-	fc.Result = res
-	return ec.marshalNID2lybbrioᚋinternalᚋentᚋschemaᚋksuidᚐID(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_SeriesBook_bookID(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "SeriesBook",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type ID does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _SeriesBook_series(ctx context.Context, field graphql.CollectedField, obj *ent.SeriesBook) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_SeriesBook_series(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Series(ctx)
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(*ent.Series)
-	fc.Result = res
-	return ec.marshalNSeries2ᚖlybbrioᚋinternalᚋentᚐSeries(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_SeriesBook_series(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "SeriesBook",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "id":
-				return ec.fieldContext_Series_id(ctx, field)
-			case "name":
-				return ec.fieldContext_Series_name(ctx, field)
-			case "sort":
-				return ec.fieldContext_Series_sort(ctx, field)
-			case "books":
-				return ec.fieldContext_Series_books(ctx, field)
-			case "seriesBooks":
-				return ec.fieldContext_Series_seriesBooks(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type Series", field.Name)
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _SeriesBook_book(ctx context.Context, field graphql.CollectedField, obj *ent.SeriesBook) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_SeriesBook_book(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Book(ctx)
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(*ent.Book)
-	fc.Result = res
-	return ec.marshalNBook2ᚖlybbrioᚋinternalᚋentᚐBook(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_SeriesBook_book(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "SeriesBook",
 		Field:      field,
 		IsMethod:   true,
 		IsResolver: false,
@@ -9891,8 +9347,6 @@ func (ec *executionContext) fieldContext_SeriesEdge_node(ctx context.Context, fi
 				return ec.fieldContext_Series_sort(ctx, field)
 			case "books":
 				return ec.fieldContext_Series_books(ctx, field)
-			case "seriesBooks":
-				return ec.fieldContext_Series_seriesBooks(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Series", field.Name)
 		},
@@ -15701,173 +15155,6 @@ func (ec *executionContext) unmarshalInputPublisherWhereInput(ctx context.Contex
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputSeriesBookWhereInput(ctx context.Context, obj interface{}) (ent.SeriesBookWhereInput, error) {
-	var it ent.SeriesBookWhereInput
-	asMap := map[string]interface{}{}
-	for k, v := range obj.(map[string]interface{}) {
-		asMap[k] = v
-	}
-
-	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "seriesIndex", "seriesIndexNEQ", "seriesIndexIn", "seriesIndexNotIn", "seriesIndexGT", "seriesIndexGTE", "seriesIndexLT", "seriesIndexLTE", "seriesIndexIsNil", "seriesIndexNotNil"}
-	for _, k := range fieldsInOrder {
-		v, ok := asMap[k]
-		if !ok {
-			continue
-		}
-		switch k {
-		case "not":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("not"))
-			data, err := ec.unmarshalOSeriesBookWhereInput2ᚖlybbrioᚋinternalᚋentᚐSeriesBookWhereInput(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Not = data
-		case "and":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("and"))
-			data, err := ec.unmarshalOSeriesBookWhereInput2ᚕᚖlybbrioᚋinternalᚋentᚐSeriesBookWhereInputᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.And = data
-		case "or":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("or"))
-			data, err := ec.unmarshalOSeriesBookWhereInput2ᚕᚖlybbrioᚋinternalᚋentᚐSeriesBookWhereInputᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Or = data
-		case "id":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
-			data, err := ec.unmarshalOID2ᚖlybbrioᚋinternalᚋentᚋschemaᚋksuidᚐID(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.ID = data
-		case "idNEQ":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("idNEQ"))
-			data, err := ec.unmarshalOID2ᚖlybbrioᚋinternalᚋentᚋschemaᚋksuidᚐID(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.IDNEQ = data
-		case "idIn":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("idIn"))
-			data, err := ec.unmarshalOID2ᚕlybbrioᚋinternalᚋentᚋschemaᚋksuidᚐIDᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.IDIn = data
-		case "idNotIn":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("idNotIn"))
-			data, err := ec.unmarshalOID2ᚕlybbrioᚋinternalᚋentᚋschemaᚋksuidᚐIDᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.IDNotIn = data
-		case "idGT":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("idGT"))
-			data, err := ec.unmarshalOID2ᚖlybbrioᚋinternalᚋentᚋschemaᚋksuidᚐID(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.IDGT = data
-		case "idGTE":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("idGTE"))
-			data, err := ec.unmarshalOID2ᚖlybbrioᚋinternalᚋentᚋschemaᚋksuidᚐID(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.IDGTE = data
-		case "idLT":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("idLT"))
-			data, err := ec.unmarshalOID2ᚖlybbrioᚋinternalᚋentᚋschemaᚋksuidᚐID(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.IDLT = data
-		case "idLTE":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("idLTE"))
-			data, err := ec.unmarshalOID2ᚖlybbrioᚋinternalᚋentᚋschemaᚋksuidᚐID(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.IDLTE = data
-		case "seriesIndex":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("seriesIndex"))
-			data, err := ec.unmarshalOFloat2ᚖfloat64(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.SeriesIndex = data
-		case "seriesIndexNEQ":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("seriesIndexNEQ"))
-			data, err := ec.unmarshalOFloat2ᚖfloat64(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.SeriesIndexNEQ = data
-		case "seriesIndexIn":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("seriesIndexIn"))
-			data, err := ec.unmarshalOFloat2ᚕfloat64ᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.SeriesIndexIn = data
-		case "seriesIndexNotIn":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("seriesIndexNotIn"))
-			data, err := ec.unmarshalOFloat2ᚕfloat64ᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.SeriesIndexNotIn = data
-		case "seriesIndexGT":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("seriesIndexGT"))
-			data, err := ec.unmarshalOFloat2ᚖfloat64(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.SeriesIndexGT = data
-		case "seriesIndexGTE":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("seriesIndexGTE"))
-			data, err := ec.unmarshalOFloat2ᚖfloat64(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.SeriesIndexGTE = data
-		case "seriesIndexLT":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("seriesIndexLT"))
-			data, err := ec.unmarshalOFloat2ᚖfloat64(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.SeriesIndexLT = data
-		case "seriesIndexLTE":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("seriesIndexLTE"))
-			data, err := ec.unmarshalOFloat2ᚖfloat64(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.SeriesIndexLTE = data
-		case "seriesIndexIsNil":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("seriesIndexIsNil"))
-			data, err := ec.unmarshalOBoolean2bool(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.SeriesIndexIsNil = data
-		case "seriesIndexNotNil":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("seriesIndexNotNil"))
-			data, err := ec.unmarshalOBoolean2bool(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.SeriesIndexNotNil = data
-		}
-	}
-
-	return it, nil
-}
-
 func (ec *executionContext) unmarshalInputSeriesOrder(ctx context.Context, obj interface{}) (ent.SeriesOrder, error) {
 	var it ent.SeriesOrder
 	asMap := map[string]interface{}{}
@@ -15913,7 +15200,7 @@ func (ec *executionContext) unmarshalInputSeriesWhereInput(ctx context.Context, 
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "name", "nameNEQ", "nameIn", "nameNotIn", "nameGT", "nameGTE", "nameLT", "nameLTE", "nameContains", "nameHasPrefix", "nameHasSuffix", "nameEqualFold", "nameContainsFold", "sort", "sortNEQ", "sortIn", "sortNotIn", "sortGT", "sortGTE", "sortLT", "sortLTE", "sortContains", "sortHasPrefix", "sortHasSuffix", "sortEqualFold", "sortContainsFold", "hasBooks", "hasBooksWith", "hasSeriesBooks", "hasSeriesBooksWith"}
+	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "name", "nameNEQ", "nameIn", "nameNotIn", "nameGT", "nameGTE", "nameLT", "nameLTE", "nameContains", "nameHasPrefix", "nameHasSuffix", "nameEqualFold", "nameContainsFold", "sort", "sortNEQ", "sortIn", "sortNotIn", "sortGT", "sortGTE", "sortLT", "sortLTE", "sortContains", "sortHasPrefix", "sortHasSuffix", "sortEqualFold", "sortContainsFold", "hasBooks", "hasBooksWith"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -16193,20 +15480,6 @@ func (ec *executionContext) unmarshalInputSeriesWhereInput(ctx context.Context, 
 				return it, err
 			}
 			it.HasBooksWith = data
-		case "hasSeriesBooks":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasSeriesBooks"))
-			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.HasSeriesBooks = data
-		case "hasSeriesBooksWith":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasSeriesBooksWith"))
-			data, err := ec.unmarshalOSeriesBookWhereInput2ᚕᚖlybbrioᚋinternalᚋentᚐSeriesBookWhereInputᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.HasSeriesBooksWith = data
 		}
 	}
 
@@ -18186,11 +17459,6 @@ func (ec *executionContext) _Node(ctx context.Context, sel ast.SelectionSet, obj
 			return graphql.Null
 		}
 		return ec._Series(ctx, sel, obj)
-	case *ent.SeriesBook:
-		if obj == nil {
-			return graphql.Null
-		}
-		return ec._SeriesBook(ctx, sel, obj)
 	case *ent.Shelf:
 		if obj == nil {
 			return graphql.Null
@@ -19731,165 +18999,6 @@ func (ec *executionContext) _Series(ctx context.Context, sel ast.SelectionSet, o
 					}
 				}()
 				res = ec._Series_books(ctx, field, obj)
-				if res == graphql.Null {
-					atomic.AddUint32(&fs.Invalids, 1)
-				}
-				return res
-			}
-
-			if field.Deferrable != nil {
-				dfs, ok := deferred[field.Deferrable.Label]
-				di := 0
-				if ok {
-					dfs.AddField(field)
-					di = len(dfs.Values) - 1
-				} else {
-					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
-					deferred[field.Deferrable.Label] = dfs
-				}
-				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
-					return innerFunc(ctx, dfs)
-				})
-
-				// don't run the out.Concurrently() call below
-				out.Values[i] = graphql.Null
-				continue
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
-		case "seriesBooks":
-			field := field
-
-			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Series_seriesBooks(ctx, field, obj)
-				return res
-			}
-
-			if field.Deferrable != nil {
-				dfs, ok := deferred[field.Deferrable.Label]
-				di := 0
-				if ok {
-					dfs.AddField(field)
-					di = len(dfs.Values) - 1
-				} else {
-					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
-					deferred[field.Deferrable.Label] = dfs
-				}
-				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
-					return innerFunc(ctx, dfs)
-				})
-
-				// don't run the out.Concurrently() call below
-				out.Values[i] = graphql.Null
-				continue
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
-		default:
-			panic("unknown field " + strconv.Quote(field.Name))
-		}
-	}
-	out.Dispatch(ctx)
-	if out.Invalids > 0 {
-		return graphql.Null
-	}
-
-	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
-
-	for label, dfs := range deferred {
-		ec.processDeferredGroup(graphql.DeferredGroup{
-			Label:    label,
-			Path:     graphql.GetPath(ctx),
-			FieldSet: dfs,
-			Context:  ctx,
-		})
-	}
-
-	return out
-}
-
-var seriesBookImplementors = []string{"SeriesBook", "Node"}
-
-func (ec *executionContext) _SeriesBook(ctx context.Context, sel ast.SelectionSet, obj *ent.SeriesBook) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, seriesBookImplementors)
-
-	out := graphql.NewFieldSet(fields)
-	deferred := make(map[string]*graphql.FieldSet)
-	for i, field := range fields {
-		switch field.Name {
-		case "__typename":
-			out.Values[i] = graphql.MarshalString("SeriesBook")
-		case "id":
-			out.Values[i] = ec._SeriesBook_id(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&out.Invalids, 1)
-			}
-		case "seriesIndex":
-			out.Values[i] = ec._SeriesBook_seriesIndex(ctx, field, obj)
-		case "seriesID":
-			out.Values[i] = ec._SeriesBook_seriesID(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&out.Invalids, 1)
-			}
-		case "bookID":
-			out.Values[i] = ec._SeriesBook_bookID(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&out.Invalids, 1)
-			}
-		case "series":
-			field := field
-
-			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._SeriesBook_series(ctx, field, obj)
-				if res == graphql.Null {
-					atomic.AddUint32(&fs.Invalids, 1)
-				}
-				return res
-			}
-
-			if field.Deferrable != nil {
-				dfs, ok := deferred[field.Deferrable.Label]
-				di := 0
-				if ok {
-					dfs.AddField(field)
-					di = len(dfs.Values) - 1
-				} else {
-					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
-					deferred[field.Deferrable.Label] = dfs
-				}
-				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
-					return innerFunc(ctx, dfs)
-				})
-
-				// don't run the out.Concurrently() call below
-				out.Values[i] = graphql.Null
-				continue
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
-		case "book":
-			field := field
-
-			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._SeriesBook_book(ctx, field, obj)
-				if res == graphql.Null {
-					atomic.AddUint32(&fs.Invalids, 1)
-				}
 				return res
 			}
 
@@ -21103,21 +20212,6 @@ func (ec *executionContext) marshalNCursor2entgoᚗioᚋcontribᚋentgqlᚐCurso
 	return v
 }
 
-func (ec *executionContext) unmarshalNFloat2float64(ctx context.Context, v interface{}) (float64, error) {
-	res, err := graphql.UnmarshalFloatContext(ctx, v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalNFloat2float64(ctx context.Context, sel ast.SelectionSet, v float64) graphql.Marshaler {
-	res := graphql.MarshalFloatContext(v)
-	if res == graphql.Null {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
-		}
-	}
-	return graphql.WrapContextMarshaler(ctx, res)
-}
-
 func (ec *executionContext) unmarshalNID2lybbrioᚋinternalᚋentᚋschemaᚋksuidᚐID(ctx context.Context, v interface{}) (ksuid.ID, error) {
 	var res ksuid.ID
 	err := res.UnmarshalGQL(v)
@@ -21375,21 +20469,6 @@ func (ec *executionContext) marshalNSeries2ᚖlybbrioᚋinternalᚋentᚐSeries(
 		return graphql.Null
 	}
 	return ec._Series(ctx, sel, v)
-}
-
-func (ec *executionContext) marshalNSeriesBook2ᚖlybbrioᚋinternalᚋentᚐSeriesBook(ctx context.Context, sel ast.SelectionSet, v *ent.SeriesBook) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
-		}
-		return graphql.Null
-	}
-	return ec._SeriesBook(ctx, sel, v)
-}
-
-func (ec *executionContext) unmarshalNSeriesBookWhereInput2ᚖlybbrioᚋinternalᚋentᚐSeriesBookWhereInput(ctx context.Context, v interface{}) (*ent.SeriesBookWhereInput, error) {
-	res, err := ec.unmarshalInputSeriesBookWhereInput(ctx, v)
-	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) marshalNSeriesConnection2lybbrioᚋinternalᚋentᚐSeriesConnection(ctx context.Context, sel ast.SelectionSet, v ent.SeriesConnection) graphql.Marshaler {
@@ -22094,6 +21173,53 @@ func (ec *executionContext) unmarshalOAuthorWhereInput2ᚖlybbrioᚋinternalᚋe
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
+func (ec *executionContext) marshalOBook2ᚕᚖlybbrioᚋinternalᚋentᚐBookᚄ(ctx context.Context, sel ast.SelectionSet, v []*ent.Book) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNBook2ᚖlybbrioᚋinternalᚋentᚐBook(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
 func (ec *executionContext) marshalOBook2ᚖlybbrioᚋinternalᚋentᚐBook(ctx context.Context, sel ast.SelectionSet, v *ent.Book) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
@@ -22237,70 +21363,6 @@ func (ec *executionContext) marshalOCursor2ᚖentgoᚗioᚋcontribᚋentgqlᚐCu
 		return graphql.Null
 	}
 	return v
-}
-
-func (ec *executionContext) unmarshalOFloat2float64(ctx context.Context, v interface{}) (float64, error) {
-	res, err := graphql.UnmarshalFloatContext(ctx, v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalOFloat2float64(ctx context.Context, sel ast.SelectionSet, v float64) graphql.Marshaler {
-	res := graphql.MarshalFloatContext(v)
-	return graphql.WrapContextMarshaler(ctx, res)
-}
-
-func (ec *executionContext) unmarshalOFloat2ᚕfloat64ᚄ(ctx context.Context, v interface{}) ([]float64, error) {
-	if v == nil {
-		return nil, nil
-	}
-	var vSlice []interface{}
-	if v != nil {
-		vSlice = graphql.CoerceList(v)
-	}
-	var err error
-	res := make([]float64, len(vSlice))
-	for i := range vSlice {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
-		res[i], err = ec.unmarshalNFloat2float64(ctx, vSlice[i])
-		if err != nil {
-			return nil, err
-		}
-	}
-	return res, nil
-}
-
-func (ec *executionContext) marshalOFloat2ᚕfloat64ᚄ(ctx context.Context, sel ast.SelectionSet, v []float64) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	ret := make(graphql.Array, len(v))
-	for i := range v {
-		ret[i] = ec.marshalNFloat2float64(ctx, sel, v[i])
-	}
-
-	for _, e := range ret {
-		if e == graphql.Null {
-			return graphql.Null
-		}
-	}
-
-	return ret
-}
-
-func (ec *executionContext) unmarshalOFloat2ᚖfloat64(ctx context.Context, v interface{}) (*float64, error) {
-	if v == nil {
-		return nil, nil
-	}
-	res, err := graphql.UnmarshalFloatContext(ctx, v)
-	return &res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalOFloat2ᚖfloat64(ctx context.Context, sel ast.SelectionSet, v *float64) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	res := graphql.MarshalFloatContext(*v)
-	return graphql.WrapContextMarshaler(ctx, res)
 }
 
 func (ec *executionContext) unmarshalOID2lybbrioᚋinternalᚋentᚋschemaᚋksuidᚐID(ctx context.Context, v interface{}) (ksuid.ID, error) {
@@ -22881,81 +21943,6 @@ func (ec *executionContext) marshalOSeries2ᚖlybbrioᚋinternalᚋentᚐSeries(
 		return graphql.Null
 	}
 	return ec._Series(ctx, sel, v)
-}
-
-func (ec *executionContext) marshalOSeriesBook2ᚕᚖlybbrioᚋinternalᚋentᚐSeriesBookᚄ(ctx context.Context, sel ast.SelectionSet, v []*ent.SeriesBook) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	ret := make(graphql.Array, len(v))
-	var wg sync.WaitGroup
-	isLen1 := len(v) == 1
-	if !isLen1 {
-		wg.Add(len(v))
-	}
-	for i := range v {
-		i := i
-		fc := &graphql.FieldContext{
-			Index:  &i,
-			Result: &v[i],
-		}
-		ctx := graphql.WithFieldContext(ctx, fc)
-		f := func(i int) {
-			defer func() {
-				if r := recover(); r != nil {
-					ec.Error(ctx, ec.Recover(ctx, r))
-					ret = nil
-				}
-			}()
-			if !isLen1 {
-				defer wg.Done()
-			}
-			ret[i] = ec.marshalNSeriesBook2ᚖlybbrioᚋinternalᚋentᚐSeriesBook(ctx, sel, v[i])
-		}
-		if isLen1 {
-			f(i)
-		} else {
-			go f(i)
-		}
-
-	}
-	wg.Wait()
-
-	for _, e := range ret {
-		if e == graphql.Null {
-			return graphql.Null
-		}
-	}
-
-	return ret
-}
-
-func (ec *executionContext) unmarshalOSeriesBookWhereInput2ᚕᚖlybbrioᚋinternalᚋentᚐSeriesBookWhereInputᚄ(ctx context.Context, v interface{}) ([]*ent.SeriesBookWhereInput, error) {
-	if v == nil {
-		return nil, nil
-	}
-	var vSlice []interface{}
-	if v != nil {
-		vSlice = graphql.CoerceList(v)
-	}
-	var err error
-	res := make([]*ent.SeriesBookWhereInput, len(vSlice))
-	for i := range vSlice {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
-		res[i], err = ec.unmarshalNSeriesBookWhereInput2ᚖlybbrioᚋinternalᚋentᚐSeriesBookWhereInput(ctx, vSlice[i])
-		if err != nil {
-			return nil, err
-		}
-	}
-	return res, nil
-}
-
-func (ec *executionContext) unmarshalOSeriesBookWhereInput2ᚖlybbrioᚋinternalᚋentᚐSeriesBookWhereInput(ctx context.Context, v interface{}) (*ent.SeriesBookWhereInput, error) {
-	if v == nil {
-		return nil, nil
-	}
-	res, err := ec.unmarshalInputSeriesBookWhereInput(ctx, v)
-	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) marshalOSeriesEdge2ᚕᚖlybbrioᚋinternalᚋentᚐSeriesEdge(ctx context.Context, sel ast.SelectionSet, v []*ent.SeriesEdge) graphql.Marshaler {

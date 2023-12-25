@@ -103,7 +103,7 @@ func (sq *SeriesQuery) QuerySeriesBooks() *SeriesBookQuery {
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(series.Table, series.FieldID, selector),
-			sqlgraph.To(seriesbook.Table, seriesbook.FieldID),
+			sqlgraph.To(seriesbook.Table, seriesbook.SeriesColumn),
 			sqlgraph.Edge(sqlgraph.O2M, true, series.SeriesBooksTable, series.SeriesBooksColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(sq.driver.Dialect(), step)
@@ -565,7 +565,7 @@ func (sq *SeriesQuery) loadSeriesBooks(ctx context.Context, query *SeriesBookQue
 		fk := n.SeriesID
 		node, ok := nodeids[fk]
 		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "series_id" returned %v for node %v`, fk, n.ID)
+			return fmt.Errorf(`unexpected referenced foreign-key "series_id" returned %v for node %v`, fk, n)
 		}
 		assign(node, n)
 	}

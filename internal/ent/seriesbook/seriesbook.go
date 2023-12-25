@@ -3,8 +3,6 @@
 package seriesbook
 
 import (
-	"lybbrio/internal/ent/schema/ksuid"
-
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -13,8 +11,6 @@ import (
 const (
 	// Label holds the string label denoting the seriesbook type in the database.
 	Label = "series_book"
-	// FieldID holds the string denoting the id field in the database.
-	FieldID = "id"
 	// FieldSeriesIndex holds the string denoting the series_index field in the database.
 	FieldSeriesIndex = "series_index"
 	// FieldSeriesID holds the string denoting the series_id field in the database.
@@ -25,6 +21,10 @@ const (
 	EdgeSeries = "series"
 	// EdgeBook holds the string denoting the book edge name in mutations.
 	EdgeBook = "book"
+	// SeriesFieldID holds the string denoting the ID field of the Series.
+	SeriesFieldID = "id"
+	// BookFieldID holds the string denoting the ID field of the Book.
+	BookFieldID = "id"
 	// Table holds the table name of the seriesbook in the database.
 	Table = "series_books"
 	// SeriesTable is the table that holds the series relation/edge.
@@ -45,7 +45,6 @@ const (
 
 // Columns holds all SQL columns for seriesbook fields.
 var Columns = []string{
-	FieldID,
 	FieldSeriesIndex,
 	FieldSeriesID,
 	FieldBookID,
@@ -75,17 +74,10 @@ var (
 	SeriesIDValidator func(string) error
 	// BookIDValidator is a validator for the "book_id" field. It is called by the builders before save.
 	BookIDValidator func(string) error
-	// DefaultID holds the default value on creation for the "id" field.
-	DefaultID func() ksuid.ID
 )
 
 // OrderOption defines the ordering options for the SeriesBook queries.
 type OrderOption func(*sql.Selector)
-
-// ByID orders the results by the id field.
-func ByID(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldID, opts...).ToFunc()
-}
 
 // BySeriesIndex orders the results by the series_index field.
 func BySeriesIndex(opts ...sql.OrderTermOption) OrderOption {
@@ -117,15 +109,15 @@ func ByBookField(field string, opts ...sql.OrderTermOption) OrderOption {
 }
 func newSeriesStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(SeriesInverseTable, FieldID),
+		sqlgraph.From(Table, SeriesColumn),
+		sqlgraph.To(SeriesInverseTable, SeriesFieldID),
 		sqlgraph.Edge(sqlgraph.M2O, false, SeriesTable, SeriesColumn),
 	)
 }
 func newBookStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(BookInverseTable, FieldID),
+		sqlgraph.From(Table, BookColumn),
+		sqlgraph.To(BookInverseTable, BookFieldID),
 		sqlgraph.Edge(sqlgraph.M2O, false, BookTable, BookColumn),
 	)
 }

@@ -191,7 +191,6 @@ var (
 	}
 	// SeriesBooksColumns holds the columns for the "series_books" table.
 	SeriesBooksColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeString},
 		{Name: "series_index", Type: field.TypeFloat64, Nullable: true},
 		{Name: "series_id", Type: field.TypeString},
 		{Name: "book_id", Type: field.TypeString},
@@ -200,26 +199,19 @@ var (
 	SeriesBooksTable = &schema.Table{
 		Name:       "series_books",
 		Columns:    SeriesBooksColumns,
-		PrimaryKey: []*schema.Column{SeriesBooksColumns[0]},
+		PrimaryKey: []*schema.Column{SeriesBooksColumns[1], SeriesBooksColumns[2]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "series_books_series_series",
-				Columns:    []*schema.Column{SeriesBooksColumns[2]},
+				Columns:    []*schema.Column{SeriesBooksColumns[1]},
 				RefColumns: []*schema.Column{SeriesColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "series_books_books_book",
-				Columns:    []*schema.Column{SeriesBooksColumns[3]},
+				Columns:    []*schema.Column{SeriesBooksColumns[2]},
 				RefColumns: []*schema.Column{BooksColumns[0]},
 				OnDelete:   schema.NoAction,
-			},
-		},
-		Indexes: []*schema.Index{
-			{
-				Name:    "seriesbook_series_id_book_id",
-				Unique:  true,
-				Columns: []*schema.Column{SeriesBooksColumns[2], SeriesBooksColumns[3]},
 			},
 		},
 	}

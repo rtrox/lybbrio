@@ -12,7 +12,6 @@ import (
 	"lybbrio/internal/ent/publisher"
 	"lybbrio/internal/ent/schema/ksuid"
 	"lybbrio/internal/ent/series"
-	"lybbrio/internal/ent/seriesbook"
 	"lybbrio/internal/ent/shelf"
 	"lybbrio/internal/ent/tag"
 	"lybbrio/internal/ent/user"
@@ -27,7 +26,6 @@ var prefixMap = map[ksuid.ID]string{
 	"lng": language.Table,
 	"pub": publisher.Table,
 	"srs": series.Table,
-	"sbx": seriesbook.Table,
 	"shf": shelf.Table,
 	"tag": tag.Table,
 	"usr": user.Table,

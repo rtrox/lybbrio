@@ -133,7 +133,7 @@ func newBooksStep() *sqlgraph.Step {
 func newSeriesBooksStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(SeriesBooksInverseTable, FieldID),
+		sqlgraph.To(SeriesBooksInverseTable, SeriesBooksColumn),
 		sqlgraph.Edge(sqlgraph.O2M, true, SeriesBooksTable, SeriesBooksColumn),
 	)
 }

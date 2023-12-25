@@ -135,59 +135,14 @@ func (pu *Publisher) Books(
 	return pu.QueryBooks().Paginate(ctx, after, first, before, last, opts...)
 }
 
-func (s *Series) Books(
-	ctx context.Context, after *Cursor, first *int, before *Cursor, last *int, orderBy []*BookOrder, where *BookWhereInput,
-) (*BookConnection, error) {
-	opts := []BookPaginateOption{
-		WithBookOrder(orderBy),
-		WithBookFilter(where.Filter),
+func (s *Series) Books(ctx context.Context) (result []*Book, err error) {
+	if fc := graphql.GetFieldContext(ctx); fc != nil && fc.Field.Alias != "" {
+		result, err = s.NamedBooks(graphql.GetFieldContext(ctx).Field.Alias)
+	} else {
+		result, err = s.Edges.BooksOrErr()
 	}
-	alias := graphql.GetFieldContext(ctx).Field.Alias
-	totalCount, hasTotalCount := s.Edges.totalCount[0][alias]
-	if nodes, err := s.NamedBooks(alias); err == nil || hasTotalCount {
-		pager, err := newBookPager(opts, last != nil)
-		if err != nil {
-			return nil, err
-		}
-		conn := &BookConnection{Edges: []*BookEdge{}, TotalCount: totalCount}
-		conn.build(nodes, pager, after, first, before, last)
-		return conn, nil
-	}
-	return s.QueryBooks().Paginate(ctx, after, first, before, last, opts...)
-}
-
-func (s *Series) SeriesBooks(
-	ctx context.Context, after *Cursor, first *int, before *Cursor, last *int, where *SeriesBookWhereInput,
-) (*SeriesBookConnection, error) {
-	opts := []SeriesBookPaginateOption{
-		WithSeriesBookFilter(where.Filter),
-	}
-	alias := graphql.GetFieldContext(ctx).Field.Alias
-	totalCount, hasTotalCount := s.Edges.totalCount[1][alias]
-	if nodes, err := s.NamedSeriesBooks(alias); err == nil || hasTotalCount {
-		pager, err := newSeriesBookPager(opts, last != nil)
-		if err != nil {
-			return nil, err
-		}
-		conn := &SeriesBookConnection{Edges: []*SeriesBookEdge{}, TotalCount: totalCount}
-		conn.build(nodes, pager, after, first, before, last)
-		return conn, nil
-	}
-	return s.QuerySeriesBooks().Paginate(ctx, after, first, before, last, opts...)
-}
-
-func (sb *SeriesBook) Series(ctx context.Context) (*Series, error) {
-	result, err := sb.Edges.SeriesOrErr()
 	if IsNotLoaded(err) {
-		result, err = sb.QuerySeries().Only(ctx)
-	}
-	return result, err
-}
-
-func (sb *SeriesBook) Book(ctx context.Context) (*Book, error) {
-	result, err := sb.Edges.BookOrErr()
-	if IsNotLoaded(err) {
-		result, err = sb.QueryBook().Only(ctx)
+		result, err = s.QueryBooks().All(ctx)
 	}
 	return result, err
 }
