@@ -268,11 +268,11 @@ type ComplexityRoot struct {
 	}
 
 	UserPermissions struct {
-		Admin                  func(childComplexity int) int
-		CanCreatePublicShelves func(childComplexity int) int
-		ID                     func(childComplexity int) int
-		User                   func(childComplexity int) int
-		UserID                 func(childComplexity int) int
+		Admin           func(childComplexity int) int
+		CanCreatePublic func(childComplexity int) int
+		ID              func(childComplexity int) int
+		User            func(childComplexity int) int
+		UserID          func(childComplexity int) int
 	}
 }
 
@@ -1413,12 +1413,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.UserPermissions.Admin(childComplexity), true
 
-	case "UserPermissions.cancreatepublicshelves":
-		if e.complexity.UserPermissions.CanCreatePublicShelves == nil {
+	case "UserPermissions.cancreatepublic":
+		if e.complexity.UserPermissions.CanCreatePublic == nil {
 			break
 		}
 
-		return e.complexity.UserPermissions.CanCreatePublicShelves(childComplexity), true
+		return e.complexity.UserPermissions.CanCreatePublic(childComplexity), true
 
 	case "UserPermissions.id":
 		if e.complexity.UserPermissions.ID == nil {
@@ -2932,8 +2932,10 @@ enum UserOrderField {
 type UserPermissions implements Node {
   id: ID!
   userID: ID
+  """Admin users can do anything."""
   admin: Boolean!
-  cancreatepublicshelves: Boolean! @goField(name: "CanCreatePublicShelves", forceResolver: false)
+  """Can create publicly visible objects."""
+  cancreatepublic: Boolean! @goField(name: "CanCreatePublic", forceResolver: false)
   user: User
 }
 """
@@ -2972,9 +2974,9 @@ input UserPermissionsWhereInput {
   """admin field predicates"""
   admin: Boolean
   adminNEQ: Boolean
-  """CanCreatePublicShelves field predicates"""
-  cancreatepublicshelves: Boolean
-  cancreatepublicshelvesNEQ: Boolean
+  """CanCreatePublic field predicates"""
+  cancreatepublic: Boolean
+  cancreatepublicNEQ: Boolean
   """user edge predicates"""
   hasUser: Boolean
   hasUserWith: [UserWhereInput!]
@@ -11147,8 +11149,8 @@ func (ec *executionContext) fieldContext_User_userpermissions(ctx context.Contex
 				return ec.fieldContext_UserPermissions_userID(ctx, field)
 			case "admin":
 				return ec.fieldContext_UserPermissions_admin(ctx, field)
-			case "cancreatepublicshelves":
-				return ec.fieldContext_UserPermissions_cancreatepublicshelves(ctx, field)
+			case "cancreatepublic":
+				return ec.fieldContext_UserPermissions_cancreatepublic(ctx, field)
 			case "user":
 				return ec.fieldContext_UserPermissions_user(ctx, field)
 			}
@@ -11287,8 +11289,8 @@ func (ec *executionContext) fieldContext_UserPermissions_admin(ctx context.Conte
 	return fc, nil
 }
 
-func (ec *executionContext) _UserPermissions_cancreatepublicshelves(ctx context.Context, field graphql.CollectedField, obj *ent.UserPermissions) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_UserPermissions_cancreatepublicshelves(ctx, field)
+func (ec *executionContext) _UserPermissions_cancreatepublic(ctx context.Context, field graphql.CollectedField, obj *ent.UserPermissions) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_UserPermissions_cancreatepublic(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -11301,7 +11303,7 @@ func (ec *executionContext) _UserPermissions_cancreatepublicshelves(ctx context.
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.CanCreatePublicShelves, nil
+		return obj.CanCreatePublic, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -11318,7 +11320,7 @@ func (ec *executionContext) _UserPermissions_cancreatepublicshelves(ctx context.
 	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_UserPermissions_cancreatepublicshelves(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_UserPermissions_cancreatepublic(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "UserPermissions",
 		Field:      field,
@@ -17602,7 +17604,7 @@ func (ec *executionContext) unmarshalInputUserPermissionsWhereInput(ctx context.
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "userID", "userIDNEQ", "userIDIn", "userIDNotIn", "userIDGT", "userIDGTE", "userIDLT", "userIDLTE", "userIDContains", "userIDHasPrefix", "userIDHasSuffix", "userIDIsNil", "userIDNotNil", "userIDEqualFold", "userIDContainsFold", "admin", "adminNEQ", "cancreatepublicshelves", "cancreatepublicshelvesNEQ", "hasUser", "hasUserWith"}
+	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "userID", "userIDNEQ", "userIDIn", "userIDNotIn", "userIDGT", "userIDGTE", "userIDLT", "userIDLTE", "userIDContains", "userIDHasPrefix", "userIDHasSuffix", "userIDIsNil", "userIDNotNil", "userIDEqualFold", "userIDContainsFold", "admin", "adminNEQ", "cancreatepublic", "cancreatepublicNEQ", "hasUser", "hasUserWith"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -17805,20 +17807,20 @@ func (ec *executionContext) unmarshalInputUserPermissionsWhereInput(ctx context.
 				return it, err
 			}
 			it.AdminNEQ = data
-		case "cancreatepublicshelves":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("cancreatepublicshelves"))
+		case "cancreatepublic":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("cancreatepublic"))
 			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.CanCreatePublicShelves = data
-		case "cancreatepublicshelvesNEQ":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("cancreatepublicshelvesNEQ"))
+			it.CanCreatePublic = data
+		case "cancreatepublicNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("cancreatepublicNEQ"))
 			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.CanCreatePublicShelvesNEQ = data
+			it.CanCreatePublicNEQ = data
 		case "hasUser":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasUser"))
 			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
@@ -20544,8 +20546,8 @@ func (ec *executionContext) _UserPermissions(ctx context.Context, sel ast.Select
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
 			}
-		case "cancreatepublicshelves":
-			out.Values[i] = ec._UserPermissions_cancreatepublicshelves(ctx, field, obj)
+		case "cancreatepublic":
+			out.Values[i] = ec._UserPermissions_cancreatepublic(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
 			}

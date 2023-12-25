@@ -20,10 +20,10 @@ type UserPermissions struct {
 	ID ksuid.ID `json:"id,omitempty"`
 	// UserID holds the value of the "user_id" field.
 	UserID ksuid.ID `json:"user_id,omitempty"`
-	// Admin holds the value of the "admin" field.
+	// Admin users can do anything.
 	Admin bool `json:"admin,omitempty"`
-	// CanCreatePublicShelves holds the value of the "CanCreatePublicShelves" field.
-	CanCreatePublicShelves bool `json:"CanCreatePublicShelves,omitempty"`
+	// Can create publicly visible objects.
+	CanCreatePublic bool `json:"CanCreatePublic,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the UserPermissionsQuery when eager-loading is set.
 	Edges        UserPermissionsEdges `json:"edges"`
@@ -59,7 +59,7 @@ func (*UserPermissions) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case userpermissions.FieldAdmin, userpermissions.FieldCanCreatePublicShelves:
+		case userpermissions.FieldAdmin, userpermissions.FieldCanCreatePublic:
 			values[i] = new(sql.NullBool)
 		case userpermissions.FieldID, userpermissions.FieldUserID:
 			values[i] = new(sql.NullString)
@@ -96,11 +96,11 @@ func (up *UserPermissions) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				up.Admin = value.Bool
 			}
-		case userpermissions.FieldCanCreatePublicShelves:
+		case userpermissions.FieldCanCreatePublic:
 			if value, ok := values[i].(*sql.NullBool); !ok {
-				return fmt.Errorf("unexpected type %T for field CanCreatePublicShelves", values[i])
+				return fmt.Errorf("unexpected type %T for field CanCreatePublic", values[i])
 			} else if value.Valid {
-				up.CanCreatePublicShelves = value.Bool
+				up.CanCreatePublic = value.Bool
 			}
 		default:
 			up.selectValues.Set(columns[i], values[i])
@@ -149,8 +149,8 @@ func (up *UserPermissions) String() string {
 	builder.WriteString("admin=")
 	builder.WriteString(fmt.Sprintf("%v", up.Admin))
 	builder.WriteString(", ")
-	builder.WriteString("CanCreatePublicShelves=")
-	builder.WriteString(fmt.Sprintf("%v", up.CanCreatePublicShelves))
+	builder.WriteString("CanCreatePublic=")
+	builder.WriteString(fmt.Sprintf("%v", up.CanCreatePublic))
 	builder.WriteByte(')')
 	return builder.String()
 }

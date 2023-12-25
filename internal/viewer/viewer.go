@@ -12,6 +12,7 @@ const viewerCtxKey viewerCtxKeyType = "viewer"
 type Viewer interface {
 	IsAdmin() bool
 	User() (*ent.User, bool)
+	Permissions() (*ent.UserPermissions, bool)
 }
 
 type UserViewer struct {
@@ -33,6 +34,13 @@ func (v UserViewer) User() (*ent.User, bool) {
 	return nil, false
 }
 
+func (v UserViewer) Permissions() (*ent.UserPermissions, bool) {
+	if v.p != nil {
+		return v.p, true
+	}
+	return nil, false
+}
+
 func NewContext(ctx context.Context, u *ent.User, p *ent.UserPermissions) context.Context {
 	return context.WithValue(ctx, viewerCtxKey, UserViewer{u: u, p: p})
 }
@@ -48,6 +56,10 @@ func (v SystemAdminViewer) IsAdmin() bool {
 }
 
 func (v SystemAdminViewer) User() (*ent.User, bool) {
+	return nil, false
+}
+
+func (v SystemAdminViewer) Permissions() (*ent.UserPermissions, bool) {
 	return nil, false
 }
 

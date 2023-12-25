@@ -299,10 +299,10 @@ func init() {
 	userpermissionsDescAdmin := userpermissionsFields[1].Descriptor()
 	// userpermissions.DefaultAdmin holds the default value on creation for the admin field.
 	userpermissions.DefaultAdmin = userpermissionsDescAdmin.Default.(bool)
-	// userpermissionsDescCanCreatePublicShelves is the schema descriptor for CanCreatePublicShelves field.
-	userpermissionsDescCanCreatePublicShelves := userpermissionsFields[2].Descriptor()
-	// userpermissions.DefaultCanCreatePublicShelves holds the default value on creation for the CanCreatePublicShelves field.
-	userpermissions.DefaultCanCreatePublicShelves = userpermissionsDescCanCreatePublicShelves.Default.(bool)
+	// userpermissionsDescCanCreatePublic is the schema descriptor for CanCreatePublic field.
+	userpermissionsDescCanCreatePublic := userpermissionsFields[2].Descriptor()
+	// userpermissions.DefaultCanCreatePublic holds the default value on creation for the CanCreatePublic field.
+	userpermissions.DefaultCanCreatePublic = userpermissionsDescCanCreatePublic.Default.(bool)
 	// userpermissionsDescID is the schema descriptor for id field.
 	userpermissionsDescID := userpermissionsMixinFields1[0].Descriptor()
 	// userpermissions.DefaultID holds the default value on creation for the id field.

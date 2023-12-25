@@ -49,16 +49,16 @@ func (upc *UserPermissionsCreate) SetNillableAdmin(b *bool) *UserPermissionsCrea
 	return upc
 }
 
-// SetCanCreatePublicShelves sets the "CanCreatePublicShelves" field.
-func (upc *UserPermissionsCreate) SetCanCreatePublicShelves(b bool) *UserPermissionsCreate {
-	upc.mutation.SetCanCreatePublicShelves(b)
+// SetCanCreatePublic sets the "CanCreatePublic" field.
+func (upc *UserPermissionsCreate) SetCanCreatePublic(b bool) *UserPermissionsCreate {
+	upc.mutation.SetCanCreatePublic(b)
 	return upc
 }
 
-// SetNillableCanCreatePublicShelves sets the "CanCreatePublicShelves" field if the given value is not nil.
-func (upc *UserPermissionsCreate) SetNillableCanCreatePublicShelves(b *bool) *UserPermissionsCreate {
+// SetNillableCanCreatePublic sets the "CanCreatePublic" field if the given value is not nil.
+func (upc *UserPermissionsCreate) SetNillableCanCreatePublic(b *bool) *UserPermissionsCreate {
 	if b != nil {
-		upc.SetCanCreatePublicShelves(*b)
+		upc.SetCanCreatePublic(*b)
 	}
 	return upc
 }
@@ -123,9 +123,9 @@ func (upc *UserPermissionsCreate) defaults() error {
 		v := userpermissions.DefaultAdmin
 		upc.mutation.SetAdmin(v)
 	}
-	if _, ok := upc.mutation.CanCreatePublicShelves(); !ok {
-		v := userpermissions.DefaultCanCreatePublicShelves
-		upc.mutation.SetCanCreatePublicShelves(v)
+	if _, ok := upc.mutation.CanCreatePublic(); !ok {
+		v := userpermissions.DefaultCanCreatePublic
+		upc.mutation.SetCanCreatePublic(v)
 	}
 	if _, ok := upc.mutation.ID(); !ok {
 		if userpermissions.DefaultID == nil {
@@ -142,8 +142,8 @@ func (upc *UserPermissionsCreate) check() error {
 	if _, ok := upc.mutation.Admin(); !ok {
 		return &ValidationError{Name: "admin", err: errors.New(`ent: missing required field "UserPermissions.admin"`)}
 	}
-	if _, ok := upc.mutation.CanCreatePublicShelves(); !ok {
-		return &ValidationError{Name: "CanCreatePublicShelves", err: errors.New(`ent: missing required field "UserPermissions.CanCreatePublicShelves"`)}
+	if _, ok := upc.mutation.CanCreatePublic(); !ok {
+		return &ValidationError{Name: "CanCreatePublic", err: errors.New(`ent: missing required field "UserPermissions.CanCreatePublic"`)}
 	}
 	return nil
 }
@@ -184,9 +184,9 @@ func (upc *UserPermissionsCreate) createSpec() (*UserPermissions, *sqlgraph.Crea
 		_spec.SetField(userpermissions.FieldAdmin, field.TypeBool, value)
 		_node.Admin = value
 	}
-	if value, ok := upc.mutation.CanCreatePublicShelves(); ok {
-		_spec.SetField(userpermissions.FieldCanCreatePublicShelves, field.TypeBool, value)
-		_node.CanCreatePublicShelves = value
+	if value, ok := upc.mutation.CanCreatePublic(); ok {
+		_spec.SetField(userpermissions.FieldCanCreatePublic, field.TypeBool, value)
+		_node.CanCreatePublic = value
 	}
 	if nodes := upc.mutation.UserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

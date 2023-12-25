@@ -86,6 +86,30 @@ func FilterUserOrPublicRule() privacy.QueryMutationRule {
 	})
 }
 
+func DenyPublicWithoutPermissionRule() privacy.MutationRule {
+	type PublicableMutation interface {
+		Public() (r bool, exists bool)
+	}
+	return privacy.MutationRuleFunc(func(ctx context.Context, m ent.Mutation) error {
+		pm, ok := m.(PublicableMutation)
+		if !ok {
+			return privacy.Denyf("mutation does not implement PublicableMutation")
+		}
+		public, mutated := pm.Public()
+		if mutated && public {
+			view := viewer.FromContext(ctx)
+			perms, ok := view.Permissions()
+			if !ok {
+				return privacy.Denyf("missing permissions information in viewer-context")
+			}
+			if !perms.CanCreatePublic {
+				return privacy.Denyf("user does not have permission to create public objects")
+			}
+		}
+		return privacy.Skip
+	})
+}
+
 // DenyMismatchedUserRule is a rule that returns deny decision if the viewer
 // is not the same as the user on the object.
 func DenyMismatchedUserRule() privacy.MutationRule {

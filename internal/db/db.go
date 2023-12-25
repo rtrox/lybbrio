@@ -38,7 +38,7 @@ func OpenSQLite(conf *config.DatabaseConfig) (*ent.Client, error) {
 		return nil, err
 	}
 	drv := entsql.OpenDB(dialect.SQLite, db)
-	return ent.NewClient(ent.Driver(drv)), nil
+	return ent.NewClient(ent.Driver(drv)).Debug(), nil
 }
 
 func OpenMySQL(conf *config.DatabaseConfig) (*ent.Client, error) {

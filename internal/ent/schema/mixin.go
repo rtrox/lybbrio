@@ -103,6 +103,7 @@ func (PublicableUserScopedMixin) Policy() ent.Policy {
 			rule.AllowIfAdmin(),
 			rule.FilterUserRule(),
 			rule.DenyMismatchedUserRule(),
+			rule.DenyPublicWithoutPermissionRule(),
 		},
 	}
 }

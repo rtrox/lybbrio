@@ -144,3 +144,49 @@ func Test_ShelfViewRespectsUserFilter(t *testing.T) {
 		})
 	}
 }
+
+func Test_CreatePublicShelfRespectsPermissionsRule(t *testing.T) {
+	tests := []struct {
+		name           string
+		creatorContext func(testData) context.Context
+		shouldCreate   bool
+	}{
+		{
+			name:           "user1 creates public shelf",
+			creatorContext: func(data testData) context.Context { return data.user1ViewerContext },
+			shouldCreate:   false,
+		},
+		{
+			name:           "user2 creates public shelf",
+			creatorContext: func(data testData) context.Context { return data.user2ViewerContext },
+			shouldCreate:   true,
+		},
+		{
+			name:           "admin creates public shelf",
+			creatorContext: func(data testData) context.Context { return data.adminViewerContext },
+			shouldCreate:   true,
+		},
+	}
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			teardown, client, data := setupTest(t, tt.name)
+			defer teardown(t)
+
+			ctx := tt.creatorContext(data)
+			user, _ := viewer.FromContext(ctx).User()
+
+			_, err := client.Shelf.Create().
+				SetUserID(user.ID).
+				SetName("test").
+				SetPublic(true).
+				Save(ctx)
+			if tt.shouldCreate {
+				require.NoError(t, err, "failed to create shelf")
+			} else {
+				require.Error(t, err, "shelf creation should have failed")
+			}
+		})
+	}
+}

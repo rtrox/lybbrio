@@ -1346,8 +1346,10 @@ enum UserOrderField {
 type UserPermissions implements Node {
   id: ID!
   userID: ID
+  """Admin users can do anything."""
   admin: Boolean!
-  cancreatepublicshelves: Boolean! @goField(name: "CanCreatePublicShelves", forceResolver: false)
+  """Can create publicly visible objects."""
+  cancreatepublic: Boolean! @goField(name: "CanCreatePublic", forceResolver: false)
   user: User
 }
 """
@@ -1386,9 +1388,9 @@ input UserPermissionsWhereInput {
   """admin field predicates"""
   admin: Boolean
   adminNEQ: Boolean
-  """CanCreatePublicShelves field predicates"""
-  cancreatepublicshelves: Boolean
-  cancreatepublicshelvesNEQ: Boolean
+  """CanCreatePublic field predicates"""
+  cancreatepublic: Boolean
+  cancreatepublicNEQ: Boolean
   """user edge predicates"""
   hasUser: Boolean
   hasUserWith: [UserWhereInput!]

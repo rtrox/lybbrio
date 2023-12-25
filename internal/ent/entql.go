@@ -194,9 +194,9 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "UserPermissions",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			userpermissions.FieldUserID:                 {Type: field.TypeString, Column: userpermissions.FieldUserID},
-			userpermissions.FieldAdmin:                  {Type: field.TypeBool, Column: userpermissions.FieldAdmin},
-			userpermissions.FieldCanCreatePublicShelves: {Type: field.TypeBool, Column: userpermissions.FieldCanCreatePublicShelves},
+			userpermissions.FieldUserID:          {Type: field.TypeString, Column: userpermissions.FieldUserID},
+			userpermissions.FieldAdmin:           {Type: field.TypeBool, Column: userpermissions.FieldAdmin},
+			userpermissions.FieldCanCreatePublic: {Type: field.TypeBool, Column: userpermissions.FieldCanCreatePublic},
 		},
 	}
 	graph.MustAddE(
@@ -1278,9 +1278,9 @@ func (f *UserPermissionsFilter) WhereAdmin(p entql.BoolP) {
 	f.Where(p.Field(userpermissions.FieldAdmin))
 }
 
-// WhereCanCreatePublicShelves applies the entql bool predicate on the CanCreatePublicShelves field.
-func (f *UserPermissionsFilter) WhereCanCreatePublicShelves(p entql.BoolP) {
-	f.Where(p.Field(userpermissions.FieldCanCreatePublicShelves))
+// WhereCanCreatePublic applies the entql bool predicate on the CanCreatePublic field.
+func (f *UserPermissionsFilter) WhereCanCreatePublic(p entql.BoolP) {
+	f.Where(p.Field(userpermissions.FieldCanCreatePublic))
 }
 
 // WhereHasUser applies a predicate to check if query has an edge user.

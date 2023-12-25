@@ -3123,9 +3123,9 @@ type UserPermissionsWhereInput struct {
 	Admin    *bool `json:"admin,omitempty"`
 	AdminNEQ *bool `json:"adminNEQ,omitempty"`
 
-	// "CanCreatePublicShelves" field predicates.
-	CanCreatePublicShelves    *bool `json:"cancreatepublicshelves,omitempty"`
-	CanCreatePublicShelvesNEQ *bool `json:"cancreatepublicshelvesNEQ,omitempty"`
+	// "CanCreatePublic" field predicates.
+	CanCreatePublic    *bool `json:"cancreatepublic,omitempty"`
+	CanCreatePublicNEQ *bool `json:"cancreatepublicNEQ,omitempty"`
 
 	// "user" edge predicates.
 	HasUser     *bool             `json:"hasUser,omitempty"`
@@ -3278,11 +3278,11 @@ func (i *UserPermissionsWhereInput) P() (predicate.UserPermissions, error) {
 	if i.AdminNEQ != nil {
 		predicates = append(predicates, userpermissions.AdminNEQ(*i.AdminNEQ))
 	}
-	if i.CanCreatePublicShelves != nil {
-		predicates = append(predicates, userpermissions.CanCreatePublicShelvesEQ(*i.CanCreatePublicShelves))
+	if i.CanCreatePublic != nil {
+		predicates = append(predicates, userpermissions.CanCreatePublicEQ(*i.CanCreatePublic))
 	}
-	if i.CanCreatePublicShelvesNEQ != nil {
-		predicates = append(predicates, userpermissions.CanCreatePublicShelvesNEQ(*i.CanCreatePublicShelvesNEQ))
+	if i.CanCreatePublicNEQ != nil {
+		predicates = append(predicates, userpermissions.CanCreatePublicNEQ(*i.CanCreatePublicNEQ))
 	}
 
 	if i.HasUser != nil {

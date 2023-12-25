@@ -1802,10 +1802,10 @@ func (up *UserPermissionsQuery) collectField(ctx context.Context, opCtx *graphql
 				selectedFields = append(selectedFields, userpermissions.FieldAdmin)
 				fieldSeen[userpermissions.FieldAdmin] = struct{}{}
 			}
-		case "cancreatepublicshelves":
-			if _, ok := fieldSeen[userpermissions.FieldCanCreatePublicShelves]; !ok {
-				selectedFields = append(selectedFields, userpermissions.FieldCanCreatePublicShelves)
-				fieldSeen[userpermissions.FieldCanCreatePublicShelves] = struct{}{}
+		case "cancreatepublic":
+			if _, ok := fieldSeen[userpermissions.FieldCanCreatePublic]; !ok {
+				selectedFields = append(selectedFields, userpermissions.FieldCanCreatePublic)
+				fieldSeen[userpermissions.FieldCanCreatePublic] = struct{}{}
 			}
 		case "id":
 		case "__typename":

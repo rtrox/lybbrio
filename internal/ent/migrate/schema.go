@@ -299,7 +299,7 @@ var (
 	UserPermissionsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeString},
 		{Name: "admin", Type: field.TypeBool, Default: false},
-		{Name: "can_create_public_shelves", Type: field.TypeBool, Default: false},
+		{Name: "can_create_public", Type: field.TypeBool, Default: false},
 		{Name: "user_id", Type: field.TypeString, Unique: true, Nullable: true},
 	}
 	// UserPermissionsTable holds the schema information for the "user_permissions" table.

@@ -37,8 +37,13 @@ func setupTest(t *testing.T, testName string) (teardownFunc func(t *testing.T), 
 	client = enttest.Open(t, "sqlite3", dsn)
 
 	adminContext := viewer.NewSystemAdminContext(context.Background())
-	user1perms := client.UserPermissions.Create().SetID(USER_PERM_1).SaveX(adminContext)
-	user2perms := client.UserPermissions.Create().SetID(USER_PERM_2).SaveX(adminContext)
+	user1perms := client.UserPermissions.Create().
+		SetID(USER_PERM_1).
+		SaveX(adminContext)
+	user2perms := client.UserPermissions.Create().
+		SetID(USER_PERM_2).
+		SetCanCreatePublic(true).
+		SaveX(adminContext)
 	adminperms := client.UserPermissions.Create().SetID(ADMIN_PERM).SetAdmin(true).SaveX(adminContext)
 	user1 := client.User.Create().
 		SetID(USER_ID_1).
