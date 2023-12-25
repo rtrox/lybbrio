@@ -22,8 +22,8 @@ func (BaseMixin) Policy() ent.Policy {
 		Query: privacy.QueryPolicy{
 			// Deny any operation in case there is no "viewer context".
 			rule.DenyIfNoViewer(),
-			// Allow admins to query any information.
-			rule.AllowIfAdmin(),
+			// Allow SuperRead to bypass all other rules.
+			rule.AllowIfSuperRead(),
 		},
 		Mutation: privacy.MutationPolicy{
 			// Deny any operation in case there is no "viewer context".
@@ -103,7 +103,6 @@ func (PublicableUserScopedMixin) Policy() ent.Policy {
 	return privacy.Policy{
 		Query: privacy.QueryPolicy{
 			rule.FilterUserOrPublicRule(),
-			rule.AllowIfAdmin(),
 		},
 		Mutation: privacy.MutationPolicy{
 			rule.AllowIfAdmin(),

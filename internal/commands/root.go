@@ -191,6 +191,7 @@ func rootRun(cmd *cobra.Command, args []string) {
 		r.With(
 			auth.Middleware(jwtProvider),
 			middleware.ViewerContextMiddleware(client),
+			middleware.SuperRead,
 		).Handle("/", graphqlHandler)
 		r.Handle("/playground", playground.Handler("Lybbrio GraphQL playground", "/graphql"))
 	})

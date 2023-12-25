@@ -3,6 +3,7 @@ package test
 import (
 	"context"
 	"lybbrio/internal/ent/schema/ksuid"
+	"lybbrio/internal/middleware"
 	"lybbrio/internal/viewer"
 	"testing"
 
@@ -94,6 +95,13 @@ func Test_ShelfViewRespectsUserFilter(t *testing.T) {
 		{
 			name:       "admin",
 			viewer:     func(data testData) context.Context { return data.adminViewerContext },
+			shelfCount: 2,
+		},
+		{
+			name: "admin with super read",
+			viewer: func(data testData) context.Context {
+				return middleware.WithSuperRead(data.adminViewerContext)
+			},
 			shelfCount: 5,
 		},
 	}

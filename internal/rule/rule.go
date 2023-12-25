@@ -10,6 +10,7 @@ import (
 	"lybbrio/internal/ent"
 	"lybbrio/internal/ent/privacy"
 	"lybbrio/internal/ent/schema/ksuid"
+	"lybbrio/internal/middleware"
 	"lybbrio/internal/viewer"
 
 	"entgo.io/ent/entql"
@@ -35,6 +36,18 @@ func AllowIfAdmin() privacy.QueryMutationRule {
 	return privacy.ContextQueryMutationRule(func(ctx context.Context) error {
 		view := viewer.FromContext(ctx)
 		if view.IsAdmin() {
+			return privacy.Allow
+		}
+		// Skip to the next privacy rule (equivalent to return nil).
+		return privacy.Skip
+	})
+}
+
+func AllowIfSuperRead() privacy.QueryMutationRule {
+	return privacy.ContextQueryMutationRule(func(ctx context.Context) error {
+		view := viewer.FromContext(ctx)
+		superRead := middleware.SuperReadFromCtx(ctx)
+		if view.IsAdmin() && superRead {
 			return privacy.Allow
 		}
 		// Skip to the next privacy rule (equivalent to return nil).
