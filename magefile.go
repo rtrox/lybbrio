@@ -32,6 +32,7 @@ var (
 		"build":          Build.Build,
 		"clean":          Build.Clean,
 		"generate":       Build.Generate,
+		"new-ent":        Build.NewEnt,
 		"check":          Check.All,
 		"check:lint":     Check.Lint,
 		"check:lint-fix": Check.LintFix,
@@ -46,6 +47,10 @@ var (
 
 func runCmdWithOutput(name string, arg ...string) (output []byte, err error) {
 	cmd := exec.Command(name, arg...)
+
+	cmd.Env = os.Environ()
+	cmd.Dir = RootPath
+
 	output, err = cmd.Output()
 	if err != nil {
 		if ee, is := err.(*exec.ExitError); is {
@@ -161,6 +166,12 @@ func (Build) Generate() {
 	mg.Deps(initVars)
 	fmt.Printf("Generating %s version %s, revision %s\n", name, VersionNumber, Revision)
 	runAndStreamOutput("go", "generate", ".")
+}
+
+func (Build) NewEnt(entName string) {
+	mg.Deps(initVars)
+	fmt.Printf("Creating new ent %s version %s, revision %s\n", name, VersionNumber, Revision)
+	runAndStreamOutput("go", "run", "-mod=mod", "entgo.io/ent/cmd/ent", "new", entName, "--target", "internal/ent/schema")
 }
 
 type Check mg.Namespace
