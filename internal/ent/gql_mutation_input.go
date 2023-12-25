@@ -488,21 +488,21 @@ func (c *SeriesUpdateOne) SetInput(i UpdateSeriesInput) *SeriesUpdateOne {
 
 // CreateShelfInput represents a mutation input for creating shelves.
 type CreateShelfInput struct {
+	Public      *bool
 	Name        string
 	Description *string
-	Public      *bool
 	UserID      ksuid.ID
 	BookIDs     []ksuid.ID
 }
 
 // Mutate applies the CreateShelfInput on the ShelfMutation builder.
 func (i *CreateShelfInput) Mutate(m *ShelfMutation) {
+	if v := i.Public; v != nil {
+		m.SetPublic(*v)
+	}
 	m.SetName(i.Name)
 	if v := i.Description; v != nil {
 		m.SetDescription(*v)
-	}
-	if v := i.Public; v != nil {
-		m.SetPublic(*v)
 	}
 	m.SetUserID(i.UserID)
 	if v := i.BookIDs; len(v) > 0 {
@@ -518,10 +518,10 @@ func (c *ShelfCreate) SetInput(i CreateShelfInput) *ShelfCreate {
 
 // UpdateShelfInput represents a mutation input for updating shelves.
 type UpdateShelfInput struct {
+	Public           *bool
 	Name             *string
 	ClearDescription bool
 	Description      *string
-	Public           *bool
 	ClearBooks       bool
 	AddBookIDs       []ksuid.ID
 	RemoveBookIDs    []ksuid.ID
@@ -529,6 +529,9 @@ type UpdateShelfInput struct {
 
 // Mutate applies the UpdateShelfInput on the ShelfMutation builder.
 func (i *UpdateShelfInput) Mutate(m *ShelfMutation) {
+	if v := i.Public; v != nil {
+		m.SetPublic(*v)
+	}
 	if v := i.Name; v != nil {
 		m.SetName(*v)
 	}
@@ -537,9 +540,6 @@ func (i *UpdateShelfInput) Mutate(m *ShelfMutation) {
 	}
 	if v := i.Description; v != nil {
 		m.SetDescription(*v)
-	}
-	if v := i.Public; v != nil {
-		m.SetPublic(*v)
 	}
 	if i.ClearBooks {
 		m.ClearBooks()

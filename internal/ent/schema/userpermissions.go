@@ -29,6 +29,7 @@ func (UserPermissions) Fields() []ent.Field {
 			GoType(ksuid.ID("")).
 			Optional(),
 		field.Bool("admin").Default(false),
+		field.Bool("CanCreatePublicShelves").Default(false),
 	}
 }
 

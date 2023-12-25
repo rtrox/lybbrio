@@ -22,6 +22,20 @@ type ShelfCreate struct {
 	hooks    []Hook
 }
 
+// SetPublic sets the "public" field.
+func (sc *ShelfCreate) SetPublic(b bool) *ShelfCreate {
+	sc.mutation.SetPublic(b)
+	return sc
+}
+
+// SetNillablePublic sets the "public" field if the given value is not nil.
+func (sc *ShelfCreate) SetNillablePublic(b *bool) *ShelfCreate {
+	if b != nil {
+		sc.SetPublic(*b)
+	}
+	return sc
+}
+
 // SetUserID sets the "user_id" field.
 func (sc *ShelfCreate) SetUserID(k ksuid.ID) *ShelfCreate {
 	sc.mutation.SetUserID(k)
@@ -44,20 +58,6 @@ func (sc *ShelfCreate) SetDescription(s string) *ShelfCreate {
 func (sc *ShelfCreate) SetNillableDescription(s *string) *ShelfCreate {
 	if s != nil {
 		sc.SetDescription(*s)
-	}
-	return sc
-}
-
-// SetPublic sets the "public" field.
-func (sc *ShelfCreate) SetPublic(b bool) *ShelfCreate {
-	sc.mutation.SetPublic(b)
-	return sc
-}
-
-// SetNillablePublic sets the "public" field if the given value is not nil.
-func (sc *ShelfCreate) SetNillablePublic(b *bool) *ShelfCreate {
-	if b != nil {
-		sc.SetPublic(*b)
 	}
 	return sc
 }
@@ -149,6 +149,9 @@ func (sc *ShelfCreate) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (sc *ShelfCreate) check() error {
+	if _, ok := sc.mutation.Public(); !ok {
+		return &ValidationError{Name: "public", err: errors.New(`ent: missing required field "Shelf.public"`)}
+	}
 	if _, ok := sc.mutation.UserID(); !ok {
 		return &ValidationError{Name: "user_id", err: errors.New(`ent: missing required field "Shelf.user_id"`)}
 	}
@@ -159,9 +162,6 @@ func (sc *ShelfCreate) check() error {
 		if err := shelf.NameValidator(v); err != nil {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "Shelf.name": %w`, err)}
 		}
-	}
-	if _, ok := sc.mutation.Public(); !ok {
-		return &ValidationError{Name: "public", err: errors.New(`ent: missing required field "Shelf.public"`)}
 	}
 	if _, ok := sc.mutation.UserID(); !ok {
 		return &ValidationError{Name: "user", err: errors.New(`ent: missing required edge "Shelf.user"`)}
@@ -201,6 +201,10 @@ func (sc *ShelfCreate) createSpec() (*Shelf, *sqlgraph.CreateSpec) {
 		_node.ID = id
 		_spec.ID.Value = id
 	}
+	if value, ok := sc.mutation.Public(); ok {
+		_spec.SetField(shelf.FieldPublic, field.TypeBool, value)
+		_node.Public = value
+	}
 	if value, ok := sc.mutation.Name(); ok {
 		_spec.SetField(shelf.FieldName, field.TypeString, value)
 		_node.Name = value
@@ -208,10 +212,6 @@ func (sc *ShelfCreate) createSpec() (*Shelf, *sqlgraph.CreateSpec) {
 	if value, ok := sc.mutation.Description(); ok {
 		_spec.SetField(shelf.FieldDescription, field.TypeString, value)
 		_node.Description = value
-	}
-	if value, ok := sc.mutation.Public(); ok {
-		_spec.SetField(shelf.FieldPublic, field.TypeBool, value)
-		_node.Public = value
 	}
 	if nodes := sc.mutation.UserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

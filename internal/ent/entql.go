@@ -147,10 +147,10 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "Shelf",
 		Fields: map[string]*sqlgraph.FieldSpec{
+			shelf.FieldPublic:      {Type: field.TypeBool, Column: shelf.FieldPublic},
 			shelf.FieldUserID:      {Type: field.TypeString, Column: shelf.FieldUserID},
 			shelf.FieldName:        {Type: field.TypeString, Column: shelf.FieldName},
 			shelf.FieldDescription: {Type: field.TypeString, Column: shelf.FieldDescription},
-			shelf.FieldPublic:      {Type: field.TypeBool, Column: shelf.FieldPublic},
 		},
 	}
 	graph.Nodes[8] = &sqlgraph.Node{
@@ -194,8 +194,9 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "UserPermissions",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			userpermissions.FieldUserID: {Type: field.TypeString, Column: userpermissions.FieldUserID},
-			userpermissions.FieldAdmin:  {Type: field.TypeBool, Column: userpermissions.FieldAdmin},
+			userpermissions.FieldUserID:                 {Type: field.TypeString, Column: userpermissions.FieldUserID},
+			userpermissions.FieldAdmin:                  {Type: field.TypeBool, Column: userpermissions.FieldAdmin},
+			userpermissions.FieldCanCreatePublicShelves: {Type: field.TypeBool, Column: userpermissions.FieldCanCreatePublicShelves},
 		},
 	}
 	graph.MustAddE(
@@ -1037,6 +1038,11 @@ func (f *ShelfFilter) WhereID(p entql.StringP) {
 	f.Where(p.Field(shelf.FieldID))
 }
 
+// WherePublic applies the entql bool predicate on the public field.
+func (f *ShelfFilter) WherePublic(p entql.BoolP) {
+	f.Where(p.Field(shelf.FieldPublic))
+}
+
 // WhereUserID applies the entql string predicate on the user_id field.
 func (f *ShelfFilter) WhereUserID(p entql.StringP) {
 	f.Where(p.Field(shelf.FieldUserID))
@@ -1050,11 +1056,6 @@ func (f *ShelfFilter) WhereName(p entql.StringP) {
 // WhereDescription applies the entql string predicate on the description field.
 func (f *ShelfFilter) WhereDescription(p entql.StringP) {
 	f.Where(p.Field(shelf.FieldDescription))
-}
-
-// WherePublic applies the entql bool predicate on the public field.
-func (f *ShelfFilter) WherePublic(p entql.BoolP) {
-	f.Where(p.Field(shelf.FieldPublic))
 }
 
 // WhereHasUser applies a predicate to check if query has an edge user.
@@ -1275,6 +1276,11 @@ func (f *UserPermissionsFilter) WhereUserID(p entql.StringP) {
 // WhereAdmin applies the entql bool predicate on the admin field.
 func (f *UserPermissionsFilter) WhereAdmin(p entql.BoolP) {
 	f.Where(p.Field(userpermissions.FieldAdmin))
+}
+
+// WhereCanCreatePublicShelves applies the entql bool predicate on the CanCreatePublicShelves field.
+func (f *UserPermissionsFilter) WhereCanCreatePublicShelves(p entql.BoolP) {
+	f.Where(p.Field(userpermissions.FieldCanCreatePublicShelves))
 }
 
 // WhereHasUser applies a predicate to check if query has an edge user.

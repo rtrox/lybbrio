@@ -15,14 +15,14 @@ const (
 	Label = "shelf"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
+	// FieldPublic holds the string denoting the public field in the database.
+	FieldPublic = "public"
 	// FieldUserID holds the string denoting the user_id field in the database.
 	FieldUserID = "user_id"
 	// FieldName holds the string denoting the name field in the database.
 	FieldName = "name"
 	// FieldDescription holds the string denoting the description field in the database.
 	FieldDescription = "description"
-	// FieldPublic holds the string denoting the public field in the database.
-	FieldPublic = "public"
 	// EdgeUser holds the string denoting the user edge name in mutations.
 	EdgeUser = "user"
 	// EdgeBooks holds the string denoting the books edge name in mutations.
@@ -46,10 +46,10 @@ const (
 // Columns holds all SQL columns for shelf fields.
 var Columns = []string{
 	FieldID,
+	FieldPublic,
 	FieldUserID,
 	FieldName,
 	FieldDescription,
-	FieldPublic,
 }
 
 var (
@@ -76,10 +76,10 @@ func ValidColumn(column string) bool {
 var (
 	Hooks  [1]ent.Hook
 	Policy ent.Policy
-	// NameValidator is a validator for the "name" field. It is called by the builders before save.
-	NameValidator func(string) error
 	// DefaultPublic holds the default value on creation for the "public" field.
 	DefaultPublic bool
+	// NameValidator is a validator for the "name" field. It is called by the builders before save.
+	NameValidator func(string) error
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() ksuid.ID
 )
@@ -90,6 +90,11 @@ type OrderOption func(*sql.Selector)
 // ByID orders the results by the id field.
 func ByID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldID, opts...).ToFunc()
+}
+
+// ByPublic orders the results by the public field.
+func ByPublic(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldPublic, opts...).ToFunc()
 }
 
 // ByUserID orders the results by the user_id field.
@@ -105,11 +110,6 @@ func ByName(opts ...sql.OrderTermOption) OrderOption {
 // ByDescription orders the results by the description field.
 func ByDescription(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldDescription, opts...).ToFunc()
-}
-
-// ByPublic orders the results by the public field.
-func ByPublic(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldPublic, opts...).ToFunc()
 }
 
 // ByUserField orders the results by user field.

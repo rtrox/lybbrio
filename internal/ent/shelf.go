@@ -18,14 +18,14 @@ type Shelf struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID ksuid.ID `json:"id,omitempty"`
+	// Public holds the value of the "public" field.
+	Public bool `json:"public,omitempty"`
 	// UserID holds the value of the "user_id" field.
 	UserID ksuid.ID `json:"user_id,omitempty"`
 	// Name holds the value of the "name" field.
 	Name string `json:"name,omitempty"`
 	// Description holds the value of the "description" field.
 	Description string `json:"description,omitempty"`
-	// Public holds the value of the "public" field.
-	Public bool `json:"public,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the ShelfQuery when eager-loading is set.
 	Edges        ShelfEdges `json:"edges"`
@@ -99,6 +99,12 @@ func (s *Shelf) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				s.ID = ksuid.ID(value.String)
 			}
+		case shelf.FieldPublic:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field public", values[i])
+			} else if value.Valid {
+				s.Public = value.Bool
+			}
 		case shelf.FieldUserID:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field user_id", values[i])
@@ -116,12 +122,6 @@ func (s *Shelf) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field description", values[i])
 			} else if value.Valid {
 				s.Description = value.String
-			}
-		case shelf.FieldPublic:
-			if value, ok := values[i].(*sql.NullBool); !ok {
-				return fmt.Errorf("unexpected type %T for field public", values[i])
-			} else if value.Valid {
-				s.Public = value.Bool
 			}
 		default:
 			s.selectValues.Set(columns[i], values[i])
@@ -169,6 +169,9 @@ func (s *Shelf) String() string {
 	var builder strings.Builder
 	builder.WriteString("Shelf(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", s.ID))
+	builder.WriteString("public=")
+	builder.WriteString(fmt.Sprintf("%v", s.Public))
+	builder.WriteString(", ")
 	builder.WriteString("user_id=")
 	builder.WriteString(fmt.Sprintf("%v", s.UserID))
 	builder.WriteString(", ")
@@ -177,9 +180,6 @@ func (s *Shelf) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("description=")
 	builder.WriteString(s.Description)
-	builder.WriteString(", ")
-	builder.WriteString("public=")
-	builder.WriteString(fmt.Sprintf("%v", s.Public))
 	builder.WriteByte(')')
 	return builder.String()
 }

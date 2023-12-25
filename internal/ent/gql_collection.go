@@ -1373,6 +1373,11 @@ func (s *ShelfQuery) collectField(ctx context.Context, opCtx *graphql.OperationC
 			s.WithNamedBooks(alias, func(wq *BookQuery) {
 				*wq = *query
 			})
+		case "public":
+			if _, ok := fieldSeen[shelf.FieldPublic]; !ok {
+				selectedFields = append(selectedFields, shelf.FieldPublic)
+				fieldSeen[shelf.FieldPublic] = struct{}{}
+			}
 		case "userID":
 			if _, ok := fieldSeen[shelf.FieldUserID]; !ok {
 				selectedFields = append(selectedFields, shelf.FieldUserID)
@@ -1387,11 +1392,6 @@ func (s *ShelfQuery) collectField(ctx context.Context, opCtx *graphql.OperationC
 			if _, ok := fieldSeen[shelf.FieldDescription]; !ok {
 				selectedFields = append(selectedFields, shelf.FieldDescription)
 				fieldSeen[shelf.FieldDescription] = struct{}{}
-			}
-		case "public":
-			if _, ok := fieldSeen[shelf.FieldPublic]; !ok {
-				selectedFields = append(selectedFields, shelf.FieldPublic)
-				fieldSeen[shelf.FieldPublic] = struct{}{}
 			}
 		case "id":
 		case "__typename":
@@ -1801,6 +1801,11 @@ func (up *UserPermissionsQuery) collectField(ctx context.Context, opCtx *graphql
 			if _, ok := fieldSeen[userpermissions.FieldAdmin]; !ok {
 				selectedFields = append(selectedFields, userpermissions.FieldAdmin)
 				fieldSeen[userpermissions.FieldAdmin] = struct{}{}
+			}
+		case "cancreatepublicshelves":
+			if _, ok := fieldSeen[userpermissions.FieldCanCreatePublicShelves]; !ok {
+				selectedFields = append(selectedFields, userpermissions.FieldCanCreatePublicShelves)
+				fieldSeen[userpermissions.FieldCanCreatePublicShelves] = struct{}{}
 			}
 		case "id":
 		case "__typename":

@@ -61,6 +61,31 @@ func FilterUserRule() privacy.QueryMutationRule {
 	})
 }
 
+func FilterUserOrPublicRule() privacy.QueryMutationRule {
+	return privacy.FilterFunc(func(ctx context.Context, f privacy.Filter) error {
+		type UserOrPublicFilter interface {
+			WhereUserID(entql.StringP)
+			WherePublic(entql.BoolP)
+		}
+		view := viewer.FromContext(ctx)
+		user, ok := view.User()
+		if !ok {
+			return privacy.Denyf("missing user information in viewer-context")
+		}
+		_, ok = f.(UserOrPublicFilter)
+		if !ok {
+			return privacy.Denyf("filter does not implement UserOrPublicFilter")
+		}
+		f.Where(
+			entql.Or(
+				entql.FieldEQ("user_id", user.ID.String()),
+				entql.FieldEQ("public", true),
+			),
+		)
+		return privacy.Skip
+	})
+}
+
 // DenyMismatchedUserRule is a rule that returns deny decision if the viewer
 // is not the same as the user on the object.
 func DenyMismatchedUserRule() privacy.MutationRule {
@@ -81,16 +106,23 @@ func DenyMismatchedUserRule() privacy.MutationRule {
 	})
 }
 
-// func FilterPublicRule() privacy.QueryRule {
-// 	type PublicFilter interface {
-// 		WherePublic(entql.BoolP)
-// 	}
-// 	return privacy.FilterFunc(func(ctx context.Context, f privacy.Filter) error {
-// 		pf, ok := f.(PublicFilter)
-// 		if !ok {
-// 			return privacy.Denyf("filter does not implement PublicFilter")
-// 		}
-// 		pf.Or().Where
-// 		return privacy.Skip
-// 	}
-// }
+// FilterSelfRule is a rule that returns deny decision if the viewer
+// is not the same as the user object.
+func FilterSelfRule() privacy.QueryMutationRule {
+	type SelfFilter interface {
+		WhereID(entql.StringP)
+	}
+	return privacy.FilterFunc(func(ctx context.Context, f privacy.Filter) error {
+		view := viewer.FromContext(ctx)
+		user, ok := view.User()
+		if !ok {
+			return privacy.Denyf("missing user information in viewer-context")
+		}
+		sf, ok := f.(SelfFilter)
+		if !ok {
+			return privacy.Denyf("filter does not implement SelfFilter")
+		}
+		sf.WhereID(entql.StringEQ(user.ID.String()))
+		return privacy.Skip
+	})
+}

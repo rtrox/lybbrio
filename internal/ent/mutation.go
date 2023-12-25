@@ -4244,9 +4244,9 @@ type ShelfMutation struct {
 	op            Op
 	typ           string
 	id            *ksuid.ID
+	public        *bool
 	name          *string
 	description   *string
-	public        *bool
 	clearedFields map[string]struct{}
 	user          *ksuid.ID
 	cleareduser   bool
@@ -4360,6 +4360,42 @@ func (m *ShelfMutation) IDs(ctx context.Context) ([]ksuid.ID, error) {
 	default:
 		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
 	}
+}
+
+// SetPublic sets the "public" field.
+func (m *ShelfMutation) SetPublic(b bool) {
+	m.public = &b
+}
+
+// Public returns the value of the "public" field in the mutation.
+func (m *ShelfMutation) Public() (r bool, exists bool) {
+	v := m.public
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPublic returns the old "public" field's value of the Shelf entity.
+// If the Shelf object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ShelfMutation) OldPublic(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldPublic is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldPublic requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPublic: %w", err)
+	}
+	return oldValue.Public, nil
+}
+
+// ResetPublic resets all changes to the "public" field.
+func (m *ShelfMutation) ResetPublic() {
+	m.public = nil
 }
 
 // SetUserID sets the "user_id" field.
@@ -4483,42 +4519,6 @@ func (m *ShelfMutation) ResetDescription() {
 	delete(m.clearedFields, shelf.FieldDescription)
 }
 
-// SetPublic sets the "public" field.
-func (m *ShelfMutation) SetPublic(b bool) {
-	m.public = &b
-}
-
-// Public returns the value of the "public" field in the mutation.
-func (m *ShelfMutation) Public() (r bool, exists bool) {
-	v := m.public
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldPublic returns the old "public" field's value of the Shelf entity.
-// If the Shelf object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ShelfMutation) OldPublic(ctx context.Context) (v bool, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldPublic is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldPublic requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldPublic: %w", err)
-	}
-	return oldValue.Public, nil
-}
-
-// ResetPublic resets all changes to the "public" field.
-func (m *ShelfMutation) ResetPublic() {
-	m.public = nil
-}
-
 // ClearUser clears the "user" edge to the User entity.
 func (m *ShelfMutation) ClearUser() {
 	m.cleareduser = true
@@ -4635,6 +4635,9 @@ func (m *ShelfMutation) Type() string {
 // AddedFields().
 func (m *ShelfMutation) Fields() []string {
 	fields := make([]string, 0, 4)
+	if m.public != nil {
+		fields = append(fields, shelf.FieldPublic)
+	}
 	if m.user != nil {
 		fields = append(fields, shelf.FieldUserID)
 	}
@@ -4644,9 +4647,6 @@ func (m *ShelfMutation) Fields() []string {
 	if m.description != nil {
 		fields = append(fields, shelf.FieldDescription)
 	}
-	if m.public != nil {
-		fields = append(fields, shelf.FieldPublic)
-	}
 	return fields
 }
 
@@ -4655,14 +4655,14 @@ func (m *ShelfMutation) Fields() []string {
 // schema.
 func (m *ShelfMutation) Field(name string) (ent.Value, bool) {
 	switch name {
+	case shelf.FieldPublic:
+		return m.Public()
 	case shelf.FieldUserID:
 		return m.UserID()
 	case shelf.FieldName:
 		return m.Name()
 	case shelf.FieldDescription:
 		return m.Description()
-	case shelf.FieldPublic:
-		return m.Public()
 	}
 	return nil, false
 }
@@ -4672,14 +4672,14 @@ func (m *ShelfMutation) Field(name string) (ent.Value, bool) {
 // database failed.
 func (m *ShelfMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
+	case shelf.FieldPublic:
+		return m.OldPublic(ctx)
 	case shelf.FieldUserID:
 		return m.OldUserID(ctx)
 	case shelf.FieldName:
 		return m.OldName(ctx)
 	case shelf.FieldDescription:
 		return m.OldDescription(ctx)
-	case shelf.FieldPublic:
-		return m.OldPublic(ctx)
 	}
 	return nil, fmt.Errorf("unknown Shelf field %s", name)
 }
@@ -4689,6 +4689,13 @@ func (m *ShelfMutation) OldField(ctx context.Context, name string) (ent.Value, e
 // type.
 func (m *ShelfMutation) SetField(name string, value ent.Value) error {
 	switch name {
+	case shelf.FieldPublic:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPublic(v)
+		return nil
 	case shelf.FieldUserID:
 		v, ok := value.(ksuid.ID)
 		if !ok {
@@ -4709,13 +4716,6 @@ func (m *ShelfMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetDescription(v)
-		return nil
-	case shelf.FieldPublic:
-		v, ok := value.(bool)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetPublic(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Shelf field %s", name)
@@ -4775,6 +4775,9 @@ func (m *ShelfMutation) ClearField(name string) error {
 // It returns an error if the field is not defined in the schema.
 func (m *ShelfMutation) ResetField(name string) error {
 	switch name {
+	case shelf.FieldPublic:
+		m.ResetPublic()
+		return nil
 	case shelf.FieldUserID:
 		m.ResetUserID()
 		return nil
@@ -4783,9 +4786,6 @@ func (m *ShelfMutation) ResetField(name string) error {
 		return nil
 	case shelf.FieldDescription:
 		m.ResetDescription()
-		return nil
-	case shelf.FieldPublic:
-		m.ResetPublic()
 		return nil
 	}
 	return fmt.Errorf("unknown Shelf field %s", name)
@@ -5935,16 +5935,17 @@ func (m *UserMutation) ResetEdge(name string) error {
 // UserPermissionsMutation represents an operation that mutates the UserPermissions nodes in the graph.
 type UserPermissionsMutation struct {
 	config
-	op            Op
-	typ           string
-	id            *ksuid.ID
-	admin         *bool
-	clearedFields map[string]struct{}
-	user          *ksuid.ID
-	cleareduser   bool
-	done          bool
-	oldValue      func(context.Context) (*UserPermissions, error)
-	predicates    []predicate.UserPermissions
+	op                      Op
+	typ                     string
+	id                      *ksuid.ID
+	admin                   *bool
+	_CanCreatePublicShelves *bool
+	clearedFields           map[string]struct{}
+	user                    *ksuid.ID
+	cleareduser             bool
+	done                    bool
+	oldValue                func(context.Context) (*UserPermissions, error)
+	predicates              []predicate.UserPermissions
 }
 
 var _ ent.Mutation = (*UserPermissionsMutation)(nil)
@@ -6136,6 +6137,42 @@ func (m *UserPermissionsMutation) ResetAdmin() {
 	m.admin = nil
 }
 
+// SetCanCreatePublicShelves sets the "CanCreatePublicShelves" field.
+func (m *UserPermissionsMutation) SetCanCreatePublicShelves(b bool) {
+	m._CanCreatePublicShelves = &b
+}
+
+// CanCreatePublicShelves returns the value of the "CanCreatePublicShelves" field in the mutation.
+func (m *UserPermissionsMutation) CanCreatePublicShelves() (r bool, exists bool) {
+	v := m._CanCreatePublicShelves
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCanCreatePublicShelves returns the old "CanCreatePublicShelves" field's value of the UserPermissions entity.
+// If the UserPermissions object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserPermissionsMutation) OldCanCreatePublicShelves(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCanCreatePublicShelves is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCanCreatePublicShelves requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCanCreatePublicShelves: %w", err)
+	}
+	return oldValue.CanCreatePublicShelves, nil
+}
+
+// ResetCanCreatePublicShelves resets all changes to the "CanCreatePublicShelves" field.
+func (m *UserPermissionsMutation) ResetCanCreatePublicShelves() {
+	m._CanCreatePublicShelves = nil
+}
+
 // ClearUser clears the "user" edge to the User entity.
 func (m *UserPermissionsMutation) ClearUser() {
 	m.cleareduser = true
@@ -6197,12 +6234,15 @@ func (m *UserPermissionsMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *UserPermissionsMutation) Fields() []string {
-	fields := make([]string, 0, 2)
+	fields := make([]string, 0, 3)
 	if m.user != nil {
 		fields = append(fields, userpermissions.FieldUserID)
 	}
 	if m.admin != nil {
 		fields = append(fields, userpermissions.FieldAdmin)
+	}
+	if m._CanCreatePublicShelves != nil {
+		fields = append(fields, userpermissions.FieldCanCreatePublicShelves)
 	}
 	return fields
 }
@@ -6216,6 +6256,8 @@ func (m *UserPermissionsMutation) Field(name string) (ent.Value, bool) {
 		return m.UserID()
 	case userpermissions.FieldAdmin:
 		return m.Admin()
+	case userpermissions.FieldCanCreatePublicShelves:
+		return m.CanCreatePublicShelves()
 	}
 	return nil, false
 }
@@ -6229,6 +6271,8 @@ func (m *UserPermissionsMutation) OldField(ctx context.Context, name string) (en
 		return m.OldUserID(ctx)
 	case userpermissions.FieldAdmin:
 		return m.OldAdmin(ctx)
+	case userpermissions.FieldCanCreatePublicShelves:
+		return m.OldCanCreatePublicShelves(ctx)
 	}
 	return nil, fmt.Errorf("unknown UserPermissions field %s", name)
 }
@@ -6251,6 +6295,13 @@ func (m *UserPermissionsMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetAdmin(v)
+		return nil
+	case userpermissions.FieldCanCreatePublicShelves:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCanCreatePublicShelves(v)
 		return nil
 	}
 	return fmt.Errorf("unknown UserPermissions field %s", name)
@@ -6315,6 +6366,9 @@ func (m *UserPermissionsMutation) ResetField(name string) error {
 		return nil
 	case userpermissions.FieldAdmin:
 		m.ResetAdmin()
+		return nil
+	case userpermissions.FieldCanCreatePublicShelves:
+		m.ResetCanCreatePublicShelves()
 		return nil
 	}
 	return fmt.Errorf("unknown UserPermissions field %s", name)

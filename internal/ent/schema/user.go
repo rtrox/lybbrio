@@ -70,7 +70,8 @@ func (User) Policy() ent.Policy {
 		Mutation: privacy.MutationPolicy{
 			rule.DenyIfNoViewer(),
 			rule.AllowIfAdmin(),
-			privacy.AlwaysDenyRule(),
+			rule.FilterSelfRule(),
+			privacy.AlwaysAllowRule(),
 		},
 		Query: privacy.QueryPolicy{
 			privacy.AlwaysAllowRule(),

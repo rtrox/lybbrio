@@ -66,6 +66,11 @@ func Admin(v bool) predicate.UserPermissions {
 	return predicate.UserPermissions(sql.FieldEQ(FieldAdmin, v))
 }
 
+// CanCreatePublicShelves applies equality check predicate on the "CanCreatePublicShelves" field. It's identical to CanCreatePublicShelvesEQ.
+func CanCreatePublicShelves(v bool) predicate.UserPermissions {
+	return predicate.UserPermissions(sql.FieldEQ(FieldCanCreatePublicShelves, v))
+}
+
 // UserIDEQ applies the EQ predicate on the "user_id" field.
 func UserIDEQ(v ksuid.ID) predicate.UserPermissions {
 	vc := string(v)
@@ -168,6 +173,16 @@ func AdminEQ(v bool) predicate.UserPermissions {
 // AdminNEQ applies the NEQ predicate on the "admin" field.
 func AdminNEQ(v bool) predicate.UserPermissions {
 	return predicate.UserPermissions(sql.FieldNEQ(FieldAdmin, v))
+}
+
+// CanCreatePublicShelvesEQ applies the EQ predicate on the "CanCreatePublicShelves" field.
+func CanCreatePublicShelvesEQ(v bool) predicate.UserPermissions {
+	return predicate.UserPermissions(sql.FieldEQ(FieldCanCreatePublicShelves, v))
+}
+
+// CanCreatePublicShelvesNEQ applies the NEQ predicate on the "CanCreatePublicShelves" field.
+func CanCreatePublicShelvesNEQ(v bool) predicate.UserPermissions {
+	return predicate.UserPermissions(sql.FieldNEQ(FieldCanCreatePublicShelves, v))
 }
 
 // HasUser applies the HasEdge predicate on the "user" edge.

@@ -226,9 +226,9 @@ var (
 	// ShelvesColumns holds the columns for the "shelves" table.
 	ShelvesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeString},
+		{Name: "public", Type: field.TypeBool, Default: false},
 		{Name: "name", Type: field.TypeString},
 		{Name: "description", Type: field.TypeString, Nullable: true},
-		{Name: "public", Type: field.TypeBool, Default: false},
 		{Name: "user_id", Type: field.TypeString},
 	}
 	// ShelvesTable holds the schema information for the "shelves" table.
@@ -248,7 +248,7 @@ var (
 			{
 				Name:    "shelf_name",
 				Unique:  false,
-				Columns: []*schema.Column{ShelvesColumns[1]},
+				Columns: []*schema.Column{ShelvesColumns[2]},
 			},
 		},
 	}
@@ -299,6 +299,7 @@ var (
 	UserPermissionsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeString},
 		{Name: "admin", Type: field.TypeBool, Default: false},
+		{Name: "can_create_public_shelves", Type: field.TypeBool, Default: false},
 		{Name: "user_id", Type: field.TypeString, Unique: true, Nullable: true},
 	}
 	// UserPermissionsTable holds the schema information for the "user_permissions" table.
@@ -309,7 +310,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "user_permissions_users_userPermissions",
-				Columns:    []*schema.Column{UserPermissionsColumns[2]},
+				Columns:    []*schema.Column{UserPermissionsColumns[3]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.SetNull,
 			},

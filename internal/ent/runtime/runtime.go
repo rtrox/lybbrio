@@ -215,18 +215,20 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
+	shelfMixinFields1 := shelfMixin[1].Fields()
+	_ = shelfMixinFields1
 	shelfMixinFields2 := shelfMixin[2].Fields()
 	_ = shelfMixinFields2
 	shelfFields := schema.Shelf{}.Fields()
 	_ = shelfFields
+	// shelfDescPublic is the schema descriptor for public field.
+	shelfDescPublic := shelfMixinFields1[0].Descriptor()
+	// shelf.DefaultPublic holds the default value on creation for the public field.
+	shelf.DefaultPublic = shelfDescPublic.Default.(bool)
 	// shelfDescName is the schema descriptor for name field.
 	shelfDescName := shelfFields[0].Descriptor()
 	// shelf.NameValidator is a validator for the "name" field. It is called by the builders before save.
 	shelf.NameValidator = shelfDescName.Validators[0].(func(string) error)
-	// shelfDescPublic is the schema descriptor for public field.
-	shelfDescPublic := shelfFields[2].Descriptor()
-	// shelf.DefaultPublic holds the default value on creation for the public field.
-	shelf.DefaultPublic = shelfDescPublic.Default.(bool)
 	// shelfDescID is the schema descriptor for id field.
 	shelfDescID := shelfMixinFields2[0].Descriptor()
 	// shelf.DefaultID holds the default value on creation for the id field.
@@ -297,6 +299,10 @@ func init() {
 	userpermissionsDescAdmin := userpermissionsFields[1].Descriptor()
 	// userpermissions.DefaultAdmin holds the default value on creation for the admin field.
 	userpermissions.DefaultAdmin = userpermissionsDescAdmin.Default.(bool)
+	// userpermissionsDescCanCreatePublicShelves is the schema descriptor for CanCreatePublicShelves field.
+	userpermissionsDescCanCreatePublicShelves := userpermissionsFields[2].Descriptor()
+	// userpermissions.DefaultCanCreatePublicShelves holds the default value on creation for the CanCreatePublicShelves field.
+	userpermissions.DefaultCanCreatePublicShelves = userpermissionsDescCanCreatePublicShelves.Default.(bool)
 	// userpermissionsDescID is the schema descriptor for id field.
 	userpermissionsDescID := userpermissionsMixinFields1[0].Descriptor()
 	// userpermissions.DefaultID holds the default value on creation for the id field.

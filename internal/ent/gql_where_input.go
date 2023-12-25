@@ -2216,6 +2216,10 @@ type ShelfWhereInput struct {
 	IDLT    *ksuid.ID  `json:"idLT,omitempty"`
 	IDLTE   *ksuid.ID  `json:"idLTE,omitempty"`
 
+	// "public" field predicates.
+	Public    *bool `json:"public,omitempty"`
+	PublicNEQ *bool `json:"publicNEQ,omitempty"`
+
 	// "user_id" field predicates.
 	UserID             *ksuid.ID  `json:"userID,omitempty"`
 	UserIDNEQ          *ksuid.ID  `json:"userIDNEQ,omitempty"`
@@ -2262,10 +2266,6 @@ type ShelfWhereInput struct {
 	DescriptionNotNil       bool     `json:"descriptionNotNil,omitempty"`
 	DescriptionEqualFold    *string  `json:"descriptionEqualFold,omitempty"`
 	DescriptionContainsFold *string  `json:"descriptionContainsFold,omitempty"`
-
-	// "public" field predicates.
-	Public    *bool `json:"public,omitempty"`
-	PublicNEQ *bool `json:"publicNEQ,omitempty"`
 
 	// "user" edge predicates.
 	HasUser     *bool             `json:"hasUser,omitempty"`
@@ -2370,6 +2370,12 @@ func (i *ShelfWhereInput) P() (predicate.Shelf, error) {
 	}
 	if i.IDLTE != nil {
 		predicates = append(predicates, shelf.IDLTE(*i.IDLTE))
+	}
+	if i.Public != nil {
+		predicates = append(predicates, shelf.PublicEQ(*i.Public))
+	}
+	if i.PublicNEQ != nil {
+		predicates = append(predicates, shelf.PublicNEQ(*i.PublicNEQ))
 	}
 	if i.UserID != nil {
 		predicates = append(predicates, shelf.UserIDEQ(*i.UserID))
@@ -2493,12 +2499,6 @@ func (i *ShelfWhereInput) P() (predicate.Shelf, error) {
 	}
 	if i.DescriptionContainsFold != nil {
 		predicates = append(predicates, shelf.DescriptionContainsFold(*i.DescriptionContainsFold))
-	}
-	if i.Public != nil {
-		predicates = append(predicates, shelf.PublicEQ(*i.Public))
-	}
-	if i.PublicNEQ != nil {
-		predicates = append(predicates, shelf.PublicNEQ(*i.PublicNEQ))
 	}
 
 	if i.HasUser != nil {
@@ -3123,6 +3123,10 @@ type UserPermissionsWhereInput struct {
 	Admin    *bool `json:"admin,omitempty"`
 	AdminNEQ *bool `json:"adminNEQ,omitempty"`
 
+	// "CanCreatePublicShelves" field predicates.
+	CanCreatePublicShelves    *bool `json:"cancreatepublicshelves,omitempty"`
+	CanCreatePublicShelvesNEQ *bool `json:"cancreatepublicshelvesNEQ,omitempty"`
+
 	// "user" edge predicates.
 	HasUser     *bool             `json:"hasUser,omitempty"`
 	HasUserWith []*UserWhereInput `json:"hasUserWith,omitempty"`
@@ -3273,6 +3277,12 @@ func (i *UserPermissionsWhereInput) P() (predicate.UserPermissions, error) {
 	}
 	if i.AdminNEQ != nil {
 		predicates = append(predicates, userpermissions.AdminNEQ(*i.AdminNEQ))
+	}
+	if i.CanCreatePublicShelves != nil {
+		predicates = append(predicates, userpermissions.CanCreatePublicShelvesEQ(*i.CanCreatePublicShelves))
+	}
+	if i.CanCreatePublicShelvesNEQ != nil {
+		predicates = append(predicates, userpermissions.CanCreatePublicShelvesNEQ(*i.CanCreatePublicShelvesNEQ))
 	}
 
 	if i.HasUser != nil {

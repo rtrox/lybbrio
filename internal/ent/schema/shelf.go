@@ -29,7 +29,7 @@ func (Shelf) Annotations() []schema.Annotation {
 func (Shelf) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		BaseMixin{},
-		UserScopedMixin{},
+		PublicableUserScopedMixin{},
 		ksuid.MixinWithPrefix("shf"),
 	}
 }
@@ -44,8 +44,6 @@ func (Shelf) Fields() []ent.Field {
 			),
 		field.String("description").
 			Optional(),
-		field.Bool("public").
-			Default(false),
 	}
 }
 

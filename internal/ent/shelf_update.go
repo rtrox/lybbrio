@@ -29,6 +29,20 @@ func (su *ShelfUpdate) Where(ps ...predicate.Shelf) *ShelfUpdate {
 	return su
 }
 
+// SetPublic sets the "public" field.
+func (su *ShelfUpdate) SetPublic(b bool) *ShelfUpdate {
+	su.mutation.SetPublic(b)
+	return su
+}
+
+// SetNillablePublic sets the "public" field if the given value is not nil.
+func (su *ShelfUpdate) SetNillablePublic(b *bool) *ShelfUpdate {
+	if b != nil {
+		su.SetPublic(*b)
+	}
+	return su
+}
+
 // SetName sets the "name" field.
 func (su *ShelfUpdate) SetName(s string) *ShelfUpdate {
 	su.mutation.SetName(s)
@@ -60,20 +74,6 @@ func (su *ShelfUpdate) SetNillableDescription(s *string) *ShelfUpdate {
 // ClearDescription clears the value of the "description" field.
 func (su *ShelfUpdate) ClearDescription() *ShelfUpdate {
 	su.mutation.ClearDescription()
-	return su
-}
-
-// SetPublic sets the "public" field.
-func (su *ShelfUpdate) SetPublic(b bool) *ShelfUpdate {
-	su.mutation.SetPublic(b)
-	return su
-}
-
-// SetNillablePublic sets the "public" field if the given value is not nil.
-func (su *ShelfUpdate) SetNillablePublic(b *bool) *ShelfUpdate {
-	if b != nil {
-		su.SetPublic(*b)
-	}
 	return su
 }
 
@@ -170,6 +170,9 @@ func (su *ShelfUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			}
 		}
 	}
+	if value, ok := su.mutation.Public(); ok {
+		_spec.SetField(shelf.FieldPublic, field.TypeBool, value)
+	}
 	if value, ok := su.mutation.Name(); ok {
 		_spec.SetField(shelf.FieldName, field.TypeString, value)
 	}
@@ -178,9 +181,6 @@ func (su *ShelfUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if su.mutation.DescriptionCleared() {
 		_spec.ClearField(shelf.FieldDescription, field.TypeString)
-	}
-	if value, ok := su.mutation.Public(); ok {
-		_spec.SetField(shelf.FieldPublic, field.TypeBool, value)
 	}
 	if su.mutation.BooksCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -247,6 +247,20 @@ type ShelfUpdateOne struct {
 	mutation *ShelfMutation
 }
 
+// SetPublic sets the "public" field.
+func (suo *ShelfUpdateOne) SetPublic(b bool) *ShelfUpdateOne {
+	suo.mutation.SetPublic(b)
+	return suo
+}
+
+// SetNillablePublic sets the "public" field if the given value is not nil.
+func (suo *ShelfUpdateOne) SetNillablePublic(b *bool) *ShelfUpdateOne {
+	if b != nil {
+		suo.SetPublic(*b)
+	}
+	return suo
+}
+
 // SetName sets the "name" field.
 func (suo *ShelfUpdateOne) SetName(s string) *ShelfUpdateOne {
 	suo.mutation.SetName(s)
@@ -278,20 +292,6 @@ func (suo *ShelfUpdateOne) SetNillableDescription(s *string) *ShelfUpdateOne {
 // ClearDescription clears the value of the "description" field.
 func (suo *ShelfUpdateOne) ClearDescription() *ShelfUpdateOne {
 	suo.mutation.ClearDescription()
-	return suo
-}
-
-// SetPublic sets the "public" field.
-func (suo *ShelfUpdateOne) SetPublic(b bool) *ShelfUpdateOne {
-	suo.mutation.SetPublic(b)
-	return suo
-}
-
-// SetNillablePublic sets the "public" field if the given value is not nil.
-func (suo *ShelfUpdateOne) SetNillablePublic(b *bool) *ShelfUpdateOne {
-	if b != nil {
-		suo.SetPublic(*b)
-	}
 	return suo
 }
 
@@ -418,6 +418,9 @@ func (suo *ShelfUpdateOne) sqlSave(ctx context.Context) (_node *Shelf, err error
 			}
 		}
 	}
+	if value, ok := suo.mutation.Public(); ok {
+		_spec.SetField(shelf.FieldPublic, field.TypeBool, value)
+	}
 	if value, ok := suo.mutation.Name(); ok {
 		_spec.SetField(shelf.FieldName, field.TypeString, value)
 	}
@@ -426,9 +429,6 @@ func (suo *ShelfUpdateOne) sqlSave(ctx context.Context) (_node *Shelf, err error
 	}
 	if suo.mutation.DescriptionCleared() {
 		_spec.ClearField(shelf.FieldDescription, field.TypeString)
-	}
-	if value, ok := suo.mutation.Public(); ok {
-		_spec.SetField(shelf.FieldPublic, field.TypeBool, value)
 	}
 	if suo.mutation.BooksCleared() {
 		edge := &sqlgraph.EdgeSpec{

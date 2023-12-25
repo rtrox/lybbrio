@@ -19,6 +19,8 @@ const (
 	FieldUserID = "user_id"
 	// FieldAdmin holds the string denoting the admin field in the database.
 	FieldAdmin = "admin"
+	// FieldCanCreatePublicShelves holds the string denoting the cancreatepublicshelves field in the database.
+	FieldCanCreatePublicShelves = "can_create_public_shelves"
 	// EdgeUser holds the string denoting the user edge name in mutations.
 	EdgeUser = "user"
 	// Table holds the table name of the userpermissions in the database.
@@ -37,6 +39,7 @@ var Columns = []string{
 	FieldID,
 	FieldUserID,
 	FieldAdmin,
+	FieldCanCreatePublicShelves,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -59,6 +62,8 @@ var (
 	Policy ent.Policy
 	// DefaultAdmin holds the default value on creation for the "admin" field.
 	DefaultAdmin bool
+	// DefaultCanCreatePublicShelves holds the default value on creation for the "CanCreatePublicShelves" field.
+	DefaultCanCreatePublicShelves bool
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() ksuid.ID
 )
@@ -79,6 +84,11 @@ func ByUserID(opts ...sql.OrderTermOption) OrderOption {
 // ByAdmin orders the results by the admin field.
 func ByAdmin(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldAdmin, opts...).ToFunc()
+}
+
+// ByCanCreatePublicShelves orders the results by the CanCreatePublicShelves field.
+func ByCanCreatePublicShelves(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldCanCreatePublicShelves, opts...).ToFunc()
 }
 
 // ByUserField orders the results by user field.

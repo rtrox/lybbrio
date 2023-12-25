@@ -63,6 +63,20 @@ func (upu *UserPermissionsUpdate) SetNillableAdmin(b *bool) *UserPermissionsUpda
 	return upu
 }
 
+// SetCanCreatePublicShelves sets the "CanCreatePublicShelves" field.
+func (upu *UserPermissionsUpdate) SetCanCreatePublicShelves(b bool) *UserPermissionsUpdate {
+	upu.mutation.SetCanCreatePublicShelves(b)
+	return upu
+}
+
+// SetNillableCanCreatePublicShelves sets the "CanCreatePublicShelves" field if the given value is not nil.
+func (upu *UserPermissionsUpdate) SetNillableCanCreatePublicShelves(b *bool) *UserPermissionsUpdate {
+	if b != nil {
+		upu.SetCanCreatePublicShelves(*b)
+	}
+	return upu
+}
+
 // SetUser sets the "user" edge to the User entity.
 func (upu *UserPermissionsUpdate) SetUser(u *User) *UserPermissionsUpdate {
 	return upu.SetUserID(u.ID)
@@ -117,6 +131,9 @@ func (upu *UserPermissionsUpdate) sqlSave(ctx context.Context) (n int, err error
 	}
 	if value, ok := upu.mutation.Admin(); ok {
 		_spec.SetField(userpermissions.FieldAdmin, field.TypeBool, value)
+	}
+	if value, ok := upu.mutation.CanCreatePublicShelves(); ok {
+		_spec.SetField(userpermissions.FieldCanCreatePublicShelves, field.TypeBool, value)
 	}
 	if upu.mutation.UserCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -197,6 +214,20 @@ func (upuo *UserPermissionsUpdateOne) SetAdmin(b bool) *UserPermissionsUpdateOne
 func (upuo *UserPermissionsUpdateOne) SetNillableAdmin(b *bool) *UserPermissionsUpdateOne {
 	if b != nil {
 		upuo.SetAdmin(*b)
+	}
+	return upuo
+}
+
+// SetCanCreatePublicShelves sets the "CanCreatePublicShelves" field.
+func (upuo *UserPermissionsUpdateOne) SetCanCreatePublicShelves(b bool) *UserPermissionsUpdateOne {
+	upuo.mutation.SetCanCreatePublicShelves(b)
+	return upuo
+}
+
+// SetNillableCanCreatePublicShelves sets the "CanCreatePublicShelves" field if the given value is not nil.
+func (upuo *UserPermissionsUpdateOne) SetNillableCanCreatePublicShelves(b *bool) *UserPermissionsUpdateOne {
+	if b != nil {
+		upuo.SetCanCreatePublicShelves(*b)
 	}
 	return upuo
 }
@@ -285,6 +316,9 @@ func (upuo *UserPermissionsUpdateOne) sqlSave(ctx context.Context) (_node *UserP
 	}
 	if value, ok := upuo.mutation.Admin(); ok {
 		_spec.SetField(userpermissions.FieldAdmin, field.TypeBool, value)
+	}
+	if value, ok := upuo.mutation.CanCreatePublicShelves(); ok {
+		_spec.SetField(userpermissions.FieldCanCreatePublicShelves, field.TypeBool, value)
 	}
 	if upuo.mutation.UserCleared() {
 		edge := &sqlgraph.EdgeSpec{

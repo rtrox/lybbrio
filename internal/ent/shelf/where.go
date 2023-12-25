@@ -55,6 +55,11 @@ func IDLTE(id ksuid.ID) predicate.Shelf {
 	return predicate.Shelf(sql.FieldLTE(FieldID, id))
 }
 
+// Public applies equality check predicate on the "public" field. It's identical to PublicEQ.
+func Public(v bool) predicate.Shelf {
+	return predicate.Shelf(sql.FieldEQ(FieldPublic, v))
+}
+
 // UserID applies equality check predicate on the "user_id" field. It's identical to UserIDEQ.
 func UserID(v ksuid.ID) predicate.Shelf {
 	vc := string(v)
@@ -71,9 +76,14 @@ func Description(v string) predicate.Shelf {
 	return predicate.Shelf(sql.FieldEQ(FieldDescription, v))
 }
 
-// Public applies equality check predicate on the "public" field. It's identical to PublicEQ.
-func Public(v bool) predicate.Shelf {
+// PublicEQ applies the EQ predicate on the "public" field.
+func PublicEQ(v bool) predicate.Shelf {
 	return predicate.Shelf(sql.FieldEQ(FieldPublic, v))
+}
+
+// PublicNEQ applies the NEQ predicate on the "public" field.
+func PublicNEQ(v bool) predicate.Shelf {
+	return predicate.Shelf(sql.FieldNEQ(FieldPublic, v))
 }
 
 // UserIDEQ applies the EQ predicate on the "user_id" field.
@@ -298,16 +308,6 @@ func DescriptionEqualFold(v string) predicate.Shelf {
 // DescriptionContainsFold applies the ContainsFold predicate on the "description" field.
 func DescriptionContainsFold(v string) predicate.Shelf {
 	return predicate.Shelf(sql.FieldContainsFold(FieldDescription, v))
-}
-
-// PublicEQ applies the EQ predicate on the "public" field.
-func PublicEQ(v bool) predicate.Shelf {
-	return predicate.Shelf(sql.FieldEQ(FieldPublic, v))
-}
-
-// PublicNEQ applies the NEQ predicate on the "public" field.
-func PublicNEQ(v bool) predicate.Shelf {
-	return predicate.Shelf(sql.FieldNEQ(FieldPublic, v))
 }
 
 // HasUser applies the HasEdge predicate on the "user" edge.

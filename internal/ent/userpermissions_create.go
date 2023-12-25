@@ -49,6 +49,20 @@ func (upc *UserPermissionsCreate) SetNillableAdmin(b *bool) *UserPermissionsCrea
 	return upc
 }
 
+// SetCanCreatePublicShelves sets the "CanCreatePublicShelves" field.
+func (upc *UserPermissionsCreate) SetCanCreatePublicShelves(b bool) *UserPermissionsCreate {
+	upc.mutation.SetCanCreatePublicShelves(b)
+	return upc
+}
+
+// SetNillableCanCreatePublicShelves sets the "CanCreatePublicShelves" field if the given value is not nil.
+func (upc *UserPermissionsCreate) SetNillableCanCreatePublicShelves(b *bool) *UserPermissionsCreate {
+	if b != nil {
+		upc.SetCanCreatePublicShelves(*b)
+	}
+	return upc
+}
+
 // SetID sets the "id" field.
 func (upc *UserPermissionsCreate) SetID(k ksuid.ID) *UserPermissionsCreate {
 	upc.mutation.SetID(k)
@@ -109,6 +123,10 @@ func (upc *UserPermissionsCreate) defaults() error {
 		v := userpermissions.DefaultAdmin
 		upc.mutation.SetAdmin(v)
 	}
+	if _, ok := upc.mutation.CanCreatePublicShelves(); !ok {
+		v := userpermissions.DefaultCanCreatePublicShelves
+		upc.mutation.SetCanCreatePublicShelves(v)
+	}
 	if _, ok := upc.mutation.ID(); !ok {
 		if userpermissions.DefaultID == nil {
 			return fmt.Errorf("ent: uninitialized userpermissions.DefaultID (forgotten import ent/runtime?)")
@@ -123,6 +141,9 @@ func (upc *UserPermissionsCreate) defaults() error {
 func (upc *UserPermissionsCreate) check() error {
 	if _, ok := upc.mutation.Admin(); !ok {
 		return &ValidationError{Name: "admin", err: errors.New(`ent: missing required field "UserPermissions.admin"`)}
+	}
+	if _, ok := upc.mutation.CanCreatePublicShelves(); !ok {
+		return &ValidationError{Name: "CanCreatePublicShelves", err: errors.New(`ent: missing required field "UserPermissions.CanCreatePublicShelves"`)}
 	}
 	return nil
 }
@@ -162,6 +183,10 @@ func (upc *UserPermissionsCreate) createSpec() (*UserPermissions, *sqlgraph.Crea
 	if value, ok := upc.mutation.Admin(); ok {
 		_spec.SetField(userpermissions.FieldAdmin, field.TypeBool, value)
 		_node.Admin = value
+	}
+	if value, ok := upc.mutation.CanCreatePublicShelves(); ok {
+		_spec.SetField(userpermissions.FieldCanCreatePublicShelves, field.TypeBool, value)
+		_node.CanCreatePublicShelves = value
 	}
 	if nodes := upc.mutation.UserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
