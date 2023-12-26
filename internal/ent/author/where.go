@@ -55,6 +55,11 @@ func IDLTE(id ksuid.ID) predicate.Author {
 	return predicate.Author(sql.FieldLTE(FieldID, id))
 }
 
+// CalibreID applies equality check predicate on the "calibre_id" field. It's identical to CalibreIDEQ.
+func CalibreID(v int64) predicate.Author {
+	return predicate.Author(sql.FieldEQ(FieldCalibreID, v))
+}
+
 // Name applies equality check predicate on the "name" field. It's identical to NameEQ.
 func Name(v string) predicate.Author {
 	return predicate.Author(sql.FieldEQ(FieldName, v))
@@ -68,6 +73,46 @@ func Sort(v string) predicate.Author {
 // Link applies equality check predicate on the "link" field. It's identical to LinkEQ.
 func Link(v string) predicate.Author {
 	return predicate.Author(sql.FieldEQ(FieldLink, v))
+}
+
+// CalibreIDEQ applies the EQ predicate on the "calibre_id" field.
+func CalibreIDEQ(v int64) predicate.Author {
+	return predicate.Author(sql.FieldEQ(FieldCalibreID, v))
+}
+
+// CalibreIDNEQ applies the NEQ predicate on the "calibre_id" field.
+func CalibreIDNEQ(v int64) predicate.Author {
+	return predicate.Author(sql.FieldNEQ(FieldCalibreID, v))
+}
+
+// CalibreIDIn applies the In predicate on the "calibre_id" field.
+func CalibreIDIn(vs ...int64) predicate.Author {
+	return predicate.Author(sql.FieldIn(FieldCalibreID, vs...))
+}
+
+// CalibreIDNotIn applies the NotIn predicate on the "calibre_id" field.
+func CalibreIDNotIn(vs ...int64) predicate.Author {
+	return predicate.Author(sql.FieldNotIn(FieldCalibreID, vs...))
+}
+
+// CalibreIDGT applies the GT predicate on the "calibre_id" field.
+func CalibreIDGT(v int64) predicate.Author {
+	return predicate.Author(sql.FieldGT(FieldCalibreID, v))
+}
+
+// CalibreIDGTE applies the GTE predicate on the "calibre_id" field.
+func CalibreIDGTE(v int64) predicate.Author {
+	return predicate.Author(sql.FieldGTE(FieldCalibreID, v))
+}
+
+// CalibreIDLT applies the LT predicate on the "calibre_id" field.
+func CalibreIDLT(v int64) predicate.Author {
+	return predicate.Author(sql.FieldLT(FieldCalibreID, v))
+}
+
+// CalibreIDLTE applies the LTE predicate on the "calibre_id" field.
+func CalibreIDLTE(v int64) predicate.Author {
+	return predicate.Author(sql.FieldLTE(FieldCalibreID, v))
 }
 
 // NameEQ applies the EQ predicate on the "name" field.

@@ -11,6 +11,8 @@ import (
 	"lybbrio/internal/ent/shelf"
 	"lybbrio/internal/ent/user"
 
+	"entgo.io/ent/dialect"
+	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 )
@@ -20,6 +22,7 @@ type ShelfCreate struct {
 	config
 	mutation *ShelfMutation
 	hooks    []Hook
+	conflict []sql.ConflictOption
 }
 
 // SetPublic sets the "public" field.
@@ -197,6 +200,7 @@ func (sc *ShelfCreate) createSpec() (*Shelf, *sqlgraph.CreateSpec) {
 		_node = &Shelf{config: sc.config}
 		_spec = sqlgraph.NewCreateSpec(shelf.Table, sqlgraph.NewFieldSpec(shelf.FieldID, field.TypeString))
 	)
+	_spec.OnConflict = sc.conflict
 	if id, ok := sc.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = id
@@ -249,11 +253,241 @@ func (sc *ShelfCreate) createSpec() (*Shelf, *sqlgraph.CreateSpec) {
 	return _node, _spec
 }
 
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.Shelf.Create().
+//		SetPublic(v).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.ShelfUpsert) {
+//			SetPublic(v+v).
+//		}).
+//		Exec(ctx)
+func (sc *ShelfCreate) OnConflict(opts ...sql.ConflictOption) *ShelfUpsertOne {
+	sc.conflict = opts
+	return &ShelfUpsertOne{
+		create: sc,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.Shelf.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (sc *ShelfCreate) OnConflictColumns(columns ...string) *ShelfUpsertOne {
+	sc.conflict = append(sc.conflict, sql.ConflictColumns(columns...))
+	return &ShelfUpsertOne{
+		create: sc,
+	}
+}
+
+type (
+	// ShelfUpsertOne is the builder for "upsert"-ing
+	//  one Shelf node.
+	ShelfUpsertOne struct {
+		create *ShelfCreate
+	}
+
+	// ShelfUpsert is the "OnConflict" setter.
+	ShelfUpsert struct {
+		*sql.UpdateSet
+	}
+)
+
+// SetPublic sets the "public" field.
+func (u *ShelfUpsert) SetPublic(v bool) *ShelfUpsert {
+	u.Set(shelf.FieldPublic, v)
+	return u
+}
+
+// UpdatePublic sets the "public" field to the value that was provided on create.
+func (u *ShelfUpsert) UpdatePublic() *ShelfUpsert {
+	u.SetExcluded(shelf.FieldPublic)
+	return u
+}
+
+// SetName sets the "name" field.
+func (u *ShelfUpsert) SetName(v string) *ShelfUpsert {
+	u.Set(shelf.FieldName, v)
+	return u
+}
+
+// UpdateName sets the "name" field to the value that was provided on create.
+func (u *ShelfUpsert) UpdateName() *ShelfUpsert {
+	u.SetExcluded(shelf.FieldName)
+	return u
+}
+
+// SetDescription sets the "description" field.
+func (u *ShelfUpsert) SetDescription(v string) *ShelfUpsert {
+	u.Set(shelf.FieldDescription, v)
+	return u
+}
+
+// UpdateDescription sets the "description" field to the value that was provided on create.
+func (u *ShelfUpsert) UpdateDescription() *ShelfUpsert {
+	u.SetExcluded(shelf.FieldDescription)
+	return u
+}
+
+// ClearDescription clears the value of the "description" field.
+func (u *ShelfUpsert) ClearDescription() *ShelfUpsert {
+	u.SetNull(shelf.FieldDescription)
+	return u
+}
+
+// UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
+// Using this option is equivalent to using:
+//
+//	client.Shelf.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(shelf.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *ShelfUpsertOne) UpdateNewValues() *ShelfUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		if _, exists := u.create.mutation.ID(); exists {
+			s.SetIgnore(shelf.FieldID)
+		}
+		if _, exists := u.create.mutation.UserID(); exists {
+			s.SetIgnore(shelf.FieldUserID)
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.Shelf.Create().
+//	    OnConflict(sql.ResolveWithIgnore()).
+//	    Exec(ctx)
+func (u *ShelfUpsertOne) Ignore() *ShelfUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *ShelfUpsertOne) DoNothing() *ShelfUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the ShelfCreate.OnConflict
+// documentation for more info.
+func (u *ShelfUpsertOne) Update(set func(*ShelfUpsert)) *ShelfUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&ShelfUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetPublic sets the "public" field.
+func (u *ShelfUpsertOne) SetPublic(v bool) *ShelfUpsertOne {
+	return u.Update(func(s *ShelfUpsert) {
+		s.SetPublic(v)
+	})
+}
+
+// UpdatePublic sets the "public" field to the value that was provided on create.
+func (u *ShelfUpsertOne) UpdatePublic() *ShelfUpsertOne {
+	return u.Update(func(s *ShelfUpsert) {
+		s.UpdatePublic()
+	})
+}
+
+// SetName sets the "name" field.
+func (u *ShelfUpsertOne) SetName(v string) *ShelfUpsertOne {
+	return u.Update(func(s *ShelfUpsert) {
+		s.SetName(v)
+	})
+}
+
+// UpdateName sets the "name" field to the value that was provided on create.
+func (u *ShelfUpsertOne) UpdateName() *ShelfUpsertOne {
+	return u.Update(func(s *ShelfUpsert) {
+		s.UpdateName()
+	})
+}
+
+// SetDescription sets the "description" field.
+func (u *ShelfUpsertOne) SetDescription(v string) *ShelfUpsertOne {
+	return u.Update(func(s *ShelfUpsert) {
+		s.SetDescription(v)
+	})
+}
+
+// UpdateDescription sets the "description" field to the value that was provided on create.
+func (u *ShelfUpsertOne) UpdateDescription() *ShelfUpsertOne {
+	return u.Update(func(s *ShelfUpsert) {
+		s.UpdateDescription()
+	})
+}
+
+// ClearDescription clears the value of the "description" field.
+func (u *ShelfUpsertOne) ClearDescription() *ShelfUpsertOne {
+	return u.Update(func(s *ShelfUpsert) {
+		s.ClearDescription()
+	})
+}
+
+// Exec executes the query.
+func (u *ShelfUpsertOne) Exec(ctx context.Context) error {
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for ShelfCreate.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *ShelfUpsertOne) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// Exec executes the UPSERT query and returns the inserted/updated ID.
+func (u *ShelfUpsertOne) ID(ctx context.Context) (id ksuid.ID, err error) {
+	if u.create.driver.Dialect() == dialect.MySQL {
+		// In case of "ON CONFLICT", there is no way to get back non-numeric ID
+		// fields from the database since MySQL does not support the RETURNING clause.
+		return id, errors.New("ent: ShelfUpsertOne.ID is not supported by MySQL driver. Use ShelfUpsertOne.Exec instead")
+	}
+	node, err := u.create.Save(ctx)
+	if err != nil {
+		return id, err
+	}
+	return node.ID, nil
+}
+
+// IDX is like ID, but panics if an error occurs.
+func (u *ShelfUpsertOne) IDX(ctx context.Context) ksuid.ID {
+	id, err := u.ID(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return id
+}
+
 // ShelfCreateBulk is the builder for creating many Shelf entities in bulk.
 type ShelfCreateBulk struct {
 	config
 	err      error
 	builders []*ShelfCreate
+	conflict []sql.ConflictOption
 }
 
 // Save creates the Shelf entities in the database.
@@ -283,6 +517,7 @@ func (scb *ShelfCreateBulk) Save(ctx context.Context) ([]*Shelf, error) {
 					_, err = mutators[i+1].Mutate(root, scb.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
+					spec.OnConflict = scb.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
 					if err = sqlgraph.BatchCreate(ctx, scb.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
@@ -329,6 +564,172 @@ func (scb *ShelfCreateBulk) Exec(ctx context.Context) error {
 // ExecX is like Exec, but panics if an error occurs.
 func (scb *ShelfCreateBulk) ExecX(ctx context.Context) {
 	if err := scb.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.Shelf.CreateBulk(builders...).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.ShelfUpsert) {
+//			SetPublic(v+v).
+//		}).
+//		Exec(ctx)
+func (scb *ShelfCreateBulk) OnConflict(opts ...sql.ConflictOption) *ShelfUpsertBulk {
+	scb.conflict = opts
+	return &ShelfUpsertBulk{
+		create: scb,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.Shelf.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (scb *ShelfCreateBulk) OnConflictColumns(columns ...string) *ShelfUpsertBulk {
+	scb.conflict = append(scb.conflict, sql.ConflictColumns(columns...))
+	return &ShelfUpsertBulk{
+		create: scb,
+	}
+}
+
+// ShelfUpsertBulk is the builder for "upsert"-ing
+// a bulk of Shelf nodes.
+type ShelfUpsertBulk struct {
+	create *ShelfCreateBulk
+}
+
+// UpdateNewValues updates the mutable fields using the new values that
+// were set on create. Using this option is equivalent to using:
+//
+//	client.Shelf.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(shelf.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *ShelfUpsertBulk) UpdateNewValues() *ShelfUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		for _, b := range u.create.builders {
+			if _, exists := b.mutation.ID(); exists {
+				s.SetIgnore(shelf.FieldID)
+			}
+			if _, exists := b.mutation.UserID(); exists {
+				s.SetIgnore(shelf.FieldUserID)
+			}
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.Shelf.Create().
+//		OnConflict(sql.ResolveWithIgnore()).
+//		Exec(ctx)
+func (u *ShelfUpsertBulk) Ignore() *ShelfUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *ShelfUpsertBulk) DoNothing() *ShelfUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the ShelfCreateBulk.OnConflict
+// documentation for more info.
+func (u *ShelfUpsertBulk) Update(set func(*ShelfUpsert)) *ShelfUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&ShelfUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetPublic sets the "public" field.
+func (u *ShelfUpsertBulk) SetPublic(v bool) *ShelfUpsertBulk {
+	return u.Update(func(s *ShelfUpsert) {
+		s.SetPublic(v)
+	})
+}
+
+// UpdatePublic sets the "public" field to the value that was provided on create.
+func (u *ShelfUpsertBulk) UpdatePublic() *ShelfUpsertBulk {
+	return u.Update(func(s *ShelfUpsert) {
+		s.UpdatePublic()
+	})
+}
+
+// SetName sets the "name" field.
+func (u *ShelfUpsertBulk) SetName(v string) *ShelfUpsertBulk {
+	return u.Update(func(s *ShelfUpsert) {
+		s.SetName(v)
+	})
+}
+
+// UpdateName sets the "name" field to the value that was provided on create.
+func (u *ShelfUpsertBulk) UpdateName() *ShelfUpsertBulk {
+	return u.Update(func(s *ShelfUpsert) {
+		s.UpdateName()
+	})
+}
+
+// SetDescription sets the "description" field.
+func (u *ShelfUpsertBulk) SetDescription(v string) *ShelfUpsertBulk {
+	return u.Update(func(s *ShelfUpsert) {
+		s.SetDescription(v)
+	})
+}
+
+// UpdateDescription sets the "description" field to the value that was provided on create.
+func (u *ShelfUpsertBulk) UpdateDescription() *ShelfUpsertBulk {
+	return u.Update(func(s *ShelfUpsert) {
+		s.UpdateDescription()
+	})
+}
+
+// ClearDescription clears the value of the "description" field.
+func (u *ShelfUpsertBulk) ClearDescription() *ShelfUpsertBulk {
+	return u.Update(func(s *ShelfUpsert) {
+		s.ClearDescription()
+	})
+}
+
+// Exec executes the query.
+func (u *ShelfUpsertBulk) Exec(ctx context.Context) error {
+	if u.create.err != nil {
+		return u.create.err
+	}
+	for i, b := range u.create.builders {
+		if len(b.conflict) != 0 {
+			return fmt.Errorf("ent: OnConflict was set for builder %d. Set it on the ShelfCreateBulk instead", i)
+		}
+	}
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for ShelfCreateBulk.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *ShelfUpsertBulk) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

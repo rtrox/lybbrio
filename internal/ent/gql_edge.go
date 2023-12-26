@@ -41,6 +41,18 @@ func (b *Book) Authors(ctx context.Context) (result []*Author, err error) {
 	return result, err
 }
 
+func (b *Book) Publisher(ctx context.Context) (result []*Publisher, err error) {
+	if fc := graphql.GetFieldContext(ctx); fc != nil && fc.Field.Alias != "" {
+		result, err = b.NamedPublisher(graphql.GetFieldContext(ctx).Field.Alias)
+	} else {
+		result, err = b.Edges.PublisherOrErr()
+	}
+	if IsNotLoaded(err) {
+		result, err = b.QueryPublisher().All(ctx)
+	}
+	return result, err
+}
+
 func (b *Book) Series(ctx context.Context) (result []*Series, err error) {
 	if fc := graphql.GetFieldContext(ctx); fc != nil && fc.Field.Alias != "" {
 		result, err = b.NamedSeries(graphql.GetFieldContext(ctx).Field.Alias)
@@ -53,24 +65,40 @@ func (b *Book) Series(ctx context.Context) (result []*Series, err error) {
 	return result, err
 }
 
-func (b *Book) Identifier(ctx context.Context) (result []*Identifier, err error) {
+func (b *Book) Identifiers(ctx context.Context) (result []*Identifier, err error) {
 	if fc := graphql.GetFieldContext(ctx); fc != nil && fc.Field.Alias != "" {
-		result, err = b.NamedIdentifier(graphql.GetFieldContext(ctx).Field.Alias)
+		result, err = b.NamedIdentifiers(graphql.GetFieldContext(ctx).Field.Alias)
 	} else {
-		result, err = b.Edges.IdentifierOrErr()
+		result, err = b.Edges.IdentifiersOrErr()
 	}
 	if IsNotLoaded(err) {
-		result, err = b.QueryIdentifier().All(ctx)
+		result, err = b.QueryIdentifiers().All(ctx)
 	}
 	return result, err
 }
 
-func (b *Book) Language(ctx context.Context) (*Language, error) {
-	result, err := b.Edges.LanguageOrErr()
-	if IsNotLoaded(err) {
-		result, err = b.QueryLanguage().Only(ctx)
+func (b *Book) Tags(ctx context.Context) (result []*Tag, err error) {
+	if fc := graphql.GetFieldContext(ctx); fc != nil && fc.Field.Alias != "" {
+		result, err = b.NamedTags(graphql.GetFieldContext(ctx).Field.Alias)
+	} else {
+		result, err = b.Edges.TagsOrErr()
 	}
-	return result, MaskNotFound(err)
+	if IsNotLoaded(err) {
+		result, err = b.QueryTags().All(ctx)
+	}
+	return result, err
+}
+
+func (b *Book) Language(ctx context.Context) (result []*Language, err error) {
+	if fc := graphql.GetFieldContext(ctx); fc != nil && fc.Field.Alias != "" {
+		result, err = b.NamedLanguage(graphql.GetFieldContext(ctx).Field.Alias)
+	} else {
+		result, err = b.Edges.LanguageOrErr()
+	}
+	if IsNotLoaded(err) {
+		result, err = b.QueryLanguage().All(ctx)
+	}
+	return result, err
 }
 
 func (b *Book) Shelf(ctx context.Context) (result []*Shelf, err error) {

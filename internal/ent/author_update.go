@@ -29,6 +29,27 @@ func (au *AuthorUpdate) Where(ps ...predicate.Author) *AuthorUpdate {
 	return au
 }
 
+// SetCalibreID sets the "calibre_id" field.
+func (au *AuthorUpdate) SetCalibreID(i int64) *AuthorUpdate {
+	au.mutation.ResetCalibreID()
+	au.mutation.SetCalibreID(i)
+	return au
+}
+
+// SetNillableCalibreID sets the "calibre_id" field if the given value is not nil.
+func (au *AuthorUpdate) SetNillableCalibreID(i *int64) *AuthorUpdate {
+	if i != nil {
+		au.SetCalibreID(*i)
+	}
+	return au
+}
+
+// AddCalibreID adds i to the "calibre_id" field.
+func (au *AuthorUpdate) AddCalibreID(i int64) *AuthorUpdate {
+	au.mutation.AddCalibreID(i)
+	return au
+}
+
 // SetName sets the "name" field.
 func (au *AuthorUpdate) SetName(s string) *AuthorUpdate {
 	au.mutation.SetName(s)
@@ -167,6 +188,12 @@ func (au *AuthorUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			}
 		}
 	}
+	if value, ok := au.mutation.CalibreID(); ok {
+		_spec.SetField(author.FieldCalibreID, field.TypeInt64, value)
+	}
+	if value, ok := au.mutation.AddedCalibreID(); ok {
+		_spec.AddField(author.FieldCalibreID, field.TypeInt64, value)
+	}
 	if value, ok := au.mutation.Name(); ok {
 		_spec.SetField(author.FieldName, field.TypeString, value)
 	}
@@ -242,6 +269,27 @@ type AuthorUpdateOne struct {
 	fields   []string
 	hooks    []Hook
 	mutation *AuthorMutation
+}
+
+// SetCalibreID sets the "calibre_id" field.
+func (auo *AuthorUpdateOne) SetCalibreID(i int64) *AuthorUpdateOne {
+	auo.mutation.ResetCalibreID()
+	auo.mutation.SetCalibreID(i)
+	return auo
+}
+
+// SetNillableCalibreID sets the "calibre_id" field if the given value is not nil.
+func (auo *AuthorUpdateOne) SetNillableCalibreID(i *int64) *AuthorUpdateOne {
+	if i != nil {
+		auo.SetCalibreID(*i)
+	}
+	return auo
+}
+
+// AddCalibreID adds i to the "calibre_id" field.
+func (auo *AuthorUpdateOne) AddCalibreID(i int64) *AuthorUpdateOne {
+	auo.mutation.AddCalibreID(i)
+	return auo
 }
 
 // SetName sets the "name" field.
@@ -411,6 +459,12 @@ func (auo *AuthorUpdateOne) sqlSave(ctx context.Context) (_node *Author, err err
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := auo.mutation.CalibreID(); ok {
+		_spec.SetField(author.FieldCalibreID, field.TypeInt64, value)
+	}
+	if value, ok := auo.mutation.AddedCalibreID(); ok {
+		_spec.AddField(author.FieldCalibreID, field.TypeInt64, value)
 	}
 	if value, ok := auo.mutation.Name(); ok {
 		_spec.SetField(author.FieldName, field.TypeString, value)

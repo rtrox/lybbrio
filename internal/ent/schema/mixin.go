@@ -8,6 +8,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
+	"entgo.io/ent/schema/index"
 	"entgo.io/ent/schema/mixin"
 )
 
@@ -110,5 +111,23 @@ func (PublicableUserScopedMixin) Policy() ent.Policy {
 			rule.DenyMismatchedUserRule(),
 			rule.DenyPublicWithoutPermissionRule(),
 		},
+	}
+}
+
+// CalibreMixin is a mixin that adds CalibreID to the schema as a unique index.
+type CalibreMixin struct {
+	mixin.Schema
+}
+
+func (CalibreMixin) Fields() []ent.Field {
+	return []ent.Field{
+		field.Int64("calibre_id").
+			Unique(),
+	}
+}
+
+func (CalibreMixin) Indexes() []ent.Index {
+	return []ent.Index{
+		index.Fields("calibre_id").Unique(),
 	}
 }

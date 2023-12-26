@@ -29,6 +29,27 @@ func (pu *PublisherUpdate) Where(ps ...predicate.Publisher) *PublisherUpdate {
 	return pu
 }
 
+// SetCalibreID sets the "calibre_id" field.
+func (pu *PublisherUpdate) SetCalibreID(i int64) *PublisherUpdate {
+	pu.mutation.ResetCalibreID()
+	pu.mutation.SetCalibreID(i)
+	return pu
+}
+
+// SetNillableCalibreID sets the "calibre_id" field if the given value is not nil.
+func (pu *PublisherUpdate) SetNillableCalibreID(i *int64) *PublisherUpdate {
+	if i != nil {
+		pu.SetCalibreID(*i)
+	}
+	return pu
+}
+
+// AddCalibreID adds i to the "calibre_id" field.
+func (pu *PublisherUpdate) AddCalibreID(i int64) *PublisherUpdate {
+	pu.mutation.AddCalibreID(i)
+	return pu
+}
+
 // SetName sets the "name" field.
 func (pu *PublisherUpdate) SetName(s string) *PublisherUpdate {
 	pu.mutation.SetName(s)
@@ -133,15 +154,21 @@ func (pu *PublisherUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			}
 		}
 	}
+	if value, ok := pu.mutation.CalibreID(); ok {
+		_spec.SetField(publisher.FieldCalibreID, field.TypeInt64, value)
+	}
+	if value, ok := pu.mutation.AddedCalibreID(); ok {
+		_spec.AddField(publisher.FieldCalibreID, field.TypeInt64, value)
+	}
 	if value, ok := pu.mutation.Name(); ok {
 		_spec.SetField(publisher.FieldName, field.TypeString, value)
 	}
 	if pu.mutation.BooksCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   publisher.BooksTable,
-			Columns: []string{publisher.BooksColumn},
+			Columns: publisher.BooksPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(book.FieldID, field.TypeString),
@@ -151,10 +178,10 @@ func (pu *PublisherUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if nodes := pu.mutation.RemovedBooksIDs(); len(nodes) > 0 && !pu.mutation.BooksCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   publisher.BooksTable,
-			Columns: []string{publisher.BooksColumn},
+			Columns: publisher.BooksPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(book.FieldID, field.TypeString),
@@ -167,10 +194,10 @@ func (pu *PublisherUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if nodes := pu.mutation.BooksIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   publisher.BooksTable,
-			Columns: []string{publisher.BooksColumn},
+			Columns: publisher.BooksPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(book.FieldID, field.TypeString),
@@ -199,6 +226,27 @@ type PublisherUpdateOne struct {
 	fields   []string
 	hooks    []Hook
 	mutation *PublisherMutation
+}
+
+// SetCalibreID sets the "calibre_id" field.
+func (puo *PublisherUpdateOne) SetCalibreID(i int64) *PublisherUpdateOne {
+	puo.mutation.ResetCalibreID()
+	puo.mutation.SetCalibreID(i)
+	return puo
+}
+
+// SetNillableCalibreID sets the "calibre_id" field if the given value is not nil.
+func (puo *PublisherUpdateOne) SetNillableCalibreID(i *int64) *PublisherUpdateOne {
+	if i != nil {
+		puo.SetCalibreID(*i)
+	}
+	return puo
+}
+
+// AddCalibreID adds i to the "calibre_id" field.
+func (puo *PublisherUpdateOne) AddCalibreID(i int64) *PublisherUpdateOne {
+	puo.mutation.AddCalibreID(i)
+	return puo
 }
 
 // SetName sets the "name" field.
@@ -335,15 +383,21 @@ func (puo *PublisherUpdateOne) sqlSave(ctx context.Context) (_node *Publisher, e
 			}
 		}
 	}
+	if value, ok := puo.mutation.CalibreID(); ok {
+		_spec.SetField(publisher.FieldCalibreID, field.TypeInt64, value)
+	}
+	if value, ok := puo.mutation.AddedCalibreID(); ok {
+		_spec.AddField(publisher.FieldCalibreID, field.TypeInt64, value)
+	}
 	if value, ok := puo.mutation.Name(); ok {
 		_spec.SetField(publisher.FieldName, field.TypeString, value)
 	}
 	if puo.mutation.BooksCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   publisher.BooksTable,
-			Columns: []string{publisher.BooksColumn},
+			Columns: publisher.BooksPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(book.FieldID, field.TypeString),
@@ -353,10 +407,10 @@ func (puo *PublisherUpdateOne) sqlSave(ctx context.Context) (_node *Publisher, e
 	}
 	if nodes := puo.mutation.RemovedBooksIDs(); len(nodes) > 0 && !puo.mutation.BooksCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   publisher.BooksTable,
-			Columns: []string{publisher.BooksColumn},
+			Columns: publisher.BooksPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(book.FieldID, field.TypeString),
@@ -369,10 +423,10 @@ func (puo *PublisherUpdateOne) sqlSave(ctx context.Context) (_node *Publisher, e
 	}
 	if nodes := puo.mutation.BooksIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   publisher.BooksTable,
-			Columns: []string{publisher.BooksColumn},
+			Columns: publisher.BooksPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(book.FieldID, field.TypeString),

@@ -303,12 +303,12 @@ func (aq *AuthorQuery) WithBooks(opts ...func(*BookQuery)) *AuthorQuery {
 // Example:
 //
 //	var v []struct {
-//		Name string `json:"name,omitempty"`
+//		CalibreID int64 `json:"calibre_id,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.Author.Query().
-//		GroupBy(author.FieldName).
+//		GroupBy(author.FieldCalibreID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (aq *AuthorQuery) GroupBy(field string, fields ...string) *AuthorGroupBy {
@@ -326,11 +326,11 @@ func (aq *AuthorQuery) GroupBy(field string, fields ...string) *AuthorGroupBy {
 // Example:
 //
 //	var v []struct {
-//		Name string `json:"name,omitempty"`
+//		CalibreID int64 `json:"calibre_id,omitempty"`
 //	}
 //
 //	client.Author.Query().
-//		Select(author.FieldName).
+//		Select(author.FieldCalibreID).
 //		Scan(ctx, &v)
 func (aq *AuthorQuery) Select(fields ...string) *AuthorSelect {
 	aq.ctx.Fields = append(aq.ctx.Fields, fields...)

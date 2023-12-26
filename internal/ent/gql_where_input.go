@@ -39,6 +39,16 @@ type AuthorWhereInput struct {
 	IDLT    *ksuid.ID  `json:"idLT,omitempty"`
 	IDLTE   *ksuid.ID  `json:"idLTE,omitempty"`
 
+	// "calibre_id" field predicates.
+	CalibreID      *int64  `json:"calibreID,omitempty"`
+	CalibreIDNEQ   *int64  `json:"calibreIDNEQ,omitempty"`
+	CalibreIDIn    []int64 `json:"calibreIDIn,omitempty"`
+	CalibreIDNotIn []int64 `json:"calibreIDNotIn,omitempty"`
+	CalibreIDGT    *int64  `json:"calibreIDGT,omitempty"`
+	CalibreIDGTE   *int64  `json:"calibreIDGTE,omitempty"`
+	CalibreIDLT    *int64  `json:"calibreIDLT,omitempty"`
+	CalibreIDLTE   *int64  `json:"calibreIDLTE,omitempty"`
+
 	// "name" field predicates.
 	Name             *string  `json:"name,omitempty"`
 	NameNEQ          *string  `json:"nameNEQ,omitempty"`
@@ -185,6 +195,30 @@ func (i *AuthorWhereInput) P() (predicate.Author, error) {
 	}
 	if i.IDLTE != nil {
 		predicates = append(predicates, author.IDLTE(*i.IDLTE))
+	}
+	if i.CalibreID != nil {
+		predicates = append(predicates, author.CalibreIDEQ(*i.CalibreID))
+	}
+	if i.CalibreIDNEQ != nil {
+		predicates = append(predicates, author.CalibreIDNEQ(*i.CalibreIDNEQ))
+	}
+	if len(i.CalibreIDIn) > 0 {
+		predicates = append(predicates, author.CalibreIDIn(i.CalibreIDIn...))
+	}
+	if len(i.CalibreIDNotIn) > 0 {
+		predicates = append(predicates, author.CalibreIDNotIn(i.CalibreIDNotIn...))
+	}
+	if i.CalibreIDGT != nil {
+		predicates = append(predicates, author.CalibreIDGT(*i.CalibreIDGT))
+	}
+	if i.CalibreIDGTE != nil {
+		predicates = append(predicates, author.CalibreIDGTE(*i.CalibreIDGTE))
+	}
+	if i.CalibreIDLT != nil {
+		predicates = append(predicates, author.CalibreIDLT(*i.CalibreIDLT))
+	}
+	if i.CalibreIDLTE != nil {
+		predicates = append(predicates, author.CalibreIDLTE(*i.CalibreIDLTE))
 	}
 	if i.Name != nil {
 		predicates = append(predicates, author.NameEQ(*i.Name))
@@ -355,6 +389,16 @@ type BookWhereInput struct {
 	IDLT    *ksuid.ID  `json:"idLT,omitempty"`
 	IDLTE   *ksuid.ID  `json:"idLTE,omitempty"`
 
+	// "calibre_id" field predicates.
+	CalibreID      *int64  `json:"calibreID,omitempty"`
+	CalibreIDNEQ   *int64  `json:"calibreIDNEQ,omitempty"`
+	CalibreIDIn    []int64 `json:"calibreIDIn,omitempty"`
+	CalibreIDNotIn []int64 `json:"calibreIDNotIn,omitempty"`
+	CalibreIDGT    *int64  `json:"calibreIDGT,omitempty"`
+	CalibreIDGTE   *int64  `json:"calibreIDGTE,omitempty"`
+	CalibreIDLT    *int64  `json:"calibreIDLT,omitempty"`
+	CalibreIDLTE   *int64  `json:"calibreIDLTE,omitempty"`
+
 	// "title" field predicates.
 	Title             *string  `json:"title,omitempty"`
 	TitleNEQ          *string  `json:"titleNEQ,omitempty"`
@@ -447,28 +491,36 @@ type BookWhereInput struct {
 	DescriptionContainsFold *string  `json:"descriptionContainsFold,omitempty"`
 
 	// "series_index" field predicates.
-	SeriesIndex       *int  `json:"seriesIndex,omitempty"`
-	SeriesIndexNEQ    *int  `json:"seriesIndexNEQ,omitempty"`
-	SeriesIndexIn     []int `json:"seriesIndexIn,omitempty"`
-	SeriesIndexNotIn  []int `json:"seriesIndexNotIn,omitempty"`
-	SeriesIndexGT     *int  `json:"seriesIndexGT,omitempty"`
-	SeriesIndexGTE    *int  `json:"seriesIndexGTE,omitempty"`
-	SeriesIndexLT     *int  `json:"seriesIndexLT,omitempty"`
-	SeriesIndexLTE    *int  `json:"seriesIndexLTE,omitempty"`
-	SeriesIndexIsNil  bool  `json:"seriesIndexIsNil,omitempty"`
-	SeriesIndexNotNil bool  `json:"seriesIndexNotNil,omitempty"`
+	SeriesIndex       *float64  `json:"seriesIndex,omitempty"`
+	SeriesIndexNEQ    *float64  `json:"seriesIndexNEQ,omitempty"`
+	SeriesIndexIn     []float64 `json:"seriesIndexIn,omitempty"`
+	SeriesIndexNotIn  []float64 `json:"seriesIndexNotIn,omitempty"`
+	SeriesIndexGT     *float64  `json:"seriesIndexGT,omitempty"`
+	SeriesIndexGTE    *float64  `json:"seriesIndexGTE,omitempty"`
+	SeriesIndexLT     *float64  `json:"seriesIndexLT,omitempty"`
+	SeriesIndexLTE    *float64  `json:"seriesIndexLTE,omitempty"`
+	SeriesIndexIsNil  bool      `json:"seriesIndexIsNil,omitempty"`
+	SeriesIndexNotNil bool      `json:"seriesIndexNotNil,omitempty"`
 
 	// "authors" edge predicates.
 	HasAuthors     *bool               `json:"hasAuthors,omitempty"`
 	HasAuthorsWith []*AuthorWhereInput `json:"hasAuthorsWith,omitempty"`
 
+	// "publisher" edge predicates.
+	HasPublisher     *bool                  `json:"hasPublisher,omitempty"`
+	HasPublisherWith []*PublisherWhereInput `json:"hasPublisherWith,omitempty"`
+
 	// "series" edge predicates.
 	HasSeries     *bool               `json:"hasSeries,omitempty"`
 	HasSeriesWith []*SeriesWhereInput `json:"hasSeriesWith,omitempty"`
 
-	// "identifier" edge predicates.
-	HasIdentifier     *bool                   `json:"hasIdentifier,omitempty"`
-	HasIdentifierWith []*IdentifierWhereInput `json:"hasIdentifierWith,omitempty"`
+	// "identifiers" edge predicates.
+	HasIdentifiers     *bool                   `json:"hasIdentifiers,omitempty"`
+	HasIdentifiersWith []*IdentifierWhereInput `json:"hasIdentifiersWith,omitempty"`
+
+	// "tags" edge predicates.
+	HasTags     *bool            `json:"hasTags,omitempty"`
+	HasTagsWith []*TagWhereInput `json:"hasTagsWith,omitempty"`
 
 	// "language" edge predicates.
 	HasLanguage     *bool                 `json:"hasLanguage,omitempty"`
@@ -573,6 +625,30 @@ func (i *BookWhereInput) P() (predicate.Book, error) {
 	}
 	if i.IDLTE != nil {
 		predicates = append(predicates, book.IDLTE(*i.IDLTE))
+	}
+	if i.CalibreID != nil {
+		predicates = append(predicates, book.CalibreIDEQ(*i.CalibreID))
+	}
+	if i.CalibreIDNEQ != nil {
+		predicates = append(predicates, book.CalibreIDNEQ(*i.CalibreIDNEQ))
+	}
+	if len(i.CalibreIDIn) > 0 {
+		predicates = append(predicates, book.CalibreIDIn(i.CalibreIDIn...))
+	}
+	if len(i.CalibreIDNotIn) > 0 {
+		predicates = append(predicates, book.CalibreIDNotIn(i.CalibreIDNotIn...))
+	}
+	if i.CalibreIDGT != nil {
+		predicates = append(predicates, book.CalibreIDGT(*i.CalibreIDGT))
+	}
+	if i.CalibreIDGTE != nil {
+		predicates = append(predicates, book.CalibreIDGTE(*i.CalibreIDGTE))
+	}
+	if i.CalibreIDLT != nil {
+		predicates = append(predicates, book.CalibreIDLT(*i.CalibreIDLT))
+	}
+	if i.CalibreIDLTE != nil {
+		predicates = append(predicates, book.CalibreIDLTE(*i.CalibreIDLTE))
 	}
 	if i.Title != nil {
 		predicates = append(predicates, book.TitleEQ(*i.Title))
@@ -860,6 +936,24 @@ func (i *BookWhereInput) P() (predicate.Book, error) {
 		}
 		predicates = append(predicates, book.HasAuthorsWith(with...))
 	}
+	if i.HasPublisher != nil {
+		p := book.HasPublisher()
+		if !*i.HasPublisher {
+			p = book.Not(p)
+		}
+		predicates = append(predicates, p)
+	}
+	if len(i.HasPublisherWith) > 0 {
+		with := make([]predicate.Publisher, 0, len(i.HasPublisherWith))
+		for _, w := range i.HasPublisherWith {
+			p, err := w.P()
+			if err != nil {
+				return nil, fmt.Errorf("%w: field 'HasPublisherWith'", err)
+			}
+			with = append(with, p)
+		}
+		predicates = append(predicates, book.HasPublisherWith(with...))
+	}
 	if i.HasSeries != nil {
 		p := book.HasSeries()
 		if !*i.HasSeries {
@@ -878,23 +972,41 @@ func (i *BookWhereInput) P() (predicate.Book, error) {
 		}
 		predicates = append(predicates, book.HasSeriesWith(with...))
 	}
-	if i.HasIdentifier != nil {
-		p := book.HasIdentifier()
-		if !*i.HasIdentifier {
+	if i.HasIdentifiers != nil {
+		p := book.HasIdentifiers()
+		if !*i.HasIdentifiers {
 			p = book.Not(p)
 		}
 		predicates = append(predicates, p)
 	}
-	if len(i.HasIdentifierWith) > 0 {
-		with := make([]predicate.Identifier, 0, len(i.HasIdentifierWith))
-		for _, w := range i.HasIdentifierWith {
+	if len(i.HasIdentifiersWith) > 0 {
+		with := make([]predicate.Identifier, 0, len(i.HasIdentifiersWith))
+		for _, w := range i.HasIdentifiersWith {
 			p, err := w.P()
 			if err != nil {
-				return nil, fmt.Errorf("%w: field 'HasIdentifierWith'", err)
+				return nil, fmt.Errorf("%w: field 'HasIdentifiersWith'", err)
 			}
 			with = append(with, p)
 		}
-		predicates = append(predicates, book.HasIdentifierWith(with...))
+		predicates = append(predicates, book.HasIdentifiersWith(with...))
+	}
+	if i.HasTags != nil {
+		p := book.HasTags()
+		if !*i.HasTags {
+			p = book.Not(p)
+		}
+		predicates = append(predicates, p)
+	}
+	if len(i.HasTagsWith) > 0 {
+		with := make([]predicate.Tag, 0, len(i.HasTagsWith))
+		for _, w := range i.HasTagsWith {
+			p, err := w.P()
+			if err != nil {
+				return nil, fmt.Errorf("%w: field 'HasTagsWith'", err)
+			}
+			with = append(with, p)
+		}
+		predicates = append(predicates, book.HasTagsWith(with...))
 	}
 	if i.HasLanguage != nil {
 		p := book.HasLanguage()
@@ -959,11 +1071,30 @@ type IdentifierWhereInput struct {
 	IDLT    *ksuid.ID  `json:"idLT,omitempty"`
 	IDLTE   *ksuid.ID  `json:"idLTE,omitempty"`
 
+	// "calibre_id" field predicates.
+	CalibreID      *int64  `json:"calibreID,omitempty"`
+	CalibreIDNEQ   *int64  `json:"calibreIDNEQ,omitempty"`
+	CalibreIDIn    []int64 `json:"calibreIDIn,omitempty"`
+	CalibreIDNotIn []int64 `json:"calibreIDNotIn,omitempty"`
+	CalibreIDGT    *int64  `json:"calibreIDGT,omitempty"`
+	CalibreIDGTE   *int64  `json:"calibreIDGTE,omitempty"`
+	CalibreIDLT    *int64  `json:"calibreIDLT,omitempty"`
+	CalibreIDLTE   *int64  `json:"calibreIDLTE,omitempty"`
+
 	// "type" field predicates.
-	Type      *identifier.Type  `json:"type,omitempty"`
-	TypeNEQ   *identifier.Type  `json:"typeNEQ,omitempty"`
-	TypeIn    []identifier.Type `json:"typeIn,omitempty"`
-	TypeNotIn []identifier.Type `json:"typeNotIn,omitempty"`
+	Type             *string  `json:"type,omitempty"`
+	TypeNEQ          *string  `json:"typeNEQ,omitempty"`
+	TypeIn           []string `json:"typeIn,omitempty"`
+	TypeNotIn        []string `json:"typeNotIn,omitempty"`
+	TypeGT           *string  `json:"typeGT,omitempty"`
+	TypeGTE          *string  `json:"typeGTE,omitempty"`
+	TypeLT           *string  `json:"typeLT,omitempty"`
+	TypeLTE          *string  `json:"typeLTE,omitempty"`
+	TypeContains     *string  `json:"typeContains,omitempty"`
+	TypeHasPrefix    *string  `json:"typeHasPrefix,omitempty"`
+	TypeHasSuffix    *string  `json:"typeHasSuffix,omitempty"`
+	TypeEqualFold    *string  `json:"typeEqualFold,omitempty"`
+	TypeContainsFold *string  `json:"typeContainsFold,omitempty"`
 
 	// "value" field predicates.
 	Value             *string  `json:"value,omitempty"`
@@ -1080,6 +1211,30 @@ func (i *IdentifierWhereInput) P() (predicate.Identifier, error) {
 	if i.IDLTE != nil {
 		predicates = append(predicates, identifier.IDLTE(*i.IDLTE))
 	}
+	if i.CalibreID != nil {
+		predicates = append(predicates, identifier.CalibreIDEQ(*i.CalibreID))
+	}
+	if i.CalibreIDNEQ != nil {
+		predicates = append(predicates, identifier.CalibreIDNEQ(*i.CalibreIDNEQ))
+	}
+	if len(i.CalibreIDIn) > 0 {
+		predicates = append(predicates, identifier.CalibreIDIn(i.CalibreIDIn...))
+	}
+	if len(i.CalibreIDNotIn) > 0 {
+		predicates = append(predicates, identifier.CalibreIDNotIn(i.CalibreIDNotIn...))
+	}
+	if i.CalibreIDGT != nil {
+		predicates = append(predicates, identifier.CalibreIDGT(*i.CalibreIDGT))
+	}
+	if i.CalibreIDGTE != nil {
+		predicates = append(predicates, identifier.CalibreIDGTE(*i.CalibreIDGTE))
+	}
+	if i.CalibreIDLT != nil {
+		predicates = append(predicates, identifier.CalibreIDLT(*i.CalibreIDLT))
+	}
+	if i.CalibreIDLTE != nil {
+		predicates = append(predicates, identifier.CalibreIDLTE(*i.CalibreIDLTE))
+	}
 	if i.Type != nil {
 		predicates = append(predicates, identifier.TypeEQ(*i.Type))
 	}
@@ -1091,6 +1246,33 @@ func (i *IdentifierWhereInput) P() (predicate.Identifier, error) {
 	}
 	if len(i.TypeNotIn) > 0 {
 		predicates = append(predicates, identifier.TypeNotIn(i.TypeNotIn...))
+	}
+	if i.TypeGT != nil {
+		predicates = append(predicates, identifier.TypeGT(*i.TypeGT))
+	}
+	if i.TypeGTE != nil {
+		predicates = append(predicates, identifier.TypeGTE(*i.TypeGTE))
+	}
+	if i.TypeLT != nil {
+		predicates = append(predicates, identifier.TypeLT(*i.TypeLT))
+	}
+	if i.TypeLTE != nil {
+		predicates = append(predicates, identifier.TypeLTE(*i.TypeLTE))
+	}
+	if i.TypeContains != nil {
+		predicates = append(predicates, identifier.TypeContains(*i.TypeContains))
+	}
+	if i.TypeHasPrefix != nil {
+		predicates = append(predicates, identifier.TypeHasPrefix(*i.TypeHasPrefix))
+	}
+	if i.TypeHasSuffix != nil {
+		predicates = append(predicates, identifier.TypeHasSuffix(*i.TypeHasSuffix))
+	}
+	if i.TypeEqualFold != nil {
+		predicates = append(predicates, identifier.TypeEqualFold(*i.TypeEqualFold))
+	}
+	if i.TypeContainsFold != nil {
+		predicates = append(predicates, identifier.TypeContainsFold(*i.TypeContainsFold))
 	}
 	if i.Value != nil {
 		predicates = append(predicates, identifier.ValueEQ(*i.Value))
@@ -1176,6 +1358,16 @@ type LanguageWhereInput struct {
 	IDGTE   *ksuid.ID  `json:"idGTE,omitempty"`
 	IDLT    *ksuid.ID  `json:"idLT,omitempty"`
 	IDLTE   *ksuid.ID  `json:"idLTE,omitempty"`
+
+	// "calibre_id" field predicates.
+	CalibreID      *int64  `json:"calibreID,omitempty"`
+	CalibreIDNEQ   *int64  `json:"calibreIDNEQ,omitempty"`
+	CalibreIDIn    []int64 `json:"calibreIDIn,omitempty"`
+	CalibreIDNotIn []int64 `json:"calibreIDNotIn,omitempty"`
+	CalibreIDGT    *int64  `json:"calibreIDGT,omitempty"`
+	CalibreIDGTE   *int64  `json:"calibreIDGTE,omitempty"`
+	CalibreIDLT    *int64  `json:"calibreIDLT,omitempty"`
+	CalibreIDLTE   *int64  `json:"calibreIDLTE,omitempty"`
 
 	// "name" field predicates.
 	Name             *string  `json:"name,omitempty"`
@@ -1307,6 +1499,30 @@ func (i *LanguageWhereInput) P() (predicate.Language, error) {
 	if i.IDLTE != nil {
 		predicates = append(predicates, language.IDLTE(*i.IDLTE))
 	}
+	if i.CalibreID != nil {
+		predicates = append(predicates, language.CalibreIDEQ(*i.CalibreID))
+	}
+	if i.CalibreIDNEQ != nil {
+		predicates = append(predicates, language.CalibreIDNEQ(*i.CalibreIDNEQ))
+	}
+	if len(i.CalibreIDIn) > 0 {
+		predicates = append(predicates, language.CalibreIDIn(i.CalibreIDIn...))
+	}
+	if len(i.CalibreIDNotIn) > 0 {
+		predicates = append(predicates, language.CalibreIDNotIn(i.CalibreIDNotIn...))
+	}
+	if i.CalibreIDGT != nil {
+		predicates = append(predicates, language.CalibreIDGT(*i.CalibreIDGT))
+	}
+	if i.CalibreIDGTE != nil {
+		predicates = append(predicates, language.CalibreIDGTE(*i.CalibreIDGTE))
+	}
+	if i.CalibreIDLT != nil {
+		predicates = append(predicates, language.CalibreIDLT(*i.CalibreIDLT))
+	}
+	if i.CalibreIDLTE != nil {
+		predicates = append(predicates, language.CalibreIDLTE(*i.CalibreIDLTE))
+	}
 	if i.Name != nil {
 		predicates = append(predicates, language.NameEQ(*i.Name))
 	}
@@ -1431,6 +1647,16 @@ type PublisherWhereInput struct {
 	IDLT    *ksuid.ID  `json:"idLT,omitempty"`
 	IDLTE   *ksuid.ID  `json:"idLTE,omitempty"`
 
+	// "calibre_id" field predicates.
+	CalibreID      *int64  `json:"calibreID,omitempty"`
+	CalibreIDNEQ   *int64  `json:"calibreIDNEQ,omitempty"`
+	CalibreIDIn    []int64 `json:"calibreIDIn,omitempty"`
+	CalibreIDNotIn []int64 `json:"calibreIDNotIn,omitempty"`
+	CalibreIDGT    *int64  `json:"calibreIDGT,omitempty"`
+	CalibreIDGTE   *int64  `json:"calibreIDGTE,omitempty"`
+	CalibreIDLT    *int64  `json:"calibreIDLT,omitempty"`
+	CalibreIDLTE   *int64  `json:"calibreIDLTE,omitempty"`
+
 	// "name" field predicates.
 	Name             *string  `json:"name,omitempty"`
 	NameNEQ          *string  `json:"nameNEQ,omitempty"`
@@ -1546,6 +1772,30 @@ func (i *PublisherWhereInput) P() (predicate.Publisher, error) {
 	if i.IDLTE != nil {
 		predicates = append(predicates, publisher.IDLTE(*i.IDLTE))
 	}
+	if i.CalibreID != nil {
+		predicates = append(predicates, publisher.CalibreIDEQ(*i.CalibreID))
+	}
+	if i.CalibreIDNEQ != nil {
+		predicates = append(predicates, publisher.CalibreIDNEQ(*i.CalibreIDNEQ))
+	}
+	if len(i.CalibreIDIn) > 0 {
+		predicates = append(predicates, publisher.CalibreIDIn(i.CalibreIDIn...))
+	}
+	if len(i.CalibreIDNotIn) > 0 {
+		predicates = append(predicates, publisher.CalibreIDNotIn(i.CalibreIDNotIn...))
+	}
+	if i.CalibreIDGT != nil {
+		predicates = append(predicates, publisher.CalibreIDGT(*i.CalibreIDGT))
+	}
+	if i.CalibreIDGTE != nil {
+		predicates = append(predicates, publisher.CalibreIDGTE(*i.CalibreIDGTE))
+	}
+	if i.CalibreIDLT != nil {
+		predicates = append(predicates, publisher.CalibreIDLT(*i.CalibreIDLT))
+	}
+	if i.CalibreIDLTE != nil {
+		predicates = append(predicates, publisher.CalibreIDLTE(*i.CalibreIDLTE))
+	}
 	if i.Name != nil {
 		predicates = append(predicates, publisher.NameEQ(*i.Name))
 	}
@@ -1630,6 +1880,16 @@ type SeriesWhereInput struct {
 	IDGTE   *ksuid.ID  `json:"idGTE,omitempty"`
 	IDLT    *ksuid.ID  `json:"idLT,omitempty"`
 	IDLTE   *ksuid.ID  `json:"idLTE,omitempty"`
+
+	// "calibre_id" field predicates.
+	CalibreID      *int64  `json:"calibreID,omitempty"`
+	CalibreIDNEQ   *int64  `json:"calibreIDNEQ,omitempty"`
+	CalibreIDIn    []int64 `json:"calibreIDIn,omitempty"`
+	CalibreIDNotIn []int64 `json:"calibreIDNotIn,omitempty"`
+	CalibreIDGT    *int64  `json:"calibreIDGT,omitempty"`
+	CalibreIDGTE   *int64  `json:"calibreIDGTE,omitempty"`
+	CalibreIDLT    *int64  `json:"calibreIDLT,omitempty"`
+	CalibreIDLTE   *int64  `json:"calibreIDLTE,omitempty"`
 
 	// "name" field predicates.
 	Name             *string  `json:"name,omitempty"`
@@ -1760,6 +2020,30 @@ func (i *SeriesWhereInput) P() (predicate.Series, error) {
 	}
 	if i.IDLTE != nil {
 		predicates = append(predicates, series.IDLTE(*i.IDLTE))
+	}
+	if i.CalibreID != nil {
+		predicates = append(predicates, series.CalibreIDEQ(*i.CalibreID))
+	}
+	if i.CalibreIDNEQ != nil {
+		predicates = append(predicates, series.CalibreIDNEQ(*i.CalibreIDNEQ))
+	}
+	if len(i.CalibreIDIn) > 0 {
+		predicates = append(predicates, series.CalibreIDIn(i.CalibreIDIn...))
+	}
+	if len(i.CalibreIDNotIn) > 0 {
+		predicates = append(predicates, series.CalibreIDNotIn(i.CalibreIDNotIn...))
+	}
+	if i.CalibreIDGT != nil {
+		predicates = append(predicates, series.CalibreIDGT(*i.CalibreIDGT))
+	}
+	if i.CalibreIDGTE != nil {
+		predicates = append(predicates, series.CalibreIDGTE(*i.CalibreIDGTE))
+	}
+	if i.CalibreIDLT != nil {
+		predicates = append(predicates, series.CalibreIDLT(*i.CalibreIDLT))
+	}
+	if i.CalibreIDLTE != nil {
+		predicates = append(predicates, series.CalibreIDLTE(*i.CalibreIDLTE))
 	}
 	if i.Name != nil {
 		predicates = append(predicates, series.NameEQ(*i.Name))
@@ -2233,6 +2517,16 @@ type TagWhereInput struct {
 	IDLT    *ksuid.ID  `json:"idLT,omitempty"`
 	IDLTE   *ksuid.ID  `json:"idLTE,omitempty"`
 
+	// "calibre_id" field predicates.
+	CalibreID      *int64  `json:"calibreID,omitempty"`
+	CalibreIDNEQ   *int64  `json:"calibreIDNEQ,omitempty"`
+	CalibreIDIn    []int64 `json:"calibreIDIn,omitempty"`
+	CalibreIDNotIn []int64 `json:"calibreIDNotIn,omitempty"`
+	CalibreIDGT    *int64  `json:"calibreIDGT,omitempty"`
+	CalibreIDGTE   *int64  `json:"calibreIDGTE,omitempty"`
+	CalibreIDLT    *int64  `json:"calibreIDLT,omitempty"`
+	CalibreIDLTE   *int64  `json:"calibreIDLTE,omitempty"`
+
 	// "name" field predicates.
 	Name             *string  `json:"name,omitempty"`
 	NameNEQ          *string  `json:"nameNEQ,omitempty"`
@@ -2347,6 +2641,30 @@ func (i *TagWhereInput) P() (predicate.Tag, error) {
 	}
 	if i.IDLTE != nil {
 		predicates = append(predicates, tag.IDLTE(*i.IDLTE))
+	}
+	if i.CalibreID != nil {
+		predicates = append(predicates, tag.CalibreIDEQ(*i.CalibreID))
+	}
+	if i.CalibreIDNEQ != nil {
+		predicates = append(predicates, tag.CalibreIDNEQ(*i.CalibreIDNEQ))
+	}
+	if len(i.CalibreIDIn) > 0 {
+		predicates = append(predicates, tag.CalibreIDIn(i.CalibreIDIn...))
+	}
+	if len(i.CalibreIDNotIn) > 0 {
+		predicates = append(predicates, tag.CalibreIDNotIn(i.CalibreIDNotIn...))
+	}
+	if i.CalibreIDGT != nil {
+		predicates = append(predicates, tag.CalibreIDGT(*i.CalibreIDGT))
+	}
+	if i.CalibreIDGTE != nil {
+		predicates = append(predicates, tag.CalibreIDGTE(*i.CalibreIDGTE))
+	}
+	if i.CalibreIDLT != nil {
+		predicates = append(predicates, tag.CalibreIDLT(*i.CalibreIDLT))
+	}
+	if i.CalibreIDLTE != nil {
+		predicates = append(predicates, tag.CalibreIDLTE(*i.CalibreIDLTE))
 	}
 	if i.Name != nil {
 		predicates = append(predicates, tag.NameEQ(*i.Name))

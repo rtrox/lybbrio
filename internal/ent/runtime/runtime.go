@@ -37,8 +37,8 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
-	authorMixinFields1 := authorMixin[1].Fields()
-	_ = authorMixinFields1
+	authorMixinFields2 := authorMixin[2].Fields()
+	_ = authorMixinFields2
 	authorFields := schema.Author{}.Fields()
 	_ = authorFields
 	// authorDescName is the schema descriptor for name field.
@@ -46,7 +46,7 @@ func init() {
 	// author.NameValidator is a validator for the "name" field. It is called by the builders before save.
 	author.NameValidator = authorDescName.Validators[0].(func(string) error)
 	// authorDescID is the schema descriptor for id field.
-	authorDescID := authorMixinFields1[0].Descriptor()
+	authorDescID := authorMixinFields2[0].Descriptor()
 	// author.DefaultID holds the default value on creation for the id field.
 	author.DefaultID = authorDescID.Default.(func() ksuid.ID)
 	bookMixin := schema.Book{}.Mixin()
@@ -59,8 +59,8 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
-	bookMixinFields1 := bookMixin[1].Fields()
-	_ = bookMixinFields1
+	bookMixinFields2 := bookMixin[2].Fields()
+	_ = bookMixinFields2
 	bookFields := schema.Book{}.Fields()
 	_ = bookFields
 	// bookDescTitle is the schema descriptor for title field.
@@ -71,12 +71,8 @@ func init() {
 	bookDescPath := bookFields[3].Descriptor()
 	// book.PathValidator is a validator for the "path" field. It is called by the builders before save.
 	book.PathValidator = bookDescPath.Validators[0].(func(string) error)
-	// bookDescSeriesIndex is the schema descriptor for series_index field.
-	bookDescSeriesIndex := bookFields[6].Descriptor()
-	// book.SeriesIndexValidator is a validator for the "series_index" field. It is called by the builders before save.
-	book.SeriesIndexValidator = bookDescSeriesIndex.Validators[0].(func(int) error)
 	// bookDescID is the schema descriptor for id field.
-	bookDescID := bookMixinFields1[0].Descriptor()
+	bookDescID := bookMixinFields2[0].Descriptor()
 	// book.DefaultID holds the default value on creation for the id field.
 	book.DefaultID = bookDescID.Default.(func() ksuid.ID)
 	identifierMixin := schema.Identifier{}.Mixin()
@@ -89,16 +85,20 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
-	identifierMixinFields1 := identifierMixin[1].Fields()
-	_ = identifierMixinFields1
+	identifierMixinFields2 := identifierMixin[2].Fields()
+	_ = identifierMixinFields2
 	identifierFields := schema.Identifier{}.Fields()
 	_ = identifierFields
+	// identifierDescType is the schema descriptor for type field.
+	identifierDescType := identifierFields[0].Descriptor()
+	// identifier.TypeValidator is a validator for the "type" field. It is called by the builders before save.
+	identifier.TypeValidator = identifierDescType.Validators[0].(func(string) error)
 	// identifierDescValue is the schema descriptor for value field.
 	identifierDescValue := identifierFields[1].Descriptor()
 	// identifier.ValueValidator is a validator for the "value" field. It is called by the builders before save.
 	identifier.ValueValidator = identifierDescValue.Validators[0].(func(string) error)
 	// identifierDescID is the schema descriptor for id field.
-	identifierDescID := identifierMixinFields1[0].Descriptor()
+	identifierDescID := identifierMixinFields2[0].Descriptor()
 	// identifier.DefaultID holds the default value on creation for the id field.
 	identifier.DefaultID = identifierDescID.Default.(func() ksuid.ID)
 	languageMixin := schema.Language{}.Mixin()
@@ -111,8 +111,8 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
-	languageMixinFields1 := languageMixin[1].Fields()
-	_ = languageMixinFields1
+	languageMixinFields2 := languageMixin[2].Fields()
+	_ = languageMixinFields2
 	languageFields := schema.Language{}.Fields()
 	_ = languageFields
 	// languageDescName is the schema descriptor for name field.
@@ -124,7 +124,7 @@ func init() {
 	// language.CodeValidator is a validator for the "code" field. It is called by the builders before save.
 	language.CodeValidator = languageDescCode.Validators[0].(func(string) error)
 	// languageDescID is the schema descriptor for id field.
-	languageDescID := languageMixinFields1[0].Descriptor()
+	languageDescID := languageMixinFields2[0].Descriptor()
 	// language.DefaultID holds the default value on creation for the id field.
 	language.DefaultID = languageDescID.Default.(func() ksuid.ID)
 	publisherMixin := schema.Publisher{}.Mixin()
@@ -137,8 +137,8 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
-	publisherMixinFields1 := publisherMixin[1].Fields()
-	_ = publisherMixinFields1
+	publisherMixinFields2 := publisherMixin[2].Fields()
+	_ = publisherMixinFields2
 	publisherFields := schema.Publisher{}.Fields()
 	_ = publisherFields
 	// publisherDescName is the schema descriptor for name field.
@@ -146,7 +146,7 @@ func init() {
 	// publisher.NameValidator is a validator for the "name" field. It is called by the builders before save.
 	publisher.NameValidator = publisherDescName.Validators[0].(func(string) error)
 	// publisherDescID is the schema descriptor for id field.
-	publisherDescID := publisherMixinFields1[0].Descriptor()
+	publisherDescID := publisherMixinFields2[0].Descriptor()
 	// publisher.DefaultID holds the default value on creation for the id field.
 	publisher.DefaultID = publisherDescID.Default.(func() ksuid.ID)
 	seriesMixin := schema.Series{}.Mixin()
@@ -159,8 +159,8 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
-	seriesMixinFields1 := seriesMixin[1].Fields()
-	_ = seriesMixinFields1
+	seriesMixinFields2 := seriesMixin[2].Fields()
+	_ = seriesMixinFields2
 	seriesFields := schema.Series{}.Fields()
 	_ = seriesFields
 	// seriesDescName is the schema descriptor for name field.
@@ -172,7 +172,7 @@ func init() {
 	// series.SortValidator is a validator for the "sort" field. It is called by the builders before save.
 	series.SortValidator = seriesDescSort.Validators[0].(func(string) error)
 	// seriesDescID is the schema descriptor for id field.
-	seriesDescID := seriesMixinFields1[0].Descriptor()
+	seriesDescID := seriesMixinFields2[0].Descriptor()
 	// series.DefaultID holds the default value on creation for the id field.
 	series.DefaultID = seriesDescID.Default.(func() ksuid.ID)
 	shelfMixin := schema.Shelf{}.Mixin()
@@ -213,8 +213,8 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
-	tagMixinFields1 := tagMixin[1].Fields()
-	_ = tagMixinFields1
+	tagMixinFields2 := tagMixin[2].Fields()
+	_ = tagMixinFields2
 	tagFields := schema.Tag{}.Fields()
 	_ = tagFields
 	// tagDescName is the schema descriptor for name field.
@@ -222,7 +222,7 @@ func init() {
 	// tag.NameValidator is a validator for the "name" field. It is called by the builders before save.
 	tag.NameValidator = tagDescName.Validators[0].(func(string) error)
 	// tagDescID is the schema descriptor for id field.
-	tagDescID := tagMixinFields1[0].Descriptor()
+	tagDescID := tagMixinFields2[0].Descriptor()
 	// tag.DefaultID holds the default value on creation for the id field.
 	tag.DefaultID = tagDescID.Default.(func() ksuid.ID)
 	taskMixin := schema.Task{}.Mixin()

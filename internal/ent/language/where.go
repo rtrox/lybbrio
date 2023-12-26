@@ -55,6 +55,11 @@ func IDLTE(id ksuid.ID) predicate.Language {
 	return predicate.Language(sql.FieldLTE(FieldID, id))
 }
 
+// CalibreID applies equality check predicate on the "calibre_id" field. It's identical to CalibreIDEQ.
+func CalibreID(v int64) predicate.Language {
+	return predicate.Language(sql.FieldEQ(FieldCalibreID, v))
+}
+
 // Name applies equality check predicate on the "name" field. It's identical to NameEQ.
 func Name(v string) predicate.Language {
 	return predicate.Language(sql.FieldEQ(FieldName, v))
@@ -63,6 +68,46 @@ func Name(v string) predicate.Language {
 // Code applies equality check predicate on the "code" field. It's identical to CodeEQ.
 func Code(v string) predicate.Language {
 	return predicate.Language(sql.FieldEQ(FieldCode, v))
+}
+
+// CalibreIDEQ applies the EQ predicate on the "calibre_id" field.
+func CalibreIDEQ(v int64) predicate.Language {
+	return predicate.Language(sql.FieldEQ(FieldCalibreID, v))
+}
+
+// CalibreIDNEQ applies the NEQ predicate on the "calibre_id" field.
+func CalibreIDNEQ(v int64) predicate.Language {
+	return predicate.Language(sql.FieldNEQ(FieldCalibreID, v))
+}
+
+// CalibreIDIn applies the In predicate on the "calibre_id" field.
+func CalibreIDIn(vs ...int64) predicate.Language {
+	return predicate.Language(sql.FieldIn(FieldCalibreID, vs...))
+}
+
+// CalibreIDNotIn applies the NotIn predicate on the "calibre_id" field.
+func CalibreIDNotIn(vs ...int64) predicate.Language {
+	return predicate.Language(sql.FieldNotIn(FieldCalibreID, vs...))
+}
+
+// CalibreIDGT applies the GT predicate on the "calibre_id" field.
+func CalibreIDGT(v int64) predicate.Language {
+	return predicate.Language(sql.FieldGT(FieldCalibreID, v))
+}
+
+// CalibreIDGTE applies the GTE predicate on the "calibre_id" field.
+func CalibreIDGTE(v int64) predicate.Language {
+	return predicate.Language(sql.FieldGTE(FieldCalibreID, v))
+}
+
+// CalibreIDLT applies the LT predicate on the "calibre_id" field.
+func CalibreIDLT(v int64) predicate.Language {
+	return predicate.Language(sql.FieldLT(FieldCalibreID, v))
+}
+
+// CalibreIDLTE applies the LTE predicate on the "calibre_id" field.
+func CalibreIDLTE(v int64) predicate.Language {
+	return predicate.Language(sql.FieldLTE(FieldCalibreID, v))
 }
 
 // NameEQ applies the EQ predicate on the "name" field.
@@ -200,7 +245,7 @@ func HasBooks() predicate.Language {
 	return predicate.Language(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, BooksTable, BooksColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, BooksTable, BooksPrimaryKey...),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})

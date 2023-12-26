@@ -17,6 +17,8 @@ type Tag struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID ksuid.ID `json:"id,omitempty"`
+	// CalibreID holds the value of the "calibre_id" field.
+	CalibreID int64 `json:"calibre_id,omitempty"`
 	// Name holds the value of the "name" field.
 	Name string `json:"name,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -52,6 +54,8 @@ func (*Tag) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case tag.FieldCalibreID:
+			values[i] = new(sql.NullInt64)
 		case tag.FieldID, tag.FieldName:
 			values[i] = new(sql.NullString)
 		default:
@@ -74,6 +78,12 @@ func (t *Tag) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value.Valid {
 				t.ID = ksuid.ID(value.String)
+			}
+		case tag.FieldCalibreID:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field calibre_id", values[i])
+			} else if value.Valid {
+				t.CalibreID = value.Int64
 			}
 		case tag.FieldName:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -122,6 +132,9 @@ func (t *Tag) String() string {
 	var builder strings.Builder
 	builder.WriteString("Tag(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", t.ID))
+	builder.WriteString("calibre_id=")
+	builder.WriteString(fmt.Sprintf("%v", t.CalibreID))
+	builder.WriteString(", ")
 	builder.WriteString("name=")
 	builder.WriteString(t.Name)
 	builder.WriteByte(')')

@@ -9,7 +9,6 @@ import (
 	"fmt"
 	"lybbrio"
 	"lybbrio/internal/ent"
-	"lybbrio/internal/ent/identifier"
 	"lybbrio/internal/ent/schema/ksuid"
 	"lybbrio/internal/ent/schema/task_enums"
 	"strconv"
@@ -53,11 +52,12 @@ type DirectiveRoot struct {
 
 type ComplexityRoot struct {
 	Author struct {
-		Books func(childComplexity int, after *entgql.Cursor[ksuid.ID], first *int, before *entgql.Cursor[ksuid.ID], last *int, orderBy []*ent.BookOrder, where *ent.BookWhereInput) int
-		ID    func(childComplexity int) int
-		Link  func(childComplexity int) int
-		Name  func(childComplexity int) int
-		Sort  func(childComplexity int) int
+		Books     func(childComplexity int, after *entgql.Cursor[ksuid.ID], first *int, before *entgql.Cursor[ksuid.ID], last *int, orderBy []*ent.BookOrder, where *ent.BookWhereInput) int
+		CalibreID func(childComplexity int) int
+		ID        func(childComplexity int) int
+		Link      func(childComplexity int) int
+		Name      func(childComplexity int) int
+		Sort      func(childComplexity int) int
 	}
 
 	AuthorConnection struct {
@@ -73,17 +73,20 @@ type ComplexityRoot struct {
 
 	Book struct {
 		Authors       func(childComplexity int) int
+		CalibreID     func(childComplexity int) int
 		Description   func(childComplexity int) int
 		ID            func(childComplexity int) int
-		Identifier    func(childComplexity int) int
+		Identifiers   func(childComplexity int) int
 		Isbn          func(childComplexity int) int
 		Language      func(childComplexity int) int
 		Path          func(childComplexity int) int
 		PublishedDate func(childComplexity int) int
+		Publisher     func(childComplexity int) int
 		Series        func(childComplexity int) int
 		SeriesIndex   func(childComplexity int) int
 		Shelf         func(childComplexity int) int
 		Sort          func(childComplexity int) int
+		Tags          func(childComplexity int) int
 		Title         func(childComplexity int) int
 	}
 
@@ -99,10 +102,11 @@ type ComplexityRoot struct {
 	}
 
 	Identifier struct {
-		Book  func(childComplexity int) int
-		ID    func(childComplexity int) int
-		Type  func(childComplexity int) int
-		Value func(childComplexity int) int
+		Book      func(childComplexity int) int
+		CalibreID func(childComplexity int) int
+		ID        func(childComplexity int) int
+		Type      func(childComplexity int) int
+		Value     func(childComplexity int) int
 	}
 
 	IdentifierConnection struct {
@@ -117,10 +121,11 @@ type ComplexityRoot struct {
 	}
 
 	Language struct {
-		Books func(childComplexity int, after *entgql.Cursor[ksuid.ID], first *int, before *entgql.Cursor[ksuid.ID], last *int, orderBy []*ent.BookOrder, where *ent.BookWhereInput) int
-		Code  func(childComplexity int) int
-		ID    func(childComplexity int) int
-		Name  func(childComplexity int) int
+		Books     func(childComplexity int, after *entgql.Cursor[ksuid.ID], first *int, before *entgql.Cursor[ksuid.ID], last *int, orderBy []*ent.BookOrder, where *ent.BookWhereInput) int
+		CalibreID func(childComplexity int) int
+		Code      func(childComplexity int) int
+		ID        func(childComplexity int) int
+		Name      func(childComplexity int) int
 	}
 
 	LanguageConnection struct {
@@ -143,7 +148,7 @@ type ComplexityRoot struct {
 		CreateSeries     func(childComplexity int, input ent.CreateSeriesInput) int
 		CreateShelf      func(childComplexity int, input lybbrio.CreateShelfInput) int
 		CreateTag        func(childComplexity int, input ent.CreateTagInput) int
-		CreateTask       func(childComplexity int, input ent.CreateTaskInput) int
+		CreateTask       func(childComplexity int, input lybbrio.CreateTaskInput) int
 		CreateUser       func(childComplexity int, input ent.CreateUserInput) int
 		UpdateAuthor     func(childComplexity int, id ksuid.ID, input ent.UpdateAuthorInput) int
 		UpdateBook       func(childComplexity int, id ksuid.ID, input ent.UpdateBookInput) int
@@ -153,7 +158,6 @@ type ComplexityRoot struct {
 		UpdateSeries     func(childComplexity int, id ksuid.ID, input ent.UpdateSeriesInput) int
 		UpdateShelf      func(childComplexity int, id ksuid.ID, input ent.UpdateShelfInput) int
 		UpdateTag        func(childComplexity int, id ksuid.ID, input ent.UpdateTagInput) int
-		UpdateTask       func(childComplexity int, id ksuid.ID, input ent.UpdateTaskInput) int
 		UpdateUser       func(childComplexity int, id ksuid.ID, input ent.UpdateUserInput) int
 	}
 
@@ -165,9 +169,10 @@ type ComplexityRoot struct {
 	}
 
 	Publisher struct {
-		Books func(childComplexity int, after *entgql.Cursor[ksuid.ID], first *int, before *entgql.Cursor[ksuid.ID], last *int, orderBy []*ent.BookOrder, where *ent.BookWhereInput) int
-		ID    func(childComplexity int) int
-		Name  func(childComplexity int) int
+		Books     func(childComplexity int, after *entgql.Cursor[ksuid.ID], first *int, before *entgql.Cursor[ksuid.ID], last *int, orderBy []*ent.BookOrder, where *ent.BookWhereInput) int
+		CalibreID func(childComplexity int) int
+		ID        func(childComplexity int) int
+		Name      func(childComplexity int) int
 	}
 
 	PublisherConnection struct {
@@ -198,10 +203,11 @@ type ComplexityRoot struct {
 	}
 
 	Series struct {
-		Books func(childComplexity int) int
-		ID    func(childComplexity int) int
-		Name  func(childComplexity int) int
-		Sort  func(childComplexity int) int
+		Books     func(childComplexity int) int
+		CalibreID func(childComplexity int) int
+		ID        func(childComplexity int) int
+		Name      func(childComplexity int) int
+		Sort      func(childComplexity int) int
 	}
 
 	SeriesConnection struct {
@@ -237,9 +243,10 @@ type ComplexityRoot struct {
 	}
 
 	Tag struct {
-		Books func(childComplexity int, after *entgql.Cursor[ksuid.ID], first *int, before *entgql.Cursor[ksuid.ID], last *int, orderBy []*ent.BookOrder, where *ent.BookWhereInput) int
-		ID    func(childComplexity int) int
-		Name  func(childComplexity int) int
+		Books     func(childComplexity int, after *entgql.Cursor[ksuid.ID], first *int, before *entgql.Cursor[ksuid.ID], last *int, orderBy []*ent.BookOrder, where *ent.BookWhereInput) int
+		CalibreID func(childComplexity int) int
+		ID        func(childComplexity int) int
+		Name      func(childComplexity int) int
 	}
 
 	TagConnection struct {
@@ -314,8 +321,7 @@ type MutationResolver interface {
 	UpdateIdentifier(ctx context.Context, id ksuid.ID, input ent.UpdateIdentifierInput) (*ent.Identifier, error)
 	CreateUser(ctx context.Context, input ent.CreateUserInput) (*ent.User, error)
 	UpdateUser(ctx context.Context, id ksuid.ID, input ent.UpdateUserInput) (*ent.User, error)
-	CreateTask(ctx context.Context, input ent.CreateTaskInput) (*ent.Task, error)
-	UpdateTask(ctx context.Context, id ksuid.ID, input ent.UpdateTaskInput) (*ent.Task, error)
+	CreateTask(ctx context.Context, input lybbrio.CreateTaskInput) (*ent.Task, error)
 }
 type QueryResolver interface {
 	Node(ctx context.Context, id ksuid.ID) (ent.Noder, error)
@@ -363,6 +369,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Author.Books(childComplexity, args["after"].(*entgql.Cursor[ksuid.ID]), args["first"].(*int), args["before"].(*entgql.Cursor[ksuid.ID]), args["last"].(*int), args["orderBy"].([]*ent.BookOrder), args["where"].(*ent.BookWhereInput)), true
+
+	case "Author.calibreID":
+		if e.complexity.Author.CalibreID == nil {
+			break
+		}
+
+		return e.complexity.Author.CalibreID(childComplexity), true
 
 	case "Author.id":
 		if e.complexity.Author.ID == nil {
@@ -434,6 +447,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Book.Authors(childComplexity), true
 
+	case "Book.calibreID":
+		if e.complexity.Book.CalibreID == nil {
+			break
+		}
+
+		return e.complexity.Book.CalibreID(childComplexity), true
+
 	case "Book.description":
 		if e.complexity.Book.Description == nil {
 			break
@@ -448,12 +468,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Book.ID(childComplexity), true
 
-	case "Book.identifier":
-		if e.complexity.Book.Identifier == nil {
+	case "Book.identifiers":
+		if e.complexity.Book.Identifiers == nil {
 			break
 		}
 
-		return e.complexity.Book.Identifier(childComplexity), true
+		return e.complexity.Book.Identifiers(childComplexity), true
 
 	case "Book.isbn":
 		if e.complexity.Book.Isbn == nil {
@@ -483,6 +503,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Book.PublishedDate(childComplexity), true
 
+	case "Book.publisher":
+		if e.complexity.Book.Publisher == nil {
+			break
+		}
+
+		return e.complexity.Book.Publisher(childComplexity), true
+
 	case "Book.series":
 		if e.complexity.Book.Series == nil {
 			break
@@ -510,6 +537,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Book.Sort(childComplexity), true
+
+	case "Book.tags":
+		if e.complexity.Book.Tags == nil {
+			break
+		}
+
+		return e.complexity.Book.Tags(childComplexity), true
 
 	case "Book.title":
 		if e.complexity.Book.Title == nil {
@@ -559,6 +593,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Identifier.Book(childComplexity), true
+
+	case "Identifier.calibreID":
+		if e.complexity.Identifier.CalibreID == nil {
+			break
+		}
+
+		return e.complexity.Identifier.CalibreID(childComplexity), true
 
 	case "Identifier.id":
 		if e.complexity.Identifier.ID == nil {
@@ -627,6 +668,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Language.Books(childComplexity, args["after"].(*entgql.Cursor[ksuid.ID]), args["first"].(*int), args["before"].(*entgql.Cursor[ksuid.ID]), args["last"].(*int), args["orderBy"].([]*ent.BookOrder), args["where"].(*ent.BookWhereInput)), true
+
+	case "Language.calibreID":
+		if e.complexity.Language.CalibreID == nil {
+			break
+		}
+
+		return e.complexity.Language.CalibreID(childComplexity), true
 
 	case "Language.code":
 		if e.complexity.Language.Code == nil {
@@ -790,7 +838,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.CreateTask(childComplexity, args["input"].(ent.CreateTaskInput)), true
+		return e.complexity.Mutation.CreateTask(childComplexity, args["input"].(lybbrio.CreateTaskInput)), true
 
 	case "Mutation.createUser":
 		if e.complexity.Mutation.CreateUser == nil {
@@ -900,18 +948,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.UpdateTag(childComplexity, args["id"].(ksuid.ID), args["input"].(ent.UpdateTagInput)), true
 
-	case "Mutation.updateTask":
-		if e.complexity.Mutation.UpdateTask == nil {
-			break
-		}
-
-		args, err := ec.field_Mutation_updateTask_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Mutation.UpdateTask(childComplexity, args["id"].(ksuid.ID), args["input"].(ent.UpdateTaskInput)), true
-
 	case "Mutation.updateUser":
 		if e.complexity.Mutation.UpdateUser == nil {
 			break
@@ -963,6 +999,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Publisher.Books(childComplexity, args["after"].(*entgql.Cursor[ksuid.ID]), args["first"].(*int), args["before"].(*entgql.Cursor[ksuid.ID]), args["last"].(*int), args["orderBy"].([]*ent.BookOrder), args["where"].(*ent.BookWhereInput)), true
+
+	case "Publisher.calibreID":
+		if e.complexity.Publisher.CalibreID == nil {
+			break
+		}
+
+		return e.complexity.Publisher.CalibreID(childComplexity), true
 
 	case "Publisher.id":
 		if e.complexity.Publisher.ID == nil {
@@ -1166,6 +1209,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Series.Books(childComplexity), true
 
+	case "Series.calibreID":
+		if e.complexity.Series.CalibreID == nil {
+			break
+		}
+
+		return e.complexity.Series.CalibreID(childComplexity), true
+
 	case "Series.id":
 		if e.complexity.Series.ID == nil {
 			break
@@ -1322,6 +1372,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Tag.Books(childComplexity, args["after"].(*entgql.Cursor[ksuid.ID]), args["first"].(*int), args["before"].(*entgql.Cursor[ksuid.ID]), args["last"].(*int), args["orderBy"].([]*ent.BookOrder), args["where"].(*ent.BookWhereInput)), true
+
+	case "Tag.calibreID":
+		if e.complexity.Tag.CalibreID == nil {
+			break
+		}
+
+		return e.complexity.Tag.CalibreID(childComplexity), true
 
 	case "Tag.id":
 		if e.complexity.Tag.ID == nil {
@@ -1598,7 +1655,6 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputUpdateSeriesInput,
 		ec.unmarshalInputUpdateShelfInput,
 		ec.unmarshalInputUpdateTagInput,
-		ec.unmarshalInputUpdateTaskInput,
 		ec.unmarshalInputUpdateUserInput,
 		ec.unmarshalInputUserOrder,
 		ec.unmarshalInputUserPermissionsWhereInput,
@@ -1704,6 +1760,7 @@ var sources = []*ast.Source{
 directive @goModel(model: String, models: [String!]) on OBJECT | INPUT_OBJECT | SCALAR | ENUM | INTERFACE | UNION
 type Author implements Node {
   id: ID!
+  calibreID: Int!
   name: String!
   sort: String!
   link: String
@@ -1753,6 +1810,7 @@ input AuthorOrder {
 """Properties by which Author connections can be ordered."""
 enum AuthorOrderField {
   NAME
+  BOOKS_COUNT
 }
 """
 AuthorWhereInput is used for filtering Author objects.
@@ -1771,6 +1829,15 @@ input AuthorWhereInput {
   idGTE: ID
   idLT: ID
   idLTE: ID
+  """calibre_id field predicates"""
+  calibreID: Int
+  calibreIDNEQ: Int
+  calibreIDIn: [Int!]
+  calibreIDNotIn: [Int!]
+  calibreIDGT: Int
+  calibreIDGTE: Int
+  calibreIDLT: Int
+  calibreIDLTE: Int
   """name field predicates"""
   name: String
   nameNEQ: String
@@ -1821,17 +1888,20 @@ input AuthorWhereInput {
 }
 type Book implements Node {
   id: ID!
+  calibreID: Int!
   title: String!
   sort: String!
   publishedDate: Time
   path: String!
   isbn: String
   description: String
-  seriesIndex: Int
+  seriesIndex: Float
   authors: [Author!]
+  publisher: [Publisher!]
   series: [Series!]
-  identifier: [Identifier!]
-  language: Language
+  identifiers: [Identifier!]
+  tags: [Tag!]
+  language: [Language!]
   shelf: [Shelf!]
 }
 """A connection to a list of items."""
@@ -1881,6 +1951,15 @@ input BookWhereInput {
   idGTE: ID
   idLT: ID
   idLTE: ID
+  """calibre_id field predicates"""
+  calibreID: Int
+  calibreIDNEQ: Int
+  calibreIDIn: [Int!]
+  calibreIDNotIn: [Int!]
+  calibreIDGT: Int
+  calibreIDGTE: Int
+  calibreIDLT: Int
+  calibreIDLTE: Int
   """title field predicates"""
   title: String
   titleNEQ: String
@@ -1967,25 +2046,31 @@ input BookWhereInput {
   descriptionEqualFold: String
   descriptionContainsFold: String
   """series_index field predicates"""
-  seriesIndex: Int
-  seriesIndexNEQ: Int
-  seriesIndexIn: [Int!]
-  seriesIndexNotIn: [Int!]
-  seriesIndexGT: Int
-  seriesIndexGTE: Int
-  seriesIndexLT: Int
-  seriesIndexLTE: Int
+  seriesIndex: Float
+  seriesIndexNEQ: Float
+  seriesIndexIn: [Float!]
+  seriesIndexNotIn: [Float!]
+  seriesIndexGT: Float
+  seriesIndexGTE: Float
+  seriesIndexLT: Float
+  seriesIndexLTE: Float
   seriesIndexIsNil: Boolean
   seriesIndexNotNil: Boolean
   """authors edge predicates"""
   hasAuthors: Boolean
   hasAuthorsWith: [AuthorWhereInput!]
+  """publisher edge predicates"""
+  hasPublisher: Boolean
+  hasPublisherWith: [PublisherWhereInput!]
   """series edge predicates"""
   hasSeries: Boolean
   hasSeriesWith: [SeriesWhereInput!]
-  """identifier edge predicates"""
-  hasIdentifier: Boolean
-  hasIdentifierWith: [IdentifierWhereInput!]
+  """identifiers edge predicates"""
+  hasIdentifiers: Boolean
+  hasIdentifiersWith: [IdentifierWhereInput!]
+  """tags edge predicates"""
+  hasTags: Boolean
+  hasTagsWith: [TagWhereInput!]
   """language edge predicates"""
   hasLanguage: Boolean
   hasLanguageWith: [LanguageWhereInput!]
@@ -1998,6 +2083,7 @@ CreateAuthorInput is used for create Author object.
 Input was generated by ent.
 """
 input CreateAuthorInput {
+  calibreID: Int!
   name: String!
   sort: String!
   link: String
@@ -2008,17 +2094,20 @@ CreateBookInput is used for create Book object.
 Input was generated by ent.
 """
 input CreateBookInput {
+  calibreID: Int!
   title: String!
   sort: String!
   publishedDate: Time
   path: String!
   isbn: String
   description: String
-  seriesIndex: Int
+  seriesIndex: Float
   authorIDs: [ID!]
+  publisherIDs: [ID!]
   seriesIDs: [ID!]
   identifierIDs: [ID!]
-  languageID: ID
+  tagIDs: [ID!]
+  languageIDs: [ID!]
   shelfIDs: [ID!]
 }
 """
@@ -2026,7 +2115,8 @@ CreateIdentifierInput is used for create Identifier object.
 Input was generated by ent.
 """
 input CreateIdentifierInput {
-  type: IdentifierType!
+  calibreID: Int!
+  type: String!
   value: String!
   bookID: ID!
 }
@@ -2035,6 +2125,7 @@ CreateLanguageInput is used for create Language object.
 Input was generated by ent.
 """
 input CreateLanguageInput {
+  calibreID: Int!
   name: String!
   code: String!
   bookIDs: [ID!]
@@ -2044,6 +2135,7 @@ CreatePublisherInput is used for create Publisher object.
 Input was generated by ent.
 """
 input CreatePublisherInput {
+  calibreID: Int!
   name: String!
   bookIDs: [ID!]
 }
@@ -2052,6 +2144,7 @@ CreateSeriesInput is used for create Series object.
 Input was generated by ent.
 """
 input CreateSeriesInput {
+  calibreID: Int!
   name: String!
   sort: String!
   bookIDs: [ID!]
@@ -2061,27 +2154,9 @@ CreateTagInput is used for create Tag object.
 Input was generated by ent.
 """
 input CreateTagInput {
+  calibreID: Int!
   name: String!
   bookIDs: [ID!]
-}
-"""
-CreateTaskInput is used for create Task object.
-Input was generated by ent.
-"""
-input CreateTaskInput {
-  createTime: Time
-  updateTime: Time
-  type: TaskTaskType
-  status: TaskStatus
-  """Progress of the task. 0-1"""
-  progress: Float
-  """Message of the task"""
-  message: String
-  """Error message of the task"""
-  error: String
-  """Whether this task is created by the system"""
-  issystemtask: Boolean
-  creatorID: ID
 }
 """
 CreateUserInput is used for create User object.
@@ -2101,7 +2176,8 @@ https://relay.dev/graphql/connections.htm#sec-Cursor
 scalar Cursor
 type Identifier implements Node {
   id: ID!
-  type: IdentifierType!
+  calibreID: Int!
+  type: String!
   value: String!
   book: Book!
 }
@@ -2133,13 +2209,6 @@ enum IdentifierOrderField {
   TYPE
   VALUE
 }
-"""IdentifierType is enum for the field type"""
-enum IdentifierType @goModel(model: "lybbrio/internal/ent/identifier.Type") {
-  goodreads
-  amazon
-  isbn
-  lccn
-}
 """
 IdentifierWhereInput is used for filtering Identifier objects.
 Input was generated by ent.
@@ -2157,11 +2226,29 @@ input IdentifierWhereInput {
   idGTE: ID
   idLT: ID
   idLTE: ID
+  """calibre_id field predicates"""
+  calibreID: Int
+  calibreIDNEQ: Int
+  calibreIDIn: [Int!]
+  calibreIDNotIn: [Int!]
+  calibreIDGT: Int
+  calibreIDGTE: Int
+  calibreIDLT: Int
+  calibreIDLTE: Int
   """type field predicates"""
-  type: IdentifierType
-  typeNEQ: IdentifierType
-  typeIn: [IdentifierType!]
-  typeNotIn: [IdentifierType!]
+  type: String
+  typeNEQ: String
+  typeIn: [String!]
+  typeNotIn: [String!]
+  typeGT: String
+  typeGTE: String
+  typeLT: String
+  typeLTE: String
+  typeContains: String
+  typeHasPrefix: String
+  typeHasSuffix: String
+  typeEqualFold: String
+  typeContainsFold: String
   """value field predicates"""
   value: String
   valueNEQ: String
@@ -2182,6 +2269,7 @@ input IdentifierWhereInput {
 }
 type Language implements Node {
   id: ID!
+  calibreID: Int!
   name: String!
   code: String!
   books(
@@ -2249,6 +2337,15 @@ input LanguageWhereInput {
   idGTE: ID
   idLT: ID
   idLTE: ID
+  """calibre_id field predicates"""
+  calibreID: Int
+  calibreIDNEQ: Int
+  calibreIDIn: [Int!]
+  calibreIDNotIn: [Int!]
+  calibreIDGT: Int
+  calibreIDGTE: Int
+  calibreIDLT: Int
+  calibreIDLTE: Int
   """name field predicates"""
   name: String
   nameNEQ: String
@@ -2312,6 +2409,7 @@ type PageInfo {
 }
 type Publisher implements Node {
   id: ID!
+  calibreID: Int!
   name: String!
   books(
     """Returns the elements in the list that come after the specified cursor."""
@@ -2378,6 +2476,15 @@ input PublisherWhereInput {
   idGTE: ID
   idLT: ID
   idLTE: ID
+  """calibre_id field predicates"""
+  calibreID: Int
+  calibreIDNEQ: Int
+  calibreIDIn: [Int!]
+  calibreIDNotIn: [Int!]
+  calibreIDGT: Int
+  calibreIDGTE: Int
+  calibreIDLT: Int
+  calibreIDLTE: Int
   """name field predicates"""
   name: String
   nameNEQ: String
@@ -2582,6 +2689,7 @@ type Query {
 }
 type Series implements Node {
   id: ID!
+  calibreID: Int!
   name: String!
   sort: String!
   books: [Book!]
@@ -2630,6 +2738,15 @@ input SeriesWhereInput {
   idGTE: ID
   idLT: ID
   idLTE: ID
+  """calibre_id field predicates"""
+  calibreID: Int
+  calibreIDNEQ: Int
+  calibreIDIn: [Int!]
+  calibreIDNotIn: [Int!]
+  calibreIDGT: Int
+  calibreIDGTE: Int
+  calibreIDLT: Int
+  calibreIDLTE: Int
   """name field predicates"""
   name: String
   nameNEQ: String
@@ -2790,6 +2907,7 @@ input ShelfWhereInput {
 }
 type Tag implements Node {
   id: ID!
+  calibreID: Int!
   name: String!
   books(
     """Returns the elements in the list that come after the specified cursor."""
@@ -2856,6 +2974,15 @@ input TagWhereInput {
   idGTE: ID
   idLT: ID
   idLTE: ID
+  """calibre_id field predicates"""
+  calibreID: Int
+  calibreIDNEQ: Int
+  calibreIDIn: [Int!]
+  calibreIDNotIn: [Int!]
+  calibreIDGT: Int
+  calibreIDGTE: Int
+  calibreIDLT: Int
+  calibreIDLTE: Int
   """name field predicates"""
   name: String
   nameNEQ: String
@@ -3048,6 +3175,7 @@ UpdateAuthorInput is used for update Author object.
 Input was generated by ent.
 """
 input UpdateAuthorInput {
+  calibreID: Int
   name: String
   sort: String
   link: String
@@ -3061,6 +3189,7 @@ UpdateBookInput is used for update Book object.
 Input was generated by ent.
 """
 input UpdateBookInput {
+  calibreID: Int
   title: String
   sort: String
   publishedDate: Time
@@ -3070,18 +3199,25 @@ input UpdateBookInput {
   clearIsbn: Boolean
   description: String
   clearDescription: Boolean
-  seriesIndex: Int
+  seriesIndex: Float
   clearSeriesIndex: Boolean
   addAuthorIDs: [ID!]
   removeAuthorIDs: [ID!]
   clearAuthors: Boolean
+  addPublisherIDs: [ID!]
+  removePublisherIDs: [ID!]
+  clearPublisher: Boolean
   addSeriesIDs: [ID!]
   removeSeriesIDs: [ID!]
   clearSeries: Boolean
   addIdentifierIDs: [ID!]
   removeIdentifierIDs: [ID!]
-  clearIdentifier: Boolean
-  languageID: ID
+  clearIdentifiers: Boolean
+  addTagIDs: [ID!]
+  removeTagIDs: [ID!]
+  clearTags: Boolean
+  addLanguageIDs: [ID!]
+  removeLanguageIDs: [ID!]
   clearLanguage: Boolean
   addShelfIDs: [ID!]
   removeShelfIDs: [ID!]
@@ -3092,7 +3228,8 @@ UpdateIdentifierInput is used for update Identifier object.
 Input was generated by ent.
 """
 input UpdateIdentifierInput {
-  type: IdentifierType
+  calibreID: Int
+  type: String
   value: String
   bookID: ID
 }
@@ -3101,6 +3238,7 @@ UpdateLanguageInput is used for update Language object.
 Input was generated by ent.
 """
 input UpdateLanguageInput {
+  calibreID: Int
   name: String
   code: String
   addBookIDs: [ID!]
@@ -3112,6 +3250,7 @@ UpdatePublisherInput is used for update Publisher object.
 Input was generated by ent.
 """
 input UpdatePublisherInput {
+  calibreID: Int
   name: String
   addBookIDs: [ID!]
   removeBookIDs: [ID!]
@@ -3122,6 +3261,7 @@ UpdateSeriesInput is used for update Series object.
 Input was generated by ent.
 """
 input UpdateSeriesInput {
+  calibreID: Int
   name: String
   sort: String
   addBookIDs: [ID!]
@@ -3146,29 +3286,11 @@ UpdateTagInput is used for update Tag object.
 Input was generated by ent.
 """
 input UpdateTagInput {
+  calibreID: Int
   name: String
   addBookIDs: [ID!]
   removeBookIDs: [ID!]
   clearBooks: Boolean
-}
-"""
-UpdateTaskInput is used for update Task object.
-Input was generated by ent.
-"""
-input UpdateTaskInput {
-  updateTime: Time
-  type: TaskTaskType
-  status: TaskStatus
-  """Progress of the task. 0-1"""
-  progress: Float
-  """Message of the task"""
-  message: String
-  clearMessage: Boolean
-  """Error message of the task"""
-  error: String
-  clearError: Boolean
-  """Whether this task is created by the system"""
-  issystemtask: Boolean
 }
 """
 UpdateUserInput is used for update User object.
@@ -3317,6 +3439,14 @@ input UserWhereInput {
     bookIDs: [ID!]
 }
 
+"""
+CreateTaskInput is used for create Task object.
+Input was generated by ent.
+"""
+input CreateTaskInput {
+  type: TaskTaskType!
+}
+
 type Mutation {
     # The input and the output are types generated by Ent.
     createBook(input: CreateBookInput!): Book # Delete later, should only be createable from disk.
@@ -3348,7 +3478,6 @@ type Mutation {
     # TODO: User Mutations should have a more bespoke flow.
 
     createTask(input: CreateTaskInput!): Task
-    updateTask(id: ID!, input: UpdateTaskInput!): Task
 }`, BuiltIn: false},
 }
 var parsedSchema = gqlparser.MustLoadSchema(sources...)
@@ -3600,10 +3729,10 @@ func (ec *executionContext) field_Mutation_createTag_args(ctx context.Context, r
 func (ec *executionContext) field_Mutation_createTask_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 ent.CreateTaskInput
+	var arg0 lybbrio.CreateTaskInput
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg0, err = ec.unmarshalNCreateTaskInput2lybbrioᚋinternalᚋentᚐCreateTaskInput(ctx, tmp)
+		arg0, err = ec.unmarshalNCreateTaskInput2lybbrioᚐCreateTaskInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -3811,30 +3940,6 @@ func (ec *executionContext) field_Mutation_updateTag_args(ctx context.Context, r
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
 		arg1, err = ec.unmarshalNUpdateTagInput2lybbrioᚋinternalᚋentᚐUpdateTagInput(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["input"] = arg1
-	return args, nil
-}
-
-func (ec *executionContext) field_Mutation_updateTask_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 ksuid.ID
-	if tmp, ok := rawArgs["id"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
-		arg0, err = ec.unmarshalNID2lybbrioᚋinternalᚋentᚋschemaᚋksuidᚐID(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["id"] = arg0
-	var arg1 ent.UpdateTaskInput
-	if tmp, ok := rawArgs["input"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg1, err = ec.unmarshalNUpdateTaskInput2lybbrioᚋinternalᚋentᚐUpdateTaskInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -4714,6 +4819,50 @@ func (ec *executionContext) fieldContext_Author_id(ctx context.Context, field gr
 	return fc, nil
 }
 
+func (ec *executionContext) _Author_calibreID(ctx context.Context, field graphql.CollectedField, obj *ent.Author) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Author_calibreID(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CalibreID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int64)
+	fc.Result = res
+	return ec.marshalNInt2int64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Author_calibreID(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Author",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Author_name(ctx context.Context, field graphql.CollectedField, obj *ent.Author) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Author_name(ctx, field)
 	if err != nil {
@@ -5089,6 +5238,8 @@ func (ec *executionContext) fieldContext_AuthorEdge_node(ctx context.Context, fi
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Author_id(ctx, field)
+			case "calibreID":
+				return ec.fieldContext_Author_calibreID(ctx, field)
 			case "name":
 				return ec.fieldContext_Author_name(ctx, field)
 			case "sort":
@@ -5187,6 +5338,50 @@ func (ec *executionContext) fieldContext_Book_id(ctx context.Context, field grap
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Book_calibreID(ctx context.Context, field graphql.CollectedField, obj *ent.Book) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Book_calibreID(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CalibreID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int64)
+	fc.Result = res
+	return ec.marshalNInt2int64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Book_calibreID(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Book",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
 		},
 	}
 	return fc, nil
@@ -5470,9 +5665,9 @@ func (ec *executionContext) _Book_seriesIndex(ctx context.Context, field graphql
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(int)
+	res := resTmp.(float64)
 	fc.Result = res
-	return ec.marshalOInt2int(ctx, field.Selections, res)
+	return ec.marshalOFloat2float64(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Book_seriesIndex(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -5482,7 +5677,7 @@ func (ec *executionContext) fieldContext_Book_seriesIndex(ctx context.Context, f
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Int does not have child fields")
+			return nil, errors.New("field of type Float does not have child fields")
 		},
 	}
 	return fc, nil
@@ -5526,6 +5721,8 @@ func (ec *executionContext) fieldContext_Book_authors(ctx context.Context, field
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Author_id(ctx, field)
+			case "calibreID":
+				return ec.fieldContext_Author_calibreID(ctx, field)
 			case "name":
 				return ec.fieldContext_Author_name(ctx, field)
 			case "sort":
@@ -5536,6 +5733,57 @@ func (ec *executionContext) fieldContext_Book_authors(ctx context.Context, field
 				return ec.fieldContext_Author_books(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Author", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Book_publisher(ctx context.Context, field graphql.CollectedField, obj *ent.Book) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Book_publisher(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Publisher(ctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*ent.Publisher)
+	fc.Result = res
+	return ec.marshalOPublisher2ᚕᚖlybbrioᚋinternalᚋentᚐPublisherᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Book_publisher(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Book",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Publisher_id(ctx, field)
+			case "calibreID":
+				return ec.fieldContext_Publisher_calibreID(ctx, field)
+			case "name":
+				return ec.fieldContext_Publisher_name(ctx, field)
+			case "books":
+				return ec.fieldContext_Publisher_books(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Publisher", field.Name)
 		},
 	}
 	return fc, nil
@@ -5579,6 +5827,8 @@ func (ec *executionContext) fieldContext_Book_series(ctx context.Context, field 
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Series_id(ctx, field)
+			case "calibreID":
+				return ec.fieldContext_Series_calibreID(ctx, field)
 			case "name":
 				return ec.fieldContext_Series_name(ctx, field)
 			case "sort":
@@ -5592,8 +5842,8 @@ func (ec *executionContext) fieldContext_Book_series(ctx context.Context, field 
 	return fc, nil
 }
 
-func (ec *executionContext) _Book_identifier(ctx context.Context, field graphql.CollectedField, obj *ent.Book) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Book_identifier(ctx, field)
+func (ec *executionContext) _Book_identifiers(ctx context.Context, field graphql.CollectedField, obj *ent.Book) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Book_identifiers(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -5606,7 +5856,7 @@ func (ec *executionContext) _Book_identifier(ctx context.Context, field graphql.
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Identifier(ctx)
+		return obj.Identifiers(ctx)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -5620,7 +5870,7 @@ func (ec *executionContext) _Book_identifier(ctx context.Context, field graphql.
 	return ec.marshalOIdentifier2ᚕᚖlybbrioᚋinternalᚋentᚐIdentifierᚄ(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Book_identifier(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Book_identifiers(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Book",
 		Field:      field,
@@ -5630,6 +5880,8 @@ func (ec *executionContext) fieldContext_Book_identifier(ctx context.Context, fi
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Identifier_id(ctx, field)
+			case "calibreID":
+				return ec.fieldContext_Identifier_calibreID(ctx, field)
 			case "type":
 				return ec.fieldContext_Identifier_type(ctx, field)
 			case "value":
@@ -5638,6 +5890,57 @@ func (ec *executionContext) fieldContext_Book_identifier(ctx context.Context, fi
 				return ec.fieldContext_Identifier_book(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Identifier", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Book_tags(ctx context.Context, field graphql.CollectedField, obj *ent.Book) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Book_tags(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Tags(ctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*ent.Tag)
+	fc.Result = res
+	return ec.marshalOTag2ᚕᚖlybbrioᚋinternalᚋentᚐTagᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Book_tags(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Book",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Tag_id(ctx, field)
+			case "calibreID":
+				return ec.fieldContext_Tag_calibreID(ctx, field)
+			case "name":
+				return ec.fieldContext_Tag_name(ctx, field)
+			case "books":
+				return ec.fieldContext_Tag_books(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Tag", field.Name)
 		},
 	}
 	return fc, nil
@@ -5666,9 +5969,9 @@ func (ec *executionContext) _Book_language(ctx context.Context, field graphql.Co
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*ent.Language)
+	res := resTmp.([]*ent.Language)
 	fc.Result = res
-	return ec.marshalOLanguage2ᚖlybbrioᚋinternalᚋentᚐLanguage(ctx, field.Selections, res)
+	return ec.marshalOLanguage2ᚕᚖlybbrioᚋinternalᚋentᚐLanguageᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Book_language(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -5681,6 +5984,8 @@ func (ec *executionContext) fieldContext_Book_language(ctx context.Context, fiel
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Language_id(ctx, field)
+			case "calibreID":
+				return ec.fieldContext_Language_calibreID(ctx, field)
 			case "name":
 				return ec.fieldContext_Language_name(ctx, field)
 			case "code":
@@ -5934,6 +6239,8 @@ func (ec *executionContext) fieldContext_BookEdge_node(ctx context.Context, fiel
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Book_id(ctx, field)
+			case "calibreID":
+				return ec.fieldContext_Book_calibreID(ctx, field)
 			case "title":
 				return ec.fieldContext_Book_title(ctx, field)
 			case "sort":
@@ -5950,10 +6257,14 @@ func (ec *executionContext) fieldContext_BookEdge_node(ctx context.Context, fiel
 				return ec.fieldContext_Book_seriesIndex(ctx, field)
 			case "authors":
 				return ec.fieldContext_Book_authors(ctx, field)
+			case "publisher":
+				return ec.fieldContext_Book_publisher(ctx, field)
 			case "series":
 				return ec.fieldContext_Book_series(ctx, field)
-			case "identifier":
-				return ec.fieldContext_Book_identifier(ctx, field)
+			case "identifiers":
+				return ec.fieldContext_Book_identifiers(ctx, field)
+			case "tags":
+				return ec.fieldContext_Book_tags(ctx, field)
 			case "language":
 				return ec.fieldContext_Book_language(ctx, field)
 			case "shelf":
@@ -6053,6 +6364,50 @@ func (ec *executionContext) fieldContext_Identifier_id(ctx context.Context, fiel
 	return fc, nil
 }
 
+func (ec *executionContext) _Identifier_calibreID(ctx context.Context, field graphql.CollectedField, obj *ent.Identifier) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Identifier_calibreID(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CalibreID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int64)
+	fc.Result = res
+	return ec.marshalNInt2int64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Identifier_calibreID(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Identifier",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Identifier_type(ctx context.Context, field graphql.CollectedField, obj *ent.Identifier) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Identifier_type(ctx, field)
 	if err != nil {
@@ -6079,9 +6434,9 @@ func (ec *executionContext) _Identifier_type(ctx context.Context, field graphql.
 		}
 		return graphql.Null
 	}
-	res := resTmp.(identifier.Type)
+	res := resTmp.(string)
 	fc.Result = res
-	return ec.marshalNIdentifierType2lybbrioᚋinternalᚋentᚋidentifierᚐType(ctx, field.Selections, res)
+	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Identifier_type(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -6091,7 +6446,7 @@ func (ec *executionContext) fieldContext_Identifier_type(ctx context.Context, fi
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type IdentifierType does not have child fields")
+			return nil, errors.New("field of type String does not have child fields")
 		},
 	}
 	return fc, nil
@@ -6182,6 +6537,8 @@ func (ec *executionContext) fieldContext_Identifier_book(ctx context.Context, fi
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Book_id(ctx, field)
+			case "calibreID":
+				return ec.fieldContext_Book_calibreID(ctx, field)
 			case "title":
 				return ec.fieldContext_Book_title(ctx, field)
 			case "sort":
@@ -6198,10 +6555,14 @@ func (ec *executionContext) fieldContext_Identifier_book(ctx context.Context, fi
 				return ec.fieldContext_Book_seriesIndex(ctx, field)
 			case "authors":
 				return ec.fieldContext_Book_authors(ctx, field)
+			case "publisher":
+				return ec.fieldContext_Book_publisher(ctx, field)
 			case "series":
 				return ec.fieldContext_Book_series(ctx, field)
-			case "identifier":
-				return ec.fieldContext_Book_identifier(ctx, field)
+			case "identifiers":
+				return ec.fieldContext_Book_identifiers(ctx, field)
+			case "tags":
+				return ec.fieldContext_Book_tags(ctx, field)
 			case "language":
 				return ec.fieldContext_Book_language(ctx, field)
 			case "shelf":
@@ -6396,6 +6757,8 @@ func (ec *executionContext) fieldContext_IdentifierEdge_node(ctx context.Context
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Identifier_id(ctx, field)
+			case "calibreID":
+				return ec.fieldContext_Identifier_calibreID(ctx, field)
 			case "type":
 				return ec.fieldContext_Identifier_type(ctx, field)
 			case "value":
@@ -6492,6 +6855,50 @@ func (ec *executionContext) fieldContext_Language_id(ctx context.Context, field 
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Language_calibreID(ctx context.Context, field graphql.CollectedField, obj *ent.Language) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Language_calibreID(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CalibreID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int64)
+	fc.Result = res
+	return ec.marshalNInt2int64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Language_calibreID(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Language",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
 		},
 	}
 	return fc, nil
@@ -6831,6 +7238,8 @@ func (ec *executionContext) fieldContext_LanguageEdge_node(ctx context.Context, 
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Language_id(ctx, field)
+			case "calibreID":
+				return ec.fieldContext_Language_calibreID(ctx, field)
 			case "name":
 				return ec.fieldContext_Language_name(ctx, field)
 			case "code":
@@ -6926,6 +7335,8 @@ func (ec *executionContext) fieldContext_Mutation_createBook(ctx context.Context
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Book_id(ctx, field)
+			case "calibreID":
+				return ec.fieldContext_Book_calibreID(ctx, field)
 			case "title":
 				return ec.fieldContext_Book_title(ctx, field)
 			case "sort":
@@ -6942,10 +7353,14 @@ func (ec *executionContext) fieldContext_Mutation_createBook(ctx context.Context
 				return ec.fieldContext_Book_seriesIndex(ctx, field)
 			case "authors":
 				return ec.fieldContext_Book_authors(ctx, field)
+			case "publisher":
+				return ec.fieldContext_Book_publisher(ctx, field)
 			case "series":
 				return ec.fieldContext_Book_series(ctx, field)
-			case "identifier":
-				return ec.fieldContext_Book_identifier(ctx, field)
+			case "identifiers":
+				return ec.fieldContext_Book_identifiers(ctx, field)
+			case "tags":
+				return ec.fieldContext_Book_tags(ctx, field)
 			case "language":
 				return ec.fieldContext_Book_language(ctx, field)
 			case "shelf":
@@ -7006,6 +7421,8 @@ func (ec *executionContext) fieldContext_Mutation_updateBook(ctx context.Context
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Book_id(ctx, field)
+			case "calibreID":
+				return ec.fieldContext_Book_calibreID(ctx, field)
 			case "title":
 				return ec.fieldContext_Book_title(ctx, field)
 			case "sort":
@@ -7022,10 +7439,14 @@ func (ec *executionContext) fieldContext_Mutation_updateBook(ctx context.Context
 				return ec.fieldContext_Book_seriesIndex(ctx, field)
 			case "authors":
 				return ec.fieldContext_Book_authors(ctx, field)
+			case "publisher":
+				return ec.fieldContext_Book_publisher(ctx, field)
 			case "series":
 				return ec.fieldContext_Book_series(ctx, field)
-			case "identifier":
-				return ec.fieldContext_Book_identifier(ctx, field)
+			case "identifiers":
+				return ec.fieldContext_Book_identifiers(ctx, field)
+			case "tags":
+				return ec.fieldContext_Book_tags(ctx, field)
 			case "language":
 				return ec.fieldContext_Book_language(ctx, field)
 			case "shelf":
@@ -7086,6 +7507,8 @@ func (ec *executionContext) fieldContext_Mutation_createAuthor(ctx context.Conte
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Author_id(ctx, field)
+			case "calibreID":
+				return ec.fieldContext_Author_calibreID(ctx, field)
 			case "name":
 				return ec.fieldContext_Author_name(ctx, field)
 			case "sort":
@@ -7150,6 +7573,8 @@ func (ec *executionContext) fieldContext_Mutation_updateAuthor(ctx context.Conte
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Author_id(ctx, field)
+			case "calibreID":
+				return ec.fieldContext_Author_calibreID(ctx, field)
 			case "name":
 				return ec.fieldContext_Author_name(ctx, field)
 			case "sort":
@@ -7350,6 +7775,8 @@ func (ec *executionContext) fieldContext_Mutation_createTag(ctx context.Context,
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Tag_id(ctx, field)
+			case "calibreID":
+				return ec.fieldContext_Tag_calibreID(ctx, field)
 			case "name":
 				return ec.fieldContext_Tag_name(ctx, field)
 			case "books":
@@ -7410,6 +7837,8 @@ func (ec *executionContext) fieldContext_Mutation_updateTag(ctx context.Context,
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Tag_id(ctx, field)
+			case "calibreID":
+				return ec.fieldContext_Tag_calibreID(ctx, field)
 			case "name":
 				return ec.fieldContext_Tag_name(ctx, field)
 			case "books":
@@ -7470,6 +7899,8 @@ func (ec *executionContext) fieldContext_Mutation_createPublisher(ctx context.Co
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Publisher_id(ctx, field)
+			case "calibreID":
+				return ec.fieldContext_Publisher_calibreID(ctx, field)
 			case "name":
 				return ec.fieldContext_Publisher_name(ctx, field)
 			case "books":
@@ -7530,6 +7961,8 @@ func (ec *executionContext) fieldContext_Mutation_updatePublisher(ctx context.Co
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Publisher_id(ctx, field)
+			case "calibreID":
+				return ec.fieldContext_Publisher_calibreID(ctx, field)
 			case "name":
 				return ec.fieldContext_Publisher_name(ctx, field)
 			case "books":
@@ -7590,6 +8023,8 @@ func (ec *executionContext) fieldContext_Mutation_createLanguage(ctx context.Con
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Language_id(ctx, field)
+			case "calibreID":
+				return ec.fieldContext_Language_calibreID(ctx, field)
 			case "name":
 				return ec.fieldContext_Language_name(ctx, field)
 			case "code":
@@ -7652,6 +8087,8 @@ func (ec *executionContext) fieldContext_Mutation_updateLanguage(ctx context.Con
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Language_id(ctx, field)
+			case "calibreID":
+				return ec.fieldContext_Language_calibreID(ctx, field)
 			case "name":
 				return ec.fieldContext_Language_name(ctx, field)
 			case "code":
@@ -7714,6 +8151,8 @@ func (ec *executionContext) fieldContext_Mutation_createSeries(ctx context.Conte
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Series_id(ctx, field)
+			case "calibreID":
+				return ec.fieldContext_Series_calibreID(ctx, field)
 			case "name":
 				return ec.fieldContext_Series_name(ctx, field)
 			case "sort":
@@ -7776,6 +8215,8 @@ func (ec *executionContext) fieldContext_Mutation_updateSeries(ctx context.Conte
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Series_id(ctx, field)
+			case "calibreID":
+				return ec.fieldContext_Series_calibreID(ctx, field)
 			case "name":
 				return ec.fieldContext_Series_name(ctx, field)
 			case "sort":
@@ -7838,6 +8279,8 @@ func (ec *executionContext) fieldContext_Mutation_createIdentifier(ctx context.C
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Identifier_id(ctx, field)
+			case "calibreID":
+				return ec.fieldContext_Identifier_calibreID(ctx, field)
 			case "type":
 				return ec.fieldContext_Identifier_type(ctx, field)
 			case "value":
@@ -7900,6 +8343,8 @@ func (ec *executionContext) fieldContext_Mutation_updateIdentifier(ctx context.C
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Identifier_id(ctx, field)
+			case "calibreID":
+				return ec.fieldContext_Identifier_calibreID(ctx, field)
 			case "type":
 				return ec.fieldContext_Identifier_type(ctx, field)
 			case "value":
@@ -8066,7 +8511,7 @@ func (ec *executionContext) _Mutation_createTask(ctx context.Context, field grap
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().CreateTask(rctx, fc.Args["input"].(ent.CreateTaskInput))
+		return ec.resolvers.Mutation().CreateTask(rctx, fc.Args["input"].(lybbrio.CreateTaskInput))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -8122,82 +8567,6 @@ func (ec *executionContext) fieldContext_Mutation_createTask(ctx context.Context
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_createTask_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return fc, err
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Mutation_updateTask(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Mutation_updateTask(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().UpdateTask(rctx, fc.Args["id"].(ksuid.ID), fc.Args["input"].(ent.UpdateTaskInput))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*ent.Task)
-	fc.Result = res
-	return ec.marshalOTask2ᚖlybbrioᚋinternalᚋentᚐTask(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Mutation_updateTask(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Mutation",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "id":
-				return ec.fieldContext_Task_id(ctx, field)
-			case "createTime":
-				return ec.fieldContext_Task_createTime(ctx, field)
-			case "updateTime":
-				return ec.fieldContext_Task_updateTime(ctx, field)
-			case "type":
-				return ec.fieldContext_Task_type(ctx, field)
-			case "status":
-				return ec.fieldContext_Task_status(ctx, field)
-			case "progress":
-				return ec.fieldContext_Task_progress(ctx, field)
-			case "message":
-				return ec.fieldContext_Task_message(ctx, field)
-			case "error":
-				return ec.fieldContext_Task_error(ctx, field)
-			case "createdby":
-				return ec.fieldContext_Task_createdby(ctx, field)
-			case "issystemtask":
-				return ec.fieldContext_Task_issystemtask(ctx, field)
-			case "creator":
-				return ec.fieldContext_Task_creator(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type Task", field.Name)
-		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Mutation_updateTask_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -8413,6 +8782,50 @@ func (ec *executionContext) fieldContext_Publisher_id(ctx context.Context, field
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Publisher_calibreID(ctx context.Context, field graphql.CollectedField, obj *ent.Publisher) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Publisher_calibreID(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CalibreID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int64)
+	fc.Result = res
+	return ec.marshalNInt2int64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Publisher_calibreID(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Publisher",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
 		},
 	}
 	return fc, nil
@@ -8708,6 +9121,8 @@ func (ec *executionContext) fieldContext_PublisherEdge_node(ctx context.Context,
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Publisher_id(ctx, field)
+			case "calibreID":
+				return ec.fieldContext_Publisher_calibreID(ctx, field)
 			case "name":
 				return ec.fieldContext_Publisher_name(ctx, field)
 			case "books":
@@ -9722,6 +10137,50 @@ func (ec *executionContext) fieldContext_Series_id(ctx context.Context, field gr
 	return fc, nil
 }
 
+func (ec *executionContext) _Series_calibreID(ctx context.Context, field graphql.CollectedField, obj *ent.Series) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Series_calibreID(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CalibreID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int64)
+	fc.Result = res
+	return ec.marshalNInt2int64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Series_calibreID(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Series",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Series_name(ctx context.Context, field graphql.CollectedField, obj *ent.Series) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Series_name(ctx, field)
 	if err != nil {
@@ -9848,6 +10307,8 @@ func (ec *executionContext) fieldContext_Series_books(ctx context.Context, field
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Book_id(ctx, field)
+			case "calibreID":
+				return ec.fieldContext_Book_calibreID(ctx, field)
 			case "title":
 				return ec.fieldContext_Book_title(ctx, field)
 			case "sort":
@@ -9864,10 +10325,14 @@ func (ec *executionContext) fieldContext_Series_books(ctx context.Context, field
 				return ec.fieldContext_Book_seriesIndex(ctx, field)
 			case "authors":
 				return ec.fieldContext_Book_authors(ctx, field)
+			case "publisher":
+				return ec.fieldContext_Book_publisher(ctx, field)
 			case "series":
 				return ec.fieldContext_Book_series(ctx, field)
-			case "identifier":
-				return ec.fieldContext_Book_identifier(ctx, field)
+			case "identifiers":
+				return ec.fieldContext_Book_identifiers(ctx, field)
+			case "tags":
+				return ec.fieldContext_Book_tags(ctx, field)
 			case "language":
 				return ec.fieldContext_Book_language(ctx, field)
 			case "shelf":
@@ -10062,6 +10527,8 @@ func (ec *executionContext) fieldContext_SeriesEdge_node(ctx context.Context, fi
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Series_id(ctx, field)
+			case "calibreID":
+				return ec.fieldContext_Series_calibreID(ctx, field)
 			case "name":
 				return ec.fieldContext_Series_name(ctx, field)
 			case "sort":
@@ -10745,6 +11212,50 @@ func (ec *executionContext) fieldContext_Tag_id(ctx context.Context, field graph
 	return fc, nil
 }
 
+func (ec *executionContext) _Tag_calibreID(ctx context.Context, field graphql.CollectedField, obj *ent.Tag) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Tag_calibreID(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CalibreID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int64)
+	fc.Result = res
+	return ec.marshalNInt2int64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Tag_calibreID(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Tag",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Tag_name(ctx context.Context, field graphql.CollectedField, obj *ent.Tag) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Tag_name(ctx, field)
 	if err != nil {
@@ -11035,6 +11546,8 @@ func (ec *executionContext) fieldContext_TagEdge_node(ctx context.Context, field
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Tag_id(ctx, field)
+			case "calibreID":
+				return ec.fieldContext_Tag_calibreID(ctx, field)
 			case "name":
 				return ec.fieldContext_Tag_name(ctx, field)
 			case "books":
@@ -14117,7 +14630,7 @@ func (ec *executionContext) unmarshalInputAuthorWhereInput(ctx context.Context, 
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "name", "nameNEQ", "nameIn", "nameNotIn", "nameGT", "nameGTE", "nameLT", "nameLTE", "nameContains", "nameHasPrefix", "nameHasSuffix", "nameEqualFold", "nameContainsFold", "sort", "sortNEQ", "sortIn", "sortNotIn", "sortGT", "sortGTE", "sortLT", "sortLTE", "sortContains", "sortHasPrefix", "sortHasSuffix", "sortEqualFold", "sortContainsFold", "link", "linkNEQ", "linkIn", "linkNotIn", "linkGT", "linkGTE", "linkLT", "linkLTE", "linkContains", "linkHasPrefix", "linkHasSuffix", "linkIsNil", "linkNotNil", "linkEqualFold", "linkContainsFold", "hasBooks", "hasBooksWith"}
+	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "calibreID", "calibreIDNEQ", "calibreIDIn", "calibreIDNotIn", "calibreIDGT", "calibreIDGTE", "calibreIDLT", "calibreIDLTE", "name", "nameNEQ", "nameIn", "nameNotIn", "nameGT", "nameGTE", "nameLT", "nameLTE", "nameContains", "nameHasPrefix", "nameHasSuffix", "nameEqualFold", "nameContainsFold", "sort", "sortNEQ", "sortIn", "sortNotIn", "sortGT", "sortGTE", "sortLT", "sortLTE", "sortContains", "sortHasPrefix", "sortHasSuffix", "sortEqualFold", "sortContainsFold", "link", "linkNEQ", "linkIn", "linkNotIn", "linkGT", "linkGTE", "linkLT", "linkLTE", "linkContains", "linkHasPrefix", "linkHasSuffix", "linkIsNil", "linkNotNil", "linkEqualFold", "linkContainsFold", "hasBooks", "hasBooksWith"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -14201,6 +14714,62 @@ func (ec *executionContext) unmarshalInputAuthorWhereInput(ctx context.Context, 
 				return it, err
 			}
 			it.IDLTE = data
+		case "calibreID":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("calibreID"))
+			data, err := ec.unmarshalOInt2ᚖint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CalibreID = data
+		case "calibreIDNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("calibreIDNEQ"))
+			data, err := ec.unmarshalOInt2ᚖint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CalibreIDNEQ = data
+		case "calibreIDIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("calibreIDIn"))
+			data, err := ec.unmarshalOInt2ᚕint64ᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CalibreIDIn = data
+		case "calibreIDNotIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("calibreIDNotIn"))
+			data, err := ec.unmarshalOInt2ᚕint64ᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CalibreIDNotIn = data
+		case "calibreIDGT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("calibreIDGT"))
+			data, err := ec.unmarshalOInt2ᚖint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CalibreIDGT = data
+		case "calibreIDGTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("calibreIDGTE"))
+			data, err := ec.unmarshalOInt2ᚖint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CalibreIDGTE = data
+		case "calibreIDLT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("calibreIDLT"))
+			data, err := ec.unmarshalOInt2ᚖint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CalibreIDLT = data
+		case "calibreIDLTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("calibreIDLTE"))
+			data, err := ec.unmarshalOInt2ᚖint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CalibreIDLTE = data
 		case "name":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
 			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
@@ -14553,7 +15122,7 @@ func (ec *executionContext) unmarshalInputBookWhereInput(ctx context.Context, ob
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "title", "titleNEQ", "titleIn", "titleNotIn", "titleGT", "titleGTE", "titleLT", "titleLTE", "titleContains", "titleHasPrefix", "titleHasSuffix", "titleEqualFold", "titleContainsFold", "sort", "sortNEQ", "sortIn", "sortNotIn", "sortGT", "sortGTE", "sortLT", "sortLTE", "sortContains", "sortHasPrefix", "sortHasSuffix", "sortEqualFold", "sortContainsFold", "publishedDate", "publishedDateNEQ", "publishedDateIn", "publishedDateNotIn", "publishedDateGT", "publishedDateGTE", "publishedDateLT", "publishedDateLTE", "publishedDateIsNil", "publishedDateNotNil", "path", "pathNEQ", "pathIn", "pathNotIn", "pathGT", "pathGTE", "pathLT", "pathLTE", "pathContains", "pathHasPrefix", "pathHasSuffix", "pathEqualFold", "pathContainsFold", "isbn", "isbnNEQ", "isbnIn", "isbnNotIn", "isbnGT", "isbnGTE", "isbnLT", "isbnLTE", "isbnContains", "isbnHasPrefix", "isbnHasSuffix", "isbnIsNil", "isbnNotNil", "isbnEqualFold", "isbnContainsFold", "description", "descriptionNEQ", "descriptionIn", "descriptionNotIn", "descriptionGT", "descriptionGTE", "descriptionLT", "descriptionLTE", "descriptionContains", "descriptionHasPrefix", "descriptionHasSuffix", "descriptionIsNil", "descriptionNotNil", "descriptionEqualFold", "descriptionContainsFold", "seriesIndex", "seriesIndexNEQ", "seriesIndexIn", "seriesIndexNotIn", "seriesIndexGT", "seriesIndexGTE", "seriesIndexLT", "seriesIndexLTE", "seriesIndexIsNil", "seriesIndexNotNil", "hasAuthors", "hasAuthorsWith", "hasSeries", "hasSeriesWith", "hasIdentifier", "hasIdentifierWith", "hasLanguage", "hasLanguageWith", "hasShelf", "hasShelfWith"}
+	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "calibreID", "calibreIDNEQ", "calibreIDIn", "calibreIDNotIn", "calibreIDGT", "calibreIDGTE", "calibreIDLT", "calibreIDLTE", "title", "titleNEQ", "titleIn", "titleNotIn", "titleGT", "titleGTE", "titleLT", "titleLTE", "titleContains", "titleHasPrefix", "titleHasSuffix", "titleEqualFold", "titleContainsFold", "sort", "sortNEQ", "sortIn", "sortNotIn", "sortGT", "sortGTE", "sortLT", "sortLTE", "sortContains", "sortHasPrefix", "sortHasSuffix", "sortEqualFold", "sortContainsFold", "publishedDate", "publishedDateNEQ", "publishedDateIn", "publishedDateNotIn", "publishedDateGT", "publishedDateGTE", "publishedDateLT", "publishedDateLTE", "publishedDateIsNil", "publishedDateNotNil", "path", "pathNEQ", "pathIn", "pathNotIn", "pathGT", "pathGTE", "pathLT", "pathLTE", "pathContains", "pathHasPrefix", "pathHasSuffix", "pathEqualFold", "pathContainsFold", "isbn", "isbnNEQ", "isbnIn", "isbnNotIn", "isbnGT", "isbnGTE", "isbnLT", "isbnLTE", "isbnContains", "isbnHasPrefix", "isbnHasSuffix", "isbnIsNil", "isbnNotNil", "isbnEqualFold", "isbnContainsFold", "description", "descriptionNEQ", "descriptionIn", "descriptionNotIn", "descriptionGT", "descriptionGTE", "descriptionLT", "descriptionLTE", "descriptionContains", "descriptionHasPrefix", "descriptionHasSuffix", "descriptionIsNil", "descriptionNotNil", "descriptionEqualFold", "descriptionContainsFold", "seriesIndex", "seriesIndexNEQ", "seriesIndexIn", "seriesIndexNotIn", "seriesIndexGT", "seriesIndexGTE", "seriesIndexLT", "seriesIndexLTE", "seriesIndexIsNil", "seriesIndexNotNil", "hasAuthors", "hasAuthorsWith", "hasPublisher", "hasPublisherWith", "hasSeries", "hasSeriesWith", "hasIdentifiers", "hasIdentifiersWith", "hasTags", "hasTagsWith", "hasLanguage", "hasLanguageWith", "hasShelf", "hasShelfWith"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -14637,6 +15206,62 @@ func (ec *executionContext) unmarshalInputBookWhereInput(ctx context.Context, ob
 				return it, err
 			}
 			it.IDLTE = data
+		case "calibreID":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("calibreID"))
+			data, err := ec.unmarshalOInt2ᚖint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CalibreID = data
+		case "calibreIDNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("calibreIDNEQ"))
+			data, err := ec.unmarshalOInt2ᚖint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CalibreIDNEQ = data
+		case "calibreIDIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("calibreIDIn"))
+			data, err := ec.unmarshalOInt2ᚕint64ᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CalibreIDIn = data
+		case "calibreIDNotIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("calibreIDNotIn"))
+			data, err := ec.unmarshalOInt2ᚕint64ᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CalibreIDNotIn = data
+		case "calibreIDGT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("calibreIDGT"))
+			data, err := ec.unmarshalOInt2ᚖint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CalibreIDGT = data
+		case "calibreIDGTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("calibreIDGTE"))
+			data, err := ec.unmarshalOInt2ᚖint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CalibreIDGTE = data
+		case "calibreIDLT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("calibreIDLT"))
+			data, err := ec.unmarshalOInt2ᚖint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CalibreIDLT = data
+		case "calibreIDLTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("calibreIDLTE"))
+			data, err := ec.unmarshalOInt2ᚖint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CalibreIDLTE = data
 		case "title":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("title"))
 			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
@@ -15192,56 +15817,56 @@ func (ec *executionContext) unmarshalInputBookWhereInput(ctx context.Context, ob
 			it.DescriptionContainsFold = data
 		case "seriesIndex":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("seriesIndex"))
-			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+			data, err := ec.unmarshalOFloat2ᚖfloat64(ctx, v)
 			if err != nil {
 				return it, err
 			}
 			it.SeriesIndex = data
 		case "seriesIndexNEQ":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("seriesIndexNEQ"))
-			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+			data, err := ec.unmarshalOFloat2ᚖfloat64(ctx, v)
 			if err != nil {
 				return it, err
 			}
 			it.SeriesIndexNEQ = data
 		case "seriesIndexIn":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("seriesIndexIn"))
-			data, err := ec.unmarshalOInt2ᚕintᚄ(ctx, v)
+			data, err := ec.unmarshalOFloat2ᚕfloat64ᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
 			it.SeriesIndexIn = data
 		case "seriesIndexNotIn":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("seriesIndexNotIn"))
-			data, err := ec.unmarshalOInt2ᚕintᚄ(ctx, v)
+			data, err := ec.unmarshalOFloat2ᚕfloat64ᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
 			it.SeriesIndexNotIn = data
 		case "seriesIndexGT":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("seriesIndexGT"))
-			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+			data, err := ec.unmarshalOFloat2ᚖfloat64(ctx, v)
 			if err != nil {
 				return it, err
 			}
 			it.SeriesIndexGT = data
 		case "seriesIndexGTE":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("seriesIndexGTE"))
-			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+			data, err := ec.unmarshalOFloat2ᚖfloat64(ctx, v)
 			if err != nil {
 				return it, err
 			}
 			it.SeriesIndexGTE = data
 		case "seriesIndexLT":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("seriesIndexLT"))
-			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+			data, err := ec.unmarshalOFloat2ᚖfloat64(ctx, v)
 			if err != nil {
 				return it, err
 			}
 			it.SeriesIndexLT = data
 		case "seriesIndexLTE":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("seriesIndexLTE"))
-			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+			data, err := ec.unmarshalOFloat2ᚖfloat64(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -15274,6 +15899,20 @@ func (ec *executionContext) unmarshalInputBookWhereInput(ctx context.Context, ob
 				return it, err
 			}
 			it.HasAuthorsWith = data
+		case "hasPublisher":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasPublisher"))
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HasPublisher = data
+		case "hasPublisherWith":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasPublisherWith"))
+			data, err := ec.unmarshalOPublisherWhereInput2ᚕᚖlybbrioᚋinternalᚋentᚐPublisherWhereInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HasPublisherWith = data
 		case "hasSeries":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasSeries"))
 			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
@@ -15288,20 +15927,34 @@ func (ec *executionContext) unmarshalInputBookWhereInput(ctx context.Context, ob
 				return it, err
 			}
 			it.HasSeriesWith = data
-		case "hasIdentifier":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasIdentifier"))
+		case "hasIdentifiers":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasIdentifiers"))
 			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.HasIdentifier = data
-		case "hasIdentifierWith":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasIdentifierWith"))
+			it.HasIdentifiers = data
+		case "hasIdentifiersWith":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasIdentifiersWith"))
 			data, err := ec.unmarshalOIdentifierWhereInput2ᚕᚖlybbrioᚋinternalᚋentᚐIdentifierWhereInputᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.HasIdentifierWith = data
+			it.HasIdentifiersWith = data
+		case "hasTags":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasTags"))
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HasTags = data
+		case "hasTagsWith":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasTagsWith"))
+			data, err := ec.unmarshalOTagWhereInput2ᚕᚖlybbrioᚋinternalᚋentᚐTagWhereInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HasTagsWith = data
 		case "hasLanguage":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasLanguage"))
 			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
@@ -15343,13 +15996,20 @@ func (ec *executionContext) unmarshalInputCreateAuthorInput(ctx context.Context,
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"name", "sort", "link", "bookIDs"}
+	fieldsInOrder := [...]string{"calibreID", "name", "sort", "link", "bookIDs"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
 			continue
 		}
 		switch k {
+		case "calibreID":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("calibreID"))
+			data, err := ec.unmarshalNInt2int64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CalibreID = data
 		case "name":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
 			data, err := ec.unmarshalNString2string(ctx, v)
@@ -15391,13 +16051,20 @@ func (ec *executionContext) unmarshalInputCreateBookInput(ctx context.Context, o
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"title", "sort", "publishedDate", "path", "isbn", "description", "seriesIndex", "authorIDs", "seriesIDs", "identifierIDs", "languageID", "shelfIDs"}
+	fieldsInOrder := [...]string{"calibreID", "title", "sort", "publishedDate", "path", "isbn", "description", "seriesIndex", "authorIDs", "publisherIDs", "seriesIDs", "identifierIDs", "tagIDs", "languageIDs", "shelfIDs"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
 			continue
 		}
 		switch k {
+		case "calibreID":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("calibreID"))
+			data, err := ec.unmarshalNInt2int64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CalibreID = data
 		case "title":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("title"))
 			data, err := ec.unmarshalNString2string(ctx, v)
@@ -15442,7 +16109,7 @@ func (ec *executionContext) unmarshalInputCreateBookInput(ctx context.Context, o
 			it.Description = data
 		case "seriesIndex":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("seriesIndex"))
-			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+			data, err := ec.unmarshalOFloat2ᚖfloat64(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -15454,6 +16121,13 @@ func (ec *executionContext) unmarshalInputCreateBookInput(ctx context.Context, o
 				return it, err
 			}
 			it.AuthorIDs = data
+		case "publisherIDs":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("publisherIDs"))
+			data, err := ec.unmarshalOID2ᚕlybbrioᚋinternalᚋentᚋschemaᚋksuidᚐIDᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PublisherIDs = data
 		case "seriesIDs":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("seriesIDs"))
 			data, err := ec.unmarshalOID2ᚕlybbrioᚋinternalᚋentᚋschemaᚋksuidᚐIDᚄ(ctx, v)
@@ -15468,13 +16142,20 @@ func (ec *executionContext) unmarshalInputCreateBookInput(ctx context.Context, o
 				return it, err
 			}
 			it.IdentifierIDs = data
-		case "languageID":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("languageID"))
-			data, err := ec.unmarshalOID2ᚖlybbrioᚋinternalᚋentᚋschemaᚋksuidᚐID(ctx, v)
+		case "tagIDs":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("tagIDs"))
+			data, err := ec.unmarshalOID2ᚕlybbrioᚋinternalᚋentᚋschemaᚋksuidᚐIDᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.LanguageID = data
+			it.TagIDs = data
+		case "languageIDs":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("languageIDs"))
+			data, err := ec.unmarshalOID2ᚕlybbrioᚋinternalᚋentᚋschemaᚋksuidᚐIDᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.LanguageIDs = data
 		case "shelfIDs":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("shelfIDs"))
 			data, err := ec.unmarshalOID2ᚕlybbrioᚋinternalᚋentᚋschemaᚋksuidᚐIDᚄ(ctx, v)
@@ -15495,16 +16176,23 @@ func (ec *executionContext) unmarshalInputCreateIdentifierInput(ctx context.Cont
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"type", "value", "bookID"}
+	fieldsInOrder := [...]string{"calibreID", "type", "value", "bookID"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
 			continue
 		}
 		switch k {
+		case "calibreID":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("calibreID"))
+			data, err := ec.unmarshalNInt2int64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CalibreID = data
 		case "type":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("type"))
-			data, err := ec.unmarshalNIdentifierType2lybbrioᚋinternalᚋentᚋidentifierᚐType(ctx, v)
+			data, err := ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -15536,13 +16224,20 @@ func (ec *executionContext) unmarshalInputCreateLanguageInput(ctx context.Contex
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"name", "code", "bookIDs"}
+	fieldsInOrder := [...]string{"calibreID", "name", "code", "bookIDs"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
 			continue
 		}
 		switch k {
+		case "calibreID":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("calibreID"))
+			data, err := ec.unmarshalNInt2int64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CalibreID = data
 		case "name":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
 			data, err := ec.unmarshalNString2string(ctx, v)
@@ -15577,13 +16272,20 @@ func (ec *executionContext) unmarshalInputCreatePublisherInput(ctx context.Conte
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"name", "bookIDs"}
+	fieldsInOrder := [...]string{"calibreID", "name", "bookIDs"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
 			continue
 		}
 		switch k {
+		case "calibreID":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("calibreID"))
+			data, err := ec.unmarshalNInt2int64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CalibreID = data
 		case "name":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
 			data, err := ec.unmarshalNString2string(ctx, v)
@@ -15611,13 +16313,20 @@ func (ec *executionContext) unmarshalInputCreateSeriesInput(ctx context.Context,
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"name", "sort", "bookIDs"}
+	fieldsInOrder := [...]string{"calibreID", "name", "sort", "bookIDs"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
 			continue
 		}
 		switch k {
+		case "calibreID":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("calibreID"))
+			data, err := ec.unmarshalNInt2int64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CalibreID = data
 		case "name":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
 			data, err := ec.unmarshalNString2string(ctx, v)
@@ -15700,13 +16409,20 @@ func (ec *executionContext) unmarshalInputCreateTagInput(ctx context.Context, ob
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"name", "bookIDs"}
+	fieldsInOrder := [...]string{"calibreID", "name", "bookIDs"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
 			continue
 		}
 		switch k {
+		case "calibreID":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("calibreID"))
+			data, err := ec.unmarshalNInt2int64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CalibreID = data
 		case "name":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
 			data, err := ec.unmarshalNString2string(ctx, v)
@@ -15727,83 +16443,27 @@ func (ec *executionContext) unmarshalInputCreateTagInput(ctx context.Context, ob
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputCreateTaskInput(ctx context.Context, obj interface{}) (ent.CreateTaskInput, error) {
-	var it ent.CreateTaskInput
+func (ec *executionContext) unmarshalInputCreateTaskInput(ctx context.Context, obj interface{}) (lybbrio.CreateTaskInput, error) {
+	var it lybbrio.CreateTaskInput
 	asMap := map[string]interface{}{}
 	for k, v := range obj.(map[string]interface{}) {
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"createTime", "updateTime", "type", "status", "progress", "message", "error", "issystemtask", "creatorID"}
+	fieldsInOrder := [...]string{"type"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
 			continue
 		}
 		switch k {
-		case "createTime":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTime"))
-			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.CreateTime = data
-		case "updateTime":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTime"))
-			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.UpdateTime = data
 		case "type":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("type"))
-			data, err := ec.unmarshalOTaskTaskType2ᚖlybbrioᚋinternalᚋentᚋschemaᚋtask_enumsᚐTaskType(ctx, v)
+			data, err := ec.unmarshalNTaskTaskType2lybbrioᚋinternalᚋentᚋschemaᚋtask_enumsᚐTaskType(ctx, v)
 			if err != nil {
 				return it, err
 			}
 			it.Type = data
-		case "status":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("status"))
-			data, err := ec.unmarshalOTaskStatus2ᚖlybbrioᚋinternalᚋentᚋschemaᚋtask_enumsᚐStatus(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Status = data
-		case "progress":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("progress"))
-			data, err := ec.unmarshalOFloat2ᚖfloat64(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Progress = data
-		case "message":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("message"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Message = data
-		case "error":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("error"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Error = data
-		case "issystemtask":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("issystemtask"))
-			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.IsSystemTask = data
-		case "creatorID":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("creatorID"))
-			data, err := ec.unmarshalOID2ᚖlybbrioᚋinternalᚋentᚋschemaᚋksuidᚐID(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.CreatorID = data
 		}
 	}
 
@@ -15910,7 +16570,7 @@ func (ec *executionContext) unmarshalInputIdentifierWhereInput(ctx context.Conte
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "type", "typeNEQ", "typeIn", "typeNotIn", "value", "valueNEQ", "valueIn", "valueNotIn", "valueGT", "valueGTE", "valueLT", "valueLTE", "valueContains", "valueHasPrefix", "valueHasSuffix", "valueEqualFold", "valueContainsFold", "hasBook", "hasBookWith"}
+	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "calibreID", "calibreIDNEQ", "calibreIDIn", "calibreIDNotIn", "calibreIDGT", "calibreIDGTE", "calibreIDLT", "calibreIDLTE", "type", "typeNEQ", "typeIn", "typeNotIn", "typeGT", "typeGTE", "typeLT", "typeLTE", "typeContains", "typeHasPrefix", "typeHasSuffix", "typeEqualFold", "typeContainsFold", "value", "valueNEQ", "valueIn", "valueNotIn", "valueGT", "valueGTE", "valueLT", "valueLTE", "valueContains", "valueHasPrefix", "valueHasSuffix", "valueEqualFold", "valueContainsFold", "hasBook", "hasBookWith"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -15994,34 +16654,153 @@ func (ec *executionContext) unmarshalInputIdentifierWhereInput(ctx context.Conte
 				return it, err
 			}
 			it.IDLTE = data
+		case "calibreID":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("calibreID"))
+			data, err := ec.unmarshalOInt2ᚖint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CalibreID = data
+		case "calibreIDNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("calibreIDNEQ"))
+			data, err := ec.unmarshalOInt2ᚖint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CalibreIDNEQ = data
+		case "calibreIDIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("calibreIDIn"))
+			data, err := ec.unmarshalOInt2ᚕint64ᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CalibreIDIn = data
+		case "calibreIDNotIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("calibreIDNotIn"))
+			data, err := ec.unmarshalOInt2ᚕint64ᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CalibreIDNotIn = data
+		case "calibreIDGT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("calibreIDGT"))
+			data, err := ec.unmarshalOInt2ᚖint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CalibreIDGT = data
+		case "calibreIDGTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("calibreIDGTE"))
+			data, err := ec.unmarshalOInt2ᚖint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CalibreIDGTE = data
+		case "calibreIDLT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("calibreIDLT"))
+			data, err := ec.unmarshalOInt2ᚖint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CalibreIDLT = data
+		case "calibreIDLTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("calibreIDLTE"))
+			data, err := ec.unmarshalOInt2ᚖint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CalibreIDLTE = data
 		case "type":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("type"))
-			data, err := ec.unmarshalOIdentifierType2ᚖlybbrioᚋinternalᚋentᚋidentifierᚐType(ctx, v)
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
 				return it, err
 			}
 			it.Type = data
 		case "typeNEQ":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("typeNEQ"))
-			data, err := ec.unmarshalOIdentifierType2ᚖlybbrioᚋinternalᚋentᚋidentifierᚐType(ctx, v)
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
 				return it, err
 			}
 			it.TypeNEQ = data
 		case "typeIn":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("typeIn"))
-			data, err := ec.unmarshalOIdentifierType2ᚕlybbrioᚋinternalᚋentᚋidentifierᚐTypeᚄ(ctx, v)
+			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
 			it.TypeIn = data
 		case "typeNotIn":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("typeNotIn"))
-			data, err := ec.unmarshalOIdentifierType2ᚕlybbrioᚋinternalᚋentᚋidentifierᚐTypeᚄ(ctx, v)
+			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
 			it.TypeNotIn = data
+		case "typeGT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("typeGT"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.TypeGT = data
+		case "typeGTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("typeGTE"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.TypeGTE = data
+		case "typeLT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("typeLT"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.TypeLT = data
+		case "typeLTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("typeLTE"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.TypeLTE = data
+		case "typeContains":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("typeContains"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.TypeContains = data
+		case "typeHasPrefix":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("typeHasPrefix"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.TypeHasPrefix = data
+		case "typeHasSuffix":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("typeHasSuffix"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.TypeHasSuffix = data
+		case "typeEqualFold":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("typeEqualFold"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.TypeEqualFold = data
+		case "typeContainsFold":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("typeContainsFold"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.TypeContainsFold = data
 		case "value":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("value"))
 			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
@@ -16178,7 +16957,7 @@ func (ec *executionContext) unmarshalInputLanguageWhereInput(ctx context.Context
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "name", "nameNEQ", "nameIn", "nameNotIn", "nameGT", "nameGTE", "nameLT", "nameLTE", "nameContains", "nameHasPrefix", "nameHasSuffix", "nameEqualFold", "nameContainsFold", "code", "codeNEQ", "codeIn", "codeNotIn", "codeGT", "codeGTE", "codeLT", "codeLTE", "codeContains", "codeHasPrefix", "codeHasSuffix", "codeEqualFold", "codeContainsFold", "hasBooks", "hasBooksWith"}
+	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "calibreID", "calibreIDNEQ", "calibreIDIn", "calibreIDNotIn", "calibreIDGT", "calibreIDGTE", "calibreIDLT", "calibreIDLTE", "name", "nameNEQ", "nameIn", "nameNotIn", "nameGT", "nameGTE", "nameLT", "nameLTE", "nameContains", "nameHasPrefix", "nameHasSuffix", "nameEqualFold", "nameContainsFold", "code", "codeNEQ", "codeIn", "codeNotIn", "codeGT", "codeGTE", "codeLT", "codeLTE", "codeContains", "codeHasPrefix", "codeHasSuffix", "codeEqualFold", "codeContainsFold", "hasBooks", "hasBooksWith"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -16262,6 +17041,62 @@ func (ec *executionContext) unmarshalInputLanguageWhereInput(ctx context.Context
 				return it, err
 			}
 			it.IDLTE = data
+		case "calibreID":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("calibreID"))
+			data, err := ec.unmarshalOInt2ᚖint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CalibreID = data
+		case "calibreIDNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("calibreIDNEQ"))
+			data, err := ec.unmarshalOInt2ᚖint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CalibreIDNEQ = data
+		case "calibreIDIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("calibreIDIn"))
+			data, err := ec.unmarshalOInt2ᚕint64ᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CalibreIDIn = data
+		case "calibreIDNotIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("calibreIDNotIn"))
+			data, err := ec.unmarshalOInt2ᚕint64ᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CalibreIDNotIn = data
+		case "calibreIDGT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("calibreIDGT"))
+			data, err := ec.unmarshalOInt2ᚖint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CalibreIDGT = data
+		case "calibreIDGTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("calibreIDGTE"))
+			data, err := ec.unmarshalOInt2ᚖint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CalibreIDGTE = data
+		case "calibreIDLT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("calibreIDLT"))
+			data, err := ec.unmarshalOInt2ᚖint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CalibreIDLT = data
+		case "calibreIDLTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("calibreIDLTE"))
+			data, err := ec.unmarshalOInt2ᚖint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CalibreIDLTE = data
 		case "name":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
 			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
@@ -16509,7 +17344,7 @@ func (ec *executionContext) unmarshalInputPublisherWhereInput(ctx context.Contex
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "name", "nameNEQ", "nameIn", "nameNotIn", "nameGT", "nameGTE", "nameLT", "nameLTE", "nameContains", "nameHasPrefix", "nameHasSuffix", "nameEqualFold", "nameContainsFold", "hasBooks", "hasBooksWith"}
+	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "calibreID", "calibreIDNEQ", "calibreIDIn", "calibreIDNotIn", "calibreIDGT", "calibreIDGTE", "calibreIDLT", "calibreIDLTE", "name", "nameNEQ", "nameIn", "nameNotIn", "nameGT", "nameGTE", "nameLT", "nameLTE", "nameContains", "nameHasPrefix", "nameHasSuffix", "nameEqualFold", "nameContainsFold", "hasBooks", "hasBooksWith"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -16593,6 +17428,62 @@ func (ec *executionContext) unmarshalInputPublisherWhereInput(ctx context.Contex
 				return it, err
 			}
 			it.IDLTE = data
+		case "calibreID":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("calibreID"))
+			data, err := ec.unmarshalOInt2ᚖint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CalibreID = data
+		case "calibreIDNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("calibreIDNEQ"))
+			data, err := ec.unmarshalOInt2ᚖint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CalibreIDNEQ = data
+		case "calibreIDIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("calibreIDIn"))
+			data, err := ec.unmarshalOInt2ᚕint64ᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CalibreIDIn = data
+		case "calibreIDNotIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("calibreIDNotIn"))
+			data, err := ec.unmarshalOInt2ᚕint64ᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CalibreIDNotIn = data
+		case "calibreIDGT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("calibreIDGT"))
+			data, err := ec.unmarshalOInt2ᚖint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CalibreIDGT = data
+		case "calibreIDGTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("calibreIDGTE"))
+			data, err := ec.unmarshalOInt2ᚖint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CalibreIDGTE = data
+		case "calibreIDLT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("calibreIDLT"))
+			data, err := ec.unmarshalOInt2ᚖint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CalibreIDLT = data
+		case "calibreIDLTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("calibreIDLTE"))
+			data, err := ec.unmarshalOInt2ᚖint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CalibreIDLTE = data
 		case "name":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
 			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
@@ -16749,7 +17640,7 @@ func (ec *executionContext) unmarshalInputSeriesWhereInput(ctx context.Context, 
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "name", "nameNEQ", "nameIn", "nameNotIn", "nameGT", "nameGTE", "nameLT", "nameLTE", "nameContains", "nameHasPrefix", "nameHasSuffix", "nameEqualFold", "nameContainsFold", "sort", "sortNEQ", "sortIn", "sortNotIn", "sortGT", "sortGTE", "sortLT", "sortLTE", "sortContains", "sortHasPrefix", "sortHasSuffix", "sortEqualFold", "sortContainsFold", "hasBooks", "hasBooksWith"}
+	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "calibreID", "calibreIDNEQ", "calibreIDIn", "calibreIDNotIn", "calibreIDGT", "calibreIDGTE", "calibreIDLT", "calibreIDLTE", "name", "nameNEQ", "nameIn", "nameNotIn", "nameGT", "nameGTE", "nameLT", "nameLTE", "nameContains", "nameHasPrefix", "nameHasSuffix", "nameEqualFold", "nameContainsFold", "sort", "sortNEQ", "sortIn", "sortNotIn", "sortGT", "sortGTE", "sortLT", "sortLTE", "sortContains", "sortHasPrefix", "sortHasSuffix", "sortEqualFold", "sortContainsFold", "hasBooks", "hasBooksWith"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -16833,6 +17724,62 @@ func (ec *executionContext) unmarshalInputSeriesWhereInput(ctx context.Context, 
 				return it, err
 			}
 			it.IDLTE = data
+		case "calibreID":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("calibreID"))
+			data, err := ec.unmarshalOInt2ᚖint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CalibreID = data
+		case "calibreIDNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("calibreIDNEQ"))
+			data, err := ec.unmarshalOInt2ᚖint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CalibreIDNEQ = data
+		case "calibreIDIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("calibreIDIn"))
+			data, err := ec.unmarshalOInt2ᚕint64ᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CalibreIDIn = data
+		case "calibreIDNotIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("calibreIDNotIn"))
+			data, err := ec.unmarshalOInt2ᚕint64ᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CalibreIDNotIn = data
+		case "calibreIDGT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("calibreIDGT"))
+			data, err := ec.unmarshalOInt2ᚖint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CalibreIDGT = data
+		case "calibreIDGTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("calibreIDGTE"))
+			data, err := ec.unmarshalOInt2ᚖint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CalibreIDGTE = data
+		case "calibreIDLT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("calibreIDLT"))
+			data, err := ec.unmarshalOInt2ᚖint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CalibreIDLT = data
+		case "calibreIDLTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("calibreIDLTE"))
+			data, err := ec.unmarshalOInt2ᚖint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CalibreIDLTE = data
 		case "name":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
 			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
@@ -17544,7 +18491,7 @@ func (ec *executionContext) unmarshalInputTagWhereInput(ctx context.Context, obj
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "name", "nameNEQ", "nameIn", "nameNotIn", "nameGT", "nameGTE", "nameLT", "nameLTE", "nameContains", "nameHasPrefix", "nameHasSuffix", "nameEqualFold", "nameContainsFold", "hasBooks", "hasBooksWith"}
+	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "calibreID", "calibreIDNEQ", "calibreIDIn", "calibreIDNotIn", "calibreIDGT", "calibreIDGTE", "calibreIDLT", "calibreIDLTE", "name", "nameNEQ", "nameIn", "nameNotIn", "nameGT", "nameGTE", "nameLT", "nameLTE", "nameContains", "nameHasPrefix", "nameHasSuffix", "nameEqualFold", "nameContainsFold", "hasBooks", "hasBooksWith"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -17628,6 +18575,62 @@ func (ec *executionContext) unmarshalInputTagWhereInput(ctx context.Context, obj
 				return it, err
 			}
 			it.IDLTE = data
+		case "calibreID":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("calibreID"))
+			data, err := ec.unmarshalOInt2ᚖint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CalibreID = data
+		case "calibreIDNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("calibreIDNEQ"))
+			data, err := ec.unmarshalOInt2ᚖint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CalibreIDNEQ = data
+		case "calibreIDIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("calibreIDIn"))
+			data, err := ec.unmarshalOInt2ᚕint64ᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CalibreIDIn = data
+		case "calibreIDNotIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("calibreIDNotIn"))
+			data, err := ec.unmarshalOInt2ᚕint64ᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CalibreIDNotIn = data
+		case "calibreIDGT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("calibreIDGT"))
+			data, err := ec.unmarshalOInt2ᚖint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CalibreIDGT = data
+		case "calibreIDGTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("calibreIDGTE"))
+			data, err := ec.unmarshalOInt2ᚖint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CalibreIDGTE = data
+		case "calibreIDLT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("calibreIDLT"))
+			data, err := ec.unmarshalOInt2ᚖint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CalibreIDLT = data
+		case "calibreIDLTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("calibreIDLTE"))
+			data, err := ec.unmarshalOInt2ᚖint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CalibreIDLTE = data
 		case "name":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
 			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
@@ -18448,13 +19451,20 @@ func (ec *executionContext) unmarshalInputUpdateAuthorInput(ctx context.Context,
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"name", "sort", "link", "clearLink", "addBookIDs", "removeBookIDs", "clearBooks"}
+	fieldsInOrder := [...]string{"calibreID", "name", "sort", "link", "clearLink", "addBookIDs", "removeBookIDs", "clearBooks"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
 			continue
 		}
 		switch k {
+		case "calibreID":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("calibreID"))
+			data, err := ec.unmarshalOInt2ᚖint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CalibreID = data
 		case "name":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
 			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
@@ -18517,13 +19527,20 @@ func (ec *executionContext) unmarshalInputUpdateBookInput(ctx context.Context, o
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"title", "sort", "publishedDate", "clearPublishedDate", "path", "isbn", "clearIsbn", "description", "clearDescription", "seriesIndex", "clearSeriesIndex", "addAuthorIDs", "removeAuthorIDs", "clearAuthors", "addSeriesIDs", "removeSeriesIDs", "clearSeries", "addIdentifierIDs", "removeIdentifierIDs", "clearIdentifier", "languageID", "clearLanguage", "addShelfIDs", "removeShelfIDs", "clearShelf"}
+	fieldsInOrder := [...]string{"calibreID", "title", "sort", "publishedDate", "clearPublishedDate", "path", "isbn", "clearIsbn", "description", "clearDescription", "seriesIndex", "clearSeriesIndex", "addAuthorIDs", "removeAuthorIDs", "clearAuthors", "addPublisherIDs", "removePublisherIDs", "clearPublisher", "addSeriesIDs", "removeSeriesIDs", "clearSeries", "addIdentifierIDs", "removeIdentifierIDs", "clearIdentifiers", "addTagIDs", "removeTagIDs", "clearTags", "addLanguageIDs", "removeLanguageIDs", "clearLanguage", "addShelfIDs", "removeShelfIDs", "clearShelf"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
 			continue
 		}
 		switch k {
+		case "calibreID":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("calibreID"))
+			data, err := ec.unmarshalOInt2ᚖint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CalibreID = data
 		case "title":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("title"))
 			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
@@ -18589,7 +19606,7 @@ func (ec *executionContext) unmarshalInputUpdateBookInput(ctx context.Context, o
 			it.ClearDescription = data
 		case "seriesIndex":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("seriesIndex"))
-			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+			data, err := ec.unmarshalOFloat2ᚖfloat64(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -18622,6 +19639,27 @@ func (ec *executionContext) unmarshalInputUpdateBookInput(ctx context.Context, o
 				return it, err
 			}
 			it.ClearAuthors = data
+		case "addPublisherIDs":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("addPublisherIDs"))
+			data, err := ec.unmarshalOID2ᚕlybbrioᚋinternalᚋentᚋschemaᚋksuidᚐIDᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.AddPublisherIDs = data
+		case "removePublisherIDs":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("removePublisherIDs"))
+			data, err := ec.unmarshalOID2ᚕlybbrioᚋinternalᚋentᚋschemaᚋksuidᚐIDᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.RemovePublisherIDs = data
+		case "clearPublisher":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clearPublisher"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ClearPublisher = data
 		case "addSeriesIDs":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("addSeriesIDs"))
 			data, err := ec.unmarshalOID2ᚕlybbrioᚋinternalᚋentᚋschemaᚋksuidᚐIDᚄ(ctx, v)
@@ -18657,20 +19695,48 @@ func (ec *executionContext) unmarshalInputUpdateBookInput(ctx context.Context, o
 				return it, err
 			}
 			it.RemoveIdentifierIDs = data
-		case "clearIdentifier":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clearIdentifier"))
+		case "clearIdentifiers":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clearIdentifiers"))
 			data, err := ec.unmarshalOBoolean2bool(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.ClearIdentifier = data
-		case "languageID":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("languageID"))
-			data, err := ec.unmarshalOID2ᚖlybbrioᚋinternalᚋentᚋschemaᚋksuidᚐID(ctx, v)
+			it.ClearIdentifiers = data
+		case "addTagIDs":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("addTagIDs"))
+			data, err := ec.unmarshalOID2ᚕlybbrioᚋinternalᚋentᚋschemaᚋksuidᚐIDᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.LanguageID = data
+			it.AddTagIDs = data
+		case "removeTagIDs":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("removeTagIDs"))
+			data, err := ec.unmarshalOID2ᚕlybbrioᚋinternalᚋentᚋschemaᚋksuidᚐIDᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.RemoveTagIDs = data
+		case "clearTags":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clearTags"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ClearTags = data
+		case "addLanguageIDs":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("addLanguageIDs"))
+			data, err := ec.unmarshalOID2ᚕlybbrioᚋinternalᚋentᚋschemaᚋksuidᚐIDᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.AddLanguageIDs = data
+		case "removeLanguageIDs":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("removeLanguageIDs"))
+			data, err := ec.unmarshalOID2ᚕlybbrioᚋinternalᚋentᚋschemaᚋksuidᚐIDᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.RemoveLanguageIDs = data
 		case "clearLanguage":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clearLanguage"))
 			data, err := ec.unmarshalOBoolean2bool(ctx, v)
@@ -18712,16 +19778,23 @@ func (ec *executionContext) unmarshalInputUpdateIdentifierInput(ctx context.Cont
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"type", "value", "bookID"}
+	fieldsInOrder := [...]string{"calibreID", "type", "value", "bookID"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
 			continue
 		}
 		switch k {
+		case "calibreID":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("calibreID"))
+			data, err := ec.unmarshalOInt2ᚖint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CalibreID = data
 		case "type":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("type"))
-			data, err := ec.unmarshalOIdentifierType2ᚖlybbrioᚋinternalᚋentᚋidentifierᚐType(ctx, v)
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -18753,13 +19826,20 @@ func (ec *executionContext) unmarshalInputUpdateLanguageInput(ctx context.Contex
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"name", "code", "addBookIDs", "removeBookIDs", "clearBooks"}
+	fieldsInOrder := [...]string{"calibreID", "name", "code", "addBookIDs", "removeBookIDs", "clearBooks"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
 			continue
 		}
 		switch k {
+		case "calibreID":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("calibreID"))
+			data, err := ec.unmarshalOInt2ᚖint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CalibreID = data
 		case "name":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
 			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
@@ -18808,13 +19888,20 @@ func (ec *executionContext) unmarshalInputUpdatePublisherInput(ctx context.Conte
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"name", "addBookIDs", "removeBookIDs", "clearBooks"}
+	fieldsInOrder := [...]string{"calibreID", "name", "addBookIDs", "removeBookIDs", "clearBooks"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
 			continue
 		}
 		switch k {
+		case "calibreID":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("calibreID"))
+			data, err := ec.unmarshalOInt2ᚖint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CalibreID = data
 		case "name":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
 			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
@@ -18856,13 +19943,20 @@ func (ec *executionContext) unmarshalInputUpdateSeriesInput(ctx context.Context,
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"name", "sort", "addBookIDs", "removeBookIDs", "clearBooks"}
+	fieldsInOrder := [...]string{"calibreID", "name", "sort", "addBookIDs", "removeBookIDs", "clearBooks"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
 			continue
 		}
 		switch k {
+		case "calibreID":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("calibreID"))
+			data, err := ec.unmarshalOInt2ᚖint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CalibreID = data
 		case "name":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
 			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
@@ -18980,13 +20074,20 @@ func (ec *executionContext) unmarshalInputUpdateTagInput(ctx context.Context, ob
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"name", "addBookIDs", "removeBookIDs", "clearBooks"}
+	fieldsInOrder := [...]string{"calibreID", "name", "addBookIDs", "removeBookIDs", "clearBooks"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
 			continue
 		}
 		switch k {
+		case "calibreID":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("calibreID"))
+			data, err := ec.unmarshalOInt2ᚖint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CalibreID = data
 		case "name":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
 			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
@@ -19015,89 +20116,6 @@ func (ec *executionContext) unmarshalInputUpdateTagInput(ctx context.Context, ob
 				return it, err
 			}
 			it.ClearBooks = data
-		}
-	}
-
-	return it, nil
-}
-
-func (ec *executionContext) unmarshalInputUpdateTaskInput(ctx context.Context, obj interface{}) (ent.UpdateTaskInput, error) {
-	var it ent.UpdateTaskInput
-	asMap := map[string]interface{}{}
-	for k, v := range obj.(map[string]interface{}) {
-		asMap[k] = v
-	}
-
-	fieldsInOrder := [...]string{"updateTime", "type", "status", "progress", "message", "clearMessage", "error", "clearError", "issystemtask"}
-	for _, k := range fieldsInOrder {
-		v, ok := asMap[k]
-		if !ok {
-			continue
-		}
-		switch k {
-		case "updateTime":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTime"))
-			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.UpdateTime = data
-		case "type":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("type"))
-			data, err := ec.unmarshalOTaskTaskType2ᚖlybbrioᚋinternalᚋentᚋschemaᚋtask_enumsᚐTaskType(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Type = data
-		case "status":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("status"))
-			data, err := ec.unmarshalOTaskStatus2ᚖlybbrioᚋinternalᚋentᚋschemaᚋtask_enumsᚐStatus(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Status = data
-		case "progress":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("progress"))
-			data, err := ec.unmarshalOFloat2ᚖfloat64(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Progress = data
-		case "message":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("message"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Message = data
-		case "clearMessage":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clearMessage"))
-			data, err := ec.unmarshalOBoolean2bool(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.ClearMessage = data
-		case "error":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("error"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Error = data
-		case "clearError":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clearError"))
-			data, err := ec.unmarshalOBoolean2bool(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.ClearError = data
-		case "issystemtask":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("issystemtask"))
-			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.IsSystemTask = data
 		}
 	}
 
@@ -19850,6 +20868,11 @@ func (ec *executionContext) _Author(ctx context.Context, sel ast.SelectionSet, o
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
 			}
+		case "calibreID":
+			out.Values[i] = ec._Author_calibreID(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
 		case "name":
 			out.Values[i] = ec._Author_name(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -20024,6 +21047,11 @@ func (ec *executionContext) _Book(ctx context.Context, sel ast.SelectionSet, obj
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
 			}
+		case "calibreID":
+			out.Values[i] = ec._Book_calibreID(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
 		case "title":
 			out.Values[i] = ec._Book_title(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -20080,6 +21108,39 @@ func (ec *executionContext) _Book(ctx context.Context, sel ast.SelectionSet, obj
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "publisher":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Book_publisher(ctx, field, obj)
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		case "series":
 			field := field
 
@@ -20113,7 +21174,7 @@ func (ec *executionContext) _Book(ctx context.Context, sel ast.SelectionSet, obj
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
-		case "identifier":
+		case "identifiers":
 			field := field
 
 			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
@@ -20122,7 +21183,40 @@ func (ec *executionContext) _Book(ctx context.Context, sel ast.SelectionSet, obj
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Book_identifier(ctx, field, obj)
+				res = ec._Book_identifiers(ctx, field, obj)
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "tags":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Book_tags(ctx, field, obj)
 				return res
 			}
 
@@ -20338,6 +21432,11 @@ func (ec *executionContext) _Identifier(ctx context.Context, sel ast.SelectionSe
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
 			}
+		case "calibreID":
+			out.Values[i] = ec._Identifier_calibreID(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
 		case "type":
 			out.Values[i] = ec._Identifier_type(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -20507,6 +21606,11 @@ func (ec *executionContext) _Language(ctx context.Context, sel ast.SelectionSet,
 			out.Values[i] = graphql.MarshalString("Language")
 		case "id":
 			out.Values[i] = ec._Language_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "calibreID":
+			out.Values[i] = ec._Language_calibreID(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
 			}
@@ -20761,10 +21865,6 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_createTask(ctx, field)
 			})
-		case "updateTask":
-			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Mutation_updateTask(ctx, field)
-			})
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -20849,6 +21949,11 @@ func (ec *executionContext) _Publisher(ctx context.Context, sel ast.SelectionSet
 			out.Values[i] = graphql.MarshalString("Publisher")
 		case "id":
 			out.Values[i] = ec._Publisher_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "calibreID":
+			out.Values[i] = ec._Publisher_calibreID(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
 			}
@@ -21352,6 +22457,11 @@ func (ec *executionContext) _Series(ctx context.Context, sel ast.SelectionSet, o
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
 			}
+		case "calibreID":
+			out.Values[i] = ec._Series_calibreID(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
 		case "name":
 			out.Values[i] = ec._Series_name(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -21733,6 +22843,11 @@ func (ec *executionContext) _Tag(ctx context.Context, sel ast.SelectionSet, obj 
 			out.Values[i] = graphql.MarshalString("Tag")
 		case "id":
 			out.Values[i] = ec._Tag_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "calibreID":
+			out.Values[i] = ec._Tag_calibreID(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
 			}
@@ -22765,7 +23880,7 @@ func (ec *executionContext) unmarshalNCreateTagInput2lybbrioᚋinternalᚋentᚐ
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) unmarshalNCreateTaskInput2lybbrioᚋinternalᚋentᚐCreateTaskInput(ctx context.Context, v interface{}) (ent.CreateTaskInput, error) {
+func (ec *executionContext) unmarshalNCreateTaskInput2lybbrioᚐCreateTaskInput(ctx context.Context, v interface{}) (lybbrio.CreateTaskInput, error) {
 	res, err := ec.unmarshalInputCreateTaskInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
@@ -22887,16 +24002,6 @@ func (ec *executionContext) marshalNIdentifierOrderField2ᚖlybbrioᚋinternal�
 	return v
 }
 
-func (ec *executionContext) unmarshalNIdentifierType2lybbrioᚋinternalᚋentᚋidentifierᚐType(ctx context.Context, v interface{}) (identifier.Type, error) {
-	var res identifier.Type
-	err := res.UnmarshalGQL(v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalNIdentifierType2lybbrioᚋinternalᚋentᚋidentifierᚐType(ctx context.Context, sel ast.SelectionSet, v identifier.Type) graphql.Marshaler {
-	return v
-}
-
 func (ec *executionContext) unmarshalNIdentifierWhereInput2ᚖlybbrioᚋinternalᚋentᚐIdentifierWhereInput(ctx context.Context, v interface{}) (*ent.IdentifierWhereInput, error) {
 	res, err := ec.unmarshalInputIdentifierWhereInput(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
@@ -22915,6 +24020,31 @@ func (ec *executionContext) marshalNInt2int(ctx context.Context, sel ast.Selecti
 		}
 	}
 	return res
+}
+
+func (ec *executionContext) unmarshalNInt2int64(ctx context.Context, v interface{}) (int64, error) {
+	res, err := graphql.UnmarshalInt64(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNInt2int64(ctx context.Context, sel ast.SelectionSet, v int64) graphql.Marshaler {
+	res := graphql.MarshalInt64(v)
+	if res == graphql.Null {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+	}
+	return res
+}
+
+func (ec *executionContext) marshalNLanguage2ᚖlybbrioᚋinternalᚋentᚐLanguage(ctx context.Context, sel ast.SelectionSet, v *ent.Language) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._Language(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalNLanguageConnection2lybbrioᚋinternalᚋentᚐLanguageConnection(ctx context.Context, sel ast.SelectionSet, v ent.LanguageConnection) graphql.Marshaler {
@@ -23007,6 +24137,16 @@ func (ec *executionContext) marshalNOrderDirection2entgoᚗioᚋcontribᚋentgql
 
 func (ec *executionContext) marshalNPageInfo2entgoᚗioᚋcontribᚋentgqlᚐPageInfo(ctx context.Context, sel ast.SelectionSet, v entgql.PageInfo[ksuid.ID]) graphql.Marshaler {
 	return ec._PageInfo(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNPublisher2ᚖlybbrioᚋinternalᚋentᚐPublisher(ctx context.Context, sel ast.SelectionSet, v *ent.Publisher) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._Publisher(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalNPublisherConnection2lybbrioᚋinternalᚋentᚐPublisherConnection(ctx context.Context, sel ast.SelectionSet, v ent.PublisherConnection) graphql.Marshaler {
@@ -23164,6 +24304,16 @@ func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.S
 	return res
 }
 
+func (ec *executionContext) marshalNTag2ᚖlybbrioᚋinternalᚋentᚐTag(ctx context.Context, sel ast.SelectionSet, v *ent.Tag) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._Tag(ctx, sel, v)
+}
+
 func (ec *executionContext) marshalNTagConnection2lybbrioᚋinternalᚋentᚐTagConnection(ctx context.Context, sel ast.SelectionSet, v ent.TagConnection) graphql.Marshaler {
 	return ec._TagConnection(ctx, sel, &v)
 }
@@ -23316,11 +24466,6 @@ func (ec *executionContext) unmarshalNUpdateShelfInput2lybbrioᚋinternalᚋent�
 
 func (ec *executionContext) unmarshalNUpdateTagInput2lybbrioᚋinternalᚋentᚐUpdateTagInput(ctx context.Context, v interface{}) (ent.UpdateTagInput, error) {
 	res, err := ec.unmarshalInputUpdateTagInput(ctx, v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) unmarshalNUpdateTaskInput2lybbrioᚋinternalᚋentᚐUpdateTaskInput(ctx context.Context, v interface{}) (ent.UpdateTaskInput, error) {
-	res, err := ec.unmarshalInputUpdateTaskInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
@@ -24018,6 +25163,16 @@ func (ec *executionContext) marshalOCursor2ᚖentgoᚗioᚋcontribᚋentgqlᚐCu
 	return v
 }
 
+func (ec *executionContext) unmarshalOFloat2float64(ctx context.Context, v interface{}) (float64, error) {
+	res, err := graphql.UnmarshalFloatContext(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOFloat2float64(ctx context.Context, sel ast.SelectionSet, v float64) graphql.Marshaler {
+	res := graphql.MarshalFloatContext(v)
+	return graphql.WrapContextMarshaler(ctx, res)
+}
+
 func (ec *executionContext) unmarshalOFloat2ᚕfloat64ᚄ(ctx context.Context, v interface{}) ([]float64, error) {
 	if v == nil {
 		return nil, nil
@@ -24258,89 +25413,6 @@ func (ec *executionContext) unmarshalOIdentifierOrder2ᚕᚖlybbrioᚋinternal�
 	return res, nil
 }
 
-func (ec *executionContext) unmarshalOIdentifierType2ᚕlybbrioᚋinternalᚋentᚋidentifierᚐTypeᚄ(ctx context.Context, v interface{}) ([]identifier.Type, error) {
-	if v == nil {
-		return nil, nil
-	}
-	var vSlice []interface{}
-	if v != nil {
-		vSlice = graphql.CoerceList(v)
-	}
-	var err error
-	res := make([]identifier.Type, len(vSlice))
-	for i := range vSlice {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
-		res[i], err = ec.unmarshalNIdentifierType2lybbrioᚋinternalᚋentᚋidentifierᚐType(ctx, vSlice[i])
-		if err != nil {
-			return nil, err
-		}
-	}
-	return res, nil
-}
-
-func (ec *executionContext) marshalOIdentifierType2ᚕlybbrioᚋinternalᚋentᚋidentifierᚐTypeᚄ(ctx context.Context, sel ast.SelectionSet, v []identifier.Type) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	ret := make(graphql.Array, len(v))
-	var wg sync.WaitGroup
-	isLen1 := len(v) == 1
-	if !isLen1 {
-		wg.Add(len(v))
-	}
-	for i := range v {
-		i := i
-		fc := &graphql.FieldContext{
-			Index:  &i,
-			Result: &v[i],
-		}
-		ctx := graphql.WithFieldContext(ctx, fc)
-		f := func(i int) {
-			defer func() {
-				if r := recover(); r != nil {
-					ec.Error(ctx, ec.Recover(ctx, r))
-					ret = nil
-				}
-			}()
-			if !isLen1 {
-				defer wg.Done()
-			}
-			ret[i] = ec.marshalNIdentifierType2lybbrioᚋinternalᚋentᚋidentifierᚐType(ctx, sel, v[i])
-		}
-		if isLen1 {
-			f(i)
-		} else {
-			go f(i)
-		}
-
-	}
-	wg.Wait()
-
-	for _, e := range ret {
-		if e == graphql.Null {
-			return graphql.Null
-		}
-	}
-
-	return ret
-}
-
-func (ec *executionContext) unmarshalOIdentifierType2ᚖlybbrioᚋinternalᚋentᚋidentifierᚐType(ctx context.Context, v interface{}) (*identifier.Type, error) {
-	if v == nil {
-		return nil, nil
-	}
-	var res = new(identifier.Type)
-	err := res.UnmarshalGQL(v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalOIdentifierType2ᚖlybbrioᚋinternalᚋentᚋidentifierᚐType(ctx context.Context, sel ast.SelectionSet, v *identifier.Type) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	return v
-}
-
 func (ec *executionContext) unmarshalOIdentifierWhereInput2ᚕᚖlybbrioᚋinternalᚋentᚐIdentifierWhereInputᚄ(ctx context.Context, v interface{}) ([]*ent.IdentifierWhereInput, error) {
 	if v == nil {
 		return nil, nil
@@ -24369,17 +25441,7 @@ func (ec *executionContext) unmarshalOIdentifierWhereInput2ᚖlybbrioᚋinternal
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) unmarshalOInt2int(ctx context.Context, v interface{}) (int, error) {
-	res, err := graphql.UnmarshalInt(v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalOInt2int(ctx context.Context, sel ast.SelectionSet, v int) graphql.Marshaler {
-	res := graphql.MarshalInt(v)
-	return res
-}
-
-func (ec *executionContext) unmarshalOInt2ᚕintᚄ(ctx context.Context, v interface{}) ([]int, error) {
+func (ec *executionContext) unmarshalOInt2ᚕint64ᚄ(ctx context.Context, v interface{}) ([]int64, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -24388,10 +25450,10 @@ func (ec *executionContext) unmarshalOInt2ᚕintᚄ(ctx context.Context, v inter
 		vSlice = graphql.CoerceList(v)
 	}
 	var err error
-	res := make([]int, len(vSlice))
+	res := make([]int64, len(vSlice))
 	for i := range vSlice {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
-		res[i], err = ec.unmarshalNInt2int(ctx, vSlice[i])
+		res[i], err = ec.unmarshalNInt2int64(ctx, vSlice[i])
 		if err != nil {
 			return nil, err
 		}
@@ -24399,13 +25461,13 @@ func (ec *executionContext) unmarshalOInt2ᚕintᚄ(ctx context.Context, v inter
 	return res, nil
 }
 
-func (ec *executionContext) marshalOInt2ᚕintᚄ(ctx context.Context, sel ast.SelectionSet, v []int) graphql.Marshaler {
+func (ec *executionContext) marshalOInt2ᚕint64ᚄ(ctx context.Context, sel ast.SelectionSet, v []int64) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	ret := make(graphql.Array, len(v))
 	for i := range v {
-		ret[i] = ec.marshalNInt2int(ctx, sel, v[i])
+		ret[i] = ec.marshalNInt2int64(ctx, sel, v[i])
 	}
 
 	for _, e := range ret {
@@ -24431,6 +25493,69 @@ func (ec *executionContext) marshalOInt2ᚖint(ctx context.Context, sel ast.Sele
 	}
 	res := graphql.MarshalInt(*v)
 	return res
+}
+
+func (ec *executionContext) unmarshalOInt2ᚖint64(ctx context.Context, v interface{}) (*int64, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := graphql.UnmarshalInt64(v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOInt2ᚖint64(ctx context.Context, sel ast.SelectionSet, v *int64) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	res := graphql.MarshalInt64(*v)
+	return res
+}
+
+func (ec *executionContext) marshalOLanguage2ᚕᚖlybbrioᚋinternalᚋentᚐLanguageᚄ(ctx context.Context, sel ast.SelectionSet, v []*ent.Language) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNLanguage2ᚖlybbrioᚋinternalᚋentᚐLanguage(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
 }
 
 func (ec *executionContext) marshalOLanguage2ᚖlybbrioᚋinternalᚋentᚐLanguage(ctx context.Context, sel ast.SelectionSet, v *ent.Language) graphql.Marshaler {
@@ -24541,6 +25666,53 @@ func (ec *executionContext) marshalONode2lybbrioᚋinternalᚋentᚐNoder(ctx co
 		return graphql.Null
 	}
 	return ec._Node(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalOPublisher2ᚕᚖlybbrioᚋinternalᚋentᚐPublisherᚄ(ctx context.Context, sel ast.SelectionSet, v []*ent.Publisher) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNPublisher2ᚖlybbrioᚋinternalᚋentᚐPublisher(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
 }
 
 func (ec *executionContext) marshalOPublisher2ᚖlybbrioᚋinternalᚋentᚐPublisher(ctx context.Context, sel ast.SelectionSet, v *ent.Publisher) graphql.Marshaler {
@@ -25008,6 +26180,53 @@ func (ec *executionContext) marshalOString2ᚖstring(ctx context.Context, sel as
 	}
 	res := graphql.MarshalString(*v)
 	return res
+}
+
+func (ec *executionContext) marshalOTag2ᚕᚖlybbrioᚋinternalᚋentᚐTagᚄ(ctx context.Context, sel ast.SelectionSet, v []*ent.Tag) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNTag2ᚖlybbrioᚋinternalᚋentᚐTag(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
 }
 
 func (ec *executionContext) marshalOTag2ᚖlybbrioᚋinternalᚋentᚐTag(ctx context.Context, sel ast.SelectionSet, v *ent.Tag) graphql.Marshaler {

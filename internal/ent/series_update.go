@@ -29,6 +29,27 @@ func (su *SeriesUpdate) Where(ps ...predicate.Series) *SeriesUpdate {
 	return su
 }
 
+// SetCalibreID sets the "calibre_id" field.
+func (su *SeriesUpdate) SetCalibreID(i int64) *SeriesUpdate {
+	su.mutation.ResetCalibreID()
+	su.mutation.SetCalibreID(i)
+	return su
+}
+
+// SetNillableCalibreID sets the "calibre_id" field if the given value is not nil.
+func (su *SeriesUpdate) SetNillableCalibreID(i *int64) *SeriesUpdate {
+	if i != nil {
+		su.SetCalibreID(*i)
+	}
+	return su
+}
+
+// AddCalibreID adds i to the "calibre_id" field.
+func (su *SeriesUpdate) AddCalibreID(i int64) *SeriesUpdate {
+	su.mutation.AddCalibreID(i)
+	return su
+}
+
 // SetName sets the "name" field.
 func (su *SeriesUpdate) SetName(s string) *SeriesUpdate {
 	su.mutation.SetName(s)
@@ -152,6 +173,12 @@ func (su *SeriesUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			}
 		}
 	}
+	if value, ok := su.mutation.CalibreID(); ok {
+		_spec.SetField(series.FieldCalibreID, field.TypeInt64, value)
+	}
+	if value, ok := su.mutation.AddedCalibreID(); ok {
+		_spec.AddField(series.FieldCalibreID, field.TypeInt64, value)
+	}
 	if value, ok := su.mutation.Name(); ok {
 		_spec.SetField(series.FieldName, field.TypeString, value)
 	}
@@ -221,6 +248,27 @@ type SeriesUpdateOne struct {
 	fields   []string
 	hooks    []Hook
 	mutation *SeriesMutation
+}
+
+// SetCalibreID sets the "calibre_id" field.
+func (suo *SeriesUpdateOne) SetCalibreID(i int64) *SeriesUpdateOne {
+	suo.mutation.ResetCalibreID()
+	suo.mutation.SetCalibreID(i)
+	return suo
+}
+
+// SetNillableCalibreID sets the "calibre_id" field if the given value is not nil.
+func (suo *SeriesUpdateOne) SetNillableCalibreID(i *int64) *SeriesUpdateOne {
+	if i != nil {
+		suo.SetCalibreID(*i)
+	}
+	return suo
+}
+
+// AddCalibreID adds i to the "calibre_id" field.
+func (suo *SeriesUpdateOne) AddCalibreID(i int64) *SeriesUpdateOne {
+	suo.mutation.AddCalibreID(i)
+	return suo
 }
 
 // SetName sets the "name" field.
@@ -375,6 +423,12 @@ func (suo *SeriesUpdateOne) sqlSave(ctx context.Context) (_node *Series, err err
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := suo.mutation.CalibreID(); ok {
+		_spec.SetField(series.FieldCalibreID, field.TypeInt64, value)
+	}
+	if value, ok := suo.mutation.AddedCalibreID(); ok {
+		_spec.AddField(series.FieldCalibreID, field.TypeInt64, value)
 	}
 	if value, ok := suo.mutation.Name(); ok {
 		_spec.SetField(series.FieldName, field.TypeString, value)

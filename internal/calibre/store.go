@@ -123,9 +123,7 @@ func (s *CalibreSQLite) GetBook(ctx context.Context, id int64) (*Book, error) {
 func (s *CalibreSQLite) GetBooks(ctx context.Context) ([]*Book, error) {
 	var books []*Book
 	err := s.db.WithContext(ctx).
-		Preload("Authors").
-		Preload("Tags").
-		Preload("Comments").
+		Preload(clause.Associations).
 		Find(&books).
 		Error
 	return books, err

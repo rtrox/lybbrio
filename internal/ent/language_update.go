@@ -29,6 +29,27 @@ func (lu *LanguageUpdate) Where(ps ...predicate.Language) *LanguageUpdate {
 	return lu
 }
 
+// SetCalibreID sets the "calibre_id" field.
+func (lu *LanguageUpdate) SetCalibreID(i int64) *LanguageUpdate {
+	lu.mutation.ResetCalibreID()
+	lu.mutation.SetCalibreID(i)
+	return lu
+}
+
+// SetNillableCalibreID sets the "calibre_id" field if the given value is not nil.
+func (lu *LanguageUpdate) SetNillableCalibreID(i *int64) *LanguageUpdate {
+	if i != nil {
+		lu.SetCalibreID(*i)
+	}
+	return lu
+}
+
+// AddCalibreID adds i to the "calibre_id" field.
+func (lu *LanguageUpdate) AddCalibreID(i int64) *LanguageUpdate {
+	lu.mutation.AddCalibreID(i)
+	return lu
+}
+
 // SetName sets the "name" field.
 func (lu *LanguageUpdate) SetName(s string) *LanguageUpdate {
 	lu.mutation.SetName(s)
@@ -152,6 +173,12 @@ func (lu *LanguageUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			}
 		}
 	}
+	if value, ok := lu.mutation.CalibreID(); ok {
+		_spec.SetField(language.FieldCalibreID, field.TypeInt64, value)
+	}
+	if value, ok := lu.mutation.AddedCalibreID(); ok {
+		_spec.AddField(language.FieldCalibreID, field.TypeInt64, value)
+	}
 	if value, ok := lu.mutation.Name(); ok {
 		_spec.SetField(language.FieldName, field.TypeString, value)
 	}
@@ -160,10 +187,10 @@ func (lu *LanguageUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if lu.mutation.BooksCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   language.BooksTable,
-			Columns: []string{language.BooksColumn},
+			Columns: language.BooksPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(book.FieldID, field.TypeString),
@@ -173,10 +200,10 @@ func (lu *LanguageUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if nodes := lu.mutation.RemovedBooksIDs(); len(nodes) > 0 && !lu.mutation.BooksCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   language.BooksTable,
-			Columns: []string{language.BooksColumn},
+			Columns: language.BooksPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(book.FieldID, field.TypeString),
@@ -189,10 +216,10 @@ func (lu *LanguageUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if nodes := lu.mutation.BooksIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   language.BooksTable,
-			Columns: []string{language.BooksColumn},
+			Columns: language.BooksPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(book.FieldID, field.TypeString),
@@ -221,6 +248,27 @@ type LanguageUpdateOne struct {
 	fields   []string
 	hooks    []Hook
 	mutation *LanguageMutation
+}
+
+// SetCalibreID sets the "calibre_id" field.
+func (luo *LanguageUpdateOne) SetCalibreID(i int64) *LanguageUpdateOne {
+	luo.mutation.ResetCalibreID()
+	luo.mutation.SetCalibreID(i)
+	return luo
+}
+
+// SetNillableCalibreID sets the "calibre_id" field if the given value is not nil.
+func (luo *LanguageUpdateOne) SetNillableCalibreID(i *int64) *LanguageUpdateOne {
+	if i != nil {
+		luo.SetCalibreID(*i)
+	}
+	return luo
+}
+
+// AddCalibreID adds i to the "calibre_id" field.
+func (luo *LanguageUpdateOne) AddCalibreID(i int64) *LanguageUpdateOne {
+	luo.mutation.AddCalibreID(i)
+	return luo
 }
 
 // SetName sets the "name" field.
@@ -376,6 +424,12 @@ func (luo *LanguageUpdateOne) sqlSave(ctx context.Context) (_node *Language, err
 			}
 		}
 	}
+	if value, ok := luo.mutation.CalibreID(); ok {
+		_spec.SetField(language.FieldCalibreID, field.TypeInt64, value)
+	}
+	if value, ok := luo.mutation.AddedCalibreID(); ok {
+		_spec.AddField(language.FieldCalibreID, field.TypeInt64, value)
+	}
 	if value, ok := luo.mutation.Name(); ok {
 		_spec.SetField(language.FieldName, field.TypeString, value)
 	}
@@ -384,10 +438,10 @@ func (luo *LanguageUpdateOne) sqlSave(ctx context.Context) (_node *Language, err
 	}
 	if luo.mutation.BooksCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   language.BooksTable,
-			Columns: []string{language.BooksColumn},
+			Columns: language.BooksPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(book.FieldID, field.TypeString),
@@ -397,10 +451,10 @@ func (luo *LanguageUpdateOne) sqlSave(ctx context.Context) (_node *Language, err
 	}
 	if nodes := luo.mutation.RemovedBooksIDs(); len(nodes) > 0 && !luo.mutation.BooksCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   language.BooksTable,
-			Columns: []string{language.BooksColumn},
+			Columns: language.BooksPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(book.FieldID, field.TypeString),
@@ -413,10 +467,10 @@ func (luo *LanguageUpdateOne) sqlSave(ctx context.Context) (_node *Language, err
 	}
 	if nodes := luo.mutation.BooksIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   language.BooksTable,
-			Columns: []string{language.BooksColumn},
+			Columns: language.BooksPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(book.FieldID, field.TypeString),

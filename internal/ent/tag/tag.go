@@ -15,26 +15,33 @@ const (
 	Label = "tag"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
+	// FieldCalibreID holds the string denoting the calibre_id field in the database.
+	FieldCalibreID = "calibre_id"
 	// FieldName holds the string denoting the name field in the database.
 	FieldName = "name"
 	// EdgeBooks holds the string denoting the books edge name in mutations.
 	EdgeBooks = "books"
 	// Table holds the table name of the tag in the database.
 	Table = "tags"
-	// BooksTable is the table that holds the books relation/edge.
-	BooksTable = "books"
+	// BooksTable is the table that holds the books relation/edge. The primary key declared below.
+	BooksTable = "tag_books"
 	// BooksInverseTable is the table name for the Book entity.
 	// It exists in this package in order to avoid circular dependency with the "book" package.
 	BooksInverseTable = "books"
-	// BooksColumn is the table column denoting the books relation/edge.
-	BooksColumn = "tag_books"
 )
 
 // Columns holds all SQL columns for tag fields.
 var Columns = []string{
 	FieldID,
+	FieldCalibreID,
 	FieldName,
 }
+
+var (
+	// BooksPrimaryKey and BooksColumn2 are the table columns denoting the
+	// primary key for the books relation (M2M).
+	BooksPrimaryKey = []string{"tag_id", "book_id"}
+)
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
@@ -68,6 +75,11 @@ func ByID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldID, opts...).ToFunc()
 }
 
+// ByCalibreID orders the results by the calibre_id field.
+func ByCalibreID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldCalibreID, opts...).ToFunc()
+}
+
 // ByName orders the results by the name field.
 func ByName(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldName, opts...).ToFunc()
@@ -90,6 +102,6 @@ func newBooksStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(BooksInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, false, BooksTable, BooksColumn),
+		sqlgraph.Edge(sqlgraph.M2M, false, BooksTable, BooksPrimaryKey...),
 	)
 }

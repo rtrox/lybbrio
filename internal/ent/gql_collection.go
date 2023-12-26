@@ -133,6 +133,11 @@ func (a *AuthorQuery) collectField(ctx context.Context, opCtx *graphql.Operation
 			a.WithNamedBooks(alias, func(wq *BookQuery) {
 				*wq = *query
 			})
+		case "calibreID":
+			if _, ok := fieldSeen[author.FieldCalibreID]; !ok {
+				selectedFields = append(selectedFields, author.FieldCalibreID)
+				fieldSeen[author.FieldCalibreID] = struct{}{}
+			}
 		case "name":
 			if _, ok := fieldSeen[author.FieldName]; !ok {
 				selectedFields = append(selectedFields, author.FieldName)
@@ -250,6 +255,18 @@ func (b *BookQuery) collectField(ctx context.Context, opCtx *graphql.OperationCo
 			b.WithNamedAuthors(alias, func(wq *AuthorQuery) {
 				*wq = *query
 			})
+		case "publisher":
+			var (
+				alias = field.Alias
+				path  = append(path, alias)
+				query = (&PublisherClient{config: b.config}).Query()
+			)
+			if err := query.collectField(ctx, opCtx, field, path, satisfies...); err != nil {
+				return err
+			}
+			b.WithNamedPublisher(alias, func(wq *PublisherQuery) {
+				*wq = *query
+			})
 		case "series":
 			var (
 				alias = field.Alias
@@ -262,7 +279,7 @@ func (b *BookQuery) collectField(ctx context.Context, opCtx *graphql.OperationCo
 			b.WithNamedSeries(alias, func(wq *SeriesQuery) {
 				*wq = *query
 			})
-		case "identifier":
+		case "identifiers":
 			var (
 				alias = field.Alias
 				path  = append(path, alias)
@@ -271,7 +288,19 @@ func (b *BookQuery) collectField(ctx context.Context, opCtx *graphql.OperationCo
 			if err := query.collectField(ctx, opCtx, field, path, satisfies...); err != nil {
 				return err
 			}
-			b.WithNamedIdentifier(alias, func(wq *IdentifierQuery) {
+			b.WithNamedIdentifiers(alias, func(wq *IdentifierQuery) {
+				*wq = *query
+			})
+		case "tags":
+			var (
+				alias = field.Alias
+				path  = append(path, alias)
+				query = (&TagClient{config: b.config}).Query()
+			)
+			if err := query.collectField(ctx, opCtx, field, path, satisfies...); err != nil {
+				return err
+			}
+			b.WithNamedTags(alias, func(wq *TagQuery) {
 				*wq = *query
 			})
 		case "language":
@@ -283,7 +312,9 @@ func (b *BookQuery) collectField(ctx context.Context, opCtx *graphql.OperationCo
 			if err := query.collectField(ctx, opCtx, field, path, satisfies...); err != nil {
 				return err
 			}
-			b.withLanguage = query
+			b.WithNamedLanguage(alias, func(wq *LanguageQuery) {
+				*wq = *query
+			})
 		case "shelf":
 			var (
 				alias = field.Alias
@@ -296,6 +327,11 @@ func (b *BookQuery) collectField(ctx context.Context, opCtx *graphql.OperationCo
 			b.WithNamedShelf(alias, func(wq *ShelfQuery) {
 				*wq = *query
 			})
+		case "calibreID":
+			if _, ok := fieldSeen[book.FieldCalibreID]; !ok {
+				selectedFields = append(selectedFields, book.FieldCalibreID)
+				fieldSeen[book.FieldCalibreID] = struct{}{}
+			}
 		case "title":
 			if _, ok := fieldSeen[book.FieldTitle]; !ok {
 				selectedFields = append(selectedFields, book.FieldTitle)
@@ -431,6 +467,11 @@ func (i *IdentifierQuery) collectField(ctx context.Context, opCtx *graphql.Opera
 				return err
 			}
 			i.withBook = query
+		case "calibreID":
+			if _, ok := fieldSeen[identifier.FieldCalibreID]; !ok {
+				selectedFields = append(selectedFields, identifier.FieldCalibreID)
+				fieldSeen[identifier.FieldCalibreID] = struct{}{}
+			}
 		case "type":
 			if _, ok := fieldSeen[identifier.FieldType]; !ok {
 				selectedFields = append(selectedFields, identifier.FieldType)
@@ -559,13 +600,17 @@ func (l *LanguageQuery) collectField(ctx context.Context, opCtx *graphql.Operati
 							ids[i] = nodes[i].ID
 						}
 						var v []struct {
-							NodeID ksuid.ID `sql:"language_books"`
+							NodeID ksuid.ID `sql:"language_id"`
 							Count  int      `sql:"count"`
 						}
 						query.Where(func(s *sql.Selector) {
-							s.Where(sql.InValues(s.C(language.BooksColumn), ids...))
+							joinT := sql.Table(language.BooksTable)
+							s.Join(joinT).On(s.C(book.FieldID), joinT.C(language.BooksPrimaryKey[1]))
+							s.Where(sql.InValues(joinT.C(language.BooksPrimaryKey[0]), ids...))
+							s.Select(joinT.C(language.BooksPrimaryKey[0]), sql.Count("*"))
+							s.GroupBy(joinT.C(language.BooksPrimaryKey[0]))
 						})
-						if err := query.GroupBy(language.BooksColumn).Aggregate(Count()).Scan(ctx, &v); err != nil {
+						if err := query.Select().Scan(ctx, &v); err != nil {
 							return err
 						}
 						m := make(map[ksuid.ID]int, len(v))
@@ -607,7 +652,7 @@ func (l *LanguageQuery) collectField(ctx context.Context, opCtx *graphql.Operati
 				}
 			}
 			if limit := paginateLimit(args.first, args.last); limit > 0 {
-				modify := limitRows(language.BooksColumn, limit, pager.orderExpr(query))
+				modify := limitRows(language.BooksPrimaryKey[0], limit, pager.orderExpr(query))
 				query.modifiers = append(query.modifiers, modify)
 			} else {
 				query = pager.applyOrder(query)
@@ -615,6 +660,11 @@ func (l *LanguageQuery) collectField(ctx context.Context, opCtx *graphql.Operati
 			l.WithNamedBooks(alias, func(wq *BookQuery) {
 				*wq = *query
 			})
+		case "calibreID":
+			if _, ok := fieldSeen[language.FieldCalibreID]; !ok {
+				selectedFields = append(selectedFields, language.FieldCalibreID)
+				fieldSeen[language.FieldCalibreID] = struct{}{}
+			}
 		case "name":
 			if _, ok := fieldSeen[language.FieldName]; !ok {
 				selectedFields = append(selectedFields, language.FieldName)
@@ -743,13 +793,17 @@ func (pu *PublisherQuery) collectField(ctx context.Context, opCtx *graphql.Opera
 							ids[i] = nodes[i].ID
 						}
 						var v []struct {
-							NodeID ksuid.ID `sql:"publisher_books"`
+							NodeID ksuid.ID `sql:"publisher_id"`
 							Count  int      `sql:"count"`
 						}
 						query.Where(func(s *sql.Selector) {
-							s.Where(sql.InValues(s.C(publisher.BooksColumn), ids...))
+							joinT := sql.Table(publisher.BooksTable)
+							s.Join(joinT).On(s.C(book.FieldID), joinT.C(publisher.BooksPrimaryKey[1]))
+							s.Where(sql.InValues(joinT.C(publisher.BooksPrimaryKey[0]), ids...))
+							s.Select(joinT.C(publisher.BooksPrimaryKey[0]), sql.Count("*"))
+							s.GroupBy(joinT.C(publisher.BooksPrimaryKey[0]))
 						})
-						if err := query.GroupBy(publisher.BooksColumn).Aggregate(Count()).Scan(ctx, &v); err != nil {
+						if err := query.Select().Scan(ctx, &v); err != nil {
 							return err
 						}
 						m := make(map[ksuid.ID]int, len(v))
@@ -791,7 +845,7 @@ func (pu *PublisherQuery) collectField(ctx context.Context, opCtx *graphql.Opera
 				}
 			}
 			if limit := paginateLimit(args.first, args.last); limit > 0 {
-				modify := limitRows(publisher.BooksColumn, limit, pager.orderExpr(query))
+				modify := limitRows(publisher.BooksPrimaryKey[0], limit, pager.orderExpr(query))
 				query.modifiers = append(query.modifiers, modify)
 			} else {
 				query = pager.applyOrder(query)
@@ -799,6 +853,11 @@ func (pu *PublisherQuery) collectField(ctx context.Context, opCtx *graphql.Opera
 			pu.WithNamedBooks(alias, func(wq *BookQuery) {
 				*wq = *query
 			})
+		case "calibreID":
+			if _, ok := fieldSeen[publisher.FieldCalibreID]; !ok {
+				selectedFields = append(selectedFields, publisher.FieldCalibreID)
+				fieldSeen[publisher.FieldCalibreID] = struct{}{}
+			}
 		case "name":
 			if _, ok := fieldSeen[publisher.FieldName]; !ok {
 				selectedFields = append(selectedFields, publisher.FieldName)
@@ -906,6 +965,11 @@ func (s *SeriesQuery) collectField(ctx context.Context, opCtx *graphql.Operation
 			s.WithNamedBooks(alias, func(wq *BookQuery) {
 				*wq = *query
 			})
+		case "calibreID":
+			if _, ok := fieldSeen[series.FieldCalibreID]; !ok {
+				selectedFields = append(selectedFields, series.FieldCalibreID)
+				fieldSeen[series.FieldCalibreID] = struct{}{}
+			}
 		case "name":
 			if _, ok := fieldSeen[series.FieldName]; !ok {
 				selectedFields = append(selectedFields, series.FieldName)
@@ -1246,13 +1310,17 @@ func (t *TagQuery) collectField(ctx context.Context, opCtx *graphql.OperationCon
 							ids[i] = nodes[i].ID
 						}
 						var v []struct {
-							NodeID ksuid.ID `sql:"tag_books"`
+							NodeID ksuid.ID `sql:"tag_id"`
 							Count  int      `sql:"count"`
 						}
 						query.Where(func(s *sql.Selector) {
-							s.Where(sql.InValues(s.C(tag.BooksColumn), ids...))
+							joinT := sql.Table(tag.BooksTable)
+							s.Join(joinT).On(s.C(book.FieldID), joinT.C(tag.BooksPrimaryKey[1]))
+							s.Where(sql.InValues(joinT.C(tag.BooksPrimaryKey[0]), ids...))
+							s.Select(joinT.C(tag.BooksPrimaryKey[0]), sql.Count("*"))
+							s.GroupBy(joinT.C(tag.BooksPrimaryKey[0]))
 						})
-						if err := query.GroupBy(tag.BooksColumn).Aggregate(Count()).Scan(ctx, &v); err != nil {
+						if err := query.Select().Scan(ctx, &v); err != nil {
 							return err
 						}
 						m := make(map[ksuid.ID]int, len(v))
@@ -1294,7 +1362,7 @@ func (t *TagQuery) collectField(ctx context.Context, opCtx *graphql.OperationCon
 				}
 			}
 			if limit := paginateLimit(args.first, args.last); limit > 0 {
-				modify := limitRows(tag.BooksColumn, limit, pager.orderExpr(query))
+				modify := limitRows(tag.BooksPrimaryKey[0], limit, pager.orderExpr(query))
 				query.modifiers = append(query.modifiers, modify)
 			} else {
 				query = pager.applyOrder(query)
@@ -1302,6 +1370,11 @@ func (t *TagQuery) collectField(ctx context.Context, opCtx *graphql.OperationCon
 			t.WithNamedBooks(alias, func(wq *BookQuery) {
 				*wq = *query
 			})
+		case "calibreID":
+			if _, ok := fieldSeen[tag.FieldCalibreID]; !ok {
+				selectedFields = append(selectedFields, tag.FieldCalibreID)
+				fieldSeen[tag.FieldCalibreID] = struct{}{}
+			}
 		case "name":
 			if _, ok := fieldSeen[tag.FieldName]; !ok {
 				selectedFields = append(selectedFields, tag.FieldName)

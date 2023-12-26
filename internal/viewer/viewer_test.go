@@ -72,7 +72,7 @@ func Test_NewContext(t *testing.T) {
 	assert := assert.New(t)
 	expectedID := ksuid.MustNew("usr")
 	ctx := NewContext(
-		context.TODO(),
+		context.Background(),
 		&ent.User{ID: expectedID},
 		&ent.UserPermissions{Admin: true},
 	)

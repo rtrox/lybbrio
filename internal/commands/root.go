@@ -24,6 +24,8 @@ import (
 	"github.com/spf13/cobra"
 
 	"lybbrio/internal/auth"
+	"lybbrio/internal/calibre"
+	calibre_tasks "lybbrio/internal/calibre/tasks"
 	"lybbrio/internal/config"
 	"lybbrio/internal/db"
 	"lybbrio/internal/graph"
@@ -146,12 +148,12 @@ func rootRun(cmd *cobra.Command, args []string) {
 	}
 
 	// Calibre
-	// cal, error := calibre.NewCalibreSQLite(conf.CalibreDBPath)
-	// cal = cal.WithLogger(&log.Logger).(*calibre.CalibreSQLite)
+	cal, error := calibre.NewCalibreSQLite(conf.CalibreDBPath)
+	cal = cal.WithLogger(&log.Logger).(*calibre.CalibreSQLite)
 
-	// if error != nil {
-	// 	log.Fatal().Err(error).Msg("Failed to initialize Calibre")
-	// }
+	if error != nil {
+		log.Fatal().Err(error).Msg("Failed to initialize Calibre")
+	}
 
 	// Database
 	client, err := db.Open(&conf.DB)
@@ -164,10 +166,6 @@ func rootRun(cmd *cobra.Command, args []string) {
 	); err != nil {
 		log.Fatal().Err(err).Msg("migrating ent client")
 	}
-	graphqlHandler := handler.NewDefaultServer(graph.NewSchema(client))
-	graphqlHandler.Use(
-		entgql.Transactioner{TxOpener: client},
-	)
 
 	// Task Scheduler
 	schedulerVC := viewer.NewSystemAdminContext(schedulerCtx)
@@ -189,6 +187,7 @@ func rootRun(cmd *cobra.Command, args []string) {
 			Cadence:   5 * time.Second, // TODO: Config
 		},
 	)
+	scheduler.RegisterTasks(calibre_tasks.TaskMap(cal, client))
 	scheduler.Start()
 
 	// Auth Provider
@@ -196,6 +195,13 @@ func rootRun(cmd *cobra.Command, args []string) {
 	if err != nil {
 		log.Fatal().Err(err).Msg("Failed to initialize JWT Provider")
 	}
+
+	// GraphQL
+	graphqlHandler := handler.NewDefaultServer(graph.NewSchema(client))
+	graphqlHandler.Use(
+		entgql.Transactioner{TxOpener: client},
+	)
+
 	// HTTP
 	r := chi.NewRouter()
 

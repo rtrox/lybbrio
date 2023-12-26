@@ -10,6 +10,8 @@ import (
 	"lybbrio/internal/ent/identifier"
 	"lybbrio/internal/ent/schema/ksuid"
 
+	"entgo.io/ent/dialect"
+	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 )
@@ -19,11 +21,18 @@ type IdentifierCreate struct {
 	config
 	mutation *IdentifierMutation
 	hooks    []Hook
+	conflict []sql.ConflictOption
+}
+
+// SetCalibreID sets the "calibre_id" field.
+func (ic *IdentifierCreate) SetCalibreID(i int64) *IdentifierCreate {
+	ic.mutation.SetCalibreID(i)
+	return ic
 }
 
 // SetType sets the "type" field.
-func (ic *IdentifierCreate) SetType(i identifier.Type) *IdentifierCreate {
-	ic.mutation.SetType(i)
+func (ic *IdentifierCreate) SetType(s string) *IdentifierCreate {
+	ic.mutation.SetType(s)
 	return ic
 }
 
@@ -107,6 +116,9 @@ func (ic *IdentifierCreate) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (ic *IdentifierCreate) check() error {
+	if _, ok := ic.mutation.CalibreID(); !ok {
+		return &ValidationError{Name: "calibre_id", err: errors.New(`ent: missing required field "Identifier.calibre_id"`)}
+	}
 	if _, ok := ic.mutation.GetType(); !ok {
 		return &ValidationError{Name: "type", err: errors.New(`ent: missing required field "Identifier.type"`)}
 	}
@@ -157,12 +169,17 @@ func (ic *IdentifierCreate) createSpec() (*Identifier, *sqlgraph.CreateSpec) {
 		_node = &Identifier{config: ic.config}
 		_spec = sqlgraph.NewCreateSpec(identifier.Table, sqlgraph.NewFieldSpec(identifier.FieldID, field.TypeString))
 	)
+	_spec.OnConflict = ic.conflict
 	if id, ok := ic.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = id
 	}
+	if value, ok := ic.mutation.CalibreID(); ok {
+		_spec.SetField(identifier.FieldCalibreID, field.TypeInt64, value)
+		_node.CalibreID = value
+	}
 	if value, ok := ic.mutation.GetType(); ok {
-		_spec.SetField(identifier.FieldType, field.TypeEnum, value)
+		_spec.SetField(identifier.FieldType, field.TypeString, value)
 		_node.Type = value
 	}
 	if value, ok := ic.mutation.Value(); ok {
@@ -189,11 +206,238 @@ func (ic *IdentifierCreate) createSpec() (*Identifier, *sqlgraph.CreateSpec) {
 	return _node, _spec
 }
 
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.Identifier.Create().
+//		SetCalibreID(v).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.IdentifierUpsert) {
+//			SetCalibreID(v+v).
+//		}).
+//		Exec(ctx)
+func (ic *IdentifierCreate) OnConflict(opts ...sql.ConflictOption) *IdentifierUpsertOne {
+	ic.conflict = opts
+	return &IdentifierUpsertOne{
+		create: ic,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.Identifier.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (ic *IdentifierCreate) OnConflictColumns(columns ...string) *IdentifierUpsertOne {
+	ic.conflict = append(ic.conflict, sql.ConflictColumns(columns...))
+	return &IdentifierUpsertOne{
+		create: ic,
+	}
+}
+
+type (
+	// IdentifierUpsertOne is the builder for "upsert"-ing
+	//  one Identifier node.
+	IdentifierUpsertOne struct {
+		create *IdentifierCreate
+	}
+
+	// IdentifierUpsert is the "OnConflict" setter.
+	IdentifierUpsert struct {
+		*sql.UpdateSet
+	}
+)
+
+// SetCalibreID sets the "calibre_id" field.
+func (u *IdentifierUpsert) SetCalibreID(v int64) *IdentifierUpsert {
+	u.Set(identifier.FieldCalibreID, v)
+	return u
+}
+
+// UpdateCalibreID sets the "calibre_id" field to the value that was provided on create.
+func (u *IdentifierUpsert) UpdateCalibreID() *IdentifierUpsert {
+	u.SetExcluded(identifier.FieldCalibreID)
+	return u
+}
+
+// AddCalibreID adds v to the "calibre_id" field.
+func (u *IdentifierUpsert) AddCalibreID(v int64) *IdentifierUpsert {
+	u.Add(identifier.FieldCalibreID, v)
+	return u
+}
+
+// SetType sets the "type" field.
+func (u *IdentifierUpsert) SetType(v string) *IdentifierUpsert {
+	u.Set(identifier.FieldType, v)
+	return u
+}
+
+// UpdateType sets the "type" field to the value that was provided on create.
+func (u *IdentifierUpsert) UpdateType() *IdentifierUpsert {
+	u.SetExcluded(identifier.FieldType)
+	return u
+}
+
+// SetValue sets the "value" field.
+func (u *IdentifierUpsert) SetValue(v string) *IdentifierUpsert {
+	u.Set(identifier.FieldValue, v)
+	return u
+}
+
+// UpdateValue sets the "value" field to the value that was provided on create.
+func (u *IdentifierUpsert) UpdateValue() *IdentifierUpsert {
+	u.SetExcluded(identifier.FieldValue)
+	return u
+}
+
+// UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
+// Using this option is equivalent to using:
+//
+//	client.Identifier.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(identifier.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *IdentifierUpsertOne) UpdateNewValues() *IdentifierUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		if _, exists := u.create.mutation.ID(); exists {
+			s.SetIgnore(identifier.FieldID)
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.Identifier.Create().
+//	    OnConflict(sql.ResolveWithIgnore()).
+//	    Exec(ctx)
+func (u *IdentifierUpsertOne) Ignore() *IdentifierUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *IdentifierUpsertOne) DoNothing() *IdentifierUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the IdentifierCreate.OnConflict
+// documentation for more info.
+func (u *IdentifierUpsertOne) Update(set func(*IdentifierUpsert)) *IdentifierUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&IdentifierUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetCalibreID sets the "calibre_id" field.
+func (u *IdentifierUpsertOne) SetCalibreID(v int64) *IdentifierUpsertOne {
+	return u.Update(func(s *IdentifierUpsert) {
+		s.SetCalibreID(v)
+	})
+}
+
+// AddCalibreID adds v to the "calibre_id" field.
+func (u *IdentifierUpsertOne) AddCalibreID(v int64) *IdentifierUpsertOne {
+	return u.Update(func(s *IdentifierUpsert) {
+		s.AddCalibreID(v)
+	})
+}
+
+// UpdateCalibreID sets the "calibre_id" field to the value that was provided on create.
+func (u *IdentifierUpsertOne) UpdateCalibreID() *IdentifierUpsertOne {
+	return u.Update(func(s *IdentifierUpsert) {
+		s.UpdateCalibreID()
+	})
+}
+
+// SetType sets the "type" field.
+func (u *IdentifierUpsertOne) SetType(v string) *IdentifierUpsertOne {
+	return u.Update(func(s *IdentifierUpsert) {
+		s.SetType(v)
+	})
+}
+
+// UpdateType sets the "type" field to the value that was provided on create.
+func (u *IdentifierUpsertOne) UpdateType() *IdentifierUpsertOne {
+	return u.Update(func(s *IdentifierUpsert) {
+		s.UpdateType()
+	})
+}
+
+// SetValue sets the "value" field.
+func (u *IdentifierUpsertOne) SetValue(v string) *IdentifierUpsertOne {
+	return u.Update(func(s *IdentifierUpsert) {
+		s.SetValue(v)
+	})
+}
+
+// UpdateValue sets the "value" field to the value that was provided on create.
+func (u *IdentifierUpsertOne) UpdateValue() *IdentifierUpsertOne {
+	return u.Update(func(s *IdentifierUpsert) {
+		s.UpdateValue()
+	})
+}
+
+// Exec executes the query.
+func (u *IdentifierUpsertOne) Exec(ctx context.Context) error {
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for IdentifierCreate.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *IdentifierUpsertOne) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// Exec executes the UPSERT query and returns the inserted/updated ID.
+func (u *IdentifierUpsertOne) ID(ctx context.Context) (id ksuid.ID, err error) {
+	if u.create.driver.Dialect() == dialect.MySQL {
+		// In case of "ON CONFLICT", there is no way to get back non-numeric ID
+		// fields from the database since MySQL does not support the RETURNING clause.
+		return id, errors.New("ent: IdentifierUpsertOne.ID is not supported by MySQL driver. Use IdentifierUpsertOne.Exec instead")
+	}
+	node, err := u.create.Save(ctx)
+	if err != nil {
+		return id, err
+	}
+	return node.ID, nil
+}
+
+// IDX is like ID, but panics if an error occurs.
+func (u *IdentifierUpsertOne) IDX(ctx context.Context) ksuid.ID {
+	id, err := u.ID(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return id
+}
+
 // IdentifierCreateBulk is the builder for creating many Identifier entities in bulk.
 type IdentifierCreateBulk struct {
 	config
 	err      error
 	builders []*IdentifierCreate
+	conflict []sql.ConflictOption
 }
 
 // Save creates the Identifier entities in the database.
@@ -223,6 +467,7 @@ func (icb *IdentifierCreateBulk) Save(ctx context.Context) ([]*Identifier, error
 					_, err = mutators[i+1].Mutate(root, icb.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
+					spec.OnConflict = icb.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
 					if err = sqlgraph.BatchCreate(ctx, icb.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
@@ -269,6 +514,169 @@ func (icb *IdentifierCreateBulk) Exec(ctx context.Context) error {
 // ExecX is like Exec, but panics if an error occurs.
 func (icb *IdentifierCreateBulk) ExecX(ctx context.Context) {
 	if err := icb.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.Identifier.CreateBulk(builders...).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.IdentifierUpsert) {
+//			SetCalibreID(v+v).
+//		}).
+//		Exec(ctx)
+func (icb *IdentifierCreateBulk) OnConflict(opts ...sql.ConflictOption) *IdentifierUpsertBulk {
+	icb.conflict = opts
+	return &IdentifierUpsertBulk{
+		create: icb,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.Identifier.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (icb *IdentifierCreateBulk) OnConflictColumns(columns ...string) *IdentifierUpsertBulk {
+	icb.conflict = append(icb.conflict, sql.ConflictColumns(columns...))
+	return &IdentifierUpsertBulk{
+		create: icb,
+	}
+}
+
+// IdentifierUpsertBulk is the builder for "upsert"-ing
+// a bulk of Identifier nodes.
+type IdentifierUpsertBulk struct {
+	create *IdentifierCreateBulk
+}
+
+// UpdateNewValues updates the mutable fields using the new values that
+// were set on create. Using this option is equivalent to using:
+//
+//	client.Identifier.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(identifier.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *IdentifierUpsertBulk) UpdateNewValues() *IdentifierUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		for _, b := range u.create.builders {
+			if _, exists := b.mutation.ID(); exists {
+				s.SetIgnore(identifier.FieldID)
+			}
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.Identifier.Create().
+//		OnConflict(sql.ResolveWithIgnore()).
+//		Exec(ctx)
+func (u *IdentifierUpsertBulk) Ignore() *IdentifierUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *IdentifierUpsertBulk) DoNothing() *IdentifierUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the IdentifierCreateBulk.OnConflict
+// documentation for more info.
+func (u *IdentifierUpsertBulk) Update(set func(*IdentifierUpsert)) *IdentifierUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&IdentifierUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetCalibreID sets the "calibre_id" field.
+func (u *IdentifierUpsertBulk) SetCalibreID(v int64) *IdentifierUpsertBulk {
+	return u.Update(func(s *IdentifierUpsert) {
+		s.SetCalibreID(v)
+	})
+}
+
+// AddCalibreID adds v to the "calibre_id" field.
+func (u *IdentifierUpsertBulk) AddCalibreID(v int64) *IdentifierUpsertBulk {
+	return u.Update(func(s *IdentifierUpsert) {
+		s.AddCalibreID(v)
+	})
+}
+
+// UpdateCalibreID sets the "calibre_id" field to the value that was provided on create.
+func (u *IdentifierUpsertBulk) UpdateCalibreID() *IdentifierUpsertBulk {
+	return u.Update(func(s *IdentifierUpsert) {
+		s.UpdateCalibreID()
+	})
+}
+
+// SetType sets the "type" field.
+func (u *IdentifierUpsertBulk) SetType(v string) *IdentifierUpsertBulk {
+	return u.Update(func(s *IdentifierUpsert) {
+		s.SetType(v)
+	})
+}
+
+// UpdateType sets the "type" field to the value that was provided on create.
+func (u *IdentifierUpsertBulk) UpdateType() *IdentifierUpsertBulk {
+	return u.Update(func(s *IdentifierUpsert) {
+		s.UpdateType()
+	})
+}
+
+// SetValue sets the "value" field.
+func (u *IdentifierUpsertBulk) SetValue(v string) *IdentifierUpsertBulk {
+	return u.Update(func(s *IdentifierUpsert) {
+		s.SetValue(v)
+	})
+}
+
+// UpdateValue sets the "value" field to the value that was provided on create.
+func (u *IdentifierUpsertBulk) UpdateValue() *IdentifierUpsertBulk {
+	return u.Update(func(s *IdentifierUpsert) {
+		s.UpdateValue()
+	})
+}
+
+// Exec executes the query.
+func (u *IdentifierUpsertBulk) Exec(ctx context.Context) error {
+	if u.create.err != nil {
+		return u.create.err
+	}
+	for i, b := range u.create.builders {
+		if len(b.conflict) != 0 {
+			return fmt.Errorf("ent: OnConflict was set for builder %d. Set it on the IdentifierCreateBulk instead", i)
+		}
+	}
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for IdentifierCreateBulk.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *IdentifierUpsertBulk) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

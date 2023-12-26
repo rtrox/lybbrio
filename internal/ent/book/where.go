@@ -56,6 +56,11 @@ func IDLTE(id ksuid.ID) predicate.Book {
 	return predicate.Book(sql.FieldLTE(FieldID, id))
 }
 
+// CalibreID applies equality check predicate on the "calibre_id" field. It's identical to CalibreIDEQ.
+func CalibreID(v int64) predicate.Book {
+	return predicate.Book(sql.FieldEQ(FieldCalibreID, v))
+}
+
 // Title applies equality check predicate on the "title" field. It's identical to TitleEQ.
 func Title(v string) predicate.Book {
 	return predicate.Book(sql.FieldEQ(FieldTitle, v))
@@ -87,8 +92,48 @@ func Description(v string) predicate.Book {
 }
 
 // SeriesIndex applies equality check predicate on the "series_index" field. It's identical to SeriesIndexEQ.
-func SeriesIndex(v int) predicate.Book {
+func SeriesIndex(v float64) predicate.Book {
 	return predicate.Book(sql.FieldEQ(FieldSeriesIndex, v))
+}
+
+// CalibreIDEQ applies the EQ predicate on the "calibre_id" field.
+func CalibreIDEQ(v int64) predicate.Book {
+	return predicate.Book(sql.FieldEQ(FieldCalibreID, v))
+}
+
+// CalibreIDNEQ applies the NEQ predicate on the "calibre_id" field.
+func CalibreIDNEQ(v int64) predicate.Book {
+	return predicate.Book(sql.FieldNEQ(FieldCalibreID, v))
+}
+
+// CalibreIDIn applies the In predicate on the "calibre_id" field.
+func CalibreIDIn(vs ...int64) predicate.Book {
+	return predicate.Book(sql.FieldIn(FieldCalibreID, vs...))
+}
+
+// CalibreIDNotIn applies the NotIn predicate on the "calibre_id" field.
+func CalibreIDNotIn(vs ...int64) predicate.Book {
+	return predicate.Book(sql.FieldNotIn(FieldCalibreID, vs...))
+}
+
+// CalibreIDGT applies the GT predicate on the "calibre_id" field.
+func CalibreIDGT(v int64) predicate.Book {
+	return predicate.Book(sql.FieldGT(FieldCalibreID, v))
+}
+
+// CalibreIDGTE applies the GTE predicate on the "calibre_id" field.
+func CalibreIDGTE(v int64) predicate.Book {
+	return predicate.Book(sql.FieldGTE(FieldCalibreID, v))
+}
+
+// CalibreIDLT applies the LT predicate on the "calibre_id" field.
+func CalibreIDLT(v int64) predicate.Book {
+	return predicate.Book(sql.FieldLT(FieldCalibreID, v))
+}
+
+// CalibreIDLTE applies the LTE predicate on the "calibre_id" field.
+func CalibreIDLTE(v int64) predicate.Book {
+	return predicate.Book(sql.FieldLTE(FieldCalibreID, v))
 }
 
 // TitleEQ applies the EQ predicate on the "title" field.
@@ -487,42 +532,42 @@ func DescriptionContainsFold(v string) predicate.Book {
 }
 
 // SeriesIndexEQ applies the EQ predicate on the "series_index" field.
-func SeriesIndexEQ(v int) predicate.Book {
+func SeriesIndexEQ(v float64) predicate.Book {
 	return predicate.Book(sql.FieldEQ(FieldSeriesIndex, v))
 }
 
 // SeriesIndexNEQ applies the NEQ predicate on the "series_index" field.
-func SeriesIndexNEQ(v int) predicate.Book {
+func SeriesIndexNEQ(v float64) predicate.Book {
 	return predicate.Book(sql.FieldNEQ(FieldSeriesIndex, v))
 }
 
 // SeriesIndexIn applies the In predicate on the "series_index" field.
-func SeriesIndexIn(vs ...int) predicate.Book {
+func SeriesIndexIn(vs ...float64) predicate.Book {
 	return predicate.Book(sql.FieldIn(FieldSeriesIndex, vs...))
 }
 
 // SeriesIndexNotIn applies the NotIn predicate on the "series_index" field.
-func SeriesIndexNotIn(vs ...int) predicate.Book {
+func SeriesIndexNotIn(vs ...float64) predicate.Book {
 	return predicate.Book(sql.FieldNotIn(FieldSeriesIndex, vs...))
 }
 
 // SeriesIndexGT applies the GT predicate on the "series_index" field.
-func SeriesIndexGT(v int) predicate.Book {
+func SeriesIndexGT(v float64) predicate.Book {
 	return predicate.Book(sql.FieldGT(FieldSeriesIndex, v))
 }
 
 // SeriesIndexGTE applies the GTE predicate on the "series_index" field.
-func SeriesIndexGTE(v int) predicate.Book {
+func SeriesIndexGTE(v float64) predicate.Book {
 	return predicate.Book(sql.FieldGTE(FieldSeriesIndex, v))
 }
 
 // SeriesIndexLT applies the LT predicate on the "series_index" field.
-func SeriesIndexLT(v int) predicate.Book {
+func SeriesIndexLT(v float64) predicate.Book {
 	return predicate.Book(sql.FieldLT(FieldSeriesIndex, v))
 }
 
 // SeriesIndexLTE applies the LTE predicate on the "series_index" field.
-func SeriesIndexLTE(v int) predicate.Book {
+func SeriesIndexLTE(v float64) predicate.Book {
 	return predicate.Book(sql.FieldLTE(FieldSeriesIndex, v))
 }
 
@@ -559,6 +604,29 @@ func HasAuthorsWith(preds ...predicate.Author) predicate.Book {
 	})
 }
 
+// HasPublisher applies the HasEdge predicate on the "publisher" edge.
+func HasPublisher() predicate.Book {
+	return predicate.Book(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, PublisherTable, PublisherPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasPublisherWith applies the HasEdge predicate on the "publisher" edge with a given conditions (other predicates).
+func HasPublisherWith(preds ...predicate.Publisher) predicate.Book {
+	return predicate.Book(func(s *sql.Selector) {
+		step := newPublisherStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // HasSeries applies the HasEdge predicate on the "series" edge.
 func HasSeries() predicate.Book {
 	return predicate.Book(func(s *sql.Selector) {
@@ -582,21 +650,44 @@ func HasSeriesWith(preds ...predicate.Series) predicate.Book {
 	})
 }
 
-// HasIdentifier applies the HasEdge predicate on the "identifier" edge.
-func HasIdentifier() predicate.Book {
+// HasIdentifiers applies the HasEdge predicate on the "identifiers" edge.
+func HasIdentifiers() predicate.Book {
 	return predicate.Book(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, IdentifierTable, IdentifierColumn),
+			sqlgraph.Edge(sqlgraph.O2M, true, IdentifiersTable, IdentifiersColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasIdentifierWith applies the HasEdge predicate on the "identifier" edge with a given conditions (other predicates).
-func HasIdentifierWith(preds ...predicate.Identifier) predicate.Book {
+// HasIdentifiersWith applies the HasEdge predicate on the "identifiers" edge with a given conditions (other predicates).
+func HasIdentifiersWith(preds ...predicate.Identifier) predicate.Book {
 	return predicate.Book(func(s *sql.Selector) {
-		step := newIdentifierStep()
+		step := newIdentifiersStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasTags applies the HasEdge predicate on the "tags" edge.
+func HasTags() predicate.Book {
+	return predicate.Book(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, TagsTable, TagsPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasTagsWith applies the HasEdge predicate on the "tags" edge with a given conditions (other predicates).
+func HasTagsWith(preds ...predicate.Tag) predicate.Book {
+	return predicate.Book(func(s *sql.Selector) {
+		step := newTagsStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
@@ -610,7 +701,7 @@ func HasLanguage() predicate.Book {
 	return predicate.Book(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, LanguageTable, LanguageColumn),
+			sqlgraph.Edge(sqlgraph.M2M, true, LanguageTable, LanguagePrimaryKey...),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})

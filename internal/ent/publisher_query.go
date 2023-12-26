@@ -79,7 +79,7 @@ func (pq *PublisherQuery) QueryBooks() *BookQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(publisher.Table, publisher.FieldID, selector),
 			sqlgraph.To(book.Table, book.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, publisher.BooksTable, publisher.BooksColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, publisher.BooksTable, publisher.BooksPrimaryKey...),
 		)
 		fromU = sqlgraph.SetNeighbors(pq.driver.Dialect(), step)
 		return fromU, nil
@@ -303,12 +303,12 @@ func (pq *PublisherQuery) WithBooks(opts ...func(*BookQuery)) *PublisherQuery {
 // Example:
 //
 //	var v []struct {
-//		Name string `json:"name,omitempty"`
+//		CalibreID int64 `json:"calibre_id,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.Publisher.Query().
-//		GroupBy(publisher.FieldName).
+//		GroupBy(publisher.FieldCalibreID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (pq *PublisherQuery) GroupBy(field string, fields ...string) *PublisherGroupBy {
@@ -326,11 +326,11 @@ func (pq *PublisherQuery) GroupBy(field string, fields ...string) *PublisherGrou
 // Example:
 //
 //	var v []struct {
-//		Name string `json:"name,omitempty"`
+//		CalibreID int64 `json:"calibre_id,omitempty"`
 //	}
 //
 //	client.Publisher.Query().
-//		Select(publisher.FieldName).
+//		Select(publisher.FieldCalibreID).
 //		Scan(ctx, &v)
 func (pq *PublisherQuery) Select(fields ...string) *PublisherSelect {
 	pq.ctx.Fields = append(pq.ctx.Fields, fields...)
@@ -429,33 +429,63 @@ func (pq *PublisherQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Pu
 }
 
 func (pq *PublisherQuery) loadBooks(ctx context.Context, query *BookQuery, nodes []*Publisher, init func(*Publisher), assign func(*Publisher, *Book)) error {
-	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[ksuid.ID]*Publisher)
-	for i := range nodes {
-		fks = append(fks, nodes[i].ID)
-		nodeids[nodes[i].ID] = nodes[i]
+	edgeIDs := make([]driver.Value, len(nodes))
+	byID := make(map[ksuid.ID]*Publisher)
+	nids := make(map[ksuid.ID]map[*Publisher]struct{})
+	for i, node := range nodes {
+		edgeIDs[i] = node.ID
+		byID[node.ID] = node
 		if init != nil {
-			init(nodes[i])
+			init(node)
 		}
 	}
-	query.withFKs = true
-	query.Where(predicate.Book(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(publisher.BooksColumn), fks...))
-	}))
-	neighbors, err := query.All(ctx)
+	query.Where(func(s *sql.Selector) {
+		joinT := sql.Table(publisher.BooksTable)
+		s.Join(joinT).On(s.C(book.FieldID), joinT.C(publisher.BooksPrimaryKey[1]))
+		s.Where(sql.InValues(joinT.C(publisher.BooksPrimaryKey[0]), edgeIDs...))
+		columns := s.SelectedColumns()
+		s.Select(joinT.C(publisher.BooksPrimaryKey[0]))
+		s.AppendSelect(columns...)
+		s.SetDistinct(false)
+	})
+	if err := query.prepareQuery(ctx); err != nil {
+		return err
+	}
+	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
+		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+			assign := spec.Assign
+			values := spec.ScanValues
+			spec.ScanValues = func(columns []string) ([]any, error) {
+				values, err := values(columns[1:])
+				if err != nil {
+					return nil, err
+				}
+				return append([]any{new(sql.NullString)}, values...), nil
+			}
+			spec.Assign = func(columns []string, values []any) error {
+				outValue := ksuid.ID(values[0].(*sql.NullString).String)
+				inValue := ksuid.ID(values[1].(*sql.NullString).String)
+				if nids[inValue] == nil {
+					nids[inValue] = map[*Publisher]struct{}{byID[outValue]: {}}
+					return assign(columns[1:], values[1:])
+				}
+				nids[inValue][byID[outValue]] = struct{}{}
+				return nil
+			}
+		})
+	})
+	neighbors, err := withInterceptors[[]*Book](ctx, query, qr, query.inters)
 	if err != nil {
 		return err
 	}
 	for _, n := range neighbors {
-		fk := n.publisher_books
-		if fk == nil {
-			return fmt.Errorf(`foreign-key "publisher_books" is nil for node %v`, n.ID)
-		}
-		node, ok := nodeids[*fk]
+		nodes, ok := nids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "publisher_books" returned %v for node %v`, *fk, n.ID)
+			return fmt.Errorf(`unexpected "books" node returned %v`, n.ID)
 		}
-		assign(node, n)
+		for kn := range nodes {
+			assign(kn, n)
+		}
 	}
 	return nil
 }

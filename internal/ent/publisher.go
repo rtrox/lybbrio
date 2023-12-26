@@ -17,6 +17,8 @@ type Publisher struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID ksuid.ID `json:"id,omitempty"`
+	// CalibreID holds the value of the "calibre_id" field.
+	CalibreID int64 `json:"calibre_id,omitempty"`
 	// Name holds the value of the "name" field.
 	Name string `json:"name,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -52,6 +54,8 @@ func (*Publisher) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case publisher.FieldCalibreID:
+			values[i] = new(sql.NullInt64)
 		case publisher.FieldID, publisher.FieldName:
 			values[i] = new(sql.NullString)
 		default:
@@ -74,6 +78,12 @@ func (pu *Publisher) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value.Valid {
 				pu.ID = ksuid.ID(value.String)
+			}
+		case publisher.FieldCalibreID:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field calibre_id", values[i])
+			} else if value.Valid {
+				pu.CalibreID = value.Int64
 			}
 		case publisher.FieldName:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -122,6 +132,9 @@ func (pu *Publisher) String() string {
 	var builder strings.Builder
 	builder.WriteString("Publisher(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", pu.ID))
+	builder.WriteString("calibre_id=")
+	builder.WriteString(fmt.Sprintf("%v", pu.CalibreID))
+	builder.WriteString(", ")
 	builder.WriteString("name=")
 	builder.WriteString(pu.Name)
 	builder.WriteByte(')')

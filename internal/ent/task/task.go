@@ -100,7 +100,7 @@ const DefaultType task_enums.TaskType = "noop"
 
 // TypeValidator is a validator for the "type" field enum values. It is called by the builders before save.
 func TypeValidator(_type task_enums.TaskType) error {
-	switch _type {
+	switch _type.String() {
 	case "noop", "calibre_import":
 		return nil
 	default:
@@ -112,7 +112,7 @@ const DefaultStatus task_enums.Status = "pending"
 
 // StatusValidator is a validator for the "status" field enum values. It is called by the builders before save.
 func StatusValidator(s task_enums.Status) error {
-	switch s {
+	switch s.String() {
 	case "pending", "in_progress", "success", "failure":
 		return nil
 	default:

@@ -10,6 +10,8 @@ import (
 	"lybbrio/internal/ent/language"
 	"lybbrio/internal/ent/schema/ksuid"
 
+	"entgo.io/ent/dialect"
+	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 )
@@ -19,6 +21,13 @@ type LanguageCreate struct {
 	config
 	mutation *LanguageMutation
 	hooks    []Hook
+	conflict []sql.ConflictOption
+}
+
+// SetCalibreID sets the "calibre_id" field.
+func (lc *LanguageCreate) SetCalibreID(i int64) *LanguageCreate {
+	lc.mutation.SetCalibreID(i)
+	return lc
 }
 
 // SetName sets the "name" field.
@@ -111,6 +120,9 @@ func (lc *LanguageCreate) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (lc *LanguageCreate) check() error {
+	if _, ok := lc.mutation.CalibreID(); !ok {
+		return &ValidationError{Name: "calibre_id", err: errors.New(`ent: missing required field "Language.calibre_id"`)}
+	}
 	if _, ok := lc.mutation.Name(); !ok {
 		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "Language.name"`)}
 	}
@@ -158,9 +170,14 @@ func (lc *LanguageCreate) createSpec() (*Language, *sqlgraph.CreateSpec) {
 		_node = &Language{config: lc.config}
 		_spec = sqlgraph.NewCreateSpec(language.Table, sqlgraph.NewFieldSpec(language.FieldID, field.TypeString))
 	)
+	_spec.OnConflict = lc.conflict
 	if id, ok := lc.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = id
+	}
+	if value, ok := lc.mutation.CalibreID(); ok {
+		_spec.SetField(language.FieldCalibreID, field.TypeInt64, value)
+		_node.CalibreID = value
 	}
 	if value, ok := lc.mutation.Name(); ok {
 		_spec.SetField(language.FieldName, field.TypeString, value)
@@ -172,10 +189,10 @@ func (lc *LanguageCreate) createSpec() (*Language, *sqlgraph.CreateSpec) {
 	}
 	if nodes := lc.mutation.BooksIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   language.BooksTable,
-			Columns: []string{language.BooksColumn},
+			Columns: language.BooksPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(book.FieldID, field.TypeString),
@@ -189,11 +206,238 @@ func (lc *LanguageCreate) createSpec() (*Language, *sqlgraph.CreateSpec) {
 	return _node, _spec
 }
 
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.Language.Create().
+//		SetCalibreID(v).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.LanguageUpsert) {
+//			SetCalibreID(v+v).
+//		}).
+//		Exec(ctx)
+func (lc *LanguageCreate) OnConflict(opts ...sql.ConflictOption) *LanguageUpsertOne {
+	lc.conflict = opts
+	return &LanguageUpsertOne{
+		create: lc,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.Language.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (lc *LanguageCreate) OnConflictColumns(columns ...string) *LanguageUpsertOne {
+	lc.conflict = append(lc.conflict, sql.ConflictColumns(columns...))
+	return &LanguageUpsertOne{
+		create: lc,
+	}
+}
+
+type (
+	// LanguageUpsertOne is the builder for "upsert"-ing
+	//  one Language node.
+	LanguageUpsertOne struct {
+		create *LanguageCreate
+	}
+
+	// LanguageUpsert is the "OnConflict" setter.
+	LanguageUpsert struct {
+		*sql.UpdateSet
+	}
+)
+
+// SetCalibreID sets the "calibre_id" field.
+func (u *LanguageUpsert) SetCalibreID(v int64) *LanguageUpsert {
+	u.Set(language.FieldCalibreID, v)
+	return u
+}
+
+// UpdateCalibreID sets the "calibre_id" field to the value that was provided on create.
+func (u *LanguageUpsert) UpdateCalibreID() *LanguageUpsert {
+	u.SetExcluded(language.FieldCalibreID)
+	return u
+}
+
+// AddCalibreID adds v to the "calibre_id" field.
+func (u *LanguageUpsert) AddCalibreID(v int64) *LanguageUpsert {
+	u.Add(language.FieldCalibreID, v)
+	return u
+}
+
+// SetName sets the "name" field.
+func (u *LanguageUpsert) SetName(v string) *LanguageUpsert {
+	u.Set(language.FieldName, v)
+	return u
+}
+
+// UpdateName sets the "name" field to the value that was provided on create.
+func (u *LanguageUpsert) UpdateName() *LanguageUpsert {
+	u.SetExcluded(language.FieldName)
+	return u
+}
+
+// SetCode sets the "code" field.
+func (u *LanguageUpsert) SetCode(v string) *LanguageUpsert {
+	u.Set(language.FieldCode, v)
+	return u
+}
+
+// UpdateCode sets the "code" field to the value that was provided on create.
+func (u *LanguageUpsert) UpdateCode() *LanguageUpsert {
+	u.SetExcluded(language.FieldCode)
+	return u
+}
+
+// UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
+// Using this option is equivalent to using:
+//
+//	client.Language.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(language.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *LanguageUpsertOne) UpdateNewValues() *LanguageUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		if _, exists := u.create.mutation.ID(); exists {
+			s.SetIgnore(language.FieldID)
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.Language.Create().
+//	    OnConflict(sql.ResolveWithIgnore()).
+//	    Exec(ctx)
+func (u *LanguageUpsertOne) Ignore() *LanguageUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *LanguageUpsertOne) DoNothing() *LanguageUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the LanguageCreate.OnConflict
+// documentation for more info.
+func (u *LanguageUpsertOne) Update(set func(*LanguageUpsert)) *LanguageUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&LanguageUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetCalibreID sets the "calibre_id" field.
+func (u *LanguageUpsertOne) SetCalibreID(v int64) *LanguageUpsertOne {
+	return u.Update(func(s *LanguageUpsert) {
+		s.SetCalibreID(v)
+	})
+}
+
+// AddCalibreID adds v to the "calibre_id" field.
+func (u *LanguageUpsertOne) AddCalibreID(v int64) *LanguageUpsertOne {
+	return u.Update(func(s *LanguageUpsert) {
+		s.AddCalibreID(v)
+	})
+}
+
+// UpdateCalibreID sets the "calibre_id" field to the value that was provided on create.
+func (u *LanguageUpsertOne) UpdateCalibreID() *LanguageUpsertOne {
+	return u.Update(func(s *LanguageUpsert) {
+		s.UpdateCalibreID()
+	})
+}
+
+// SetName sets the "name" field.
+func (u *LanguageUpsertOne) SetName(v string) *LanguageUpsertOne {
+	return u.Update(func(s *LanguageUpsert) {
+		s.SetName(v)
+	})
+}
+
+// UpdateName sets the "name" field to the value that was provided on create.
+func (u *LanguageUpsertOne) UpdateName() *LanguageUpsertOne {
+	return u.Update(func(s *LanguageUpsert) {
+		s.UpdateName()
+	})
+}
+
+// SetCode sets the "code" field.
+func (u *LanguageUpsertOne) SetCode(v string) *LanguageUpsertOne {
+	return u.Update(func(s *LanguageUpsert) {
+		s.SetCode(v)
+	})
+}
+
+// UpdateCode sets the "code" field to the value that was provided on create.
+func (u *LanguageUpsertOne) UpdateCode() *LanguageUpsertOne {
+	return u.Update(func(s *LanguageUpsert) {
+		s.UpdateCode()
+	})
+}
+
+// Exec executes the query.
+func (u *LanguageUpsertOne) Exec(ctx context.Context) error {
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for LanguageCreate.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *LanguageUpsertOne) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// Exec executes the UPSERT query and returns the inserted/updated ID.
+func (u *LanguageUpsertOne) ID(ctx context.Context) (id ksuid.ID, err error) {
+	if u.create.driver.Dialect() == dialect.MySQL {
+		// In case of "ON CONFLICT", there is no way to get back non-numeric ID
+		// fields from the database since MySQL does not support the RETURNING clause.
+		return id, errors.New("ent: LanguageUpsertOne.ID is not supported by MySQL driver. Use LanguageUpsertOne.Exec instead")
+	}
+	node, err := u.create.Save(ctx)
+	if err != nil {
+		return id, err
+	}
+	return node.ID, nil
+}
+
+// IDX is like ID, but panics if an error occurs.
+func (u *LanguageUpsertOne) IDX(ctx context.Context) ksuid.ID {
+	id, err := u.ID(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return id
+}
+
 // LanguageCreateBulk is the builder for creating many Language entities in bulk.
 type LanguageCreateBulk struct {
 	config
 	err      error
 	builders []*LanguageCreate
+	conflict []sql.ConflictOption
 }
 
 // Save creates the Language entities in the database.
@@ -223,6 +467,7 @@ func (lcb *LanguageCreateBulk) Save(ctx context.Context) ([]*Language, error) {
 					_, err = mutators[i+1].Mutate(root, lcb.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
+					spec.OnConflict = lcb.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
 					if err = sqlgraph.BatchCreate(ctx, lcb.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
@@ -269,6 +514,169 @@ func (lcb *LanguageCreateBulk) Exec(ctx context.Context) error {
 // ExecX is like Exec, but panics if an error occurs.
 func (lcb *LanguageCreateBulk) ExecX(ctx context.Context) {
 	if err := lcb.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.Language.CreateBulk(builders...).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.LanguageUpsert) {
+//			SetCalibreID(v+v).
+//		}).
+//		Exec(ctx)
+func (lcb *LanguageCreateBulk) OnConflict(opts ...sql.ConflictOption) *LanguageUpsertBulk {
+	lcb.conflict = opts
+	return &LanguageUpsertBulk{
+		create: lcb,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.Language.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (lcb *LanguageCreateBulk) OnConflictColumns(columns ...string) *LanguageUpsertBulk {
+	lcb.conflict = append(lcb.conflict, sql.ConflictColumns(columns...))
+	return &LanguageUpsertBulk{
+		create: lcb,
+	}
+}
+
+// LanguageUpsertBulk is the builder for "upsert"-ing
+// a bulk of Language nodes.
+type LanguageUpsertBulk struct {
+	create *LanguageCreateBulk
+}
+
+// UpdateNewValues updates the mutable fields using the new values that
+// were set on create. Using this option is equivalent to using:
+//
+//	client.Language.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(language.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *LanguageUpsertBulk) UpdateNewValues() *LanguageUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		for _, b := range u.create.builders {
+			if _, exists := b.mutation.ID(); exists {
+				s.SetIgnore(language.FieldID)
+			}
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.Language.Create().
+//		OnConflict(sql.ResolveWithIgnore()).
+//		Exec(ctx)
+func (u *LanguageUpsertBulk) Ignore() *LanguageUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *LanguageUpsertBulk) DoNothing() *LanguageUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the LanguageCreateBulk.OnConflict
+// documentation for more info.
+func (u *LanguageUpsertBulk) Update(set func(*LanguageUpsert)) *LanguageUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&LanguageUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetCalibreID sets the "calibre_id" field.
+func (u *LanguageUpsertBulk) SetCalibreID(v int64) *LanguageUpsertBulk {
+	return u.Update(func(s *LanguageUpsert) {
+		s.SetCalibreID(v)
+	})
+}
+
+// AddCalibreID adds v to the "calibre_id" field.
+func (u *LanguageUpsertBulk) AddCalibreID(v int64) *LanguageUpsertBulk {
+	return u.Update(func(s *LanguageUpsert) {
+		s.AddCalibreID(v)
+	})
+}
+
+// UpdateCalibreID sets the "calibre_id" field to the value that was provided on create.
+func (u *LanguageUpsertBulk) UpdateCalibreID() *LanguageUpsertBulk {
+	return u.Update(func(s *LanguageUpsert) {
+		s.UpdateCalibreID()
+	})
+}
+
+// SetName sets the "name" field.
+func (u *LanguageUpsertBulk) SetName(v string) *LanguageUpsertBulk {
+	return u.Update(func(s *LanguageUpsert) {
+		s.SetName(v)
+	})
+}
+
+// UpdateName sets the "name" field to the value that was provided on create.
+func (u *LanguageUpsertBulk) UpdateName() *LanguageUpsertBulk {
+	return u.Update(func(s *LanguageUpsert) {
+		s.UpdateName()
+	})
+}
+
+// SetCode sets the "code" field.
+func (u *LanguageUpsertBulk) SetCode(v string) *LanguageUpsertBulk {
+	return u.Update(func(s *LanguageUpsert) {
+		s.SetCode(v)
+	})
+}
+
+// UpdateCode sets the "code" field to the value that was provided on create.
+func (u *LanguageUpsertBulk) UpdateCode() *LanguageUpsertBulk {
+	return u.Update(func(s *LanguageUpsert) {
+		s.UpdateCode()
+	})
+}
+
+// Exec executes the query.
+func (u *LanguageUpsertBulk) Exec(ctx context.Context) error {
+	if u.create.err != nil {
+		return u.create.err
+	}
+	for i, b := range u.create.builders {
+		if len(b.conflict) != 0 {
+			return fmt.Errorf("ent: OnConflict was set for builder %d. Set it on the LanguageCreateBulk instead", i)
+		}
+	}
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for LanguageCreateBulk.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *LanguageUpsertBulk) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

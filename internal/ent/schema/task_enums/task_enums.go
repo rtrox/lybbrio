@@ -51,6 +51,10 @@ func (t TaskType) Value() (interface{}, error) {
 	return string(t), nil
 }
 
+func (t TaskType) String() string {
+	return string(t)
+}
+
 type Status string
 
 const (
@@ -97,4 +101,8 @@ func (s *Status) Scan(src interface{}) error {
 
 func (s Status) Value() (interface{}, error) {
 	return string(s), nil
+}
+
+func (s Status) String() string {
+	return string(s)
 }

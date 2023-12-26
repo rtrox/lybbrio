@@ -21,16 +21,22 @@ type Scheduler struct {
 	ctx       context.Context
 	workQueue chan<- TaskWrapper
 	cadence   time.Duration
+	taskMap   concurrentTaskMap
 }
 
 func NewScheduler(client *ent.Client, config *SchedulerConfig) *Scheduler {
 	schedulerCtx := log.With().Str("component", "scheduler").Logger().WithContext(config.Ctx)
-	return &Scheduler{
+	ret := &Scheduler{
 		client:    client,
 		ctx:       schedulerCtx,
 		workQueue: config.WorkQueue,
 		cadence:   config.Cadence,
+		taskMap:   newConcurrentTaskMap(),
 	}
+	ret.RegisterTasks(TaskMap{
+		task_enums.TypeNoOp: NoOpTask,
+	})
+	return ret
 }
 
 func (s *Scheduler) Schedule(ctx context.Context) error {
@@ -45,7 +51,7 @@ func (s *Scheduler) Schedule(ctx context.Context) error {
 	}
 
 	for _, task := range tasks {
-		taskFunc := taskMap.Get(task.Type)
+		taskFunc := s.taskMap.Get(task.Type)
 		if taskFunc == nil {
 			log.Error().Interface("task", task).Msg("Unimplemented task type requested")
 			task.Status = task_enums.StatusFailure
@@ -78,4 +84,8 @@ func (s *Scheduler) Start() {
 			}
 		}
 	}()
+}
+
+func (s *Scheduler) RegisterTasks(taskMap TaskMap) {
+	s.taskMap.RegisterTasks(taskMap)
 }

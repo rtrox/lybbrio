@@ -28,6 +28,7 @@ func (Book) Annotations() []schema.Annotation {
 func (Book) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		BaseMixin{},
+		CalibreMixin{},
 		ksuid.MixinWithPrefix("bok"),
 	}
 }
@@ -51,9 +52,8 @@ func (Book) Fields() []ent.Field {
 			Annotations(entgql.OrderField("ISBN")),
 		field.Text("description").
 			Optional(),
-		field.Int("series_index").
-			Optional().
-			Positive(),
+		field.Float("series_index").
+			Optional(),
 	}
 }
 
@@ -62,12 +62,16 @@ func (Book) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.From("authors", Author.Type).
 			Ref("books"),
+		edge.From("publisher", Publisher.Type).
+			Ref("books"),
 		edge.From("series", Series.Type).
 			Ref("books"),
-		edge.From("identifier", Identifier.Type).
+		edge.From("identifiers", Identifier.Type).
 			Ref("book"),
+		edge.From("tags", Tag.Type).
+			Ref("books"),
 		edge.From("language", Language.Type).
-			Ref("books").Unique(),
+			Ref("books"),
 		edge.From("shelf", Shelf.Type).
 			Ref("books"), // TODO: will need privacy on this edge.
 	}

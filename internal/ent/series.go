@@ -17,6 +17,8 @@ type Series struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID ksuid.ID `json:"id,omitempty"`
+	// CalibreID holds the value of the "calibre_id" field.
+	CalibreID int64 `json:"calibre_id,omitempty"`
 	// Name holds the value of the "name" field.
 	Name string `json:"name,omitempty"`
 	// Sort holds the value of the "sort" field.
@@ -54,6 +56,8 @@ func (*Series) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case series.FieldCalibreID:
+			values[i] = new(sql.NullInt64)
 		case series.FieldID, series.FieldName, series.FieldSort:
 			values[i] = new(sql.NullString)
 		default:
@@ -76,6 +80,12 @@ func (s *Series) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value.Valid {
 				s.ID = ksuid.ID(value.String)
+			}
+		case series.FieldCalibreID:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field calibre_id", values[i])
+			} else if value.Valid {
+				s.CalibreID = value.Int64
 			}
 		case series.FieldName:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -130,6 +140,9 @@ func (s *Series) String() string {
 	var builder strings.Builder
 	builder.WriteString("Series(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", s.ID))
+	builder.WriteString("calibre_id=")
+	builder.WriteString(fmt.Sprintf("%v", s.CalibreID))
+	builder.WriteString(", ")
 	builder.WriteString("name=")
 	builder.WriteString(s.Name)
 	builder.WriteString(", ")

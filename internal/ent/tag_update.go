@@ -29,6 +29,27 @@ func (tu *TagUpdate) Where(ps ...predicate.Tag) *TagUpdate {
 	return tu
 }
 
+// SetCalibreID sets the "calibre_id" field.
+func (tu *TagUpdate) SetCalibreID(i int64) *TagUpdate {
+	tu.mutation.ResetCalibreID()
+	tu.mutation.SetCalibreID(i)
+	return tu
+}
+
+// SetNillableCalibreID sets the "calibre_id" field if the given value is not nil.
+func (tu *TagUpdate) SetNillableCalibreID(i *int64) *TagUpdate {
+	if i != nil {
+		tu.SetCalibreID(*i)
+	}
+	return tu
+}
+
+// AddCalibreID adds i to the "calibre_id" field.
+func (tu *TagUpdate) AddCalibreID(i int64) *TagUpdate {
+	tu.mutation.AddCalibreID(i)
+	return tu
+}
+
 // SetName sets the "name" field.
 func (tu *TagUpdate) SetName(s string) *TagUpdate {
 	tu.mutation.SetName(s)
@@ -133,15 +154,21 @@ func (tu *TagUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			}
 		}
 	}
+	if value, ok := tu.mutation.CalibreID(); ok {
+		_spec.SetField(tag.FieldCalibreID, field.TypeInt64, value)
+	}
+	if value, ok := tu.mutation.AddedCalibreID(); ok {
+		_spec.AddField(tag.FieldCalibreID, field.TypeInt64, value)
+	}
 	if value, ok := tu.mutation.Name(); ok {
 		_spec.SetField(tag.FieldName, field.TypeString, value)
 	}
 	if tu.mutation.BooksCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   tag.BooksTable,
-			Columns: []string{tag.BooksColumn},
+			Columns: tag.BooksPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(book.FieldID, field.TypeString),
@@ -151,10 +178,10 @@ func (tu *TagUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if nodes := tu.mutation.RemovedBooksIDs(); len(nodes) > 0 && !tu.mutation.BooksCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   tag.BooksTable,
-			Columns: []string{tag.BooksColumn},
+			Columns: tag.BooksPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(book.FieldID, field.TypeString),
@@ -167,10 +194,10 @@ func (tu *TagUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if nodes := tu.mutation.BooksIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   tag.BooksTable,
-			Columns: []string{tag.BooksColumn},
+			Columns: tag.BooksPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(book.FieldID, field.TypeString),
@@ -199,6 +226,27 @@ type TagUpdateOne struct {
 	fields   []string
 	hooks    []Hook
 	mutation *TagMutation
+}
+
+// SetCalibreID sets the "calibre_id" field.
+func (tuo *TagUpdateOne) SetCalibreID(i int64) *TagUpdateOne {
+	tuo.mutation.ResetCalibreID()
+	tuo.mutation.SetCalibreID(i)
+	return tuo
+}
+
+// SetNillableCalibreID sets the "calibre_id" field if the given value is not nil.
+func (tuo *TagUpdateOne) SetNillableCalibreID(i *int64) *TagUpdateOne {
+	if i != nil {
+		tuo.SetCalibreID(*i)
+	}
+	return tuo
+}
+
+// AddCalibreID adds i to the "calibre_id" field.
+func (tuo *TagUpdateOne) AddCalibreID(i int64) *TagUpdateOne {
+	tuo.mutation.AddCalibreID(i)
+	return tuo
 }
 
 // SetName sets the "name" field.
@@ -335,15 +383,21 @@ func (tuo *TagUpdateOne) sqlSave(ctx context.Context) (_node *Tag, err error) {
 			}
 		}
 	}
+	if value, ok := tuo.mutation.CalibreID(); ok {
+		_spec.SetField(tag.FieldCalibreID, field.TypeInt64, value)
+	}
+	if value, ok := tuo.mutation.AddedCalibreID(); ok {
+		_spec.AddField(tag.FieldCalibreID, field.TypeInt64, value)
+	}
 	if value, ok := tuo.mutation.Name(); ok {
 		_spec.SetField(tag.FieldName, field.TypeString, value)
 	}
 	if tuo.mutation.BooksCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   tag.BooksTable,
-			Columns: []string{tag.BooksColumn},
+			Columns: tag.BooksPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(book.FieldID, field.TypeString),
@@ -353,10 +407,10 @@ func (tuo *TagUpdateOne) sqlSave(ctx context.Context) (_node *Tag, err error) {
 	}
 	if nodes := tuo.mutation.RemovedBooksIDs(); len(nodes) > 0 && !tuo.mutation.BooksCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   tag.BooksTable,
-			Columns: []string{tag.BooksColumn},
+			Columns: tag.BooksPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(book.FieldID, field.TypeString),
@@ -369,10 +423,10 @@ func (tuo *TagUpdateOne) sqlSave(ctx context.Context) (_node *Tag, err error) {
 	}
 	if nodes := tuo.mutation.BooksIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   tag.BooksTable,
-			Columns: []string{tag.BooksColumn},
+			Columns: tag.BooksPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(book.FieldID, field.TypeString),

@@ -79,7 +79,7 @@ func (tq *TagQuery) QueryBooks() *BookQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(tag.Table, tag.FieldID, selector),
 			sqlgraph.To(book.Table, book.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, tag.BooksTable, tag.BooksColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, tag.BooksTable, tag.BooksPrimaryKey...),
 		)
 		fromU = sqlgraph.SetNeighbors(tq.driver.Dialect(), step)
 		return fromU, nil
@@ -303,12 +303,12 @@ func (tq *TagQuery) WithBooks(opts ...func(*BookQuery)) *TagQuery {
 // Example:
 //
 //	var v []struct {
-//		Name string `json:"name,omitempty"`
+//		CalibreID int64 `json:"calibre_id,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.Tag.Query().
-//		GroupBy(tag.FieldName).
+//		GroupBy(tag.FieldCalibreID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (tq *TagQuery) GroupBy(field string, fields ...string) *TagGroupBy {
@@ -326,11 +326,11 @@ func (tq *TagQuery) GroupBy(field string, fields ...string) *TagGroupBy {
 // Example:
 //
 //	var v []struct {
-//		Name string `json:"name,omitempty"`
+//		CalibreID int64 `json:"calibre_id,omitempty"`
 //	}
 //
 //	client.Tag.Query().
-//		Select(tag.FieldName).
+//		Select(tag.FieldCalibreID).
 //		Scan(ctx, &v)
 func (tq *TagQuery) Select(fields ...string) *TagSelect {
 	tq.ctx.Fields = append(tq.ctx.Fields, fields...)
@@ -429,33 +429,63 @@ func (tq *TagQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Tag, err
 }
 
 func (tq *TagQuery) loadBooks(ctx context.Context, query *BookQuery, nodes []*Tag, init func(*Tag), assign func(*Tag, *Book)) error {
-	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[ksuid.ID]*Tag)
-	for i := range nodes {
-		fks = append(fks, nodes[i].ID)
-		nodeids[nodes[i].ID] = nodes[i]
+	edgeIDs := make([]driver.Value, len(nodes))
+	byID := make(map[ksuid.ID]*Tag)
+	nids := make(map[ksuid.ID]map[*Tag]struct{})
+	for i, node := range nodes {
+		edgeIDs[i] = node.ID
+		byID[node.ID] = node
 		if init != nil {
-			init(nodes[i])
+			init(node)
 		}
 	}
-	query.withFKs = true
-	query.Where(predicate.Book(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(tag.BooksColumn), fks...))
-	}))
-	neighbors, err := query.All(ctx)
+	query.Where(func(s *sql.Selector) {
+		joinT := sql.Table(tag.BooksTable)
+		s.Join(joinT).On(s.C(book.FieldID), joinT.C(tag.BooksPrimaryKey[1]))
+		s.Where(sql.InValues(joinT.C(tag.BooksPrimaryKey[0]), edgeIDs...))
+		columns := s.SelectedColumns()
+		s.Select(joinT.C(tag.BooksPrimaryKey[0]))
+		s.AppendSelect(columns...)
+		s.SetDistinct(false)
+	})
+	if err := query.prepareQuery(ctx); err != nil {
+		return err
+	}
+	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
+		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+			assign := spec.Assign
+			values := spec.ScanValues
+			spec.ScanValues = func(columns []string) ([]any, error) {
+				values, err := values(columns[1:])
+				if err != nil {
+					return nil, err
+				}
+				return append([]any{new(sql.NullString)}, values...), nil
+			}
+			spec.Assign = func(columns []string, values []any) error {
+				outValue := ksuid.ID(values[0].(*sql.NullString).String)
+				inValue := ksuid.ID(values[1].(*sql.NullString).String)
+				if nids[inValue] == nil {
+					nids[inValue] = map[*Tag]struct{}{byID[outValue]: {}}
+					return assign(columns[1:], values[1:])
+				}
+				nids[inValue][byID[outValue]] = struct{}{}
+				return nil
+			}
+		})
+	})
+	neighbors, err := withInterceptors[[]*Book](ctx, query, qr, query.inters)
 	if err != nil {
 		return err
 	}
 	for _, n := range neighbors {
-		fk := n.tag_books
-		if fk == nil {
-			return fmt.Errorf(`foreign-key "tag_books" is nil for node %v`, n.ID)
-		}
-		node, ok := nodeids[*fk]
+		nodes, ok := nids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "tag_books" returned %v for node %v`, *fk, n.ID)
+			return fmt.Errorf(`unexpected "books" node returned %v`, n.ID)
 		}
-		assign(node, n)
+		for kn := range nodes {
+			assign(kn, n)
+		}
 	}
 	return nil
 }

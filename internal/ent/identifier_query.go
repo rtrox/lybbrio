@@ -302,12 +302,12 @@ func (iq *IdentifierQuery) WithBook(opts ...func(*BookQuery)) *IdentifierQuery {
 // Example:
 //
 //	var v []struct {
-//		Type identifier.Type `json:"type,omitempty"`
+//		CalibreID int64 `json:"calibre_id,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.Identifier.Query().
-//		GroupBy(identifier.FieldType).
+//		GroupBy(identifier.FieldCalibreID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (iq *IdentifierQuery) GroupBy(field string, fields ...string) *IdentifierGroupBy {
@@ -325,11 +325,11 @@ func (iq *IdentifierQuery) GroupBy(field string, fields ...string) *IdentifierGr
 // Example:
 //
 //	var v []struct {
-//		Type identifier.Type `json:"type,omitempty"`
+//		CalibreID int64 `json:"calibre_id,omitempty"`
 //	}
 //
 //	client.Identifier.Query().
-//		Select(identifier.FieldType).
+//		Select(identifier.FieldCalibreID).
 //		Scan(ctx, &v)
 func (iq *IdentifierQuery) Select(fields ...string) *IdentifierSelect {
 	iq.ctx.Fields = append(iq.ctx.Fields, fields...)

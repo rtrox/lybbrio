@@ -10,6 +10,8 @@ import (
 	"lybbrio/internal/ent/book"
 	"lybbrio/internal/ent/schema/ksuid"
 
+	"entgo.io/ent/dialect"
+	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 )
@@ -19,6 +21,13 @@ type AuthorCreate struct {
 	config
 	mutation *AuthorMutation
 	hooks    []Hook
+	conflict []sql.ConflictOption
+}
+
+// SetCalibreID sets the "calibre_id" field.
+func (ac *AuthorCreate) SetCalibreID(i int64) *AuthorCreate {
+	ac.mutation.SetCalibreID(i)
+	return ac
 }
 
 // SetName sets the "name" field.
@@ -125,6 +134,9 @@ func (ac *AuthorCreate) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (ac *AuthorCreate) check() error {
+	if _, ok := ac.mutation.CalibreID(); !ok {
+		return &ValidationError{Name: "calibre_id", err: errors.New(`ent: missing required field "Author.calibre_id"`)}
+	}
 	if _, ok := ac.mutation.Name(); !ok {
 		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "Author.name"`)}
 	}
@@ -167,9 +179,14 @@ func (ac *AuthorCreate) createSpec() (*Author, *sqlgraph.CreateSpec) {
 		_node = &Author{config: ac.config}
 		_spec = sqlgraph.NewCreateSpec(author.Table, sqlgraph.NewFieldSpec(author.FieldID, field.TypeString))
 	)
+	_spec.OnConflict = ac.conflict
 	if id, ok := ac.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = id
+	}
+	if value, ok := ac.mutation.CalibreID(); ok {
+		_spec.SetField(author.FieldCalibreID, field.TypeInt64, value)
+		_node.CalibreID = value
 	}
 	if value, ok := ac.mutation.Name(); ok {
 		_spec.SetField(author.FieldName, field.TypeString, value)
@@ -202,11 +219,277 @@ func (ac *AuthorCreate) createSpec() (*Author, *sqlgraph.CreateSpec) {
 	return _node, _spec
 }
 
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.Author.Create().
+//		SetCalibreID(v).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.AuthorUpsert) {
+//			SetCalibreID(v+v).
+//		}).
+//		Exec(ctx)
+func (ac *AuthorCreate) OnConflict(opts ...sql.ConflictOption) *AuthorUpsertOne {
+	ac.conflict = opts
+	return &AuthorUpsertOne{
+		create: ac,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.Author.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (ac *AuthorCreate) OnConflictColumns(columns ...string) *AuthorUpsertOne {
+	ac.conflict = append(ac.conflict, sql.ConflictColumns(columns...))
+	return &AuthorUpsertOne{
+		create: ac,
+	}
+}
+
+type (
+	// AuthorUpsertOne is the builder for "upsert"-ing
+	//  one Author node.
+	AuthorUpsertOne struct {
+		create *AuthorCreate
+	}
+
+	// AuthorUpsert is the "OnConflict" setter.
+	AuthorUpsert struct {
+		*sql.UpdateSet
+	}
+)
+
+// SetCalibreID sets the "calibre_id" field.
+func (u *AuthorUpsert) SetCalibreID(v int64) *AuthorUpsert {
+	u.Set(author.FieldCalibreID, v)
+	return u
+}
+
+// UpdateCalibreID sets the "calibre_id" field to the value that was provided on create.
+func (u *AuthorUpsert) UpdateCalibreID() *AuthorUpsert {
+	u.SetExcluded(author.FieldCalibreID)
+	return u
+}
+
+// AddCalibreID adds v to the "calibre_id" field.
+func (u *AuthorUpsert) AddCalibreID(v int64) *AuthorUpsert {
+	u.Add(author.FieldCalibreID, v)
+	return u
+}
+
+// SetName sets the "name" field.
+func (u *AuthorUpsert) SetName(v string) *AuthorUpsert {
+	u.Set(author.FieldName, v)
+	return u
+}
+
+// UpdateName sets the "name" field to the value that was provided on create.
+func (u *AuthorUpsert) UpdateName() *AuthorUpsert {
+	u.SetExcluded(author.FieldName)
+	return u
+}
+
+// SetSort sets the "sort" field.
+func (u *AuthorUpsert) SetSort(v string) *AuthorUpsert {
+	u.Set(author.FieldSort, v)
+	return u
+}
+
+// UpdateSort sets the "sort" field to the value that was provided on create.
+func (u *AuthorUpsert) UpdateSort() *AuthorUpsert {
+	u.SetExcluded(author.FieldSort)
+	return u
+}
+
+// SetLink sets the "link" field.
+func (u *AuthorUpsert) SetLink(v string) *AuthorUpsert {
+	u.Set(author.FieldLink, v)
+	return u
+}
+
+// UpdateLink sets the "link" field to the value that was provided on create.
+func (u *AuthorUpsert) UpdateLink() *AuthorUpsert {
+	u.SetExcluded(author.FieldLink)
+	return u
+}
+
+// ClearLink clears the value of the "link" field.
+func (u *AuthorUpsert) ClearLink() *AuthorUpsert {
+	u.SetNull(author.FieldLink)
+	return u
+}
+
+// UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
+// Using this option is equivalent to using:
+//
+//	client.Author.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(author.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *AuthorUpsertOne) UpdateNewValues() *AuthorUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		if _, exists := u.create.mutation.ID(); exists {
+			s.SetIgnore(author.FieldID)
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.Author.Create().
+//	    OnConflict(sql.ResolveWithIgnore()).
+//	    Exec(ctx)
+func (u *AuthorUpsertOne) Ignore() *AuthorUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *AuthorUpsertOne) DoNothing() *AuthorUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the AuthorCreate.OnConflict
+// documentation for more info.
+func (u *AuthorUpsertOne) Update(set func(*AuthorUpsert)) *AuthorUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&AuthorUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetCalibreID sets the "calibre_id" field.
+func (u *AuthorUpsertOne) SetCalibreID(v int64) *AuthorUpsertOne {
+	return u.Update(func(s *AuthorUpsert) {
+		s.SetCalibreID(v)
+	})
+}
+
+// AddCalibreID adds v to the "calibre_id" field.
+func (u *AuthorUpsertOne) AddCalibreID(v int64) *AuthorUpsertOne {
+	return u.Update(func(s *AuthorUpsert) {
+		s.AddCalibreID(v)
+	})
+}
+
+// UpdateCalibreID sets the "calibre_id" field to the value that was provided on create.
+func (u *AuthorUpsertOne) UpdateCalibreID() *AuthorUpsertOne {
+	return u.Update(func(s *AuthorUpsert) {
+		s.UpdateCalibreID()
+	})
+}
+
+// SetName sets the "name" field.
+func (u *AuthorUpsertOne) SetName(v string) *AuthorUpsertOne {
+	return u.Update(func(s *AuthorUpsert) {
+		s.SetName(v)
+	})
+}
+
+// UpdateName sets the "name" field to the value that was provided on create.
+func (u *AuthorUpsertOne) UpdateName() *AuthorUpsertOne {
+	return u.Update(func(s *AuthorUpsert) {
+		s.UpdateName()
+	})
+}
+
+// SetSort sets the "sort" field.
+func (u *AuthorUpsertOne) SetSort(v string) *AuthorUpsertOne {
+	return u.Update(func(s *AuthorUpsert) {
+		s.SetSort(v)
+	})
+}
+
+// UpdateSort sets the "sort" field to the value that was provided on create.
+func (u *AuthorUpsertOne) UpdateSort() *AuthorUpsertOne {
+	return u.Update(func(s *AuthorUpsert) {
+		s.UpdateSort()
+	})
+}
+
+// SetLink sets the "link" field.
+func (u *AuthorUpsertOne) SetLink(v string) *AuthorUpsertOne {
+	return u.Update(func(s *AuthorUpsert) {
+		s.SetLink(v)
+	})
+}
+
+// UpdateLink sets the "link" field to the value that was provided on create.
+func (u *AuthorUpsertOne) UpdateLink() *AuthorUpsertOne {
+	return u.Update(func(s *AuthorUpsert) {
+		s.UpdateLink()
+	})
+}
+
+// ClearLink clears the value of the "link" field.
+func (u *AuthorUpsertOne) ClearLink() *AuthorUpsertOne {
+	return u.Update(func(s *AuthorUpsert) {
+		s.ClearLink()
+	})
+}
+
+// Exec executes the query.
+func (u *AuthorUpsertOne) Exec(ctx context.Context) error {
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for AuthorCreate.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *AuthorUpsertOne) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// Exec executes the UPSERT query and returns the inserted/updated ID.
+func (u *AuthorUpsertOne) ID(ctx context.Context) (id ksuid.ID, err error) {
+	if u.create.driver.Dialect() == dialect.MySQL {
+		// In case of "ON CONFLICT", there is no way to get back non-numeric ID
+		// fields from the database since MySQL does not support the RETURNING clause.
+		return id, errors.New("ent: AuthorUpsertOne.ID is not supported by MySQL driver. Use AuthorUpsertOne.Exec instead")
+	}
+	node, err := u.create.Save(ctx)
+	if err != nil {
+		return id, err
+	}
+	return node.ID, nil
+}
+
+// IDX is like ID, but panics if an error occurs.
+func (u *AuthorUpsertOne) IDX(ctx context.Context) ksuid.ID {
+	id, err := u.ID(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return id
+}
+
 // AuthorCreateBulk is the builder for creating many Author entities in bulk.
 type AuthorCreateBulk struct {
 	config
 	err      error
 	builders []*AuthorCreate
+	conflict []sql.ConflictOption
 }
 
 // Save creates the Author entities in the database.
@@ -236,6 +519,7 @@ func (acb *AuthorCreateBulk) Save(ctx context.Context) ([]*Author, error) {
 					_, err = mutators[i+1].Mutate(root, acb.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
+					spec.OnConflict = acb.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
 					if err = sqlgraph.BatchCreate(ctx, acb.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
@@ -282,6 +566,190 @@ func (acb *AuthorCreateBulk) Exec(ctx context.Context) error {
 // ExecX is like Exec, but panics if an error occurs.
 func (acb *AuthorCreateBulk) ExecX(ctx context.Context) {
 	if err := acb.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.Author.CreateBulk(builders...).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.AuthorUpsert) {
+//			SetCalibreID(v+v).
+//		}).
+//		Exec(ctx)
+func (acb *AuthorCreateBulk) OnConflict(opts ...sql.ConflictOption) *AuthorUpsertBulk {
+	acb.conflict = opts
+	return &AuthorUpsertBulk{
+		create: acb,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.Author.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (acb *AuthorCreateBulk) OnConflictColumns(columns ...string) *AuthorUpsertBulk {
+	acb.conflict = append(acb.conflict, sql.ConflictColumns(columns...))
+	return &AuthorUpsertBulk{
+		create: acb,
+	}
+}
+
+// AuthorUpsertBulk is the builder for "upsert"-ing
+// a bulk of Author nodes.
+type AuthorUpsertBulk struct {
+	create *AuthorCreateBulk
+}
+
+// UpdateNewValues updates the mutable fields using the new values that
+// were set on create. Using this option is equivalent to using:
+//
+//	client.Author.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(author.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *AuthorUpsertBulk) UpdateNewValues() *AuthorUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		for _, b := range u.create.builders {
+			if _, exists := b.mutation.ID(); exists {
+				s.SetIgnore(author.FieldID)
+			}
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.Author.Create().
+//		OnConflict(sql.ResolveWithIgnore()).
+//		Exec(ctx)
+func (u *AuthorUpsertBulk) Ignore() *AuthorUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *AuthorUpsertBulk) DoNothing() *AuthorUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the AuthorCreateBulk.OnConflict
+// documentation for more info.
+func (u *AuthorUpsertBulk) Update(set func(*AuthorUpsert)) *AuthorUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&AuthorUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetCalibreID sets the "calibre_id" field.
+func (u *AuthorUpsertBulk) SetCalibreID(v int64) *AuthorUpsertBulk {
+	return u.Update(func(s *AuthorUpsert) {
+		s.SetCalibreID(v)
+	})
+}
+
+// AddCalibreID adds v to the "calibre_id" field.
+func (u *AuthorUpsertBulk) AddCalibreID(v int64) *AuthorUpsertBulk {
+	return u.Update(func(s *AuthorUpsert) {
+		s.AddCalibreID(v)
+	})
+}
+
+// UpdateCalibreID sets the "calibre_id" field to the value that was provided on create.
+func (u *AuthorUpsertBulk) UpdateCalibreID() *AuthorUpsertBulk {
+	return u.Update(func(s *AuthorUpsert) {
+		s.UpdateCalibreID()
+	})
+}
+
+// SetName sets the "name" field.
+func (u *AuthorUpsertBulk) SetName(v string) *AuthorUpsertBulk {
+	return u.Update(func(s *AuthorUpsert) {
+		s.SetName(v)
+	})
+}
+
+// UpdateName sets the "name" field to the value that was provided on create.
+func (u *AuthorUpsertBulk) UpdateName() *AuthorUpsertBulk {
+	return u.Update(func(s *AuthorUpsert) {
+		s.UpdateName()
+	})
+}
+
+// SetSort sets the "sort" field.
+func (u *AuthorUpsertBulk) SetSort(v string) *AuthorUpsertBulk {
+	return u.Update(func(s *AuthorUpsert) {
+		s.SetSort(v)
+	})
+}
+
+// UpdateSort sets the "sort" field to the value that was provided on create.
+func (u *AuthorUpsertBulk) UpdateSort() *AuthorUpsertBulk {
+	return u.Update(func(s *AuthorUpsert) {
+		s.UpdateSort()
+	})
+}
+
+// SetLink sets the "link" field.
+func (u *AuthorUpsertBulk) SetLink(v string) *AuthorUpsertBulk {
+	return u.Update(func(s *AuthorUpsert) {
+		s.SetLink(v)
+	})
+}
+
+// UpdateLink sets the "link" field to the value that was provided on create.
+func (u *AuthorUpsertBulk) UpdateLink() *AuthorUpsertBulk {
+	return u.Update(func(s *AuthorUpsert) {
+		s.UpdateLink()
+	})
+}
+
+// ClearLink clears the value of the "link" field.
+func (u *AuthorUpsertBulk) ClearLink() *AuthorUpsertBulk {
+	return u.Update(func(s *AuthorUpsert) {
+		s.ClearLink()
+	})
+}
+
+// Exec executes the query.
+func (u *AuthorUpsertBulk) Exec(ctx context.Context) error {
+	if u.create.err != nil {
+		return u.create.err
+	}
+	for i, b := range u.create.builders {
+		if len(b.conflict) != 0 {
+			return fmt.Errorf("ent: OnConflict was set for builder %d. Set it on the AuthorCreateBulk instead", i)
+		}
+	}
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for AuthorCreateBulk.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *AuthorUpsertBulk) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

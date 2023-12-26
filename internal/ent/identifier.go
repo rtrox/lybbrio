@@ -18,8 +18,10 @@ type Identifier struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID ksuid.ID `json:"id,omitempty"`
+	// CalibreID holds the value of the "calibre_id" field.
+	CalibreID int64 `json:"calibre_id,omitempty"`
 	// Type holds the value of the "type" field.
-	Type identifier.Type `json:"type,omitempty"`
+	Type string `json:"type,omitempty"`
 	// Value holds the value of the "value" field.
 	Value string `json:"value,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -58,6 +60,8 @@ func (*Identifier) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case identifier.FieldCalibreID:
+			values[i] = new(sql.NullInt64)
 		case identifier.FieldID, identifier.FieldType, identifier.FieldValue:
 			values[i] = new(sql.NullString)
 		case identifier.ForeignKeys[0]: // identifier_book
@@ -83,11 +87,17 @@ func (i *Identifier) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				i.ID = ksuid.ID(value.String)
 			}
+		case identifier.FieldCalibreID:
+			if value, ok := values[j].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field calibre_id", values[j])
+			} else if value.Valid {
+				i.CalibreID = value.Int64
+			}
 		case identifier.FieldType:
 			if value, ok := values[j].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field type", values[j])
 			} else if value.Valid {
-				i.Type = identifier.Type(value.String)
+				i.Type = value.String
 			}
 		case identifier.FieldValue:
 			if value, ok := values[j].(*sql.NullString); !ok {
@@ -143,8 +153,11 @@ func (i *Identifier) String() string {
 	var builder strings.Builder
 	builder.WriteString("Identifier(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", i.ID))
+	builder.WriteString("calibre_id=")
+	builder.WriteString(fmt.Sprintf("%v", i.CalibreID))
+	builder.WriteString(", ")
 	builder.WriteString("type=")
-	builder.WriteString(fmt.Sprintf("%v", i.Type))
+	builder.WriteString(i.Type)
 	builder.WriteString(", ")
 	builder.WriteString("value=")
 	builder.WriteString(i.Value)

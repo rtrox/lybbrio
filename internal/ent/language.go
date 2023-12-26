@@ -17,6 +17,8 @@ type Language struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID ksuid.ID `json:"id,omitempty"`
+	// CalibreID holds the value of the "calibre_id" field.
+	CalibreID int64 `json:"calibre_id,omitempty"`
 	// Name holds the value of the "name" field.
 	Name string `json:"name,omitempty"`
 	// Code holds the value of the "code" field.
@@ -54,6 +56,8 @@ func (*Language) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case language.FieldCalibreID:
+			values[i] = new(sql.NullInt64)
 		case language.FieldID, language.FieldName, language.FieldCode:
 			values[i] = new(sql.NullString)
 		default:
@@ -76,6 +80,12 @@ func (l *Language) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value.Valid {
 				l.ID = ksuid.ID(value.String)
+			}
+		case language.FieldCalibreID:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field calibre_id", values[i])
+			} else if value.Valid {
+				l.CalibreID = value.Int64
 			}
 		case language.FieldName:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -130,6 +140,9 @@ func (l *Language) String() string {
 	var builder strings.Builder
 	builder.WriteString("Language(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", l.ID))
+	builder.WriteString("calibre_id=")
+	builder.WriteString(fmt.Sprintf("%v", l.CalibreID))
+	builder.WriteString(", ")
 	builder.WriteString("name=")
 	builder.WriteString(l.Name)
 	builder.WriteString(", ")

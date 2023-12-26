@@ -28,6 +28,7 @@ func (Author) Annotations() []schema.Annotation {
 func (Author) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		BaseMixin{},
+		CalibreMixin{},
 		ksuid.MixinWithPrefix("atr"),
 	}
 }
@@ -49,13 +50,16 @@ func (Author) Fields() []ent.Field {
 func (Author) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("books", Book.Type).
-			Annotations(entgql.RelayConnection()),
+			Annotations(
+				entgql.RelayConnection(),
+				entgql.OrderField("BOOKS_COUNT"),
+			),
 	}
 }
 
 func (Author) Indexes() []ent.Index {
 	return []ent.Index{
-		index.Fields("name"),
-		index.Fields("sort"),
+		index.Fields("name").Unique(),
+		index.Fields("sort").Unique(),
 	}
 }

@@ -263,8 +263,12 @@ func (p *authorPager) applyOrder(query *AuthorQuery) *AuthorQuery {
 		if o.Field.column == DefaultAuthorOrder.Field.column {
 			defaultOrdered = true
 		}
-		if len(query.ctx.Fields) > 0 {
-			query.ctx.AppendFieldOnce(o.Field.column)
+		switch o.Field.column {
+		case AuthorOrderFieldBooksCount.column:
+		default:
+			if len(query.ctx.Fields) > 0 {
+				query.ctx.AppendFieldOnce(o.Field.column)
+			}
 		}
 	}
 	if !defaultOrdered {
@@ -278,9 +282,18 @@ func (p *authorPager) applyOrder(query *AuthorQuery) *AuthorQuery {
 }
 
 func (p *authorPager) orderExpr(query *AuthorQuery) sql.Querier {
-	if len(query.ctx.Fields) > 0 {
-		for _, o := range p.order {
-			query.ctx.AppendFieldOnce(o.Field.column)
+	for _, o := range p.order {
+		switch o.Field.column {
+		case AuthorOrderFieldBooksCount.column:
+			direction := o.Direction
+			if p.reverse {
+				direction = direction.Reverse()
+			}
+			query = query.Order(o.Field.toTerm(direction.OrderTermOption()))
+		default:
+			if len(query.ctx.Fields) > 0 {
+				query.ctx.AppendFieldOnce(o.Field.column)
+			}
 		}
 	}
 	return sql.ExprFunc(func(b *sql.Builder) {
@@ -365,6 +378,25 @@ var (
 			}
 		},
 	}
+	// AuthorOrderFieldBooksCount orders by BOOKS_COUNT.
+	AuthorOrderFieldBooksCount = &AuthorOrderField{
+		Value: func(a *Author) (ent.Value, error) {
+			return a.Value("books_count")
+		},
+		column: "books_count",
+		toTerm: func(opts ...sql.OrderTermOption) author.OrderOption {
+			return author.ByBooksCount(
+				append(opts, sql.OrderSelectAs("books_count"))...,
+			)
+		},
+		toCursor: func(a *Author) Cursor {
+			cv, _ := a.Value("books_count")
+			return Cursor{
+				ID:    a.ID,
+				Value: cv,
+			}
+		},
+	}
 )
 
 // String implement fmt.Stringer interface.
@@ -373,6 +405,8 @@ func (f AuthorOrderField) String() string {
 	switch f.column {
 	case AuthorOrderFieldSort.column:
 		str = "NAME"
+	case AuthorOrderFieldBooksCount.column:
+		str = "BOOKS_COUNT"
 	}
 	return str
 }
@@ -391,6 +425,8 @@ func (f *AuthorOrderField) UnmarshalGQL(v interface{}) error {
 	switch str {
 	case "NAME":
 		*f = *AuthorOrderFieldSort
+	case "BOOKS_COUNT":
+		*f = *AuthorOrderFieldBooksCount
 	default:
 		return fmt.Errorf("%s is not a valid AuthorOrderField", str)
 	}

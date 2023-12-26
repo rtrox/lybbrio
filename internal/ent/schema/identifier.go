@@ -28,6 +28,7 @@ func (Identifier) Annotations() []schema.Annotation {
 func (Identifier) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		BaseMixin{},
+		CalibreMixin{},
 		ksuid.MixinWithPrefix("idn"),
 	}
 }
@@ -35,10 +36,12 @@ func (Identifier) Mixin() []ent.Mixin {
 // Fields of the Identifier.
 func (Identifier) Fields() []ent.Field {
 	return []ent.Field{
-		field.Enum("type").
-			Values("goodreads", "amazon", "isbn", "lccn").
+		field.String("type").
+			NotEmpty().
 			Annotations(entgql.OrderField("TYPE")), // TODO: Enum Values?
-		field.String("value").NotEmpty().Annotations(entgql.OrderField("VALUE")),
+		field.String("value").
+			NotEmpty().
+			Annotations(entgql.OrderField("VALUE")),
 	}
 }
 

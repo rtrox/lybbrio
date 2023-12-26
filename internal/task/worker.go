@@ -3,6 +3,7 @@ package task
 import (
 	"context"
 	"lybbrio/internal/ent"
+	"lybbrio/internal/viewer"
 
 	"lybbrio/internal/ent/schema/task_enums"
 
@@ -86,7 +87,22 @@ func (w *Worker) Start() {
 				continue
 			}
 
-			msg, err := task.Func(ctx, task.Task, w.client)
+			taskCtx := ctx
+			if !task.Task.IsSystemTask {
+				user, err := task.Task.QueryCreator().First(ctx)
+				if err != nil {
+					log.Error().Err(err).Msg("Failed to get task creator")
+					continue
+				}
+				perms, err := user.QueryUserPermissions().First(ctx)
+				if err != nil {
+					log.Error().Err(err).Msg("Failed to get user permissions")
+					continue
+				}
+				taskCtx = viewer.NewContext(ctx, user, perms)
+			}
+
+			msg, err := task.Func(taskCtx, task.Task, w.client)
 
 			update := task.Task.Update()
 			if err != nil {

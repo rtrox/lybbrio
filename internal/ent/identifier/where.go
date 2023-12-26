@@ -55,29 +55,124 @@ func IDLTE(id ksuid.ID) predicate.Identifier {
 	return predicate.Identifier(sql.FieldLTE(FieldID, id))
 }
 
+// CalibreID applies equality check predicate on the "calibre_id" field. It's identical to CalibreIDEQ.
+func CalibreID(v int64) predicate.Identifier {
+	return predicate.Identifier(sql.FieldEQ(FieldCalibreID, v))
+}
+
+// Type applies equality check predicate on the "type" field. It's identical to TypeEQ.
+func Type(v string) predicate.Identifier {
+	return predicate.Identifier(sql.FieldEQ(FieldType, v))
+}
+
 // Value applies equality check predicate on the "value" field. It's identical to ValueEQ.
 func Value(v string) predicate.Identifier {
 	return predicate.Identifier(sql.FieldEQ(FieldValue, v))
 }
 
+// CalibreIDEQ applies the EQ predicate on the "calibre_id" field.
+func CalibreIDEQ(v int64) predicate.Identifier {
+	return predicate.Identifier(sql.FieldEQ(FieldCalibreID, v))
+}
+
+// CalibreIDNEQ applies the NEQ predicate on the "calibre_id" field.
+func CalibreIDNEQ(v int64) predicate.Identifier {
+	return predicate.Identifier(sql.FieldNEQ(FieldCalibreID, v))
+}
+
+// CalibreIDIn applies the In predicate on the "calibre_id" field.
+func CalibreIDIn(vs ...int64) predicate.Identifier {
+	return predicate.Identifier(sql.FieldIn(FieldCalibreID, vs...))
+}
+
+// CalibreIDNotIn applies the NotIn predicate on the "calibre_id" field.
+func CalibreIDNotIn(vs ...int64) predicate.Identifier {
+	return predicate.Identifier(sql.FieldNotIn(FieldCalibreID, vs...))
+}
+
+// CalibreIDGT applies the GT predicate on the "calibre_id" field.
+func CalibreIDGT(v int64) predicate.Identifier {
+	return predicate.Identifier(sql.FieldGT(FieldCalibreID, v))
+}
+
+// CalibreIDGTE applies the GTE predicate on the "calibre_id" field.
+func CalibreIDGTE(v int64) predicate.Identifier {
+	return predicate.Identifier(sql.FieldGTE(FieldCalibreID, v))
+}
+
+// CalibreIDLT applies the LT predicate on the "calibre_id" field.
+func CalibreIDLT(v int64) predicate.Identifier {
+	return predicate.Identifier(sql.FieldLT(FieldCalibreID, v))
+}
+
+// CalibreIDLTE applies the LTE predicate on the "calibre_id" field.
+func CalibreIDLTE(v int64) predicate.Identifier {
+	return predicate.Identifier(sql.FieldLTE(FieldCalibreID, v))
+}
+
 // TypeEQ applies the EQ predicate on the "type" field.
-func TypeEQ(v Type) predicate.Identifier {
+func TypeEQ(v string) predicate.Identifier {
 	return predicate.Identifier(sql.FieldEQ(FieldType, v))
 }
 
 // TypeNEQ applies the NEQ predicate on the "type" field.
-func TypeNEQ(v Type) predicate.Identifier {
+func TypeNEQ(v string) predicate.Identifier {
 	return predicate.Identifier(sql.FieldNEQ(FieldType, v))
 }
 
 // TypeIn applies the In predicate on the "type" field.
-func TypeIn(vs ...Type) predicate.Identifier {
+func TypeIn(vs ...string) predicate.Identifier {
 	return predicate.Identifier(sql.FieldIn(FieldType, vs...))
 }
 
 // TypeNotIn applies the NotIn predicate on the "type" field.
-func TypeNotIn(vs ...Type) predicate.Identifier {
+func TypeNotIn(vs ...string) predicate.Identifier {
 	return predicate.Identifier(sql.FieldNotIn(FieldType, vs...))
+}
+
+// TypeGT applies the GT predicate on the "type" field.
+func TypeGT(v string) predicate.Identifier {
+	return predicate.Identifier(sql.FieldGT(FieldType, v))
+}
+
+// TypeGTE applies the GTE predicate on the "type" field.
+func TypeGTE(v string) predicate.Identifier {
+	return predicate.Identifier(sql.FieldGTE(FieldType, v))
+}
+
+// TypeLT applies the LT predicate on the "type" field.
+func TypeLT(v string) predicate.Identifier {
+	return predicate.Identifier(sql.FieldLT(FieldType, v))
+}
+
+// TypeLTE applies the LTE predicate on the "type" field.
+func TypeLTE(v string) predicate.Identifier {
+	return predicate.Identifier(sql.FieldLTE(FieldType, v))
+}
+
+// TypeContains applies the Contains predicate on the "type" field.
+func TypeContains(v string) predicate.Identifier {
+	return predicate.Identifier(sql.FieldContains(FieldType, v))
+}
+
+// TypeHasPrefix applies the HasPrefix predicate on the "type" field.
+func TypeHasPrefix(v string) predicate.Identifier {
+	return predicate.Identifier(sql.FieldHasPrefix(FieldType, v))
+}
+
+// TypeHasSuffix applies the HasSuffix predicate on the "type" field.
+func TypeHasSuffix(v string) predicate.Identifier {
+	return predicate.Identifier(sql.FieldHasSuffix(FieldType, v))
+}
+
+// TypeEqualFold applies the EqualFold predicate on the "type" field.
+func TypeEqualFold(v string) predicate.Identifier {
+	return predicate.Identifier(sql.FieldEqualFold(FieldType, v))
+}
+
+// TypeContainsFold applies the ContainsFold predicate on the "type" field.
+func TypeContainsFold(v string) predicate.Identifier {
+	return predicate.Identifier(sql.FieldContainsFold(FieldType, v))
 }
 
 // ValueEQ applies the EQ predicate on the "value" field.

@@ -29,16 +29,37 @@ func (iu *IdentifierUpdate) Where(ps ...predicate.Identifier) *IdentifierUpdate 
 	return iu
 }
 
+// SetCalibreID sets the "calibre_id" field.
+func (iu *IdentifierUpdate) SetCalibreID(i int64) *IdentifierUpdate {
+	iu.mutation.ResetCalibreID()
+	iu.mutation.SetCalibreID(i)
+	return iu
+}
+
+// SetNillableCalibreID sets the "calibre_id" field if the given value is not nil.
+func (iu *IdentifierUpdate) SetNillableCalibreID(i *int64) *IdentifierUpdate {
+	if i != nil {
+		iu.SetCalibreID(*i)
+	}
+	return iu
+}
+
+// AddCalibreID adds i to the "calibre_id" field.
+func (iu *IdentifierUpdate) AddCalibreID(i int64) *IdentifierUpdate {
+	iu.mutation.AddCalibreID(i)
+	return iu
+}
+
 // SetType sets the "type" field.
-func (iu *IdentifierUpdate) SetType(i identifier.Type) *IdentifierUpdate {
-	iu.mutation.SetType(i)
+func (iu *IdentifierUpdate) SetType(s string) *IdentifierUpdate {
+	iu.mutation.SetType(s)
 	return iu
 }
 
 // SetNillableType sets the "type" field if the given value is not nil.
-func (iu *IdentifierUpdate) SetNillableType(i *identifier.Type) *IdentifierUpdate {
-	if i != nil {
-		iu.SetType(*i)
+func (iu *IdentifierUpdate) SetNillableType(s *string) *IdentifierUpdate {
+	if s != nil {
+		iu.SetType(*s)
 	}
 	return iu
 }
@@ -136,8 +157,14 @@ func (iu *IdentifierUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			}
 		}
 	}
+	if value, ok := iu.mutation.CalibreID(); ok {
+		_spec.SetField(identifier.FieldCalibreID, field.TypeInt64, value)
+	}
+	if value, ok := iu.mutation.AddedCalibreID(); ok {
+		_spec.AddField(identifier.FieldCalibreID, field.TypeInt64, value)
+	}
 	if value, ok := iu.mutation.GetType(); ok {
-		_spec.SetField(identifier.FieldType, field.TypeEnum, value)
+		_spec.SetField(identifier.FieldType, field.TypeString, value)
 	}
 	if value, ok := iu.mutation.Value(); ok {
 		_spec.SetField(identifier.FieldValue, field.TypeString, value)
@@ -191,16 +218,37 @@ type IdentifierUpdateOne struct {
 	mutation *IdentifierMutation
 }
 
+// SetCalibreID sets the "calibre_id" field.
+func (iuo *IdentifierUpdateOne) SetCalibreID(i int64) *IdentifierUpdateOne {
+	iuo.mutation.ResetCalibreID()
+	iuo.mutation.SetCalibreID(i)
+	return iuo
+}
+
+// SetNillableCalibreID sets the "calibre_id" field if the given value is not nil.
+func (iuo *IdentifierUpdateOne) SetNillableCalibreID(i *int64) *IdentifierUpdateOne {
+	if i != nil {
+		iuo.SetCalibreID(*i)
+	}
+	return iuo
+}
+
+// AddCalibreID adds i to the "calibre_id" field.
+func (iuo *IdentifierUpdateOne) AddCalibreID(i int64) *IdentifierUpdateOne {
+	iuo.mutation.AddCalibreID(i)
+	return iuo
+}
+
 // SetType sets the "type" field.
-func (iuo *IdentifierUpdateOne) SetType(i identifier.Type) *IdentifierUpdateOne {
-	iuo.mutation.SetType(i)
+func (iuo *IdentifierUpdateOne) SetType(s string) *IdentifierUpdateOne {
+	iuo.mutation.SetType(s)
 	return iuo
 }
 
 // SetNillableType sets the "type" field if the given value is not nil.
-func (iuo *IdentifierUpdateOne) SetNillableType(i *identifier.Type) *IdentifierUpdateOne {
-	if i != nil {
-		iuo.SetType(*i)
+func (iuo *IdentifierUpdateOne) SetNillableType(s *string) *IdentifierUpdateOne {
+	if s != nil {
+		iuo.SetType(*s)
 	}
 	return iuo
 }
@@ -328,8 +376,14 @@ func (iuo *IdentifierUpdateOne) sqlSave(ctx context.Context) (_node *Identifier,
 			}
 		}
 	}
+	if value, ok := iuo.mutation.CalibreID(); ok {
+		_spec.SetField(identifier.FieldCalibreID, field.TypeInt64, value)
+	}
+	if value, ok := iuo.mutation.AddedCalibreID(); ok {
+		_spec.AddField(identifier.FieldCalibreID, field.TypeInt64, value)
+	}
 	if value, ok := iuo.mutation.GetType(); ok {
-		_spec.SetField(identifier.FieldType, field.TypeEnum, value)
+		_spec.SetField(identifier.FieldType, field.TypeString, value)
 	}
 	if value, ok := iuo.mutation.Value(); ok {
 		_spec.SetField(identifier.FieldValue, field.TypeString, value)

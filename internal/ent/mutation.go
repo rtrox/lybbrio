@@ -55,6 +55,8 @@ type AuthorMutation struct {
 	op            Op
 	typ           string
 	id            *ksuid.ID
+	calibre_id    *int64
+	addcalibre_id *int64
 	name          *string
 	sort          *string
 	link          *string
@@ -169,6 +171,62 @@ func (m *AuthorMutation) IDs(ctx context.Context) ([]ksuid.ID, error) {
 	default:
 		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
 	}
+}
+
+// SetCalibreID sets the "calibre_id" field.
+func (m *AuthorMutation) SetCalibreID(i int64) {
+	m.calibre_id = &i
+	m.addcalibre_id = nil
+}
+
+// CalibreID returns the value of the "calibre_id" field in the mutation.
+func (m *AuthorMutation) CalibreID() (r int64, exists bool) {
+	v := m.calibre_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCalibreID returns the old "calibre_id" field's value of the Author entity.
+// If the Author object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AuthorMutation) OldCalibreID(ctx context.Context) (v int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCalibreID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCalibreID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCalibreID: %w", err)
+	}
+	return oldValue.CalibreID, nil
+}
+
+// AddCalibreID adds i to the "calibre_id" field.
+func (m *AuthorMutation) AddCalibreID(i int64) {
+	if m.addcalibre_id != nil {
+		*m.addcalibre_id += i
+	} else {
+		m.addcalibre_id = &i
+	}
+}
+
+// AddedCalibreID returns the value that was added to the "calibre_id" field in this mutation.
+func (m *AuthorMutation) AddedCalibreID() (r int64, exists bool) {
+	v := m.addcalibre_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetCalibreID resets all changes to the "calibre_id" field.
+func (m *AuthorMutation) ResetCalibreID() {
+	m.calibre_id = nil
+	m.addcalibre_id = nil
 }
 
 // SetName sets the "name" field.
@@ -380,7 +438,10 @@ func (m *AuthorMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *AuthorMutation) Fields() []string {
-	fields := make([]string, 0, 3)
+	fields := make([]string, 0, 4)
+	if m.calibre_id != nil {
+		fields = append(fields, author.FieldCalibreID)
+	}
 	if m.name != nil {
 		fields = append(fields, author.FieldName)
 	}
@@ -398,6 +459,8 @@ func (m *AuthorMutation) Fields() []string {
 // schema.
 func (m *AuthorMutation) Field(name string) (ent.Value, bool) {
 	switch name {
+	case author.FieldCalibreID:
+		return m.CalibreID()
 	case author.FieldName:
 		return m.Name()
 	case author.FieldSort:
@@ -413,6 +476,8 @@ func (m *AuthorMutation) Field(name string) (ent.Value, bool) {
 // database failed.
 func (m *AuthorMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
+	case author.FieldCalibreID:
+		return m.OldCalibreID(ctx)
 	case author.FieldName:
 		return m.OldName(ctx)
 	case author.FieldSort:
@@ -428,6 +493,13 @@ func (m *AuthorMutation) OldField(ctx context.Context, name string) (ent.Value, 
 // type.
 func (m *AuthorMutation) SetField(name string, value ent.Value) error {
 	switch name {
+	case author.FieldCalibreID:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCalibreID(v)
+		return nil
 	case author.FieldName:
 		v, ok := value.(string)
 		if !ok {
@@ -456,13 +528,21 @@ func (m *AuthorMutation) SetField(name string, value ent.Value) error {
 // AddedFields returns all numeric fields that were incremented/decremented during
 // this mutation.
 func (m *AuthorMutation) AddedFields() []string {
-	return nil
+	var fields []string
+	if m.addcalibre_id != nil {
+		fields = append(fields, author.FieldCalibreID)
+	}
+	return fields
 }
 
 // AddedField returns the numeric value that was incremented/decremented on a field
 // with the given name. The second boolean return value indicates that this field
 // was not set, or was not defined in the schema.
 func (m *AuthorMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case author.FieldCalibreID:
+		return m.AddedCalibreID()
+	}
 	return nil, false
 }
 
@@ -471,6 +551,13 @@ func (m *AuthorMutation) AddedField(name string) (ent.Value, bool) {
 // type.
 func (m *AuthorMutation) AddField(name string, value ent.Value) error {
 	switch name {
+	case author.FieldCalibreID:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddCalibreID(v)
+		return nil
 	}
 	return fmt.Errorf("unknown Author numeric field %s", name)
 }
@@ -507,6 +594,9 @@ func (m *AuthorMutation) ClearField(name string) error {
 // It returns an error if the field is not defined in the schema.
 func (m *AuthorMutation) ResetField(name string) error {
 	switch name {
+	case author.FieldCalibreID:
+		m.ResetCalibreID()
+		return nil
 	case author.FieldName:
 		m.ResetName()
 		return nil
@@ -607,35 +697,44 @@ func (m *AuthorMutation) ResetEdge(name string) error {
 // BookMutation represents an operation that mutates the Book nodes in the graph.
 type BookMutation struct {
 	config
-	op                Op
-	typ               string
-	id                *ksuid.ID
-	title             *string
-	sort              *string
-	published_date    *time.Time
-	_path             *string
-	isbn              *string
-	description       *string
-	series_index      *int
-	addseries_index   *int
-	clearedFields     map[string]struct{}
-	authors           map[ksuid.ID]struct{}
-	removedauthors    map[ksuid.ID]struct{}
-	clearedauthors    bool
-	series            map[ksuid.ID]struct{}
-	removedseries     map[ksuid.ID]struct{}
-	clearedseries     bool
-	identifier        map[ksuid.ID]struct{}
-	removedidentifier map[ksuid.ID]struct{}
-	clearedidentifier bool
-	language          *ksuid.ID
-	clearedlanguage   bool
-	shelf             map[ksuid.ID]struct{}
-	removedshelf      map[ksuid.ID]struct{}
-	clearedshelf      bool
-	done              bool
-	oldValue          func(context.Context) (*Book, error)
-	predicates        []predicate.Book
+	op                 Op
+	typ                string
+	id                 *ksuid.ID
+	calibre_id         *int64
+	addcalibre_id      *int64
+	title              *string
+	sort               *string
+	published_date     *time.Time
+	_path              *string
+	isbn               *string
+	description        *string
+	series_index       *float64
+	addseries_index    *float64
+	clearedFields      map[string]struct{}
+	authors            map[ksuid.ID]struct{}
+	removedauthors     map[ksuid.ID]struct{}
+	clearedauthors     bool
+	publisher          map[ksuid.ID]struct{}
+	removedpublisher   map[ksuid.ID]struct{}
+	clearedpublisher   bool
+	series             map[ksuid.ID]struct{}
+	removedseries      map[ksuid.ID]struct{}
+	clearedseries      bool
+	identifiers        map[ksuid.ID]struct{}
+	removedidentifiers map[ksuid.ID]struct{}
+	clearedidentifiers bool
+	tags               map[ksuid.ID]struct{}
+	removedtags        map[ksuid.ID]struct{}
+	clearedtags        bool
+	language           map[ksuid.ID]struct{}
+	removedlanguage    map[ksuid.ID]struct{}
+	clearedlanguage    bool
+	shelf              map[ksuid.ID]struct{}
+	removedshelf       map[ksuid.ID]struct{}
+	clearedshelf       bool
+	done               bool
+	oldValue           func(context.Context) (*Book, error)
+	predicates         []predicate.Book
 }
 
 var _ ent.Mutation = (*BookMutation)(nil)
@@ -740,6 +839,62 @@ func (m *BookMutation) IDs(ctx context.Context) ([]ksuid.ID, error) {
 	default:
 		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
 	}
+}
+
+// SetCalibreID sets the "calibre_id" field.
+func (m *BookMutation) SetCalibreID(i int64) {
+	m.calibre_id = &i
+	m.addcalibre_id = nil
+}
+
+// CalibreID returns the value of the "calibre_id" field in the mutation.
+func (m *BookMutation) CalibreID() (r int64, exists bool) {
+	v := m.calibre_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCalibreID returns the old "calibre_id" field's value of the Book entity.
+// If the Book object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *BookMutation) OldCalibreID(ctx context.Context) (v int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCalibreID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCalibreID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCalibreID: %w", err)
+	}
+	return oldValue.CalibreID, nil
+}
+
+// AddCalibreID adds i to the "calibre_id" field.
+func (m *BookMutation) AddCalibreID(i int64) {
+	if m.addcalibre_id != nil {
+		*m.addcalibre_id += i
+	} else {
+		m.addcalibre_id = &i
+	}
+}
+
+// AddedCalibreID returns the value that was added to the "calibre_id" field in this mutation.
+func (m *BookMutation) AddedCalibreID() (r int64, exists bool) {
+	v := m.addcalibre_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetCalibreID resets all changes to the "calibre_id" field.
+func (m *BookMutation) ResetCalibreID() {
+	m.calibre_id = nil
+	m.addcalibre_id = nil
 }
 
 // SetTitle sets the "title" field.
@@ -998,13 +1153,13 @@ func (m *BookMutation) ResetDescription() {
 }
 
 // SetSeriesIndex sets the "series_index" field.
-func (m *BookMutation) SetSeriesIndex(i int) {
-	m.series_index = &i
+func (m *BookMutation) SetSeriesIndex(f float64) {
+	m.series_index = &f
 	m.addseries_index = nil
 }
 
 // SeriesIndex returns the value of the "series_index" field in the mutation.
-func (m *BookMutation) SeriesIndex() (r int, exists bool) {
+func (m *BookMutation) SeriesIndex() (r float64, exists bool) {
 	v := m.series_index
 	if v == nil {
 		return
@@ -1015,7 +1170,7 @@ func (m *BookMutation) SeriesIndex() (r int, exists bool) {
 // OldSeriesIndex returns the old "series_index" field's value of the Book entity.
 // If the Book object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *BookMutation) OldSeriesIndex(ctx context.Context) (v int, err error) {
+func (m *BookMutation) OldSeriesIndex(ctx context.Context) (v float64, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldSeriesIndex is only allowed on UpdateOne operations")
 	}
@@ -1029,17 +1184,17 @@ func (m *BookMutation) OldSeriesIndex(ctx context.Context) (v int, err error) {
 	return oldValue.SeriesIndex, nil
 }
 
-// AddSeriesIndex adds i to the "series_index" field.
-func (m *BookMutation) AddSeriesIndex(i int) {
+// AddSeriesIndex adds f to the "series_index" field.
+func (m *BookMutation) AddSeriesIndex(f float64) {
 	if m.addseries_index != nil {
-		*m.addseries_index += i
+		*m.addseries_index += f
 	} else {
-		m.addseries_index = &i
+		m.addseries_index = &f
 	}
 }
 
 // AddedSeriesIndex returns the value that was added to the "series_index" field in this mutation.
-func (m *BookMutation) AddedSeriesIndex() (r int, exists bool) {
+func (m *BookMutation) AddedSeriesIndex() (r float64, exists bool) {
 	v := m.addseries_index
 	if v == nil {
 		return
@@ -1121,6 +1276,60 @@ func (m *BookMutation) ResetAuthors() {
 	m.removedauthors = nil
 }
 
+// AddPublisherIDs adds the "publisher" edge to the Publisher entity by ids.
+func (m *BookMutation) AddPublisherIDs(ids ...ksuid.ID) {
+	if m.publisher == nil {
+		m.publisher = make(map[ksuid.ID]struct{})
+	}
+	for i := range ids {
+		m.publisher[ids[i]] = struct{}{}
+	}
+}
+
+// ClearPublisher clears the "publisher" edge to the Publisher entity.
+func (m *BookMutation) ClearPublisher() {
+	m.clearedpublisher = true
+}
+
+// PublisherCleared reports if the "publisher" edge to the Publisher entity was cleared.
+func (m *BookMutation) PublisherCleared() bool {
+	return m.clearedpublisher
+}
+
+// RemovePublisherIDs removes the "publisher" edge to the Publisher entity by IDs.
+func (m *BookMutation) RemovePublisherIDs(ids ...ksuid.ID) {
+	if m.removedpublisher == nil {
+		m.removedpublisher = make(map[ksuid.ID]struct{})
+	}
+	for i := range ids {
+		delete(m.publisher, ids[i])
+		m.removedpublisher[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedPublisher returns the removed IDs of the "publisher" edge to the Publisher entity.
+func (m *BookMutation) RemovedPublisherIDs() (ids []ksuid.ID) {
+	for id := range m.removedpublisher {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// PublisherIDs returns the "publisher" edge IDs in the mutation.
+func (m *BookMutation) PublisherIDs() (ids []ksuid.ID) {
+	for id := range m.publisher {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetPublisher resets all changes to the "publisher" edge.
+func (m *BookMutation) ResetPublisher() {
+	m.publisher = nil
+	m.clearedpublisher = false
+	m.removedpublisher = nil
+}
+
 // AddSeriesIDs adds the "series" edge to the Series entity by ids.
 func (m *BookMutation) AddSeriesIDs(ids ...ksuid.ID) {
 	if m.series == nil {
@@ -1175,63 +1384,122 @@ func (m *BookMutation) ResetSeries() {
 	m.removedseries = nil
 }
 
-// AddIdentifierIDs adds the "identifier" edge to the Identifier entity by ids.
+// AddIdentifierIDs adds the "identifiers" edge to the Identifier entity by ids.
 func (m *BookMutation) AddIdentifierIDs(ids ...ksuid.ID) {
-	if m.identifier == nil {
-		m.identifier = make(map[ksuid.ID]struct{})
+	if m.identifiers == nil {
+		m.identifiers = make(map[ksuid.ID]struct{})
 	}
 	for i := range ids {
-		m.identifier[ids[i]] = struct{}{}
+		m.identifiers[ids[i]] = struct{}{}
 	}
 }
 
-// ClearIdentifier clears the "identifier" edge to the Identifier entity.
-func (m *BookMutation) ClearIdentifier() {
-	m.clearedidentifier = true
+// ClearIdentifiers clears the "identifiers" edge to the Identifier entity.
+func (m *BookMutation) ClearIdentifiers() {
+	m.clearedidentifiers = true
 }
 
-// IdentifierCleared reports if the "identifier" edge to the Identifier entity was cleared.
-func (m *BookMutation) IdentifierCleared() bool {
-	return m.clearedidentifier
+// IdentifiersCleared reports if the "identifiers" edge to the Identifier entity was cleared.
+func (m *BookMutation) IdentifiersCleared() bool {
+	return m.clearedidentifiers
 }
 
-// RemoveIdentifierIDs removes the "identifier" edge to the Identifier entity by IDs.
+// RemoveIdentifierIDs removes the "identifiers" edge to the Identifier entity by IDs.
 func (m *BookMutation) RemoveIdentifierIDs(ids ...ksuid.ID) {
-	if m.removedidentifier == nil {
-		m.removedidentifier = make(map[ksuid.ID]struct{})
+	if m.removedidentifiers == nil {
+		m.removedidentifiers = make(map[ksuid.ID]struct{})
 	}
 	for i := range ids {
-		delete(m.identifier, ids[i])
-		m.removedidentifier[ids[i]] = struct{}{}
+		delete(m.identifiers, ids[i])
+		m.removedidentifiers[ids[i]] = struct{}{}
 	}
 }
 
-// RemovedIdentifier returns the removed IDs of the "identifier" edge to the Identifier entity.
-func (m *BookMutation) RemovedIdentifierIDs() (ids []ksuid.ID) {
-	for id := range m.removedidentifier {
+// RemovedIdentifiers returns the removed IDs of the "identifiers" edge to the Identifier entity.
+func (m *BookMutation) RemovedIdentifiersIDs() (ids []ksuid.ID) {
+	for id := range m.removedidentifiers {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// IdentifierIDs returns the "identifier" edge IDs in the mutation.
-func (m *BookMutation) IdentifierIDs() (ids []ksuid.ID) {
-	for id := range m.identifier {
+// IdentifiersIDs returns the "identifiers" edge IDs in the mutation.
+func (m *BookMutation) IdentifiersIDs() (ids []ksuid.ID) {
+	for id := range m.identifiers {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// ResetIdentifier resets all changes to the "identifier" edge.
-func (m *BookMutation) ResetIdentifier() {
-	m.identifier = nil
-	m.clearedidentifier = false
-	m.removedidentifier = nil
+// ResetIdentifiers resets all changes to the "identifiers" edge.
+func (m *BookMutation) ResetIdentifiers() {
+	m.identifiers = nil
+	m.clearedidentifiers = false
+	m.removedidentifiers = nil
 }
 
-// SetLanguageID sets the "language" edge to the Language entity by id.
-func (m *BookMutation) SetLanguageID(id ksuid.ID) {
-	m.language = &id
+// AddTagIDs adds the "tags" edge to the Tag entity by ids.
+func (m *BookMutation) AddTagIDs(ids ...ksuid.ID) {
+	if m.tags == nil {
+		m.tags = make(map[ksuid.ID]struct{})
+	}
+	for i := range ids {
+		m.tags[ids[i]] = struct{}{}
+	}
+}
+
+// ClearTags clears the "tags" edge to the Tag entity.
+func (m *BookMutation) ClearTags() {
+	m.clearedtags = true
+}
+
+// TagsCleared reports if the "tags" edge to the Tag entity was cleared.
+func (m *BookMutation) TagsCleared() bool {
+	return m.clearedtags
+}
+
+// RemoveTagIDs removes the "tags" edge to the Tag entity by IDs.
+func (m *BookMutation) RemoveTagIDs(ids ...ksuid.ID) {
+	if m.removedtags == nil {
+		m.removedtags = make(map[ksuid.ID]struct{})
+	}
+	for i := range ids {
+		delete(m.tags, ids[i])
+		m.removedtags[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedTags returns the removed IDs of the "tags" edge to the Tag entity.
+func (m *BookMutation) RemovedTagsIDs() (ids []ksuid.ID) {
+	for id := range m.removedtags {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// TagsIDs returns the "tags" edge IDs in the mutation.
+func (m *BookMutation) TagsIDs() (ids []ksuid.ID) {
+	for id := range m.tags {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetTags resets all changes to the "tags" edge.
+func (m *BookMutation) ResetTags() {
+	m.tags = nil
+	m.clearedtags = false
+	m.removedtags = nil
+}
+
+// AddLanguageIDs adds the "language" edge to the Language entity by ids.
+func (m *BookMutation) AddLanguageIDs(ids ...ksuid.ID) {
+	if m.language == nil {
+		m.language = make(map[ksuid.ID]struct{})
+	}
+	for i := range ids {
+		m.language[ids[i]] = struct{}{}
+	}
 }
 
 // ClearLanguage clears the "language" edge to the Language entity.
@@ -1244,20 +1512,29 @@ func (m *BookMutation) LanguageCleared() bool {
 	return m.clearedlanguage
 }
 
-// LanguageID returns the "language" edge ID in the mutation.
-func (m *BookMutation) LanguageID() (id ksuid.ID, exists bool) {
-	if m.language != nil {
-		return *m.language, true
+// RemoveLanguageIDs removes the "language" edge to the Language entity by IDs.
+func (m *BookMutation) RemoveLanguageIDs(ids ...ksuid.ID) {
+	if m.removedlanguage == nil {
+		m.removedlanguage = make(map[ksuid.ID]struct{})
+	}
+	for i := range ids {
+		delete(m.language, ids[i])
+		m.removedlanguage[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedLanguage returns the removed IDs of the "language" edge to the Language entity.
+func (m *BookMutation) RemovedLanguageIDs() (ids []ksuid.ID) {
+	for id := range m.removedlanguage {
+		ids = append(ids, id)
 	}
 	return
 }
 
 // LanguageIDs returns the "language" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// LanguageID instead. It exists only for internal usage by the builders.
 func (m *BookMutation) LanguageIDs() (ids []ksuid.ID) {
-	if id := m.language; id != nil {
-		ids = append(ids, *id)
+	for id := range m.language {
+		ids = append(ids, id)
 	}
 	return
 }
@@ -1266,6 +1543,7 @@ func (m *BookMutation) LanguageIDs() (ids []ksuid.ID) {
 func (m *BookMutation) ResetLanguage() {
 	m.language = nil
 	m.clearedlanguage = false
+	m.removedlanguage = nil
 }
 
 // AddShelfIDs adds the "shelf" edge to the Shelf entity by ids.
@@ -1356,7 +1634,10 @@ func (m *BookMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *BookMutation) Fields() []string {
-	fields := make([]string, 0, 7)
+	fields := make([]string, 0, 8)
+	if m.calibre_id != nil {
+		fields = append(fields, book.FieldCalibreID)
+	}
 	if m.title != nil {
 		fields = append(fields, book.FieldTitle)
 	}
@@ -1386,6 +1667,8 @@ func (m *BookMutation) Fields() []string {
 // schema.
 func (m *BookMutation) Field(name string) (ent.Value, bool) {
 	switch name {
+	case book.FieldCalibreID:
+		return m.CalibreID()
 	case book.FieldTitle:
 		return m.Title()
 	case book.FieldSort:
@@ -1409,6 +1692,8 @@ func (m *BookMutation) Field(name string) (ent.Value, bool) {
 // database failed.
 func (m *BookMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
+	case book.FieldCalibreID:
+		return m.OldCalibreID(ctx)
 	case book.FieldTitle:
 		return m.OldTitle(ctx)
 	case book.FieldSort:
@@ -1432,6 +1717,13 @@ func (m *BookMutation) OldField(ctx context.Context, name string) (ent.Value, er
 // type.
 func (m *BookMutation) SetField(name string, value ent.Value) error {
 	switch name {
+	case book.FieldCalibreID:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCalibreID(v)
+		return nil
 	case book.FieldTitle:
 		v, ok := value.(string)
 		if !ok {
@@ -1475,7 +1767,7 @@ func (m *BookMutation) SetField(name string, value ent.Value) error {
 		m.SetDescription(v)
 		return nil
 	case book.FieldSeriesIndex:
-		v, ok := value.(int)
+		v, ok := value.(float64)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
@@ -1489,6 +1781,9 @@ func (m *BookMutation) SetField(name string, value ent.Value) error {
 // this mutation.
 func (m *BookMutation) AddedFields() []string {
 	var fields []string
+	if m.addcalibre_id != nil {
+		fields = append(fields, book.FieldCalibreID)
+	}
 	if m.addseries_index != nil {
 		fields = append(fields, book.FieldSeriesIndex)
 	}
@@ -1500,6 +1795,8 @@ func (m *BookMutation) AddedFields() []string {
 // was not set, or was not defined in the schema.
 func (m *BookMutation) AddedField(name string) (ent.Value, bool) {
 	switch name {
+	case book.FieldCalibreID:
+		return m.AddedCalibreID()
 	case book.FieldSeriesIndex:
 		return m.AddedSeriesIndex()
 	}
@@ -1511,8 +1808,15 @@ func (m *BookMutation) AddedField(name string) (ent.Value, bool) {
 // type.
 func (m *BookMutation) AddField(name string, value ent.Value) error {
 	switch name {
+	case book.FieldCalibreID:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddCalibreID(v)
+		return nil
 	case book.FieldSeriesIndex:
-		v, ok := value.(int)
+		v, ok := value.(float64)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
@@ -1572,6 +1876,9 @@ func (m *BookMutation) ClearField(name string) error {
 // It returns an error if the field is not defined in the schema.
 func (m *BookMutation) ResetField(name string) error {
 	switch name {
+	case book.FieldCalibreID:
+		m.ResetCalibreID()
+		return nil
 	case book.FieldTitle:
 		m.ResetTitle()
 		return nil
@@ -1599,15 +1906,21 @@ func (m *BookMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *BookMutation) AddedEdges() []string {
-	edges := make([]string, 0, 5)
+	edges := make([]string, 0, 7)
 	if m.authors != nil {
 		edges = append(edges, book.EdgeAuthors)
+	}
+	if m.publisher != nil {
+		edges = append(edges, book.EdgePublisher)
 	}
 	if m.series != nil {
 		edges = append(edges, book.EdgeSeries)
 	}
-	if m.identifier != nil {
-		edges = append(edges, book.EdgeIdentifier)
+	if m.identifiers != nil {
+		edges = append(edges, book.EdgeIdentifiers)
+	}
+	if m.tags != nil {
+		edges = append(edges, book.EdgeTags)
 	}
 	if m.language != nil {
 		edges = append(edges, book.EdgeLanguage)
@@ -1628,22 +1941,36 @@ func (m *BookMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case book.EdgePublisher:
+		ids := make([]ent.Value, 0, len(m.publisher))
+		for id := range m.publisher {
+			ids = append(ids, id)
+		}
+		return ids
 	case book.EdgeSeries:
 		ids := make([]ent.Value, 0, len(m.series))
 		for id := range m.series {
 			ids = append(ids, id)
 		}
 		return ids
-	case book.EdgeIdentifier:
-		ids := make([]ent.Value, 0, len(m.identifier))
-		for id := range m.identifier {
+	case book.EdgeIdentifiers:
+		ids := make([]ent.Value, 0, len(m.identifiers))
+		for id := range m.identifiers {
+			ids = append(ids, id)
+		}
+		return ids
+	case book.EdgeTags:
+		ids := make([]ent.Value, 0, len(m.tags))
+		for id := range m.tags {
 			ids = append(ids, id)
 		}
 		return ids
 	case book.EdgeLanguage:
-		if id := m.language; id != nil {
-			return []ent.Value{*id}
+		ids := make([]ent.Value, 0, len(m.language))
+		for id := range m.language {
+			ids = append(ids, id)
 		}
+		return ids
 	case book.EdgeShelf:
 		ids := make([]ent.Value, 0, len(m.shelf))
 		for id := range m.shelf {
@@ -1656,15 +1983,24 @@ func (m *BookMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *BookMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 5)
+	edges := make([]string, 0, 7)
 	if m.removedauthors != nil {
 		edges = append(edges, book.EdgeAuthors)
+	}
+	if m.removedpublisher != nil {
+		edges = append(edges, book.EdgePublisher)
 	}
 	if m.removedseries != nil {
 		edges = append(edges, book.EdgeSeries)
 	}
-	if m.removedidentifier != nil {
-		edges = append(edges, book.EdgeIdentifier)
+	if m.removedidentifiers != nil {
+		edges = append(edges, book.EdgeIdentifiers)
+	}
+	if m.removedtags != nil {
+		edges = append(edges, book.EdgeTags)
+	}
+	if m.removedlanguage != nil {
+		edges = append(edges, book.EdgeLanguage)
 	}
 	if m.removedshelf != nil {
 		edges = append(edges, book.EdgeShelf)
@@ -1682,15 +2018,33 @@ func (m *BookMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case book.EdgePublisher:
+		ids := make([]ent.Value, 0, len(m.removedpublisher))
+		for id := range m.removedpublisher {
+			ids = append(ids, id)
+		}
+		return ids
 	case book.EdgeSeries:
 		ids := make([]ent.Value, 0, len(m.removedseries))
 		for id := range m.removedseries {
 			ids = append(ids, id)
 		}
 		return ids
-	case book.EdgeIdentifier:
-		ids := make([]ent.Value, 0, len(m.removedidentifier))
-		for id := range m.removedidentifier {
+	case book.EdgeIdentifiers:
+		ids := make([]ent.Value, 0, len(m.removedidentifiers))
+		for id := range m.removedidentifiers {
+			ids = append(ids, id)
+		}
+		return ids
+	case book.EdgeTags:
+		ids := make([]ent.Value, 0, len(m.removedtags))
+		for id := range m.removedtags {
+			ids = append(ids, id)
+		}
+		return ids
+	case book.EdgeLanguage:
+		ids := make([]ent.Value, 0, len(m.removedlanguage))
+		for id := range m.removedlanguage {
 			ids = append(ids, id)
 		}
 		return ids
@@ -1706,15 +2060,21 @@ func (m *BookMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *BookMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 5)
+	edges := make([]string, 0, 7)
 	if m.clearedauthors {
 		edges = append(edges, book.EdgeAuthors)
+	}
+	if m.clearedpublisher {
+		edges = append(edges, book.EdgePublisher)
 	}
 	if m.clearedseries {
 		edges = append(edges, book.EdgeSeries)
 	}
-	if m.clearedidentifier {
-		edges = append(edges, book.EdgeIdentifier)
+	if m.clearedidentifiers {
+		edges = append(edges, book.EdgeIdentifiers)
+	}
+	if m.clearedtags {
+		edges = append(edges, book.EdgeTags)
 	}
 	if m.clearedlanguage {
 		edges = append(edges, book.EdgeLanguage)
@@ -1731,10 +2091,14 @@ func (m *BookMutation) EdgeCleared(name string) bool {
 	switch name {
 	case book.EdgeAuthors:
 		return m.clearedauthors
+	case book.EdgePublisher:
+		return m.clearedpublisher
 	case book.EdgeSeries:
 		return m.clearedseries
-	case book.EdgeIdentifier:
-		return m.clearedidentifier
+	case book.EdgeIdentifiers:
+		return m.clearedidentifiers
+	case book.EdgeTags:
+		return m.clearedtags
 	case book.EdgeLanguage:
 		return m.clearedlanguage
 	case book.EdgeShelf:
@@ -1747,9 +2111,6 @@ func (m *BookMutation) EdgeCleared(name string) bool {
 // if that edge is not defined in the schema.
 func (m *BookMutation) ClearEdge(name string) error {
 	switch name {
-	case book.EdgeLanguage:
-		m.ClearLanguage()
-		return nil
 	}
 	return fmt.Errorf("unknown Book unique edge %s", name)
 }
@@ -1761,11 +2122,17 @@ func (m *BookMutation) ResetEdge(name string) error {
 	case book.EdgeAuthors:
 		m.ResetAuthors()
 		return nil
+	case book.EdgePublisher:
+		m.ResetPublisher()
+		return nil
 	case book.EdgeSeries:
 		m.ResetSeries()
 		return nil
-	case book.EdgeIdentifier:
-		m.ResetIdentifier()
+	case book.EdgeIdentifiers:
+		m.ResetIdentifiers()
+		return nil
+	case book.EdgeTags:
+		m.ResetTags()
 		return nil
 	case book.EdgeLanguage:
 		m.ResetLanguage()
@@ -1783,7 +2150,9 @@ type IdentifierMutation struct {
 	op            Op
 	typ           string
 	id            *ksuid.ID
-	_type         *identifier.Type
+	calibre_id    *int64
+	addcalibre_id *int64
+	_type         *string
 	value         *string
 	clearedFields map[string]struct{}
 	book          *ksuid.ID
@@ -1897,13 +2266,69 @@ func (m *IdentifierMutation) IDs(ctx context.Context) ([]ksuid.ID, error) {
 	}
 }
 
+// SetCalibreID sets the "calibre_id" field.
+func (m *IdentifierMutation) SetCalibreID(i int64) {
+	m.calibre_id = &i
+	m.addcalibre_id = nil
+}
+
+// CalibreID returns the value of the "calibre_id" field in the mutation.
+func (m *IdentifierMutation) CalibreID() (r int64, exists bool) {
+	v := m.calibre_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCalibreID returns the old "calibre_id" field's value of the Identifier entity.
+// If the Identifier object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *IdentifierMutation) OldCalibreID(ctx context.Context) (v int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCalibreID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCalibreID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCalibreID: %w", err)
+	}
+	return oldValue.CalibreID, nil
+}
+
+// AddCalibreID adds i to the "calibre_id" field.
+func (m *IdentifierMutation) AddCalibreID(i int64) {
+	if m.addcalibre_id != nil {
+		*m.addcalibre_id += i
+	} else {
+		m.addcalibre_id = &i
+	}
+}
+
+// AddedCalibreID returns the value that was added to the "calibre_id" field in this mutation.
+func (m *IdentifierMutation) AddedCalibreID() (r int64, exists bool) {
+	v := m.addcalibre_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetCalibreID resets all changes to the "calibre_id" field.
+func (m *IdentifierMutation) ResetCalibreID() {
+	m.calibre_id = nil
+	m.addcalibre_id = nil
+}
+
 // SetType sets the "type" field.
-func (m *IdentifierMutation) SetType(i identifier.Type) {
-	m._type = &i
+func (m *IdentifierMutation) SetType(s string) {
+	m._type = &s
 }
 
 // GetType returns the value of the "type" field in the mutation.
-func (m *IdentifierMutation) GetType() (r identifier.Type, exists bool) {
+func (m *IdentifierMutation) GetType() (r string, exists bool) {
 	v := m._type
 	if v == nil {
 		return
@@ -1914,7 +2339,7 @@ func (m *IdentifierMutation) GetType() (r identifier.Type, exists bool) {
 // OldType returns the old "type" field's value of the Identifier entity.
 // If the Identifier object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *IdentifierMutation) OldType(ctx context.Context) (v identifier.Type, err error) {
+func (m *IdentifierMutation) OldType(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldType is only allowed on UpdateOne operations")
 	}
@@ -2042,7 +2467,10 @@ func (m *IdentifierMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *IdentifierMutation) Fields() []string {
-	fields := make([]string, 0, 2)
+	fields := make([]string, 0, 3)
+	if m.calibre_id != nil {
+		fields = append(fields, identifier.FieldCalibreID)
+	}
 	if m._type != nil {
 		fields = append(fields, identifier.FieldType)
 	}
@@ -2057,6 +2485,8 @@ func (m *IdentifierMutation) Fields() []string {
 // schema.
 func (m *IdentifierMutation) Field(name string) (ent.Value, bool) {
 	switch name {
+	case identifier.FieldCalibreID:
+		return m.CalibreID()
 	case identifier.FieldType:
 		return m.GetType()
 	case identifier.FieldValue:
@@ -2070,6 +2500,8 @@ func (m *IdentifierMutation) Field(name string) (ent.Value, bool) {
 // database failed.
 func (m *IdentifierMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
+	case identifier.FieldCalibreID:
+		return m.OldCalibreID(ctx)
 	case identifier.FieldType:
 		return m.OldType(ctx)
 	case identifier.FieldValue:
@@ -2083,8 +2515,15 @@ func (m *IdentifierMutation) OldField(ctx context.Context, name string) (ent.Val
 // type.
 func (m *IdentifierMutation) SetField(name string, value ent.Value) error {
 	switch name {
+	case identifier.FieldCalibreID:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCalibreID(v)
+		return nil
 	case identifier.FieldType:
-		v, ok := value.(identifier.Type)
+		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
@@ -2104,13 +2543,21 @@ func (m *IdentifierMutation) SetField(name string, value ent.Value) error {
 // AddedFields returns all numeric fields that were incremented/decremented during
 // this mutation.
 func (m *IdentifierMutation) AddedFields() []string {
-	return nil
+	var fields []string
+	if m.addcalibre_id != nil {
+		fields = append(fields, identifier.FieldCalibreID)
+	}
+	return fields
 }
 
 // AddedField returns the numeric value that was incremented/decremented on a field
 // with the given name. The second boolean return value indicates that this field
 // was not set, or was not defined in the schema.
 func (m *IdentifierMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case identifier.FieldCalibreID:
+		return m.AddedCalibreID()
+	}
 	return nil, false
 }
 
@@ -2119,6 +2566,13 @@ func (m *IdentifierMutation) AddedField(name string) (ent.Value, bool) {
 // type.
 func (m *IdentifierMutation) AddField(name string, value ent.Value) error {
 	switch name {
+	case identifier.FieldCalibreID:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddCalibreID(v)
+		return nil
 	}
 	return fmt.Errorf("unknown Identifier numeric field %s", name)
 }
@@ -2146,6 +2600,9 @@ func (m *IdentifierMutation) ClearField(name string) error {
 // It returns an error if the field is not defined in the schema.
 func (m *IdentifierMutation) ResetField(name string) error {
 	switch name {
+	case identifier.FieldCalibreID:
+		m.ResetCalibreID()
+		return nil
 	case identifier.FieldType:
 		m.ResetType()
 		return nil
@@ -2236,6 +2693,8 @@ type LanguageMutation struct {
 	op            Op
 	typ           string
 	id            *ksuid.ID
+	calibre_id    *int64
+	addcalibre_id *int64
 	name          *string
 	code          *string
 	clearedFields map[string]struct{}
@@ -2349,6 +2808,62 @@ func (m *LanguageMutation) IDs(ctx context.Context) ([]ksuid.ID, error) {
 	default:
 		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
 	}
+}
+
+// SetCalibreID sets the "calibre_id" field.
+func (m *LanguageMutation) SetCalibreID(i int64) {
+	m.calibre_id = &i
+	m.addcalibre_id = nil
+}
+
+// CalibreID returns the value of the "calibre_id" field in the mutation.
+func (m *LanguageMutation) CalibreID() (r int64, exists bool) {
+	v := m.calibre_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCalibreID returns the old "calibre_id" field's value of the Language entity.
+// If the Language object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *LanguageMutation) OldCalibreID(ctx context.Context) (v int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCalibreID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCalibreID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCalibreID: %w", err)
+	}
+	return oldValue.CalibreID, nil
+}
+
+// AddCalibreID adds i to the "calibre_id" field.
+func (m *LanguageMutation) AddCalibreID(i int64) {
+	if m.addcalibre_id != nil {
+		*m.addcalibre_id += i
+	} else {
+		m.addcalibre_id = &i
+	}
+}
+
+// AddedCalibreID returns the value that was added to the "calibre_id" field in this mutation.
+func (m *LanguageMutation) AddedCalibreID() (r int64, exists bool) {
+	v := m.addcalibre_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetCalibreID resets all changes to the "calibre_id" field.
+func (m *LanguageMutation) ResetCalibreID() {
+	m.calibre_id = nil
+	m.addcalibre_id = nil
 }
 
 // SetName sets the "name" field.
@@ -2511,7 +3026,10 @@ func (m *LanguageMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *LanguageMutation) Fields() []string {
-	fields := make([]string, 0, 2)
+	fields := make([]string, 0, 3)
+	if m.calibre_id != nil {
+		fields = append(fields, language.FieldCalibreID)
+	}
 	if m.name != nil {
 		fields = append(fields, language.FieldName)
 	}
@@ -2526,6 +3044,8 @@ func (m *LanguageMutation) Fields() []string {
 // schema.
 func (m *LanguageMutation) Field(name string) (ent.Value, bool) {
 	switch name {
+	case language.FieldCalibreID:
+		return m.CalibreID()
 	case language.FieldName:
 		return m.Name()
 	case language.FieldCode:
@@ -2539,6 +3059,8 @@ func (m *LanguageMutation) Field(name string) (ent.Value, bool) {
 // database failed.
 func (m *LanguageMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
+	case language.FieldCalibreID:
+		return m.OldCalibreID(ctx)
 	case language.FieldName:
 		return m.OldName(ctx)
 	case language.FieldCode:
@@ -2552,6 +3074,13 @@ func (m *LanguageMutation) OldField(ctx context.Context, name string) (ent.Value
 // type.
 func (m *LanguageMutation) SetField(name string, value ent.Value) error {
 	switch name {
+	case language.FieldCalibreID:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCalibreID(v)
+		return nil
 	case language.FieldName:
 		v, ok := value.(string)
 		if !ok {
@@ -2573,13 +3102,21 @@ func (m *LanguageMutation) SetField(name string, value ent.Value) error {
 // AddedFields returns all numeric fields that were incremented/decremented during
 // this mutation.
 func (m *LanguageMutation) AddedFields() []string {
-	return nil
+	var fields []string
+	if m.addcalibre_id != nil {
+		fields = append(fields, language.FieldCalibreID)
+	}
+	return fields
 }
 
 // AddedField returns the numeric value that was incremented/decremented on a field
 // with the given name. The second boolean return value indicates that this field
 // was not set, or was not defined in the schema.
 func (m *LanguageMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case language.FieldCalibreID:
+		return m.AddedCalibreID()
+	}
 	return nil, false
 }
 
@@ -2588,6 +3125,13 @@ func (m *LanguageMutation) AddedField(name string) (ent.Value, bool) {
 // type.
 func (m *LanguageMutation) AddField(name string, value ent.Value) error {
 	switch name {
+	case language.FieldCalibreID:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddCalibreID(v)
+		return nil
 	}
 	return fmt.Errorf("unknown Language numeric field %s", name)
 }
@@ -2615,6 +3159,9 @@ func (m *LanguageMutation) ClearField(name string) error {
 // It returns an error if the field is not defined in the schema.
 func (m *LanguageMutation) ResetField(name string) error {
 	switch name {
+	case language.FieldCalibreID:
+		m.ResetCalibreID()
+		return nil
 	case language.FieldName:
 		m.ResetName()
 		return nil
@@ -2715,6 +3262,8 @@ type PublisherMutation struct {
 	op            Op
 	typ           string
 	id            *ksuid.ID
+	calibre_id    *int64
+	addcalibre_id *int64
 	name          *string
 	clearedFields map[string]struct{}
 	books         map[ksuid.ID]struct{}
@@ -2827,6 +3376,62 @@ func (m *PublisherMutation) IDs(ctx context.Context) ([]ksuid.ID, error) {
 	default:
 		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
 	}
+}
+
+// SetCalibreID sets the "calibre_id" field.
+func (m *PublisherMutation) SetCalibreID(i int64) {
+	m.calibre_id = &i
+	m.addcalibre_id = nil
+}
+
+// CalibreID returns the value of the "calibre_id" field in the mutation.
+func (m *PublisherMutation) CalibreID() (r int64, exists bool) {
+	v := m.calibre_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCalibreID returns the old "calibre_id" field's value of the Publisher entity.
+// If the Publisher object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PublisherMutation) OldCalibreID(ctx context.Context) (v int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCalibreID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCalibreID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCalibreID: %w", err)
+	}
+	return oldValue.CalibreID, nil
+}
+
+// AddCalibreID adds i to the "calibre_id" field.
+func (m *PublisherMutation) AddCalibreID(i int64) {
+	if m.addcalibre_id != nil {
+		*m.addcalibre_id += i
+	} else {
+		m.addcalibre_id = &i
+	}
+}
+
+// AddedCalibreID returns the value that was added to the "calibre_id" field in this mutation.
+func (m *PublisherMutation) AddedCalibreID() (r int64, exists bool) {
+	v := m.addcalibre_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetCalibreID resets all changes to the "calibre_id" field.
+func (m *PublisherMutation) ResetCalibreID() {
+	m.calibre_id = nil
+	m.addcalibre_id = nil
 }
 
 // SetName sets the "name" field.
@@ -2953,7 +3558,10 @@ func (m *PublisherMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *PublisherMutation) Fields() []string {
-	fields := make([]string, 0, 1)
+	fields := make([]string, 0, 2)
+	if m.calibre_id != nil {
+		fields = append(fields, publisher.FieldCalibreID)
+	}
 	if m.name != nil {
 		fields = append(fields, publisher.FieldName)
 	}
@@ -2965,6 +3573,8 @@ func (m *PublisherMutation) Fields() []string {
 // schema.
 func (m *PublisherMutation) Field(name string) (ent.Value, bool) {
 	switch name {
+	case publisher.FieldCalibreID:
+		return m.CalibreID()
 	case publisher.FieldName:
 		return m.Name()
 	}
@@ -2976,6 +3586,8 @@ func (m *PublisherMutation) Field(name string) (ent.Value, bool) {
 // database failed.
 func (m *PublisherMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
+	case publisher.FieldCalibreID:
+		return m.OldCalibreID(ctx)
 	case publisher.FieldName:
 		return m.OldName(ctx)
 	}
@@ -2987,6 +3599,13 @@ func (m *PublisherMutation) OldField(ctx context.Context, name string) (ent.Valu
 // type.
 func (m *PublisherMutation) SetField(name string, value ent.Value) error {
 	switch name {
+	case publisher.FieldCalibreID:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCalibreID(v)
+		return nil
 	case publisher.FieldName:
 		v, ok := value.(string)
 		if !ok {
@@ -3001,13 +3620,21 @@ func (m *PublisherMutation) SetField(name string, value ent.Value) error {
 // AddedFields returns all numeric fields that were incremented/decremented during
 // this mutation.
 func (m *PublisherMutation) AddedFields() []string {
-	return nil
+	var fields []string
+	if m.addcalibre_id != nil {
+		fields = append(fields, publisher.FieldCalibreID)
+	}
+	return fields
 }
 
 // AddedField returns the numeric value that was incremented/decremented on a field
 // with the given name. The second boolean return value indicates that this field
 // was not set, or was not defined in the schema.
 func (m *PublisherMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case publisher.FieldCalibreID:
+		return m.AddedCalibreID()
+	}
 	return nil, false
 }
 
@@ -3016,6 +3643,13 @@ func (m *PublisherMutation) AddedField(name string) (ent.Value, bool) {
 // type.
 func (m *PublisherMutation) AddField(name string, value ent.Value) error {
 	switch name {
+	case publisher.FieldCalibreID:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddCalibreID(v)
+		return nil
 	}
 	return fmt.Errorf("unknown Publisher numeric field %s", name)
 }
@@ -3043,6 +3677,9 @@ func (m *PublisherMutation) ClearField(name string) error {
 // It returns an error if the field is not defined in the schema.
 func (m *PublisherMutation) ResetField(name string) error {
 	switch name {
+	case publisher.FieldCalibreID:
+		m.ResetCalibreID()
+		return nil
 	case publisher.FieldName:
 		m.ResetName()
 		return nil
@@ -3140,6 +3777,8 @@ type SeriesMutation struct {
 	op            Op
 	typ           string
 	id            *ksuid.ID
+	calibre_id    *int64
+	addcalibre_id *int64
 	name          *string
 	sort          *string
 	clearedFields map[string]struct{}
@@ -3253,6 +3892,62 @@ func (m *SeriesMutation) IDs(ctx context.Context) ([]ksuid.ID, error) {
 	default:
 		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
 	}
+}
+
+// SetCalibreID sets the "calibre_id" field.
+func (m *SeriesMutation) SetCalibreID(i int64) {
+	m.calibre_id = &i
+	m.addcalibre_id = nil
+}
+
+// CalibreID returns the value of the "calibre_id" field in the mutation.
+func (m *SeriesMutation) CalibreID() (r int64, exists bool) {
+	v := m.calibre_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCalibreID returns the old "calibre_id" field's value of the Series entity.
+// If the Series object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SeriesMutation) OldCalibreID(ctx context.Context) (v int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCalibreID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCalibreID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCalibreID: %w", err)
+	}
+	return oldValue.CalibreID, nil
+}
+
+// AddCalibreID adds i to the "calibre_id" field.
+func (m *SeriesMutation) AddCalibreID(i int64) {
+	if m.addcalibre_id != nil {
+		*m.addcalibre_id += i
+	} else {
+		m.addcalibre_id = &i
+	}
+}
+
+// AddedCalibreID returns the value that was added to the "calibre_id" field in this mutation.
+func (m *SeriesMutation) AddedCalibreID() (r int64, exists bool) {
+	v := m.addcalibre_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetCalibreID resets all changes to the "calibre_id" field.
+func (m *SeriesMutation) ResetCalibreID() {
+	m.calibre_id = nil
+	m.addcalibre_id = nil
 }
 
 // SetName sets the "name" field.
@@ -3415,7 +4110,10 @@ func (m *SeriesMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *SeriesMutation) Fields() []string {
-	fields := make([]string, 0, 2)
+	fields := make([]string, 0, 3)
+	if m.calibre_id != nil {
+		fields = append(fields, series.FieldCalibreID)
+	}
 	if m.name != nil {
 		fields = append(fields, series.FieldName)
 	}
@@ -3430,6 +4128,8 @@ func (m *SeriesMutation) Fields() []string {
 // schema.
 func (m *SeriesMutation) Field(name string) (ent.Value, bool) {
 	switch name {
+	case series.FieldCalibreID:
+		return m.CalibreID()
 	case series.FieldName:
 		return m.Name()
 	case series.FieldSort:
@@ -3443,6 +4143,8 @@ func (m *SeriesMutation) Field(name string) (ent.Value, bool) {
 // database failed.
 func (m *SeriesMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
+	case series.FieldCalibreID:
+		return m.OldCalibreID(ctx)
 	case series.FieldName:
 		return m.OldName(ctx)
 	case series.FieldSort:
@@ -3456,6 +4158,13 @@ func (m *SeriesMutation) OldField(ctx context.Context, name string) (ent.Value, 
 // type.
 func (m *SeriesMutation) SetField(name string, value ent.Value) error {
 	switch name {
+	case series.FieldCalibreID:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCalibreID(v)
+		return nil
 	case series.FieldName:
 		v, ok := value.(string)
 		if !ok {
@@ -3477,13 +4186,21 @@ func (m *SeriesMutation) SetField(name string, value ent.Value) error {
 // AddedFields returns all numeric fields that were incremented/decremented during
 // this mutation.
 func (m *SeriesMutation) AddedFields() []string {
-	return nil
+	var fields []string
+	if m.addcalibre_id != nil {
+		fields = append(fields, series.FieldCalibreID)
+	}
+	return fields
 }
 
 // AddedField returns the numeric value that was incremented/decremented on a field
 // with the given name. The second boolean return value indicates that this field
 // was not set, or was not defined in the schema.
 func (m *SeriesMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case series.FieldCalibreID:
+		return m.AddedCalibreID()
+	}
 	return nil, false
 }
 
@@ -3492,6 +4209,13 @@ func (m *SeriesMutation) AddedField(name string) (ent.Value, bool) {
 // type.
 func (m *SeriesMutation) AddField(name string, value ent.Value) error {
 	switch name {
+	case series.FieldCalibreID:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddCalibreID(v)
+		return nil
 	}
 	return fmt.Errorf("unknown Series numeric field %s", name)
 }
@@ -3519,6 +4243,9 @@ func (m *SeriesMutation) ClearField(name string) error {
 // It returns an error if the field is not defined in the schema.
 func (m *SeriesMutation) ResetField(name string) error {
 	switch name {
+	case series.FieldCalibreID:
+		m.ResetCalibreID()
+		return nil
 	case series.FieldName:
 		m.ResetName()
 		return nil
@@ -4274,6 +5001,8 @@ type TagMutation struct {
 	op            Op
 	typ           string
 	id            *ksuid.ID
+	calibre_id    *int64
+	addcalibre_id *int64
 	name          *string
 	clearedFields map[string]struct{}
 	books         map[ksuid.ID]struct{}
@@ -4386,6 +5115,62 @@ func (m *TagMutation) IDs(ctx context.Context) ([]ksuid.ID, error) {
 	default:
 		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
 	}
+}
+
+// SetCalibreID sets the "calibre_id" field.
+func (m *TagMutation) SetCalibreID(i int64) {
+	m.calibre_id = &i
+	m.addcalibre_id = nil
+}
+
+// CalibreID returns the value of the "calibre_id" field in the mutation.
+func (m *TagMutation) CalibreID() (r int64, exists bool) {
+	v := m.calibre_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCalibreID returns the old "calibre_id" field's value of the Tag entity.
+// If the Tag object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TagMutation) OldCalibreID(ctx context.Context) (v int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCalibreID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCalibreID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCalibreID: %w", err)
+	}
+	return oldValue.CalibreID, nil
+}
+
+// AddCalibreID adds i to the "calibre_id" field.
+func (m *TagMutation) AddCalibreID(i int64) {
+	if m.addcalibre_id != nil {
+		*m.addcalibre_id += i
+	} else {
+		m.addcalibre_id = &i
+	}
+}
+
+// AddedCalibreID returns the value that was added to the "calibre_id" field in this mutation.
+func (m *TagMutation) AddedCalibreID() (r int64, exists bool) {
+	v := m.addcalibre_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetCalibreID resets all changes to the "calibre_id" field.
+func (m *TagMutation) ResetCalibreID() {
+	m.calibre_id = nil
+	m.addcalibre_id = nil
 }
 
 // SetName sets the "name" field.
@@ -4512,7 +5297,10 @@ func (m *TagMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *TagMutation) Fields() []string {
-	fields := make([]string, 0, 1)
+	fields := make([]string, 0, 2)
+	if m.calibre_id != nil {
+		fields = append(fields, tag.FieldCalibreID)
+	}
 	if m.name != nil {
 		fields = append(fields, tag.FieldName)
 	}
@@ -4524,6 +5312,8 @@ func (m *TagMutation) Fields() []string {
 // schema.
 func (m *TagMutation) Field(name string) (ent.Value, bool) {
 	switch name {
+	case tag.FieldCalibreID:
+		return m.CalibreID()
 	case tag.FieldName:
 		return m.Name()
 	}
@@ -4535,6 +5325,8 @@ func (m *TagMutation) Field(name string) (ent.Value, bool) {
 // database failed.
 func (m *TagMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
+	case tag.FieldCalibreID:
+		return m.OldCalibreID(ctx)
 	case tag.FieldName:
 		return m.OldName(ctx)
 	}
@@ -4546,6 +5338,13 @@ func (m *TagMutation) OldField(ctx context.Context, name string) (ent.Value, err
 // type.
 func (m *TagMutation) SetField(name string, value ent.Value) error {
 	switch name {
+	case tag.FieldCalibreID:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCalibreID(v)
+		return nil
 	case tag.FieldName:
 		v, ok := value.(string)
 		if !ok {
@@ -4560,13 +5359,21 @@ func (m *TagMutation) SetField(name string, value ent.Value) error {
 // AddedFields returns all numeric fields that were incremented/decremented during
 // this mutation.
 func (m *TagMutation) AddedFields() []string {
-	return nil
+	var fields []string
+	if m.addcalibre_id != nil {
+		fields = append(fields, tag.FieldCalibreID)
+	}
+	return fields
 }
 
 // AddedField returns the numeric value that was incremented/decremented on a field
 // with the given name. The second boolean return value indicates that this field
 // was not set, or was not defined in the schema.
 func (m *TagMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case tag.FieldCalibreID:
+		return m.AddedCalibreID()
+	}
 	return nil, false
 }
 
@@ -4575,6 +5382,13 @@ func (m *TagMutation) AddedField(name string) (ent.Value, bool) {
 // type.
 func (m *TagMutation) AddField(name string, value ent.Value) error {
 	switch name {
+	case tag.FieldCalibreID:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddCalibreID(v)
+		return nil
 	}
 	return fmt.Errorf("unknown Tag numeric field %s", name)
 }
@@ -4602,6 +5416,9 @@ func (m *TagMutation) ClearField(name string) error {
 // It returns an error if the field is not defined in the schema.
 func (m *TagMutation) ResetField(name string) error {
 	switch name {
+	case tag.FieldCalibreID:
+		m.ResetCalibreID()
+		return nil
 	case tag.FieldName:
 		m.ResetName()
 		return nil

@@ -36,9 +36,10 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "Author",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			author.FieldName: {Type: field.TypeString, Column: author.FieldName},
-			author.FieldSort: {Type: field.TypeString, Column: author.FieldSort},
-			author.FieldLink: {Type: field.TypeString, Column: author.FieldLink},
+			author.FieldCalibreID: {Type: field.TypeInt64, Column: author.FieldCalibreID},
+			author.FieldName:      {Type: field.TypeString, Column: author.FieldName},
+			author.FieldSort:      {Type: field.TypeString, Column: author.FieldSort},
+			author.FieldLink:      {Type: field.TypeString, Column: author.FieldLink},
 		},
 	}
 	graph.Nodes[1] = &sqlgraph.Node{
@@ -52,13 +53,14 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "Book",
 		Fields: map[string]*sqlgraph.FieldSpec{
+			book.FieldCalibreID:     {Type: field.TypeInt64, Column: book.FieldCalibreID},
 			book.FieldTitle:         {Type: field.TypeString, Column: book.FieldTitle},
 			book.FieldSort:          {Type: field.TypeString, Column: book.FieldSort},
 			book.FieldPublishedDate: {Type: field.TypeTime, Column: book.FieldPublishedDate},
 			book.FieldPath:          {Type: field.TypeString, Column: book.FieldPath},
 			book.FieldIsbn:          {Type: field.TypeString, Column: book.FieldIsbn},
 			book.FieldDescription:   {Type: field.TypeString, Column: book.FieldDescription},
-			book.FieldSeriesIndex:   {Type: field.TypeInt, Column: book.FieldSeriesIndex},
+			book.FieldSeriesIndex:   {Type: field.TypeFloat64, Column: book.FieldSeriesIndex},
 		},
 	}
 	graph.Nodes[2] = &sqlgraph.Node{
@@ -72,8 +74,9 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "Identifier",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			identifier.FieldType:  {Type: field.TypeEnum, Column: identifier.FieldType},
-			identifier.FieldValue: {Type: field.TypeString, Column: identifier.FieldValue},
+			identifier.FieldCalibreID: {Type: field.TypeInt64, Column: identifier.FieldCalibreID},
+			identifier.FieldType:      {Type: field.TypeString, Column: identifier.FieldType},
+			identifier.FieldValue:     {Type: field.TypeString, Column: identifier.FieldValue},
 		},
 	}
 	graph.Nodes[3] = &sqlgraph.Node{
@@ -87,8 +90,9 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "Language",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			language.FieldName: {Type: field.TypeString, Column: language.FieldName},
-			language.FieldCode: {Type: field.TypeString, Column: language.FieldCode},
+			language.FieldCalibreID: {Type: field.TypeInt64, Column: language.FieldCalibreID},
+			language.FieldName:      {Type: field.TypeString, Column: language.FieldName},
+			language.FieldCode:      {Type: field.TypeString, Column: language.FieldCode},
 		},
 	}
 	graph.Nodes[4] = &sqlgraph.Node{
@@ -102,7 +106,8 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "Publisher",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			publisher.FieldName: {Type: field.TypeString, Column: publisher.FieldName},
+			publisher.FieldCalibreID: {Type: field.TypeInt64, Column: publisher.FieldCalibreID},
+			publisher.FieldName:      {Type: field.TypeString, Column: publisher.FieldName},
 		},
 	}
 	graph.Nodes[5] = &sqlgraph.Node{
@@ -116,8 +121,9 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "Series",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			series.FieldName: {Type: field.TypeString, Column: series.FieldName},
-			series.FieldSort: {Type: field.TypeString, Column: series.FieldSort},
+			series.FieldCalibreID: {Type: field.TypeInt64, Column: series.FieldCalibreID},
+			series.FieldName:      {Type: field.TypeString, Column: series.FieldName},
+			series.FieldSort:      {Type: field.TypeString, Column: series.FieldSort},
 		},
 	}
 	graph.Nodes[6] = &sqlgraph.Node{
@@ -148,7 +154,8 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "Tag",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			tag.FieldName: {Type: field.TypeString, Column: tag.FieldName},
+			tag.FieldCalibreID: {Type: field.TypeInt64, Column: tag.FieldCalibreID},
+			tag.FieldName:      {Type: field.TypeString, Column: tag.FieldName},
 		},
 	}
 	graph.Nodes[8] = &sqlgraph.Node{
@@ -230,6 +237,18 @@ var schemaGraph = func() *sqlgraph.Schema {
 		"Author",
 	)
 	graph.MustAddE(
+		"publisher",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   book.PublisherTable,
+			Columns: book.PublisherPrimaryKey,
+			Bidi:    false,
+		},
+		"Book",
+		"Publisher",
+	)
+	graph.MustAddE(
 		"series",
 		&sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
@@ -242,24 +261,36 @@ var schemaGraph = func() *sqlgraph.Schema {
 		"Series",
 	)
 	graph.MustAddE(
-		"identifier",
+		"identifiers",
 		&sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
-			Table:   book.IdentifierTable,
-			Columns: []string{book.IdentifierColumn},
+			Table:   book.IdentifiersTable,
+			Columns: []string{book.IdentifiersColumn},
 			Bidi:    false,
 		},
 		"Book",
 		"Identifier",
 	)
 	graph.MustAddE(
+		"tags",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   book.TagsTable,
+			Columns: book.TagsPrimaryKey,
+			Bidi:    false,
+		},
+		"Book",
+		"Tag",
+	)
+	graph.MustAddE(
 		"language",
 		&sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
+			Rel:     sqlgraph.M2M,
 			Inverse: true,
 			Table:   book.LanguageTable,
-			Columns: []string{book.LanguageColumn},
+			Columns: book.LanguagePrimaryKey,
 			Bidi:    false,
 		},
 		"Book",
@@ -292,10 +323,10 @@ var schemaGraph = func() *sqlgraph.Schema {
 	graph.MustAddE(
 		"books",
 		&sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   language.BooksTable,
-			Columns: []string{language.BooksColumn},
+			Columns: language.BooksPrimaryKey,
 			Bidi:    false,
 		},
 		"Language",
@@ -304,10 +335,10 @@ var schemaGraph = func() *sqlgraph.Schema {
 	graph.MustAddE(
 		"books",
 		&sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   publisher.BooksTable,
-			Columns: []string{publisher.BooksColumn},
+			Columns: publisher.BooksPrimaryKey,
 			Bidi:    false,
 		},
 		"Publisher",
@@ -352,10 +383,10 @@ var schemaGraph = func() *sqlgraph.Schema {
 	graph.MustAddE(
 		"books",
 		&sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   tag.BooksTable,
-			Columns: []string{tag.BooksColumn},
+			Columns: tag.BooksPrimaryKey,
 			Bidi:    false,
 		},
 		"Tag",
@@ -458,6 +489,11 @@ func (f *AuthorFilter) WhereID(p entql.StringP) {
 	f.Where(p.Field(author.FieldID))
 }
 
+// WhereCalibreID applies the entql int64 predicate on the calibre_id field.
+func (f *AuthorFilter) WhereCalibreID(p entql.Int64P) {
+	f.Where(p.Field(author.FieldCalibreID))
+}
+
 // WhereName applies the entql string predicate on the name field.
 func (f *AuthorFilter) WhereName(p entql.StringP) {
 	f.Where(p.Field(author.FieldName))
@@ -527,6 +563,11 @@ func (f *BookFilter) WhereID(p entql.StringP) {
 	f.Where(p.Field(book.FieldID))
 }
 
+// WhereCalibreID applies the entql int64 predicate on the calibre_id field.
+func (f *BookFilter) WhereCalibreID(p entql.Int64P) {
+	f.Where(p.Field(book.FieldCalibreID))
+}
+
 // WhereTitle applies the entql string predicate on the title field.
 func (f *BookFilter) WhereTitle(p entql.StringP) {
 	f.Where(p.Field(book.FieldTitle))
@@ -557,8 +598,8 @@ func (f *BookFilter) WhereDescription(p entql.StringP) {
 	f.Where(p.Field(book.FieldDescription))
 }
 
-// WhereSeriesIndex applies the entql int predicate on the series_index field.
-func (f *BookFilter) WhereSeriesIndex(p entql.IntP) {
+// WhereSeriesIndex applies the entql float64 predicate on the series_index field.
+func (f *BookFilter) WhereSeriesIndex(p entql.Float64P) {
 	f.Where(p.Field(book.FieldSeriesIndex))
 }
 
@@ -570,6 +611,20 @@ func (f *BookFilter) WhereHasAuthors() {
 // WhereHasAuthorsWith applies a predicate to check if query has an edge authors with a given conditions (other predicates).
 func (f *BookFilter) WhereHasAuthorsWith(preds ...predicate.Author) {
 	f.Where(entql.HasEdgeWith("authors", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasPublisher applies a predicate to check if query has an edge publisher.
+func (f *BookFilter) WhereHasPublisher() {
+	f.Where(entql.HasEdge("publisher"))
+}
+
+// WhereHasPublisherWith applies a predicate to check if query has an edge publisher with a given conditions (other predicates).
+func (f *BookFilter) WhereHasPublisherWith(preds ...predicate.Publisher) {
+	f.Where(entql.HasEdgeWith("publisher", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
 		}
@@ -590,14 +645,28 @@ func (f *BookFilter) WhereHasSeriesWith(preds ...predicate.Series) {
 	})))
 }
 
-// WhereHasIdentifier applies a predicate to check if query has an edge identifier.
-func (f *BookFilter) WhereHasIdentifier() {
-	f.Where(entql.HasEdge("identifier"))
+// WhereHasIdentifiers applies a predicate to check if query has an edge identifiers.
+func (f *BookFilter) WhereHasIdentifiers() {
+	f.Where(entql.HasEdge("identifiers"))
 }
 
-// WhereHasIdentifierWith applies a predicate to check if query has an edge identifier with a given conditions (other predicates).
-func (f *BookFilter) WhereHasIdentifierWith(preds ...predicate.Identifier) {
-	f.Where(entql.HasEdgeWith("identifier", sqlgraph.WrapFunc(func(s *sql.Selector) {
+// WhereHasIdentifiersWith applies a predicate to check if query has an edge identifiers with a given conditions (other predicates).
+func (f *BookFilter) WhereHasIdentifiersWith(preds ...predicate.Identifier) {
+	f.Where(entql.HasEdgeWith("identifiers", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasTags applies a predicate to check if query has an edge tags.
+func (f *BookFilter) WhereHasTags() {
+	f.Where(entql.HasEdge("tags"))
+}
+
+// WhereHasTagsWith applies a predicate to check if query has an edge tags with a given conditions (other predicates).
+func (f *BookFilter) WhereHasTagsWith(preds ...predicate.Tag) {
+	f.Where(entql.HasEdgeWith("tags", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
 		}
@@ -672,6 +741,11 @@ func (f *IdentifierFilter) WhereID(p entql.StringP) {
 	f.Where(p.Field(identifier.FieldID))
 }
 
+// WhereCalibreID applies the entql int64 predicate on the calibre_id field.
+func (f *IdentifierFilter) WhereCalibreID(p entql.Int64P) {
+	f.Where(p.Field(identifier.FieldCalibreID))
+}
+
 // WhereType applies the entql string predicate on the type field.
 func (f *IdentifierFilter) WhereType(p entql.StringP) {
 	f.Where(p.Field(identifier.FieldType))
@@ -734,6 +808,11 @@ func (f *LanguageFilter) Where(p entql.P) {
 // WhereID applies the entql string predicate on the id field.
 func (f *LanguageFilter) WhereID(p entql.StringP) {
 	f.Where(p.Field(language.FieldID))
+}
+
+// WhereCalibreID applies the entql int64 predicate on the calibre_id field.
+func (f *LanguageFilter) WhereCalibreID(p entql.Int64P) {
+	f.Where(p.Field(language.FieldCalibreID))
 }
 
 // WhereName applies the entql string predicate on the name field.
@@ -800,6 +879,11 @@ func (f *PublisherFilter) WhereID(p entql.StringP) {
 	f.Where(p.Field(publisher.FieldID))
 }
 
+// WhereCalibreID applies the entql int64 predicate on the calibre_id field.
+func (f *PublisherFilter) WhereCalibreID(p entql.Int64P) {
+	f.Where(p.Field(publisher.FieldCalibreID))
+}
+
 // WhereName applies the entql string predicate on the name field.
 func (f *PublisherFilter) WhereName(p entql.StringP) {
 	f.Where(p.Field(publisher.FieldName))
@@ -857,6 +941,11 @@ func (f *SeriesFilter) Where(p entql.P) {
 // WhereID applies the entql string predicate on the id field.
 func (f *SeriesFilter) WhereID(p entql.StringP) {
 	f.Where(p.Field(series.FieldID))
+}
+
+// WhereCalibreID applies the entql int64 predicate on the calibre_id field.
+func (f *SeriesFilter) WhereCalibreID(p entql.Int64P) {
+	f.Where(p.Field(series.FieldCalibreID))
 }
 
 // WhereName applies the entql string predicate on the name field.
@@ -1009,6 +1098,11 @@ func (f *TagFilter) Where(p entql.P) {
 // WhereID applies the entql string predicate on the id field.
 func (f *TagFilter) WhereID(p entql.StringP) {
 	f.Where(p.Field(tag.FieldID))
+}
+
+// WhereCalibreID applies the entql int64 predicate on the calibre_id field.
+func (f *TagFilter) WhereCalibreID(p entql.Int64P) {
+	f.Where(p.Field(tag.FieldCalibreID))
 }
 
 // WhereName applies the entql string predicate on the name field.

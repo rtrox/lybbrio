@@ -10,6 +10,7 @@ import (
 	"lybbrio"
 	"lybbrio/internal/ent"
 	"lybbrio/internal/ent/schema/ksuid"
+	"lybbrio/internal/ent/schema/task_enums"
 	"lybbrio/internal/graph/generated"
 	"lybbrio/internal/viewer"
 )
@@ -140,15 +141,18 @@ func (r *mutationResolver) UpdateUser(ctx context.Context, id ksuid.ID, input en
 }
 
 // CreateTask is the resolver for the createTask field.
-func (r *mutationResolver) CreateTask(ctx context.Context, input ent.CreateTaskInput) (*ent.Task, error) {
+func (r *mutationResolver) CreateTask(ctx context.Context, input lybbrio.CreateTaskInput) (*ent.Task, error) {
 	client := ent.FromContext(ctx)
-	return client.Task.Create().SetInput(input).Save(ctx)
-}
-
-// UpdateTask is the resolver for the updateTask field.
-func (r *mutationResolver) UpdateTask(ctx context.Context, id ksuid.ID, input ent.UpdateTaskInput) (*ent.Task, error) {
-	client := ent.FromContext(ctx)
-	return client.Task.UpdateOneID(id).SetInput(input).Save(ctx)
+	viewer := viewer.FromContext(ctx)
+	user, ok := viewer.User()
+	if !ok {
+		return nil, fmt.Errorf("viewer-context is missing user information")
+	}
+	return client.Task.Create().
+		SetType(input.Type).
+		SetCreator(user).
+		SetStatus(task_enums.StatusPending).
+		Save(ctx)
 }
 
 // Mutation returns generated.MutationResolver implementation.

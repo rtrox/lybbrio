@@ -563,6 +563,22 @@ func (c *BookClient) QueryAuthors(b *Book) *AuthorQuery {
 	return query
 }
 
+// QueryPublisher queries the publisher edge of a Book.
+func (c *BookClient) QueryPublisher(b *Book) *PublisherQuery {
+	query := (&PublisherClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := b.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(book.Table, book.FieldID, id),
+			sqlgraph.To(publisher.Table, publisher.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, book.PublisherTable, book.PublisherPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(b.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // QuerySeries queries the series edge of a Book.
 func (c *BookClient) QuerySeries(b *Book) *SeriesQuery {
 	query := (&SeriesClient{config: c.config}).Query()
@@ -579,15 +595,31 @@ func (c *BookClient) QuerySeries(b *Book) *SeriesQuery {
 	return query
 }
 
-// QueryIdentifier queries the identifier edge of a Book.
-func (c *BookClient) QueryIdentifier(b *Book) *IdentifierQuery {
+// QueryIdentifiers queries the identifiers edge of a Book.
+func (c *BookClient) QueryIdentifiers(b *Book) *IdentifierQuery {
 	query := (&IdentifierClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := b.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(book.Table, book.FieldID, id),
 			sqlgraph.To(identifier.Table, identifier.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, book.IdentifierTable, book.IdentifierColumn),
+			sqlgraph.Edge(sqlgraph.O2M, true, book.IdentifiersTable, book.IdentifiersColumn),
+		)
+		fromV = sqlgraph.Neighbors(b.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryTags queries the tags edge of a Book.
+func (c *BookClient) QueryTags(b *Book) *TagQuery {
+	query := (&TagClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := b.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(book.Table, book.FieldID, id),
+			sqlgraph.To(tag.Table, tag.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, book.TagsTable, book.TagsPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(b.driver.Dialect(), step)
 		return fromV, nil
@@ -603,7 +635,7 @@ func (c *BookClient) QueryLanguage(b *Book) *LanguageQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(book.Table, book.FieldID, id),
 			sqlgraph.To(language.Table, language.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, book.LanguageTable, book.LanguageColumn),
+			sqlgraph.Edge(sqlgraph.M2M, true, book.LanguageTable, book.LanguagePrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(b.driver.Dialect(), step)
 		return fromV, nil
@@ -919,7 +951,7 @@ func (c *LanguageClient) QueryBooks(l *Language) *BookQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(language.Table, language.FieldID, id),
 			sqlgraph.To(book.Table, book.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, language.BooksTable, language.BooksColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, language.BooksTable, language.BooksPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(l.driver.Dialect(), step)
 		return fromV, nil
@@ -1069,7 +1101,7 @@ func (c *PublisherClient) QueryBooks(pu *Publisher) *BookQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(publisher.Table, publisher.FieldID, id),
 			sqlgraph.To(book.Table, book.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, publisher.BooksTable, publisher.BooksColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, publisher.BooksTable, publisher.BooksPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(pu.driver.Dialect(), step)
 		return fromV, nil
@@ -1535,7 +1567,7 @@ func (c *TagClient) QueryBooks(t *Tag) *BookQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(tag.Table, tag.FieldID, id),
 			sqlgraph.To(book.Table, book.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, tag.BooksTable, tag.BooksColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, tag.BooksTable, tag.BooksPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(t.driver.Dialect(), step)
 		return fromV, nil
