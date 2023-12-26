@@ -28,6 +28,8 @@ type Tx struct {
 	Shelf *ShelfClient
 	// Tag is the client for interacting with the Tag builders.
 	Tag *TagClient
+	// Task is the client for interacting with the Task builders.
+	Task *TaskClient
 	// User is the client for interacting with the User builders.
 	User *UserClient
 	// UserPermissions is the client for interacting with the UserPermissions builders.
@@ -171,6 +173,7 @@ func (tx *Tx) init() {
 	tx.Series = NewSeriesClient(tx.config)
 	tx.Shelf = NewShelfClient(tx.config)
 	tx.Tag = NewTagClient(tx.config)
+	tx.Task = NewTaskClient(tx.config)
 	tx.User = NewUserClient(tx.config)
 	tx.UserPermissions = NewUserPermissionsClient(tx.config)
 }

@@ -14,6 +14,7 @@ import (
 	"lybbrio/internal/ent/series"
 	"lybbrio/internal/ent/shelf"
 	"lybbrio/internal/ent/tag"
+	"lybbrio/internal/ent/task"
 	"lybbrio/internal/ent/user"
 	"lybbrio/internal/ent/userpermissions"
 )
@@ -28,6 +29,7 @@ var prefixMap = map[ksuid.ID]string{
 	"srs": series.Table,
 	"shf": shelf.Table,
 	"tag": tag.Table,
+	"tsk": task.Table,
 	"usr": user.Table,
 	"prm": userpermissions.Table,
 }

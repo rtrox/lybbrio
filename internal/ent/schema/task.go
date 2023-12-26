@@ -1,11 +1,14 @@
 package schema
 
 import (
+	"lybbrio/internal/ent/privacy"
 	"lybbrio/internal/ent/schema/ksuid"
-	"lybbrio/internal/ent/schema/task"
+	"lybbrio/internal/ent/schema/task_enums"
+	"lybbrio/internal/rule"
 
 	"entgo.io/contrib/entgql"
 	"entgo.io/ent"
+	"entgo.io/ent/schema"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/mixin"
@@ -14,6 +17,15 @@ import (
 // Task holds the schema definition for the Task entity.
 type Task struct {
 	ent.Schema
+}
+
+func (Task) Annotations() []schema.Annotation {
+	return []schema.Annotation{
+		entgql.RelayConnection(),
+		entgql.QueryField(),
+		entgql.Mutations(entgql.MutationCreate(), entgql.MutationUpdate()),
+		entgql.MultiOrder(),
+	}
 }
 
 func (Task) Mixin() []ent.Mixin {
@@ -28,14 +40,14 @@ func (Task) Mixin() []ent.Mixin {
 func (Task) Fields() []ent.Field {
 	return []ent.Field{
 		field.Enum("type").
-			GoType(task.TaskType("")).
-			Default(string(task.TypeNoOp)).
+			GoType(task_enums.TaskType("")).
+			Default(string(task_enums.TypeNoOp)).
 			Annotations(
 				entgql.OrderField("TYPE"),
 			),
 		field.Enum("status").
-			GoType(task.Status("")).
-			Default(string(task.StatusPending)).
+			GoType(task_enums.Status("")).
+			Default(string(task_enums.StatusPending)).
 			Annotations(
 				entgql.OrderField("STATUS"),
 			),
@@ -66,5 +78,18 @@ func (Task) Edges() []ent.Edge {
 			Field("createdBy").
 			Unique().
 			Immutable(),
+	}
+}
+
+// TODO: More detailed privacy rules
+func (Task) Policy() ent.Policy {
+	return privacy.Policy{
+		Query: privacy.QueryPolicy{
+			privacy.AlwaysAllowRule(),
+		},
+		Mutation: privacy.MutationPolicy{
+			rule.AllowIfAdmin(),
+			privacy.AlwaysDenyRule(),
+		},
 	}
 }

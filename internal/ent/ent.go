@@ -14,6 +14,7 @@ import (
 	"lybbrio/internal/ent/series"
 	"lybbrio/internal/ent/shelf"
 	"lybbrio/internal/ent/tag"
+	"lybbrio/internal/ent/task"
 	"lybbrio/internal/ent/user"
 	"lybbrio/internal/ent/userpermissions"
 	"reflect"
@@ -90,6 +91,7 @@ func checkColumn(table, column string) error {
 			series.Table:          series.ValidColumn,
 			shelf.Table:           shelf.ValidColumn,
 			tag.Table:             tag.ValidColumn,
+			task.Table:            task.ValidColumn,
 			user.Table:            user.ValidColumn,
 			userpermissions.Table: userpermissions.ValidColumn,
 		})

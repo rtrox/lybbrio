@@ -139,6 +139,18 @@ func (r *mutationResolver) UpdateUser(ctx context.Context, id ksuid.ID, input en
 	return client.User.UpdateOneID(id).SetInput(input).Save(ctx)
 }
 
+// CreateTask is the resolver for the createTask field.
+func (r *mutationResolver) CreateTask(ctx context.Context, input ent.CreateTaskInput) (*ent.Task, error) {
+	client := ent.FromContext(ctx)
+	return client.Task.Create().SetInput(input).Save(ctx)
+}
+
+// UpdateTask is the resolver for the updateTask field.
+func (r *mutationResolver) UpdateTask(ctx context.Context, id ksuid.ID, input ent.UpdateTaskInput) (*ent.Task, error) {
+	client := ent.FromContext(ctx)
+	return client.Task.UpdateOneID(id).SetInput(input).Save(ctx)
+}
+
 // Mutation returns generated.MutationResolver implementation.
 func (r *Resolver) Mutation() generated.MutationResolver { return &mutationResolver{r} }
 

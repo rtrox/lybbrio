@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/dialect"
 	entsql "entgo.io/ent/dialect/sql"
 
+	_ "github.com/jackc/pgx/v5/stdlib"
 	_ "github.com/mattn/go-sqlite3"
 )
 
@@ -38,7 +39,7 @@ func OpenSQLite(conf *config.DatabaseConfig) (*ent.Client, error) {
 		return nil, err
 	}
 	drv := entsql.OpenDB(dialect.SQLite, db)
-	return ent.NewClient(ent.Driver(drv)).Debug(), nil
+	return ent.NewClient(ent.Driver(drv)), nil
 }
 
 func OpenMySQL(conf *config.DatabaseConfig) (*ent.Client, error) {

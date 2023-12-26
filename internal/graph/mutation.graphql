@@ -34,4 +34,7 @@ type Mutation {
     createUser(input: CreateUserInput!): User
     updateUser(id: ID!, input: UpdateUserInput!): User
     # TODO: User Mutations should have a more bespoke flow.
+
+    createTask(input: CreateTaskInput!): Task
+    updateTask(id: ID!, input: UpdateTaskInput!): Task
 }

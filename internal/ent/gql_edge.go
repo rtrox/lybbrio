@@ -197,6 +197,14 @@ func (t *Tag) Books(
 	return t.QueryBooks().Paginate(ctx, after, first, before, last, opts...)
 }
 
+func (t *Task) Creator(ctx context.Context) (*User, error) {
+	result, err := t.Edges.CreatorOrErr()
+	if IsNotLoaded(err) {
+		result, err = t.QueryCreator().Only(ctx)
+	}
+	return result, MaskNotFound(err)
+}
+
 func (u *User) Shelves(ctx context.Context) (result []*Shelf, err error) {
 	if fc := graphql.GetFieldContext(ctx); fc != nil && fc.Field.Alias != "" {
 		result, err = u.NamedShelves(graphql.GetFieldContext(ctx).Field.Alias)

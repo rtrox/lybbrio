@@ -14,8 +14,10 @@ import (
 	"lybbrio/internal/ent/series"
 	"lybbrio/internal/ent/shelf"
 	"lybbrio/internal/ent/tag"
+	"lybbrio/internal/ent/task"
 	"lybbrio/internal/ent/user"
 	"lybbrio/internal/ent/userpermissions"
+	"time"
 
 	"entgo.io/ent"
 	"entgo.io/ent/privacy"
@@ -223,6 +225,44 @@ func init() {
 	tagDescID := tagMixinFields1[0].Descriptor()
 	// tag.DefaultID holds the default value on creation for the id field.
 	tag.DefaultID = tagDescID.Default.(func() ksuid.ID)
+	taskMixin := schema.Task{}.Mixin()
+	task.Policy = privacy.NewPolicies(taskMixin[0], schema.Task{})
+	task.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+			if err := task.Policy.EvalMutation(ctx, m); err != nil {
+				return nil, err
+			}
+			return next.Mutate(ctx, m)
+		})
+	}
+	taskMixinFields1 := taskMixin[1].Fields()
+	_ = taskMixinFields1
+	taskMixinFields2 := taskMixin[2].Fields()
+	_ = taskMixinFields2
+	taskFields := schema.Task{}.Fields()
+	_ = taskFields
+	// taskDescCreateTime is the schema descriptor for create_time field.
+	taskDescCreateTime := taskMixinFields1[0].Descriptor()
+	// task.DefaultCreateTime holds the default value on creation for the create_time field.
+	task.DefaultCreateTime = taskDescCreateTime.Default.(func() time.Time)
+	// taskDescUpdateTime is the schema descriptor for update_time field.
+	taskDescUpdateTime := taskMixinFields1[1].Descriptor()
+	// task.DefaultUpdateTime holds the default value on creation for the update_time field.
+	task.DefaultUpdateTime = taskDescUpdateTime.Default.(func() time.Time)
+	// task.UpdateDefaultUpdateTime holds the default value on update for the update_time field.
+	task.UpdateDefaultUpdateTime = taskDescUpdateTime.UpdateDefault.(func() time.Time)
+	// taskDescProgress is the schema descriptor for progress field.
+	taskDescProgress := taskFields[2].Descriptor()
+	// task.DefaultProgress holds the default value on creation for the progress field.
+	task.DefaultProgress = taskDescProgress.Default.(float64)
+	// taskDescIsSystemTask is the schema descriptor for isSystemTask field.
+	taskDescIsSystemTask := taskFields[6].Descriptor()
+	// task.DefaultIsSystemTask holds the default value on creation for the isSystemTask field.
+	task.DefaultIsSystemTask = taskDescIsSystemTask.Default.(bool)
+	// taskDescID is the schema descriptor for id field.
+	taskDescID := taskMixinFields2[0].Descriptor()
+	// task.DefaultID holds the default value on creation for the id field.
+	task.DefaultID = taskDescID.Default.(func() ksuid.ID)
 	userMixin := schema.User{}.Mixin()
 	user.Policy = privacy.NewPolicies(userMixin[0], schema.User{})
 	user.Hooks[0] = func(next ent.Mutator) ent.Mutator {

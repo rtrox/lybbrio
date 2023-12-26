@@ -16,6 +16,7 @@ import (
 	"lybbrio/internal/ent/series"
 	"lybbrio/internal/ent/shelf"
 	"lybbrio/internal/ent/tag"
+	"lybbrio/internal/ent/task"
 	"lybbrio/internal/ent/user"
 	"lybbrio/internal/ent/userpermissions"
 	"strconv"
@@ -2951,6 +2952,353 @@ func (t *Tag) ToEdge(order *TagOrder) *TagEdge {
 		order = DefaultTagOrder
 	}
 	return &TagEdge{
+		Node:   t,
+		Cursor: order.Field.toCursor(t),
+	}
+}
+
+// TaskEdge is the edge representation of Task.
+type TaskEdge struct {
+	Node   *Task  `json:"node"`
+	Cursor Cursor `json:"cursor"`
+}
+
+// TaskConnection is the connection containing edges to Task.
+type TaskConnection struct {
+	Edges      []*TaskEdge `json:"edges"`
+	PageInfo   PageInfo    `json:"pageInfo"`
+	TotalCount int         `json:"totalCount"`
+}
+
+func (c *TaskConnection) build(nodes []*Task, pager *taskPager, after *Cursor, first *int, before *Cursor, last *int) {
+	c.PageInfo.HasNextPage = before != nil
+	c.PageInfo.HasPreviousPage = after != nil
+	if first != nil && *first+1 == len(nodes) {
+		c.PageInfo.HasNextPage = true
+		nodes = nodes[:len(nodes)-1]
+	} else if last != nil && *last+1 == len(nodes) {
+		c.PageInfo.HasPreviousPage = true
+		nodes = nodes[:len(nodes)-1]
+	}
+	var nodeAt func(int) *Task
+	if last != nil {
+		n := len(nodes) - 1
+		nodeAt = func(i int) *Task {
+			return nodes[n-i]
+		}
+	} else {
+		nodeAt = func(i int) *Task {
+			return nodes[i]
+		}
+	}
+	c.Edges = make([]*TaskEdge, len(nodes))
+	for i := range nodes {
+		node := nodeAt(i)
+		c.Edges[i] = &TaskEdge{
+			Node:   node,
+			Cursor: pager.toCursor(node),
+		}
+	}
+	if l := len(c.Edges); l > 0 {
+		c.PageInfo.StartCursor = &c.Edges[0].Cursor
+		c.PageInfo.EndCursor = &c.Edges[l-1].Cursor
+	}
+	if c.TotalCount == 0 {
+		c.TotalCount = len(nodes)
+	}
+}
+
+// TaskPaginateOption enables pagination customization.
+type TaskPaginateOption func(*taskPager) error
+
+// WithTaskOrder configures pagination ordering.
+func WithTaskOrder(order []*TaskOrder) TaskPaginateOption {
+	return func(pager *taskPager) error {
+		for _, o := range order {
+			if err := o.Direction.Validate(); err != nil {
+				return err
+			}
+		}
+		pager.order = append(pager.order, order...)
+		return nil
+	}
+}
+
+// WithTaskFilter configures pagination filter.
+func WithTaskFilter(filter func(*TaskQuery) (*TaskQuery, error)) TaskPaginateOption {
+	return func(pager *taskPager) error {
+		if filter == nil {
+			return errors.New("TaskQuery filter cannot be nil")
+		}
+		pager.filter = filter
+		return nil
+	}
+}
+
+type taskPager struct {
+	reverse bool
+	order   []*TaskOrder
+	filter  func(*TaskQuery) (*TaskQuery, error)
+}
+
+func newTaskPager(opts []TaskPaginateOption, reverse bool) (*taskPager, error) {
+	pager := &taskPager{reverse: reverse}
+	for _, opt := range opts {
+		if err := opt(pager); err != nil {
+			return nil, err
+		}
+	}
+	for i, o := range pager.order {
+		if i > 0 && o.Field == pager.order[i-1].Field {
+			return nil, fmt.Errorf("duplicate order direction %q", o.Direction)
+		}
+	}
+	return pager, nil
+}
+
+func (p *taskPager) applyFilter(query *TaskQuery) (*TaskQuery, error) {
+	if p.filter != nil {
+		return p.filter(query)
+	}
+	return query, nil
+}
+
+func (p *taskPager) toCursor(t *Task) Cursor {
+	cs := make([]any, 0, len(p.order))
+	for _, o := range p.order {
+		cs = append(cs, o.Field.toCursor(t).Value)
+	}
+	return Cursor{ID: t.ID, Value: cs}
+}
+
+func (p *taskPager) applyCursors(query *TaskQuery, after, before *Cursor) (*TaskQuery, error) {
+	idDirection := entgql.OrderDirectionAsc
+	if p.reverse {
+		idDirection = entgql.OrderDirectionDesc
+	}
+	fields, directions := make([]string, 0, len(p.order)), make([]OrderDirection, 0, len(p.order))
+	for _, o := range p.order {
+		fields = append(fields, o.Field.column)
+		direction := o.Direction
+		if p.reverse {
+			direction = direction.Reverse()
+		}
+		directions = append(directions, direction)
+	}
+	predicates, err := entgql.MultiCursorsPredicate(after, before, &entgql.MultiCursorsOptions{
+		FieldID:     DefaultTaskOrder.Field.column,
+		DirectionID: idDirection,
+		Fields:      fields,
+		Directions:  directions,
+	})
+	if err != nil {
+		return nil, err
+	}
+	for _, predicate := range predicates {
+		query = query.Where(predicate)
+	}
+	return query, nil
+}
+
+func (p *taskPager) applyOrder(query *TaskQuery) *TaskQuery {
+	var defaultOrdered bool
+	for _, o := range p.order {
+		direction := o.Direction
+		if p.reverse {
+			direction = direction.Reverse()
+		}
+		query = query.Order(o.Field.toTerm(direction.OrderTermOption()))
+		if o.Field.column == DefaultTaskOrder.Field.column {
+			defaultOrdered = true
+		}
+		if len(query.ctx.Fields) > 0 {
+			query.ctx.AppendFieldOnce(o.Field.column)
+		}
+	}
+	if !defaultOrdered {
+		direction := entgql.OrderDirectionAsc
+		if p.reverse {
+			direction = direction.Reverse()
+		}
+		query = query.Order(DefaultTaskOrder.Field.toTerm(direction.OrderTermOption()))
+	}
+	return query
+}
+
+func (p *taskPager) orderExpr(query *TaskQuery) sql.Querier {
+	if len(query.ctx.Fields) > 0 {
+		for _, o := range p.order {
+			query.ctx.AppendFieldOnce(o.Field.column)
+		}
+	}
+	return sql.ExprFunc(func(b *sql.Builder) {
+		for _, o := range p.order {
+			direction := o.Direction
+			if p.reverse {
+				direction = direction.Reverse()
+			}
+			b.Ident(o.Field.column).Pad().WriteString(string(direction))
+			b.Comma()
+		}
+		direction := entgql.OrderDirectionAsc
+		if p.reverse {
+			direction = direction.Reverse()
+		}
+		b.Ident(DefaultTaskOrder.Field.column).Pad().WriteString(string(direction))
+	})
+}
+
+// Paginate executes the query and returns a relay based cursor connection to Task.
+func (t *TaskQuery) Paginate(
+	ctx context.Context, after *Cursor, first *int,
+	before *Cursor, last *int, opts ...TaskPaginateOption,
+) (*TaskConnection, error) {
+	if err := validateFirstLast(first, last); err != nil {
+		return nil, err
+	}
+	pager, err := newTaskPager(opts, last != nil)
+	if err != nil {
+		return nil, err
+	}
+	if t, err = pager.applyFilter(t); err != nil {
+		return nil, err
+	}
+	conn := &TaskConnection{Edges: []*TaskEdge{}}
+	ignoredEdges := !hasCollectedField(ctx, edgesField)
+	if hasCollectedField(ctx, totalCountField) || hasCollectedField(ctx, pageInfoField) {
+		hasPagination := after != nil || first != nil || before != nil || last != nil
+		if hasPagination || ignoredEdges {
+			if conn.TotalCount, err = t.Clone().Count(ctx); err != nil {
+				return nil, err
+			}
+			conn.PageInfo.HasNextPage = first != nil && conn.TotalCount > 0
+			conn.PageInfo.HasPreviousPage = last != nil && conn.TotalCount > 0
+		}
+	}
+	if ignoredEdges || (first != nil && *first == 0) || (last != nil && *last == 0) {
+		return conn, nil
+	}
+	if t, err = pager.applyCursors(t, after, before); err != nil {
+		return nil, err
+	}
+	if limit := paginateLimit(first, last); limit != 0 {
+		t.Limit(limit)
+	}
+	if field := collectedField(ctx, edgesField, nodeField); field != nil {
+		if err := t.collectField(ctx, graphql.GetOperationContext(ctx), *field, []string{edgesField, nodeField}); err != nil {
+			return nil, err
+		}
+	}
+	t = pager.applyOrder(t)
+	nodes, err := t.All(ctx)
+	if err != nil {
+		return nil, err
+	}
+	conn.build(nodes, pager, after, first, before, last)
+	return conn, nil
+}
+
+var (
+	// TaskOrderFieldType orders Task by type.
+	TaskOrderFieldType = &TaskOrderField{
+		Value: func(t *Task) (ent.Value, error) {
+			return t.Type, nil
+		},
+		column: task.FieldType,
+		toTerm: task.ByType,
+		toCursor: func(t *Task) Cursor {
+			return Cursor{
+				ID:    t.ID,
+				Value: t.Type,
+			}
+		},
+	}
+	// TaskOrderFieldStatus orders Task by status.
+	TaskOrderFieldStatus = &TaskOrderField{
+		Value: func(t *Task) (ent.Value, error) {
+			return t.Status, nil
+		},
+		column: task.FieldStatus,
+		toTerm: task.ByStatus,
+		toCursor: func(t *Task) Cursor {
+			return Cursor{
+				ID:    t.ID,
+				Value: t.Status,
+			}
+		},
+	}
+)
+
+// String implement fmt.Stringer interface.
+func (f TaskOrderField) String() string {
+	var str string
+	switch f.column {
+	case TaskOrderFieldType.column:
+		str = "TYPE"
+	case TaskOrderFieldStatus.column:
+		str = "STATUS"
+	}
+	return str
+}
+
+// MarshalGQL implements graphql.Marshaler interface.
+func (f TaskOrderField) MarshalGQL(w io.Writer) {
+	io.WriteString(w, strconv.Quote(f.String()))
+}
+
+// UnmarshalGQL implements graphql.Unmarshaler interface.
+func (f *TaskOrderField) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("TaskOrderField %T must be a string", v)
+	}
+	switch str {
+	case "TYPE":
+		*f = *TaskOrderFieldType
+	case "STATUS":
+		*f = *TaskOrderFieldStatus
+	default:
+		return fmt.Errorf("%s is not a valid TaskOrderField", str)
+	}
+	return nil
+}
+
+// TaskOrderField defines the ordering field of Task.
+type TaskOrderField struct {
+	// Value extracts the ordering value from the given Task.
+	Value    func(*Task) (ent.Value, error)
+	column   string // field or computed.
+	toTerm   func(...sql.OrderTermOption) task.OrderOption
+	toCursor func(*Task) Cursor
+}
+
+// TaskOrder defines the ordering of Task.
+type TaskOrder struct {
+	Direction OrderDirection  `json:"direction"`
+	Field     *TaskOrderField `json:"field"`
+}
+
+// DefaultTaskOrder is the default ordering of Task.
+var DefaultTaskOrder = &TaskOrder{
+	Direction: entgql.OrderDirectionAsc,
+	Field: &TaskOrderField{
+		Value: func(t *Task) (ent.Value, error) {
+			return t.ID, nil
+		},
+		column: task.FieldID,
+		toTerm: task.ByID,
+		toCursor: func(t *Task) Cursor {
+			return Cursor{ID: t.ID}
+		},
+	},
+}
+
+// ToEdge converts Task into TaskEdge.
+func (t *Task) ToEdge(order *TaskOrder) *TaskEdge {
+	if order == nil {
+		order = DefaultTaskOrder
+	}
+	return &TaskEdge{
 		Node:   t,
 		Cursor: order.Field.toCursor(t),
 	}

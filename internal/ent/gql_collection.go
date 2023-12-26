@@ -15,6 +15,7 @@ import (
 	"lybbrio/internal/ent/series"
 	"lybbrio/internal/ent/shelf"
 	"lybbrio/internal/ent/tag"
+	"lybbrio/internal/ent/task"
 	"lybbrio/internal/ent/user"
 	"lybbrio/internal/ent/userpermissions"
 
@@ -1371,6 +1372,155 @@ func newTagPaginateArgs(rv map[string]any) *tagPaginateArgs {
 	}
 	if v, ok := rv[whereField].(*TagWhereInput); ok {
 		args.opts = append(args.opts, WithTagFilter(v.Filter))
+	}
+	return args
+}
+
+// CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
+func (t *TaskQuery) CollectFields(ctx context.Context, satisfies ...string) (*TaskQuery, error) {
+	fc := graphql.GetFieldContext(ctx)
+	if fc == nil {
+		return t, nil
+	}
+	if err := t.collectField(ctx, graphql.GetOperationContext(ctx), fc.Field, nil, satisfies...); err != nil {
+		return nil, err
+	}
+	return t, nil
+}
+
+func (t *TaskQuery) collectField(ctx context.Context, opCtx *graphql.OperationContext, collected graphql.CollectedField, path []string, satisfies ...string) error {
+	path = append([]string(nil), path...)
+	var (
+		unknownSeen    bool
+		fieldSeen      = make(map[string]struct{}, len(task.Columns))
+		selectedFields = []string{task.FieldID}
+	)
+	for _, field := range graphql.CollectFields(opCtx, collected.Selections, satisfies) {
+		switch field.Name {
+		case "creator":
+			var (
+				alias = field.Alias
+				path  = append(path, alias)
+				query = (&UserClient{config: t.config}).Query()
+			)
+			if err := query.collectField(ctx, opCtx, field, path, satisfies...); err != nil {
+				return err
+			}
+			t.withCreator = query
+			if _, ok := fieldSeen[task.FieldCreatedBy]; !ok {
+				selectedFields = append(selectedFields, task.FieldCreatedBy)
+				fieldSeen[task.FieldCreatedBy] = struct{}{}
+			}
+		case "createTime":
+			if _, ok := fieldSeen[task.FieldCreateTime]; !ok {
+				selectedFields = append(selectedFields, task.FieldCreateTime)
+				fieldSeen[task.FieldCreateTime] = struct{}{}
+			}
+		case "updateTime":
+			if _, ok := fieldSeen[task.FieldUpdateTime]; !ok {
+				selectedFields = append(selectedFields, task.FieldUpdateTime)
+				fieldSeen[task.FieldUpdateTime] = struct{}{}
+			}
+		case "type":
+			if _, ok := fieldSeen[task.FieldType]; !ok {
+				selectedFields = append(selectedFields, task.FieldType)
+				fieldSeen[task.FieldType] = struct{}{}
+			}
+		case "status":
+			if _, ok := fieldSeen[task.FieldStatus]; !ok {
+				selectedFields = append(selectedFields, task.FieldStatus)
+				fieldSeen[task.FieldStatus] = struct{}{}
+			}
+		case "progress":
+			if _, ok := fieldSeen[task.FieldProgress]; !ok {
+				selectedFields = append(selectedFields, task.FieldProgress)
+				fieldSeen[task.FieldProgress] = struct{}{}
+			}
+		case "message":
+			if _, ok := fieldSeen[task.FieldMessage]; !ok {
+				selectedFields = append(selectedFields, task.FieldMessage)
+				fieldSeen[task.FieldMessage] = struct{}{}
+			}
+		case "error":
+			if _, ok := fieldSeen[task.FieldError]; !ok {
+				selectedFields = append(selectedFields, task.FieldError)
+				fieldSeen[task.FieldError] = struct{}{}
+			}
+		case "createdby":
+			if _, ok := fieldSeen[task.FieldCreatedBy]; !ok {
+				selectedFields = append(selectedFields, task.FieldCreatedBy)
+				fieldSeen[task.FieldCreatedBy] = struct{}{}
+			}
+		case "issystemtask":
+			if _, ok := fieldSeen[task.FieldIsSystemTask]; !ok {
+				selectedFields = append(selectedFields, task.FieldIsSystemTask)
+				fieldSeen[task.FieldIsSystemTask] = struct{}{}
+			}
+		case "id":
+		case "__typename":
+		default:
+			unknownSeen = true
+		}
+	}
+	if !unknownSeen {
+		t.Select(selectedFields...)
+	}
+	return nil
+}
+
+type taskPaginateArgs struct {
+	first, last   *int
+	after, before *Cursor
+	opts          []TaskPaginateOption
+}
+
+func newTaskPaginateArgs(rv map[string]any) *taskPaginateArgs {
+	args := &taskPaginateArgs{}
+	if rv == nil {
+		return args
+	}
+	if v := rv[firstField]; v != nil {
+		args.first = v.(*int)
+	}
+	if v := rv[lastField]; v != nil {
+		args.last = v.(*int)
+	}
+	if v := rv[afterField]; v != nil {
+		args.after = v.(*Cursor)
+	}
+	if v := rv[beforeField]; v != nil {
+		args.before = v.(*Cursor)
+	}
+	if v, ok := rv[orderByField]; ok {
+		switch v := v.(type) {
+		case []*TaskOrder:
+			args.opts = append(args.opts, WithTaskOrder(v))
+		case []any:
+			var orders []*TaskOrder
+			for i := range v {
+				mv, ok := v[i].(map[string]any)
+				if !ok {
+					continue
+				}
+				var (
+					err1, err2 error
+					order      = &TaskOrder{Field: &TaskOrderField{}, Direction: entgql.OrderDirectionAsc}
+				)
+				if d, ok := mv[directionField]; ok {
+					err1 = order.Direction.UnmarshalGQL(d)
+				}
+				if f, ok := mv[fieldField]; ok {
+					err2 = order.Field.UnmarshalGQL(f)
+				}
+				if err1 == nil && err2 == nil {
+					orders = append(orders, order)
+				}
+			}
+			args.opts = append(args.opts, WithTaskOrder(orders))
+		}
+	}
+	if v, ok := rv[whereField].(*TaskWhereInput); ok {
+		args.opts = append(args.opts, WithTaskFilter(v.Filter))
 	}
 	return args
 }

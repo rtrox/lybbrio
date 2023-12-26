@@ -95,6 +95,15 @@ func (r *queryResolver) Tags(ctx context.Context, after *entgql.Cursor[ksuid.ID]
 		)
 }
 
+// Tasks is the resolver for the tasks field.
+func (r *queryResolver) Tasks(ctx context.Context, after *entgql.Cursor[ksuid.ID], first *int, before *entgql.Cursor[ksuid.ID], last *int, orderBy []*ent.TaskOrder, where *ent.TaskWhereInput) (*ent.TaskConnection, error) {
+	return r.client.Task.Query().
+		Paginate(ctx, after, first, before, last,
+			ent.WithTaskOrder(orderBy),
+			ent.WithTaskFilter(where.Filter),
+		)
+}
+
 // Users is the resolver for the users field.
 func (r *queryResolver) Users(ctx context.Context) ([]*ent.User, error) {
 	return r.client.User.Query().All(ctx)

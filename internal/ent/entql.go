@@ -12,6 +12,7 @@ import (
 	"lybbrio/internal/ent/series"
 	"lybbrio/internal/ent/shelf"
 	"lybbrio/internal/ent/tag"
+	"lybbrio/internal/ent/task"
 	"lybbrio/internal/ent/user"
 	"lybbrio/internal/ent/userpermissions"
 
@@ -23,7 +24,7 @@ import (
 
 // schemaGraph holds a representation of ent/schema at runtime.
 var schemaGraph = func() *sqlgraph.Schema {
-	graph := &sqlgraph.Schema{Nodes: make([]*sqlgraph.Node, 10)}
+	graph := &sqlgraph.Schema{Nodes: make([]*sqlgraph.Node, 11)}
 	graph.Nodes[0] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   author.Table,
@@ -152,6 +153,28 @@ var schemaGraph = func() *sqlgraph.Schema {
 	}
 	graph.Nodes[8] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
+			Table:   task.Table,
+			Columns: task.Columns,
+			ID: &sqlgraph.FieldSpec{
+				Type:   field.TypeString,
+				Column: task.FieldID,
+			},
+		},
+		Type: "Task",
+		Fields: map[string]*sqlgraph.FieldSpec{
+			task.FieldCreateTime:   {Type: field.TypeTime, Column: task.FieldCreateTime},
+			task.FieldUpdateTime:   {Type: field.TypeTime, Column: task.FieldUpdateTime},
+			task.FieldType:         {Type: field.TypeEnum, Column: task.FieldType},
+			task.FieldStatus:       {Type: field.TypeEnum, Column: task.FieldStatus},
+			task.FieldProgress:     {Type: field.TypeFloat64, Column: task.FieldProgress},
+			task.FieldMessage:      {Type: field.TypeString, Column: task.FieldMessage},
+			task.FieldError:        {Type: field.TypeString, Column: task.FieldError},
+			task.FieldCreatedBy:    {Type: field.TypeString, Column: task.FieldCreatedBy},
+			task.FieldIsSystemTask: {Type: field.TypeBool, Column: task.FieldIsSystemTask},
+		},
+	}
+	graph.Nodes[9] = &sqlgraph.Node{
+		NodeSpec: sqlgraph.NodeSpec{
 			Table:   user.Table,
 			Columns: user.Columns,
 			ID: &sqlgraph.FieldSpec{
@@ -166,7 +189,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			user.FieldEmail:        {Type: field.TypeString, Column: user.FieldEmail},
 		},
 	}
-	graph.Nodes[9] = &sqlgraph.Node{
+	graph.Nodes[10] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   userpermissions.Table,
 			Columns: userpermissions.Columns,
@@ -337,6 +360,18 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		"Tag",
 		"Book",
+	)
+	graph.MustAddE(
+		"creator",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   task.CreatorTable,
+			Columns: []string{task.CreatorColumn},
+			Bidi:    false,
+		},
+		"Task",
+		"User",
 	)
 	graph.MustAddE(
 		"shelves",
@@ -996,6 +1031,105 @@ func (f *TagFilter) WhereHasBooksWith(preds ...predicate.Book) {
 }
 
 // addPredicate implements the predicateAdder interface.
+func (tq *TaskQuery) addPredicate(pred func(s *sql.Selector)) {
+	tq.predicates = append(tq.predicates, pred)
+}
+
+// Filter returns a Filter implementation to apply filters on the TaskQuery builder.
+func (tq *TaskQuery) Filter() *TaskFilter {
+	return &TaskFilter{config: tq.config, predicateAdder: tq}
+}
+
+// addPredicate implements the predicateAdder interface.
+func (m *TaskMutation) addPredicate(pred func(s *sql.Selector)) {
+	m.predicates = append(m.predicates, pred)
+}
+
+// Filter returns an entql.Where implementation to apply filters on the TaskMutation builder.
+func (m *TaskMutation) Filter() *TaskFilter {
+	return &TaskFilter{config: m.config, predicateAdder: m}
+}
+
+// TaskFilter provides a generic filtering capability at runtime for TaskQuery.
+type TaskFilter struct {
+	predicateAdder
+	config
+}
+
+// Where applies the entql predicate on the query filter.
+func (f *TaskFilter) Where(p entql.P) {
+	f.addPredicate(func(s *sql.Selector) {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[8].Type, p, s); err != nil {
+			s.AddError(err)
+		}
+	})
+}
+
+// WhereID applies the entql string predicate on the id field.
+func (f *TaskFilter) WhereID(p entql.StringP) {
+	f.Where(p.Field(task.FieldID))
+}
+
+// WhereCreateTime applies the entql time.Time predicate on the create_time field.
+func (f *TaskFilter) WhereCreateTime(p entql.TimeP) {
+	f.Where(p.Field(task.FieldCreateTime))
+}
+
+// WhereUpdateTime applies the entql time.Time predicate on the update_time field.
+func (f *TaskFilter) WhereUpdateTime(p entql.TimeP) {
+	f.Where(p.Field(task.FieldUpdateTime))
+}
+
+// WhereType applies the entql string predicate on the type field.
+func (f *TaskFilter) WhereType(p entql.StringP) {
+	f.Where(p.Field(task.FieldType))
+}
+
+// WhereStatus applies the entql string predicate on the status field.
+func (f *TaskFilter) WhereStatus(p entql.StringP) {
+	f.Where(p.Field(task.FieldStatus))
+}
+
+// WhereProgress applies the entql float64 predicate on the progress field.
+func (f *TaskFilter) WhereProgress(p entql.Float64P) {
+	f.Where(p.Field(task.FieldProgress))
+}
+
+// WhereMessage applies the entql string predicate on the message field.
+func (f *TaskFilter) WhereMessage(p entql.StringP) {
+	f.Where(p.Field(task.FieldMessage))
+}
+
+// WhereError applies the entql string predicate on the error field.
+func (f *TaskFilter) WhereError(p entql.StringP) {
+	f.Where(p.Field(task.FieldError))
+}
+
+// WhereCreatedBy applies the entql string predicate on the createdBy field.
+func (f *TaskFilter) WhereCreatedBy(p entql.StringP) {
+	f.Where(p.Field(task.FieldCreatedBy))
+}
+
+// WhereIsSystemTask applies the entql bool predicate on the isSystemTask field.
+func (f *TaskFilter) WhereIsSystemTask(p entql.BoolP) {
+	f.Where(p.Field(task.FieldIsSystemTask))
+}
+
+// WhereHasCreator applies a predicate to check if query has an edge creator.
+func (f *TaskFilter) WhereHasCreator() {
+	f.Where(entql.HasEdge("creator"))
+}
+
+// WhereHasCreatorWith applies a predicate to check if query has an edge creator with a given conditions (other predicates).
+func (f *TaskFilter) WhereHasCreatorWith(preds ...predicate.User) {
+	f.Where(entql.HasEdgeWith("creator", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// addPredicate implements the predicateAdder interface.
 func (uq *UserQuery) addPredicate(pred func(s *sql.Selector)) {
 	uq.predicates = append(uq.predicates, pred)
 }
@@ -1024,7 +1158,7 @@ type UserFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *UserFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[8].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[9].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -1107,7 +1241,7 @@ type UserPermissionsFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *UserPermissionsFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[9].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[10].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})

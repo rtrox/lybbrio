@@ -3,6 +3,7 @@ package commands
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"net/http"
 	"os"
@@ -28,6 +29,8 @@ import (
 	"lybbrio/internal/graph"
 	"lybbrio/internal/metrics"
 	"lybbrio/internal/middleware"
+	"lybbrio/internal/task"
+	"lybbrio/internal/viewer"
 )
 
 type AppInfo struct {
@@ -97,6 +100,7 @@ func initLogger() {
 func rootRun(cmd *cobra.Command, args []string) {
 	var srv http.Server
 
+	schedulerCtx := context.Background()
 	idleConnsClosed := make(chan struct{})
 
 	go func() {
@@ -164,6 +168,28 @@ func rootRun(cmd *cobra.Command, args []string) {
 	graphqlHandler.Use(
 		entgql.Transactioner{TxOpener: client},
 	)
+
+	// Task Scheduler
+	schedulerVC := viewer.NewSystemAdminContext(schedulerCtx)
+	workerPool := task.NewWorkerPool(
+		client,
+		&task.WorkerPoolConfig{
+			Ctx:         schedulerVC,
+			NumWorkers:  5,   // TODO: Config
+			QueueLength: 100, // TODO: Config
+		},
+	)
+	workerPool.Start()
+
+	scheduler := task.NewScheduler(
+		client,
+		&task.SchedulerConfig{
+			Ctx:       schedulerVC,
+			WorkQueue: workerPool.WorkQueue(),
+			Cadence:   5 * time.Second, // TODO: Config
+		},
+	)
+	scheduler.Start()
 
 	// Auth Provider
 	jwtProvider, err := auth.NewJWTProvider(conf.JWTSecret, conf.JWTIssuer, conf.JWTExpiry)

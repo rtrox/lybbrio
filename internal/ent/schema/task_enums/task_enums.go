@@ -1,4 +1,4 @@
-package task
+package task_enums
 
 import (
 	"fmt"
@@ -54,16 +54,16 @@ func (t TaskType) Value() (interface{}, error) {
 type Status string
 
 const (
-	StatusPending Status = "pending"
-	StatusRunning        = "running"
-	StatusSuccess        = "success"
-	StatusFailure        = "failure"
+	StatusPending    Status = "pending"
+	StatusInProgress        = "in_progress"
+	StatusSuccess           = "success"
+	StatusFailure           = "failure"
 )
 
 func (Status) Values() (kinds []string) {
 	for _, s := range []Status{
 		StatusPending,
-		StatusRunning,
+		StatusInProgress,
 		StatusSuccess,
 		StatusFailure,
 	} {

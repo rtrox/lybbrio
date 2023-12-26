@@ -14,6 +14,7 @@ import (
 	"lybbrio/internal/ent/series"
 	"lybbrio/internal/ent/shelf"
 	"lybbrio/internal/ent/tag"
+	"lybbrio/internal/ent/task"
 	"lybbrio/internal/ent/user"
 	"lybbrio/internal/ent/userpermissions"
 
@@ -50,6 +51,9 @@ func (n *Shelf) IsNode() {}
 
 // IsNode implements the Node interface check for GQLGen.
 func (n *Tag) IsNode() {}
+
+// IsNode implements the Node interface check for GQLGen.
+func (n *Task) IsNode() {}
 
 // IsNode implements the Node interface check for GQLGen.
 func (n *User) IsNode() {}
@@ -235,6 +239,22 @@ func (c *Client) noder(ctx context.Context, table string, id ksuid.ID) (Noder, e
 		query := c.Tag.Query().
 			Where(tag.ID(uid))
 		query, err := query.CollectFields(ctx, "Tag")
+		if err != nil {
+			return nil, err
+		}
+		n, err := query.Only(ctx)
+		if err != nil {
+			return nil, err
+		}
+		return n, nil
+	case task.Table:
+		var uid ksuid.ID
+		if err := uid.UnmarshalGQL(id); err != nil {
+			return nil, err
+		}
+		query := c.Task.Query().
+			Where(task.ID(uid))
+		query, err := query.CollectFields(ctx, "Task")
 		if err != nil {
 			return nil, err
 		}
@@ -464,6 +484,22 @@ func (c *Client) noders(ctx context.Context, table string, ids []ksuid.ID) ([]No
 		query := c.Tag.Query().
 			Where(tag.IDIn(ids...))
 		query, err := query.CollectFields(ctx, "Tag")
+		if err != nil {
+			return nil, err
+		}
+		nodes, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, node := range nodes {
+			for _, noder := range idmap[node.ID] {
+				*noder = node
+			}
+		}
+	case task.Table:
+		query := c.Task.Query().
+			Where(task.IDIn(ids...))
+		query, err := query.CollectFields(ctx, "Task")
 		if err != nil {
 			return nil, err
 		}

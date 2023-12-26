@@ -231,6 +231,33 @@ var (
 			},
 		},
 	}
+	// TasksColumns holds the columns for the "tasks" table.
+	TasksColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeString},
+		{Name: "create_time", Type: field.TypeTime},
+		{Name: "update_time", Type: field.TypeTime},
+		{Name: "type", Type: field.TypeEnum, Enums: []string{"noop", "calibre_import"}, Default: "noop"},
+		{Name: "status", Type: field.TypeEnum, Enums: []string{"pending", "in_progress", "success", "failure"}, Default: "pending"},
+		{Name: "progress", Type: field.TypeFloat64, Default: 0},
+		{Name: "message", Type: field.TypeString, Nullable: true},
+		{Name: "error", Type: field.TypeString, Nullable: true},
+		{Name: "is_system_task", Type: field.TypeBool, Default: false},
+		{Name: "created_by", Type: field.TypeString, Nullable: true},
+	}
+	// TasksTable holds the schema information for the "tasks" table.
+	TasksTable = &schema.Table{
+		Name:       "tasks",
+		Columns:    TasksColumns,
+		PrimaryKey: []*schema.Column{TasksColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "tasks_users_creator",
+				Columns:    []*schema.Column{TasksColumns[9]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+	}
 	// UsersColumns holds the columns for the "users" table.
 	UsersColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeString},
@@ -362,6 +389,7 @@ var (
 		SeriesTable,
 		ShelvesTable,
 		TagsTable,
+		TasksTable,
 		UsersTable,
 		UserPermissionsTable,
 		AuthorBooksTable,
@@ -376,6 +404,7 @@ func init() {
 	BooksTable.ForeignKeys[2].RefTable = TagsTable
 	IdentifiersTable.ForeignKeys[0].RefTable = BooksTable
 	ShelvesTable.ForeignKeys[0].RefTable = UsersTable
+	TasksTable.ForeignKeys[0].RefTable = UsersTable
 	UserPermissionsTable.ForeignKeys[0].RefTable = UsersTable
 	AuthorBooksTable.ForeignKeys[0].RefTable = AuthorsTable
 	AuthorBooksTable.ForeignKeys[1].RefTable = BooksTable

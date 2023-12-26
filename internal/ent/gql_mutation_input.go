@@ -5,6 +5,7 @@ package ent
 import (
 	"lybbrio/internal/ent/identifier"
 	"lybbrio/internal/ent/schema/ksuid"
+	"lybbrio/internal/ent/schema/task_enums"
 	"time"
 )
 
@@ -590,6 +591,112 @@ func (c *TagUpdate) SetInput(i UpdateTagInput) *TagUpdate {
 
 // SetInput applies the change-set in the UpdateTagInput on the TagUpdateOne builder.
 func (c *TagUpdateOne) SetInput(i UpdateTagInput) *TagUpdateOne {
+	i.Mutate(c.Mutation())
+	return c
+}
+
+// CreateTaskInput represents a mutation input for creating tasks.
+type CreateTaskInput struct {
+	CreateTime   *time.Time
+	UpdateTime   *time.Time
+	Type         *task_enums.TaskType
+	Status       *task_enums.Status
+	Progress     *float64
+	Message      *string
+	Error        *string
+	IsSystemTask *bool
+	CreatorID    *ksuid.ID
+}
+
+// Mutate applies the CreateTaskInput on the TaskMutation builder.
+func (i *CreateTaskInput) Mutate(m *TaskMutation) {
+	if v := i.CreateTime; v != nil {
+		m.SetCreateTime(*v)
+	}
+	if v := i.UpdateTime; v != nil {
+		m.SetUpdateTime(*v)
+	}
+	if v := i.Type; v != nil {
+		m.SetType(*v)
+	}
+	if v := i.Status; v != nil {
+		m.SetStatus(*v)
+	}
+	if v := i.Progress; v != nil {
+		m.SetProgress(*v)
+	}
+	if v := i.Message; v != nil {
+		m.SetMessage(*v)
+	}
+	if v := i.Error; v != nil {
+		m.SetError(*v)
+	}
+	if v := i.IsSystemTask; v != nil {
+		m.SetIsSystemTask(*v)
+	}
+	if v := i.CreatorID; v != nil {
+		m.SetCreatorID(*v)
+	}
+}
+
+// SetInput applies the change-set in the CreateTaskInput on the TaskCreate builder.
+func (c *TaskCreate) SetInput(i CreateTaskInput) *TaskCreate {
+	i.Mutate(c.Mutation())
+	return c
+}
+
+// UpdateTaskInput represents a mutation input for updating tasks.
+type UpdateTaskInput struct {
+	UpdateTime   *time.Time
+	Type         *task_enums.TaskType
+	Status       *task_enums.Status
+	Progress     *float64
+	ClearMessage bool
+	Message      *string
+	ClearError   bool
+	Error        *string
+	IsSystemTask *bool
+}
+
+// Mutate applies the UpdateTaskInput on the TaskMutation builder.
+func (i *UpdateTaskInput) Mutate(m *TaskMutation) {
+	if v := i.UpdateTime; v != nil {
+		m.SetUpdateTime(*v)
+	}
+	if v := i.Type; v != nil {
+		m.SetType(*v)
+	}
+	if v := i.Status; v != nil {
+		m.SetStatus(*v)
+	}
+	if v := i.Progress; v != nil {
+		m.SetProgress(*v)
+	}
+	if i.ClearMessage {
+		m.ClearMessage()
+	}
+	if v := i.Message; v != nil {
+		m.SetMessage(*v)
+	}
+	if i.ClearError {
+		m.ClearError()
+	}
+	if v := i.Error; v != nil {
+		m.SetError(*v)
+	}
+	if v := i.IsSystemTask; v != nil {
+		m.SetIsSystemTask(*v)
+	}
+}
+
+// SetInput applies the change-set in the UpdateTaskInput on the TaskUpdate builder.
+func (c *TaskUpdate) SetInput(i UpdateTaskInput) *TaskUpdate {
+	i.Mutate(c.Mutation())
+	return c
+}
+
+// SetInput applies the change-set in the UpdateTaskInput on the TaskUpdateOne builder.
+func (c *TaskUpdateOne) SetInput(i UpdateTaskInput) *TaskUpdateOne {
 	i.Mutate(c.Mutation())
 	return c
 }
