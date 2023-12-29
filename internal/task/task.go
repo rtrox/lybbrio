@@ -9,12 +9,14 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+type ProgressCallback func(progress float64) error
+type TaskFunc func(ctx context.Context, task *ent.Task, cb ProgressCallback) (msg string, err error)
+
+// TODO: TaskWrapper is opaque, hiding the ent.Task. Give it an interface to allow easier testing.
 type TaskWrapper struct {
 	Task *ent.Task
 	Func TaskFunc
 }
-
-type TaskFunc func(ctx context.Context, task *ent.Task, client *ent.Client) (msg string, err error)
 
 type TaskMap map[task_enums.TaskType]TaskFunc
 
@@ -51,8 +53,9 @@ func (t *concurrentTaskMap) RegisterTasks(taskMap TaskMap) {
 	}
 }
 
-func NoOpTask(ctx context.Context, task *ent.Task, client *ent.Client) (string, error) {
+func NoOpTask(ctx context.Context, task *ent.Task, cb ProgressCallback) (msg string, err error) {
 	log := log.Ctx(ctx)
 	log.Info().Interface("task", task).Msg("NoOpTask")
+	cb(1)
 	return "done", nil
 }

@@ -56,7 +56,7 @@ func importOutputToContext(ctx context.Context, output *importOutput) context.Co
 }
 
 func ImportTask(cal calibre.Calibre, client *ent.Client) task.TaskFunc {
-	return func(ctx context.Context, task *ent.Task, client *ent.Client) (string, error) {
+	return func(ctx context.Context, task *ent.Task, cb task.ProgressCallback) (string, error) {
 		log := log.Ctx(ctx)
 		log.Info().Interface("task", task.ID.String()).Msg("ImportTask")
 
@@ -68,7 +68,7 @@ func ImportTask(cal calibre.Calibre, client *ent.Client) task.TaskFunc {
 			return "", err
 		}
 
-		err = ImportBooks(cal, client, ctx)
+		err = ImportBooks(cal, client, ctx, cb)
 		if err != nil {
 			return "", err
 		}
@@ -105,12 +105,13 @@ func ImportAuthors(cal calibre.Calibre, client *ent.Client, ctx context.Context)
 	return nil
 }
 
-func ImportBooks(cal calibre.Calibre, client *ent.Client, ctx context.Context) error {
+func ImportBooks(cal calibre.Calibre, client *ent.Client, ctx context.Context, cb task.ProgressCallback) error {
 	books, err := cal.GetBooks(context.Background())
 	if err != nil {
 		return err
 	}
-	for _, book := range books {
+	total := len(books)
+	for idx, book := range books {
 
 		bookCreate := client.Book.Create().
 			SetTitle(book.Title).
@@ -203,7 +204,9 @@ func ImportBooks(cal calibre.Calibre, client *ent.Client, ctx context.Context) e
 				Int64("bookID", book.ID).
 				Msg("Failed to create series")
 		}
+		cb(float64(idx+1) / (float64(total)))
 	}
+
 	return nil
 }
 

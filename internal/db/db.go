@@ -2,7 +2,10 @@ package db
 
 import (
 	"fmt"
+	"strings"
+	"testing"
 
+	"lybbrio/internal/ent/enttest"
 	_ "lybbrio/internal/ent/runtime"
 
 	"lybbrio/internal/config"
@@ -25,8 +28,6 @@ func Open(conf *config.DatabaseConfig) (*ent.Client, error) {
 		return OpenMySQL(conf)
 	case "postgres":
 		return OpenPostgres(conf)
-	case "test":
-		return OpenTest()
 	default:
 		// Should be unreachable, as the config validation should catch this.
 		return nil, fmt.Errorf("unknown database driver: %s", conf.Driver)
@@ -79,6 +80,8 @@ func OpenPostgres(conf *config.DatabaseConfig) (*ent.Client, error) {
 	return ent.NewClient(ent.Driver(drv)), nil
 }
 
-func OpenTest() (*ent.Client, error) {
-	return ent.Open(dialect.SQLite, "file:ent?mode=memory&cache=shared&_fk=1")
+func OpenTest(t *testing.T, dbName string) *ent.Client {
+	file := strings.Replace(dbName, " ", "_", -1)
+	dsn := fmt.Sprintf("file:%s?mode=memory&cache=shared&_fk=1", file)
+	return enttest.Open(t, dialect.SQLite, dsn)
 }

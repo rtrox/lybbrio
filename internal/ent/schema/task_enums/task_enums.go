@@ -11,7 +11,7 @@ type TaskType string
 const (
 	// TaskTypeNoOp is a task that does nothing.
 	TypeNoOp          TaskType = "noop"
-	TypeCalibreImport          = "calibre_import"
+	TypeCalibreImport TaskType = "calibre_import"
 )
 
 func (TaskType) Values() (kinds []string) {
@@ -59,9 +59,9 @@ type Status string
 
 const (
 	StatusPending    Status = "pending"
-	StatusInProgress        = "in_progress"
-	StatusSuccess           = "success"
-	StatusFailure           = "failure"
+	StatusInProgress Status = "in_progress"
+	StatusSuccess    Status = "success"
+	StatusFailure    Status = "failure"
 )
 
 func (Status) Values() (kinds []string) {

@@ -54,9 +54,11 @@ func (s *Scheduler) Schedule(ctx context.Context) error {
 		taskFunc := s.taskMap.Get(task.Type)
 		if taskFunc == nil {
 			log.Error().Interface("task", task).Msg("Unimplemented task type requested")
-			task.Status = task_enums.StatusFailure
-			task.Error = "task type not implemented"
-			if _, err := s.client.Task.UpdateOne(task).Save(ctx); err != nil {
+			_, err := task.Update().
+				SetStatus(task_enums.StatusFailure).
+				SetError("task type not implemented").
+				Save(ctx)
+			if err != nil {
 				log.Error().Err(err).Interface("task", task).Msg("Failed to update task")
 			}
 			continue

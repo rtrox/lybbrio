@@ -2,17 +2,13 @@ package test
 
 import (
 	"context"
-	"fmt"
+	"lybbrio/internal/db"
 	"lybbrio/internal/ent"
-	"lybbrio/internal/ent/enttest"
 	"lybbrio/internal/ent/schema/ksuid"
 	"lybbrio/internal/viewer"
-	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/require"
-
-	_ "github.com/mattn/go-sqlite3"
 )
 
 var (
@@ -32,9 +28,7 @@ type testData struct {
 }
 
 func setupTest(t *testing.T, testName string) (teardownFunc func(t *testing.T), client *ent.Client, data testData) {
-	file := strings.Replace(testName, " ", "_", -1)
-	dsn := fmt.Sprintf("file:%s?mode=memory&cache=shared&_fk=1", file)
-	client = enttest.Open(t, "sqlite3", dsn)
+	client = db.OpenTest(t, testName)
 
 	adminContext := viewer.NewSystemAdminContext(context.Background())
 	user1perms := client.UserPermissions.Create().

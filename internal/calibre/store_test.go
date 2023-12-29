@@ -304,6 +304,13 @@ func TestGetBook(t *testing.T) {
 						LangCode: "eng",
 					},
 				},
+				Series: []Series{
+					{
+						ID:   1,
+						Name: "Red Rising Saga",
+						Sort: "Red Rising Saga",
+					},
+				},
 			},
 		},
 	}
