@@ -150,7 +150,7 @@ func (r *mutationResolver) CreateTask(ctx context.Context, input lybbrio.CreateT
 	}
 	return client.Task.Create().
 		SetType(input.Type).
-		SetCreator(user).
+		SetUser(user).
 		SetStatus(task_enums.StatusPending).
 		Save(ctx)
 }

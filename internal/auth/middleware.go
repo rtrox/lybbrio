@@ -58,7 +58,6 @@ func Middleware(prov *JWTProvider) func(http.Handler) http.Handler {
 				return c.Str("user_id", claims.UserID)
 			})
 			ctx = log.WithContext(ctx)
-			log.Info().Msg("Authenticated")
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	}

@@ -82,13 +82,13 @@ func Error(v string) predicate.Task {
 	return predicate.Task(sql.FieldEQ(FieldError, v))
 }
 
-// CreatedBy applies equality check predicate on the "createdBy" field. It's identical to CreatedByEQ.
-func CreatedBy(v ksuid.ID) predicate.Task {
+// UserID applies equality check predicate on the "user_id" field. It's identical to UserIDEQ.
+func UserID(v ksuid.ID) predicate.Task {
 	vc := string(v)
-	return predicate.Task(sql.FieldEQ(FieldCreatedBy, vc))
+	return predicate.Task(sql.FieldEQ(FieldUserID, vc))
 }
 
-// IsSystemTask applies equality check predicate on the "isSystemTask" field. It's identical to IsSystemTaskEQ.
+// IsSystemTask applies equality check predicate on the "is_system_task" field. It's identical to IsSystemTaskEQ.
 func IsSystemTask(v bool) predicate.Task {
 	return predicate.Task(sql.FieldEQ(FieldIsSystemTask, v))
 }
@@ -423,125 +423,125 @@ func ErrorContainsFold(v string) predicate.Task {
 	return predicate.Task(sql.FieldContainsFold(FieldError, v))
 }
 
-// CreatedByEQ applies the EQ predicate on the "createdBy" field.
-func CreatedByEQ(v ksuid.ID) predicate.Task {
+// UserIDEQ applies the EQ predicate on the "user_id" field.
+func UserIDEQ(v ksuid.ID) predicate.Task {
 	vc := string(v)
-	return predicate.Task(sql.FieldEQ(FieldCreatedBy, vc))
+	return predicate.Task(sql.FieldEQ(FieldUserID, vc))
 }
 
-// CreatedByNEQ applies the NEQ predicate on the "createdBy" field.
-func CreatedByNEQ(v ksuid.ID) predicate.Task {
+// UserIDNEQ applies the NEQ predicate on the "user_id" field.
+func UserIDNEQ(v ksuid.ID) predicate.Task {
 	vc := string(v)
-	return predicate.Task(sql.FieldNEQ(FieldCreatedBy, vc))
+	return predicate.Task(sql.FieldNEQ(FieldUserID, vc))
 }
 
-// CreatedByIn applies the In predicate on the "createdBy" field.
-func CreatedByIn(vs ...ksuid.ID) predicate.Task {
+// UserIDIn applies the In predicate on the "user_id" field.
+func UserIDIn(vs ...ksuid.ID) predicate.Task {
 	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = string(vs[i])
 	}
-	return predicate.Task(sql.FieldIn(FieldCreatedBy, v...))
+	return predicate.Task(sql.FieldIn(FieldUserID, v...))
 }
 
-// CreatedByNotIn applies the NotIn predicate on the "createdBy" field.
-func CreatedByNotIn(vs ...ksuid.ID) predicate.Task {
+// UserIDNotIn applies the NotIn predicate on the "user_id" field.
+func UserIDNotIn(vs ...ksuid.ID) predicate.Task {
 	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = string(vs[i])
 	}
-	return predicate.Task(sql.FieldNotIn(FieldCreatedBy, v...))
+	return predicate.Task(sql.FieldNotIn(FieldUserID, v...))
 }
 
-// CreatedByGT applies the GT predicate on the "createdBy" field.
-func CreatedByGT(v ksuid.ID) predicate.Task {
+// UserIDGT applies the GT predicate on the "user_id" field.
+func UserIDGT(v ksuid.ID) predicate.Task {
 	vc := string(v)
-	return predicate.Task(sql.FieldGT(FieldCreatedBy, vc))
+	return predicate.Task(sql.FieldGT(FieldUserID, vc))
 }
 
-// CreatedByGTE applies the GTE predicate on the "createdBy" field.
-func CreatedByGTE(v ksuid.ID) predicate.Task {
+// UserIDGTE applies the GTE predicate on the "user_id" field.
+func UserIDGTE(v ksuid.ID) predicate.Task {
 	vc := string(v)
-	return predicate.Task(sql.FieldGTE(FieldCreatedBy, vc))
+	return predicate.Task(sql.FieldGTE(FieldUserID, vc))
 }
 
-// CreatedByLT applies the LT predicate on the "createdBy" field.
-func CreatedByLT(v ksuid.ID) predicate.Task {
+// UserIDLT applies the LT predicate on the "user_id" field.
+func UserIDLT(v ksuid.ID) predicate.Task {
 	vc := string(v)
-	return predicate.Task(sql.FieldLT(FieldCreatedBy, vc))
+	return predicate.Task(sql.FieldLT(FieldUserID, vc))
 }
 
-// CreatedByLTE applies the LTE predicate on the "createdBy" field.
-func CreatedByLTE(v ksuid.ID) predicate.Task {
+// UserIDLTE applies the LTE predicate on the "user_id" field.
+func UserIDLTE(v ksuid.ID) predicate.Task {
 	vc := string(v)
-	return predicate.Task(sql.FieldLTE(FieldCreatedBy, vc))
+	return predicate.Task(sql.FieldLTE(FieldUserID, vc))
 }
 
-// CreatedByContains applies the Contains predicate on the "createdBy" field.
-func CreatedByContains(v ksuid.ID) predicate.Task {
+// UserIDContains applies the Contains predicate on the "user_id" field.
+func UserIDContains(v ksuid.ID) predicate.Task {
 	vc := string(v)
-	return predicate.Task(sql.FieldContains(FieldCreatedBy, vc))
+	return predicate.Task(sql.FieldContains(FieldUserID, vc))
 }
 
-// CreatedByHasPrefix applies the HasPrefix predicate on the "createdBy" field.
-func CreatedByHasPrefix(v ksuid.ID) predicate.Task {
+// UserIDHasPrefix applies the HasPrefix predicate on the "user_id" field.
+func UserIDHasPrefix(v ksuid.ID) predicate.Task {
 	vc := string(v)
-	return predicate.Task(sql.FieldHasPrefix(FieldCreatedBy, vc))
+	return predicate.Task(sql.FieldHasPrefix(FieldUserID, vc))
 }
 
-// CreatedByHasSuffix applies the HasSuffix predicate on the "createdBy" field.
-func CreatedByHasSuffix(v ksuid.ID) predicate.Task {
+// UserIDHasSuffix applies the HasSuffix predicate on the "user_id" field.
+func UserIDHasSuffix(v ksuid.ID) predicate.Task {
 	vc := string(v)
-	return predicate.Task(sql.FieldHasSuffix(FieldCreatedBy, vc))
+	return predicate.Task(sql.FieldHasSuffix(FieldUserID, vc))
 }
 
-// CreatedByIsNil applies the IsNil predicate on the "createdBy" field.
-func CreatedByIsNil() predicate.Task {
-	return predicate.Task(sql.FieldIsNull(FieldCreatedBy))
+// UserIDIsNil applies the IsNil predicate on the "user_id" field.
+func UserIDIsNil() predicate.Task {
+	return predicate.Task(sql.FieldIsNull(FieldUserID))
 }
 
-// CreatedByNotNil applies the NotNil predicate on the "createdBy" field.
-func CreatedByNotNil() predicate.Task {
-	return predicate.Task(sql.FieldNotNull(FieldCreatedBy))
+// UserIDNotNil applies the NotNil predicate on the "user_id" field.
+func UserIDNotNil() predicate.Task {
+	return predicate.Task(sql.FieldNotNull(FieldUserID))
 }
 
-// CreatedByEqualFold applies the EqualFold predicate on the "createdBy" field.
-func CreatedByEqualFold(v ksuid.ID) predicate.Task {
+// UserIDEqualFold applies the EqualFold predicate on the "user_id" field.
+func UserIDEqualFold(v ksuid.ID) predicate.Task {
 	vc := string(v)
-	return predicate.Task(sql.FieldEqualFold(FieldCreatedBy, vc))
+	return predicate.Task(sql.FieldEqualFold(FieldUserID, vc))
 }
 
-// CreatedByContainsFold applies the ContainsFold predicate on the "createdBy" field.
-func CreatedByContainsFold(v ksuid.ID) predicate.Task {
+// UserIDContainsFold applies the ContainsFold predicate on the "user_id" field.
+func UserIDContainsFold(v ksuid.ID) predicate.Task {
 	vc := string(v)
-	return predicate.Task(sql.FieldContainsFold(FieldCreatedBy, vc))
+	return predicate.Task(sql.FieldContainsFold(FieldUserID, vc))
 }
 
-// IsSystemTaskEQ applies the EQ predicate on the "isSystemTask" field.
+// IsSystemTaskEQ applies the EQ predicate on the "is_system_task" field.
 func IsSystemTaskEQ(v bool) predicate.Task {
 	return predicate.Task(sql.FieldEQ(FieldIsSystemTask, v))
 }
 
-// IsSystemTaskNEQ applies the NEQ predicate on the "isSystemTask" field.
+// IsSystemTaskNEQ applies the NEQ predicate on the "is_system_task" field.
 func IsSystemTaskNEQ(v bool) predicate.Task {
 	return predicate.Task(sql.FieldNEQ(FieldIsSystemTask, v))
 }
 
-// HasCreator applies the HasEdge predicate on the "creator" edge.
-func HasCreator() predicate.Task {
+// HasUser applies the HasEdge predicate on the "user" edge.
+func HasUser() predicate.Task {
 	return predicate.Task(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, CreatorTable, CreatorColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, UserTable, UserColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasCreatorWith applies the HasEdge predicate on the "creator" edge with a given conditions (other predicates).
-func HasCreatorWith(preds ...predicate.User) predicate.Task {
+// HasUserWith applies the HasEdge predicate on the "user" edge with a given conditions (other predicates).
+func HasUserWith(preds ...predicate.User) predicate.Task {
 	return predicate.Task(func(s *sql.Selector) {
-		step := newCreatorStep()
+		step := newUserStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

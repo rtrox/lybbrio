@@ -10,6 +10,7 @@ import (
 	"lybbrio/internal/ent"
 	"lybbrio/internal/ent/privacy"
 	"lybbrio/internal/ent/schema/ksuid"
+	"lybbrio/internal/ent/schema/task_enums"
 	"lybbrio/internal/middleware"
 	"lybbrio/internal/viewer"
 
@@ -127,17 +128,37 @@ func DenyPublicWithoutPermissionRule() privacy.MutationRule {
 // is not the same as the user on the object.
 func DenyMismatchedUserRule() privacy.MutationRule {
 	return privacy.MutationRuleFunc(func(ctx context.Context, m ent.Mutation) error {
+		type UserableMutation interface {
+			UserID() (ksuid.ID, bool)
+			OldUserID(context.Context) (ksuid.ID, error)
+		}
+		um, ok := m.(UserableMutation)
+		if !ok {
+			return privacy.Denyf("mutation does not implement UserableMutation")
+		}
 		view := viewer.FromContext(ctx)
 		user, ok := view.User()
 		if !ok {
 			return privacy.Denyf("missing user information in viewer-context")
 		}
-		mutationUserID, ok := m.Field("user_id")
-		if !ok {
-			return privacy.Denyf("missing user_id field in mutation")
-		} // temporary
-		if user.ID != mutationUserID.(ksuid.ID) {
-			return privacy.Denyf("cannot mutate objects owned by other users")
+
+		var uid ksuid.ID
+		switch m.Op() {
+		case ent.OpCreate:
+			var ok bool
+			uid, ok = m.(UserableMutation).UserID()
+			if ok && uid != user.ID {
+				return privacy.Denyf("cannot create objects owned by other users")
+			}
+		case ent.OpUpdateOne:
+			var err error
+			uid, err = um.OldUserID(ctx)
+			if err != nil {
+				return err
+			}
+			if uid != user.ID {
+				return privacy.Denyf("cannot mutate objects owned by other users")
+			}
 		}
 		return privacy.Skip
 	})
@@ -160,6 +181,84 @@ func FilterSelfRule() privacy.QueryMutationRule {
 			return privacy.Denyf("filter does not implement SelfFilter")
 		}
 		sf.WhereID(entql.StringEQ(user.ID.String()))
+		return privacy.Skip
+	})
+}
+
+func FilterUserOrSystemRule() privacy.QueryMutationRule {
+	type CreatorOrSystemFilter interface {
+		WhereUserID(entql.StringP)
+		WhereIsSystemTask(entql.BoolP)
+	}
+	return privacy.FilterFunc(func(ctx context.Context, f privacy.Filter) error {
+		view := viewer.FromContext(ctx)
+		user, ok := view.User()
+		if !ok {
+			return privacy.Denyf("missing user information in viewer-context")
+		}
+		_, ok = f.(CreatorOrSystemFilter)
+		if !ok {
+			return privacy.Denyf("filter does not implement CreatorOrSystemFilter")
+		}
+		f.Where(
+			entql.Or(
+				entql.FieldEQ("user_id", user.ID.String()),
+				entql.FieldEQ("is_system_task", true),
+			),
+		)
+		return privacy.Skip
+	})
+}
+
+func AllowTasksOfType(types ...any) privacy.MutationRule {
+	return privacy.TaskMutationRuleFunc(func(ctx context.Context, m *ent.TaskMutation) error {
+
+		var typ task_enums.TaskType
+		switch m.Op() {
+		case ent.OpCreate:
+			taskType, ok := m.GetType()
+			if !ok {
+				return privacy.Denyf("missing type field in mutation")
+			}
+			typ = taskType
+		case ent.OpUpdateOne:
+			var err error
+			// Type is immutable, checking OldType is enough.
+			typ, err = m.OldType(ctx)
+			if err != nil {
+				return err
+			}
+		}
+		for _, t := range types {
+			if typ == t {
+				return privacy.Allow
+			}
+		}
+		return privacy.Denyf("cannot mutate tasks of type %v", typ)
+	})
+}
+
+func DenySystemTaskForNonAdmin() privacy.MutationRule {
+	return privacy.TaskMutationRuleFunc(func(ctx context.Context, m *ent.TaskMutation) error {
+		view := viewer.FromContext(ctx)
+		if view.IsAdmin() {
+			return privacy.Skip
+		}
+		if m.Op() == ent.OpUpdateOne {
+			system, err := m.OldIsSystemTask(ctx)
+			if err != nil {
+				return err
+			}
+			if system {
+				return privacy.Denyf("cannot update system tasks")
+			}
+		}
+		isSystemTask, ok := m.IsSystemTask()
+		if !ok {
+			return privacy.Skip
+		} else if isSystemTask {
+			return privacy.Denyf("cannot create system tasks")
+		}
 		return privacy.Skip
 	})
 }

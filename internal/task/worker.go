@@ -85,7 +85,7 @@ func (w *Worker) startTask(ctx context.Context, task TaskWrapper) error {
 
 	taskCtx := ctx
 	if !task.Task.IsSystemTask {
-		user, err := task.Task.QueryCreator().First(ctx)
+		user, err := task.Task.QueryUser().First(ctx)
 		if err != nil {
 			return fmt.Errorf("failed to get task creator: %w", err)
 		}
@@ -96,11 +96,20 @@ func (w *Worker) startTask(ctx context.Context, task TaskWrapper) error {
 		taskCtx = viewer.NewContext(ctx, user, perms)
 	}
 
-	msg, err := task.Func(taskCtx, task.Task, func(progress float64) error {
-		var err error
-		task.Task, err = task.Task.Update().SetProgress(progress).Save(taskCtx)
-		return err
-	})
+	msg, err := func() (msg string, err error) {
+		defer func() {
+			if r := recover(); r != nil {
+				log.Error().Interface("recover", r).Msg("Recovered from panic")
+				msg = "Panic"
+				err = fmt.Errorf("panic: %v", r)
+			}
+		}()
+		return task.Func(taskCtx, task.Task, func(progress float64) error {
+			var err error
+			task.Task, err = task.Task.Update().SetProgress(progress).Save(ctx)
+			return err
+		})
+	}()
 
 	update := task.Task.Update()
 	if err != nil {

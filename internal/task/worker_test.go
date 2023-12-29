@@ -132,7 +132,7 @@ func TestWorkerPoolRunsAsUser(t *testing.T) {
 
 	task := client.Task.Create().
 		SetType(task_enums.TypeNoOp).
-		SetCreator(user).
+		SetUser(user).
 		SaveX(ctx)
 
 	done := make(chan struct{})
@@ -203,4 +203,51 @@ func TestWorkerPoolHandlesError(t *testing.T) {
 
 	task = client.Task.GetX(ctx, task.ID)
 	require.Equal(task_enums.StatusFailure, task.Status, "Task status is not failure")
+}
+
+func TestTaskFuncCantPanic(t *testing.T) {
+	t.Parallel()
+	require := require.New(t)
+
+	client := db.OpenTest(t, "TestTaskFuncCantPanic")
+
+	ctx, cancel := context.WithTimeout(
+		viewer.NewSystemAdminContext(context.Background()),
+		1*time.Second,
+	)
+
+	defer cancel()
+
+	wp := NewWorkerPool(client, &WorkerPoolConfig{
+		NumWorkers:  1,
+		QueueLength: 10,
+		Ctx:         ctx,
+	})
+
+	wp.Start()
+
+	task := client.Task.Create().
+		SetType(task_enums.TypeNoOp).
+		SetIsSystemTask(true).
+		SaveX(ctx)
+
+	done := make(chan struct{})
+	wp.WorkQueue() <- TaskWrapper{
+		Task: task,
+		Func: func(ctx context.Context, task *ent.Task, cb ProgressCallback) (msg string, err error) {
+			close(done)
+			panic("I'm panicking!")
+		},
+	}
+
+	select {
+	case <-done:
+		time.Sleep(100 * time.Millisecond)
+	case <-ctx.Done():
+		require.Fail("Task did not complete in time")
+	}
+
+	task = client.Task.GetX(ctx, task.ID)
+	require.Equal(task_enums.StatusFailure, task.Status, "Task status is not failure")
+	require.NotEqual("", task.Error, "Task error is empty")
 }

@@ -50,20 +50,6 @@ func (lu *LanguageUpdate) AddCalibreID(i int64) *LanguageUpdate {
 	return lu
 }
 
-// SetName sets the "name" field.
-func (lu *LanguageUpdate) SetName(s string) *LanguageUpdate {
-	lu.mutation.SetName(s)
-	return lu
-}
-
-// SetNillableName sets the "name" field if the given value is not nil.
-func (lu *LanguageUpdate) SetNillableName(s *string) *LanguageUpdate {
-	if s != nil {
-		lu.SetName(*s)
-	}
-	return lu
-}
-
 // SetCode sets the "code" field.
 func (lu *LanguageUpdate) SetCode(s string) *LanguageUpdate {
 	lu.mutation.SetCode(s)
@@ -148,11 +134,6 @@ func (lu *LanguageUpdate) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (lu *LanguageUpdate) check() error {
-	if v, ok := lu.mutation.Name(); ok {
-		if err := language.NameValidator(v); err != nil {
-			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "Language.name": %w`, err)}
-		}
-	}
 	if v, ok := lu.mutation.Code(); ok {
 		if err := language.CodeValidator(v); err != nil {
 			return &ValidationError{Name: "code", err: fmt.Errorf(`ent: validator failed for field "Language.code": %w`, err)}
@@ -178,9 +159,6 @@ func (lu *LanguageUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := lu.mutation.AddedCalibreID(); ok {
 		_spec.AddField(language.FieldCalibreID, field.TypeInt64, value)
-	}
-	if value, ok := lu.mutation.Name(); ok {
-		_spec.SetField(language.FieldName, field.TypeString, value)
 	}
 	if value, ok := lu.mutation.Code(); ok {
 		_spec.SetField(language.FieldCode, field.TypeString, value)
@@ -268,20 +246,6 @@ func (luo *LanguageUpdateOne) SetNillableCalibreID(i *int64) *LanguageUpdateOne 
 // AddCalibreID adds i to the "calibre_id" field.
 func (luo *LanguageUpdateOne) AddCalibreID(i int64) *LanguageUpdateOne {
 	luo.mutation.AddCalibreID(i)
-	return luo
-}
-
-// SetName sets the "name" field.
-func (luo *LanguageUpdateOne) SetName(s string) *LanguageUpdateOne {
-	luo.mutation.SetName(s)
-	return luo
-}
-
-// SetNillableName sets the "name" field if the given value is not nil.
-func (luo *LanguageUpdateOne) SetNillableName(s *string) *LanguageUpdateOne {
-	if s != nil {
-		luo.SetName(*s)
-	}
 	return luo
 }
 
@@ -382,11 +346,6 @@ func (luo *LanguageUpdateOne) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (luo *LanguageUpdateOne) check() error {
-	if v, ok := luo.mutation.Name(); ok {
-		if err := language.NameValidator(v); err != nil {
-			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "Language.name": %w`, err)}
-		}
-	}
 	if v, ok := luo.mutation.Code(); ok {
 		if err := language.CodeValidator(v); err != nil {
 			return &ValidationError{Name: "code", err: fmt.Errorf(`ent: validator failed for field "Language.code": %w`, err)}
@@ -429,9 +388,6 @@ func (luo *LanguageUpdateOne) sqlSave(ctx context.Context) (_node *Language, err
 	}
 	if value, ok := luo.mutation.AddedCalibreID(); ok {
 		_spec.AddField(language.FieldCalibreID, field.TypeInt64, value)
-	}
-	if value, ok := luo.mutation.Name(); ok {
-		_spec.SetField(language.FieldName, field.TypeString, value)
 	}
 	if value, ok := luo.mutation.Code(); ok {
 		_spec.SetField(language.FieldCode, field.TypeString, value)

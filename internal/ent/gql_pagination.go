@@ -1459,20 +1459,6 @@ func (l *LanguageQuery) Paginate(
 }
 
 var (
-	// LanguageOrderFieldName orders Language by name.
-	LanguageOrderFieldName = &LanguageOrderField{
-		Value: func(l *Language) (ent.Value, error) {
-			return l.Name, nil
-		},
-		column: language.FieldName,
-		toTerm: language.ByName,
-		toCursor: func(l *Language) Cursor {
-			return Cursor{
-				ID:    l.ID,
-				Value: l.Name,
-			}
-		},
-	}
 	// LanguageOrderFieldBooksCount orders by BOOKS_COUNT.
 	LanguageOrderFieldBooksCount = &LanguageOrderField{
 		Value: func(l *Language) (ent.Value, error) {
@@ -1498,8 +1484,6 @@ var (
 func (f LanguageOrderField) String() string {
 	var str string
 	switch f.column {
-	case LanguageOrderFieldName.column:
-		str = "NAME"
 	case LanguageOrderFieldBooksCount.column:
 		str = "BOOKS_COUNT"
 	}
@@ -1518,8 +1502,6 @@ func (f *LanguageOrderField) UnmarshalGQL(v interface{}) error {
 		return fmt.Errorf("LanguageOrderField %T must be a string", v)
 	}
 	switch str {
-	case "NAME":
-		*f = *LanguageOrderFieldName
 	case "BOOKS_COUNT":
 		*f = *LanguageOrderFieldBooksCount
 	default:

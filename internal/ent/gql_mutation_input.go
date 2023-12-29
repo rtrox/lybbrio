@@ -366,7 +366,6 @@ func (c *IdentifierUpdateOne) SetInput(i UpdateIdentifierInput) *IdentifierUpdat
 // CreateLanguageInput represents a mutation input for creating languages.
 type CreateLanguageInput struct {
 	CalibreID int64
-	Name      string
 	Code      string
 	BookIDs   []ksuid.ID
 }
@@ -374,7 +373,6 @@ type CreateLanguageInput struct {
 // Mutate applies the CreateLanguageInput on the LanguageMutation builder.
 func (i *CreateLanguageInput) Mutate(m *LanguageMutation) {
 	m.SetCalibreID(i.CalibreID)
-	m.SetName(i.Name)
 	m.SetCode(i.Code)
 	if v := i.BookIDs; len(v) > 0 {
 		m.AddBookIDs(v...)
@@ -390,7 +388,6 @@ func (c *LanguageCreate) SetInput(i CreateLanguageInput) *LanguageCreate {
 // UpdateLanguageInput represents a mutation input for updating languages.
 type UpdateLanguageInput struct {
 	CalibreID     *int64
-	Name          *string
 	Code          *string
 	ClearBooks    bool
 	AddBookIDs    []ksuid.ID
@@ -401,9 +398,6 @@ type UpdateLanguageInput struct {
 func (i *UpdateLanguageInput) Mutate(m *LanguageMutation) {
 	if v := i.CalibreID; v != nil {
 		m.SetCalibreID(*v)
-	}
-	if v := i.Name; v != nil {
-		m.SetName(*v)
 	}
 	if v := i.Code; v != nil {
 		m.SetCode(*v)

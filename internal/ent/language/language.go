@@ -17,8 +17,6 @@ const (
 	FieldID = "id"
 	// FieldCalibreID holds the string denoting the calibre_id field in the database.
 	FieldCalibreID = "calibre_id"
-	// FieldName holds the string denoting the name field in the database.
-	FieldName = "name"
 	// FieldCode holds the string denoting the code field in the database.
 	FieldCode = "code"
 	// EdgeBooks holds the string denoting the books edge name in mutations.
@@ -36,7 +34,6 @@ const (
 var Columns = []string{
 	FieldID,
 	FieldCalibreID,
-	FieldName,
 	FieldCode,
 }
 
@@ -64,8 +61,6 @@ func ValidColumn(column string) bool {
 var (
 	Hooks  [1]ent.Hook
 	Policy ent.Policy
-	// NameValidator is a validator for the "name" field. It is called by the builders before save.
-	NameValidator func(string) error
 	// CodeValidator is a validator for the "code" field. It is called by the builders before save.
 	CodeValidator func(string) error
 	// DefaultID holds the default value on creation for the "id" field.
@@ -83,11 +78,6 @@ func ByID(opts ...sql.OrderTermOption) OrderOption {
 // ByCalibreID orders the results by the calibre_id field.
 func ByCalibreID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldCalibreID, opts...).ToFunc()
-}
-
-// ByName orders the results by the name field.
-func ByName(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldName, opts...).ToFunc()
 }
 
 // ByCode orders the results by the code field.

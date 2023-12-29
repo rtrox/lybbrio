@@ -31,7 +31,7 @@ func (UserPermissions) Fields() []ent.Field {
 		field.Bool("admin").
 			Default(false).
 			Comment("Admin users can do anything."),
-		field.Bool("CanCreatePublic").
+		field.Bool("can_create_public").
 			Default(false).
 			Comment("Can create publicly visible objects."),
 	}
@@ -40,7 +40,7 @@ func (UserPermissions) Fields() []ent.Field {
 // Edges of the UserPermissions.
 func (UserPermissions) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.From("user", User.Type).Field("user_id").Ref("userPermissions").Unique(),
+		edge.From("user", User.Type).Field("user_id").Ref("user_permissions").Unique(),
 	}
 }
 

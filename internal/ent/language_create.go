@@ -30,12 +30,6 @@ func (lc *LanguageCreate) SetCalibreID(i int64) *LanguageCreate {
 	return lc
 }
 
-// SetName sets the "name" field.
-func (lc *LanguageCreate) SetName(s string) *LanguageCreate {
-	lc.mutation.SetName(s)
-	return lc
-}
-
 // SetCode sets the "code" field.
 func (lc *LanguageCreate) SetCode(s string) *LanguageCreate {
 	lc.mutation.SetCode(s)
@@ -123,14 +117,6 @@ func (lc *LanguageCreate) check() error {
 	if _, ok := lc.mutation.CalibreID(); !ok {
 		return &ValidationError{Name: "calibre_id", err: errors.New(`ent: missing required field "Language.calibre_id"`)}
 	}
-	if _, ok := lc.mutation.Name(); !ok {
-		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "Language.name"`)}
-	}
-	if v, ok := lc.mutation.Name(); ok {
-		if err := language.NameValidator(v); err != nil {
-			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "Language.name": %w`, err)}
-		}
-	}
 	if _, ok := lc.mutation.Code(); !ok {
 		return &ValidationError{Name: "code", err: errors.New(`ent: missing required field "Language.code"`)}
 	}
@@ -178,10 +164,6 @@ func (lc *LanguageCreate) createSpec() (*Language, *sqlgraph.CreateSpec) {
 	if value, ok := lc.mutation.CalibreID(); ok {
 		_spec.SetField(language.FieldCalibreID, field.TypeInt64, value)
 		_node.CalibreID = value
-	}
-	if value, ok := lc.mutation.Name(); ok {
-		_spec.SetField(language.FieldName, field.TypeString, value)
-		_node.Name = value
 	}
 	if value, ok := lc.mutation.Code(); ok {
 		_spec.SetField(language.FieldCode, field.TypeString, value)
@@ -273,18 +255,6 @@ func (u *LanguageUpsert) AddCalibreID(v int64) *LanguageUpsert {
 	return u
 }
 
-// SetName sets the "name" field.
-func (u *LanguageUpsert) SetName(v string) *LanguageUpsert {
-	u.Set(language.FieldName, v)
-	return u
-}
-
-// UpdateName sets the "name" field to the value that was provided on create.
-func (u *LanguageUpsert) UpdateName() *LanguageUpsert {
-	u.SetExcluded(language.FieldName)
-	return u
-}
-
 // SetCode sets the "code" field.
 func (u *LanguageUpsert) SetCode(v string) *LanguageUpsert {
 	u.Set(language.FieldCode, v)
@@ -363,20 +333,6 @@ func (u *LanguageUpsertOne) AddCalibreID(v int64) *LanguageUpsertOne {
 func (u *LanguageUpsertOne) UpdateCalibreID() *LanguageUpsertOne {
 	return u.Update(func(s *LanguageUpsert) {
 		s.UpdateCalibreID()
-	})
-}
-
-// SetName sets the "name" field.
-func (u *LanguageUpsertOne) SetName(v string) *LanguageUpsertOne {
-	return u.Update(func(s *LanguageUpsert) {
-		s.SetName(v)
-	})
-}
-
-// UpdateName sets the "name" field to the value that was provided on create.
-func (u *LanguageUpsertOne) UpdateName() *LanguageUpsertOne {
-	return u.Update(func(s *LanguageUpsert) {
-		s.UpdateName()
 	})
 }
 
@@ -627,20 +583,6 @@ func (u *LanguageUpsertBulk) AddCalibreID(v int64) *LanguageUpsertBulk {
 func (u *LanguageUpsertBulk) UpdateCalibreID() *LanguageUpsertBulk {
 	return u.Update(func(s *LanguageUpsert) {
 		s.UpdateCalibreID()
-	})
-}
-
-// SetName sets the "name" field.
-func (u *LanguageUpsertBulk) SetName(v string) *LanguageUpsertBulk {
-	return u.Update(func(s *LanguageUpsert) {
-		s.SetName(v)
-	})
-}
-
-// UpdateName sets the "name" field to the value that was provided on create.
-func (u *LanguageUpsertBulk) UpdateName() *LanguageUpsertBulk {
-	return u.Update(func(s *LanguageUpsert) {
-		s.UpdateName()
 	})
 }
 

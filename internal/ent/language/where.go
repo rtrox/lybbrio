@@ -60,11 +60,6 @@ func CalibreID(v int64) predicate.Language {
 	return predicate.Language(sql.FieldEQ(FieldCalibreID, v))
 }
 
-// Name applies equality check predicate on the "name" field. It's identical to NameEQ.
-func Name(v string) predicate.Language {
-	return predicate.Language(sql.FieldEQ(FieldName, v))
-}
-
 // Code applies equality check predicate on the "code" field. It's identical to CodeEQ.
 func Code(v string) predicate.Language {
 	return predicate.Language(sql.FieldEQ(FieldCode, v))
@@ -108,71 +103,6 @@ func CalibreIDLT(v int64) predicate.Language {
 // CalibreIDLTE applies the LTE predicate on the "calibre_id" field.
 func CalibreIDLTE(v int64) predicate.Language {
 	return predicate.Language(sql.FieldLTE(FieldCalibreID, v))
-}
-
-// NameEQ applies the EQ predicate on the "name" field.
-func NameEQ(v string) predicate.Language {
-	return predicate.Language(sql.FieldEQ(FieldName, v))
-}
-
-// NameNEQ applies the NEQ predicate on the "name" field.
-func NameNEQ(v string) predicate.Language {
-	return predicate.Language(sql.FieldNEQ(FieldName, v))
-}
-
-// NameIn applies the In predicate on the "name" field.
-func NameIn(vs ...string) predicate.Language {
-	return predicate.Language(sql.FieldIn(FieldName, vs...))
-}
-
-// NameNotIn applies the NotIn predicate on the "name" field.
-func NameNotIn(vs ...string) predicate.Language {
-	return predicate.Language(sql.FieldNotIn(FieldName, vs...))
-}
-
-// NameGT applies the GT predicate on the "name" field.
-func NameGT(v string) predicate.Language {
-	return predicate.Language(sql.FieldGT(FieldName, v))
-}
-
-// NameGTE applies the GTE predicate on the "name" field.
-func NameGTE(v string) predicate.Language {
-	return predicate.Language(sql.FieldGTE(FieldName, v))
-}
-
-// NameLT applies the LT predicate on the "name" field.
-func NameLT(v string) predicate.Language {
-	return predicate.Language(sql.FieldLT(FieldName, v))
-}
-
-// NameLTE applies the LTE predicate on the "name" field.
-func NameLTE(v string) predicate.Language {
-	return predicate.Language(sql.FieldLTE(FieldName, v))
-}
-
-// NameContains applies the Contains predicate on the "name" field.
-func NameContains(v string) predicate.Language {
-	return predicate.Language(sql.FieldContains(FieldName, v))
-}
-
-// NameHasPrefix applies the HasPrefix predicate on the "name" field.
-func NameHasPrefix(v string) predicate.Language {
-	return predicate.Language(sql.FieldHasPrefix(FieldName, v))
-}
-
-// NameHasSuffix applies the HasSuffix predicate on the "name" field.
-func NameHasSuffix(v string) predicate.Language {
-	return predicate.Language(sql.FieldHasSuffix(FieldName, v))
-}
-
-// NameEqualFold applies the EqualFold predicate on the "name" field.
-func NameEqualFold(v string) predicate.Language {
-	return predicate.Language(sql.FieldEqualFold(FieldName, v))
-}
-
-// NameContainsFold applies the ContainsFold predicate on the "name" field.
-func NameContainsFold(v string) predicate.Language {
-	return predicate.Language(sql.FieldContainsFold(FieldName, v))
 }
 
 // CodeEQ applies the EQ predicate on the "code" field.

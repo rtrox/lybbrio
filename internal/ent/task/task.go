@@ -33,21 +33,21 @@ const (
 	FieldMessage = "message"
 	// FieldError holds the string denoting the error field in the database.
 	FieldError = "error"
-	// FieldCreatedBy holds the string denoting the createdby field in the database.
-	FieldCreatedBy = "created_by"
-	// FieldIsSystemTask holds the string denoting the issystemtask field in the database.
+	// FieldUserID holds the string denoting the user_id field in the database.
+	FieldUserID = "user_id"
+	// FieldIsSystemTask holds the string denoting the is_system_task field in the database.
 	FieldIsSystemTask = "is_system_task"
-	// EdgeCreator holds the string denoting the creator edge name in mutations.
-	EdgeCreator = "creator"
+	// EdgeUser holds the string denoting the user edge name in mutations.
+	EdgeUser = "user"
 	// Table holds the table name of the task in the database.
 	Table = "tasks"
-	// CreatorTable is the table that holds the creator relation/edge.
-	CreatorTable = "tasks"
-	// CreatorInverseTable is the table name for the User entity.
+	// UserTable is the table that holds the user relation/edge.
+	UserTable = "tasks"
+	// UserInverseTable is the table name for the User entity.
 	// It exists in this package in order to avoid circular dependency with the "user" package.
-	CreatorInverseTable = "users"
-	// CreatorColumn is the table column denoting the creator relation/edge.
-	CreatorColumn = "created_by"
+	UserInverseTable = "users"
+	// UserColumn is the table column denoting the user relation/edge.
+	UserColumn = "user_id"
 )
 
 // Columns holds all SQL columns for task fields.
@@ -60,7 +60,7 @@ var Columns = []string{
 	FieldProgress,
 	FieldMessage,
 	FieldError,
-	FieldCreatedBy,
+	FieldUserID,
 	FieldIsSystemTask,
 }
 
@@ -90,7 +90,7 @@ var (
 	UpdateDefaultUpdateTime func() time.Time
 	// DefaultProgress holds the default value on creation for the "progress" field.
 	DefaultProgress float64
-	// DefaultIsSystemTask holds the default value on creation for the "isSystemTask" field.
+	// DefaultIsSystemTask holds the default value on creation for the "is_system_task" field.
 	DefaultIsSystemTask bool
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() ksuid.ID
@@ -163,27 +163,27 @@ func ByError(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldError, opts...).ToFunc()
 }
 
-// ByCreatedBy orders the results by the createdBy field.
-func ByCreatedBy(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldCreatedBy, opts...).ToFunc()
+// ByUserID orders the results by the user_id field.
+func ByUserID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldUserID, opts...).ToFunc()
 }
 
-// ByIsSystemTask orders the results by the isSystemTask field.
+// ByIsSystemTask orders the results by the is_system_task field.
 func ByIsSystemTask(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldIsSystemTask, opts...).ToFunc()
 }
 
-// ByCreatorField orders the results by creator field.
-func ByCreatorField(field string, opts ...sql.OrderTermOption) OrderOption {
+// ByUserField orders the results by user field.
+func ByUserField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newCreatorStep(), sql.OrderByField(field, opts...))
+		sqlgraph.OrderByNeighborTerms(s, newUserStep(), sql.OrderByField(field, opts...))
 	}
 }
-func newCreatorStep() *sqlgraph.Step {
+func newUserStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(CreatorInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2O, false, CreatorTable, CreatorColumn),
+		sqlgraph.To(UserInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, false, UserTable, UserColumn),
 	)
 }
 

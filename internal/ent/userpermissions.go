@@ -23,7 +23,7 @@ type UserPermissions struct {
 	// Admin users can do anything.
 	Admin bool `json:"admin,omitempty"`
 	// Can create publicly visible objects.
-	CanCreatePublic bool `json:"CanCreatePublic,omitempty"`
+	CanCreatePublic bool `json:"can_create_public,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the UserPermissionsQuery when eager-loading is set.
 	Edges        UserPermissionsEdges `json:"edges"`
@@ -98,7 +98,7 @@ func (up *UserPermissions) assignValues(columns []string, values []any) error {
 			}
 		case userpermissions.FieldCanCreatePublic:
 			if value, ok := values[i].(*sql.NullBool); !ok {
-				return fmt.Errorf("unexpected type %T for field CanCreatePublic", values[i])
+				return fmt.Errorf("unexpected type %T for field can_create_public", values[i])
 			} else if value.Valid {
 				up.CanCreatePublic = value.Bool
 			}
@@ -149,7 +149,7 @@ func (up *UserPermissions) String() string {
 	builder.WriteString("admin=")
 	builder.WriteString(fmt.Sprintf("%v", up.Admin))
 	builder.WriteString(", ")
-	builder.WriteString("CanCreatePublic=")
+	builder.WriteString("can_create_public=")
 	builder.WriteString(fmt.Sprintf("%v", up.CanCreatePublic))
 	builder.WriteByte(')')
 	return builder.String()

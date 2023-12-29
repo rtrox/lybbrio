@@ -54,6 +54,6 @@ func (Identifier) Edges() []ent.Edge {
 
 func (Identifier) Indexes() []ent.Index {
 	return []ent.Index{
-		index.Fields("type", "value").Unique(),
+		index.Fields("type", "value"),
 	}
 }

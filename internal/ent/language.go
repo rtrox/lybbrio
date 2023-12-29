@@ -19,8 +19,6 @@ type Language struct {
 	ID ksuid.ID `json:"id,omitempty"`
 	// CalibreID holds the value of the "calibre_id" field.
 	CalibreID int64 `json:"calibre_id,omitempty"`
-	// Name holds the value of the "name" field.
-	Name string `json:"name,omitempty"`
 	// Code holds the value of the "code" field.
 	Code string `json:"code,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -58,7 +56,7 @@ func (*Language) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case language.FieldCalibreID:
 			values[i] = new(sql.NullInt64)
-		case language.FieldID, language.FieldName, language.FieldCode:
+		case language.FieldID, language.FieldCode:
 			values[i] = new(sql.NullString)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -86,12 +84,6 @@ func (l *Language) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field calibre_id", values[i])
 			} else if value.Valid {
 				l.CalibreID = value.Int64
-			}
-		case language.FieldName:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field name", values[i])
-			} else if value.Valid {
-				l.Name = value.String
 			}
 		case language.FieldCode:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -142,9 +134,6 @@ func (l *Language) String() string {
 	builder.WriteString(fmt.Sprintf("id=%v, ", l.ID))
 	builder.WriteString("calibre_id=")
 	builder.WriteString(fmt.Sprintf("%v", l.CalibreID))
-	builder.WriteString(", ")
-	builder.WriteString("name=")
-	builder.WriteString(l.Name)
 	builder.WriteString(", ")
 	builder.WriteString("code=")
 	builder.WriteString(l.Code)

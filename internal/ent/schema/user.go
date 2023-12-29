@@ -43,7 +43,7 @@ func (User) Fields() []ent.Field {
 			Annotations(
 				entgql.OrderField("USERNAME"),
 			),
-		field.String("passwordHash").
+		field.String("password_hash").
 			Optional().
 			Sensitive(),
 		field.String("email").
@@ -57,7 +57,7 @@ func (User) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.From("shelves", Shelf.Type).
 			Ref("user"),
-		edge.To("userPermissions", UserPermissions.Type).
+		edge.To("user_permissions", UserPermissions.Type).
 			Unique().
 			Required().
 			Immutable(),
@@ -82,6 +82,6 @@ func (User) Policy() ent.Policy {
 func (User) Indexes() []ent.Index {
 	return []ent.Index{
 		index.Fields("username"),
-		index.Fields("passwordHash"),
+		index.Fields("password_hash"),
 	}
 }

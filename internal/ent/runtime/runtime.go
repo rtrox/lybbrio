@@ -115,12 +115,8 @@ func init() {
 	_ = languageMixinFields2
 	languageFields := schema.Language{}.Fields()
 	_ = languageFields
-	// languageDescName is the schema descriptor for name field.
-	languageDescName := languageFields[0].Descriptor()
-	// language.NameValidator is a validator for the "name" field. It is called by the builders before save.
-	language.NameValidator = languageDescName.Validators[0].(func(string) error)
 	// languageDescCode is the schema descriptor for code field.
-	languageDescCode := languageFields[1].Descriptor()
+	languageDescCode := languageFields[0].Descriptor()
 	// language.CodeValidator is a validator for the "code" field. It is called by the builders before save.
 	language.CodeValidator = languageDescCode.Validators[0].(func(string) error)
 	// languageDescID is the schema descriptor for id field.
@@ -255,9 +251,9 @@ func init() {
 	taskDescProgress := taskFields[2].Descriptor()
 	// task.DefaultProgress holds the default value on creation for the progress field.
 	task.DefaultProgress = taskDescProgress.Default.(float64)
-	// taskDescIsSystemTask is the schema descriptor for isSystemTask field.
+	// taskDescIsSystemTask is the schema descriptor for is_system_task field.
 	taskDescIsSystemTask := taskFields[6].Descriptor()
-	// task.DefaultIsSystemTask holds the default value on creation for the isSystemTask field.
+	// task.DefaultIsSystemTask holds the default value on creation for the is_system_task field.
 	task.DefaultIsSystemTask = taskDescIsSystemTask.Default.(bool)
 	// taskDescID is the schema descriptor for id field.
 	taskDescID := taskMixinFields2[0].Descriptor()
@@ -307,9 +303,9 @@ func init() {
 	userpermissionsDescAdmin := userpermissionsFields[1].Descriptor()
 	// userpermissions.DefaultAdmin holds the default value on creation for the admin field.
 	userpermissions.DefaultAdmin = userpermissionsDescAdmin.Default.(bool)
-	// userpermissionsDescCanCreatePublic is the schema descriptor for CanCreatePublic field.
+	// userpermissionsDescCanCreatePublic is the schema descriptor for can_create_public field.
 	userpermissionsDescCanCreatePublic := userpermissionsFields[2].Descriptor()
-	// userpermissions.DefaultCanCreatePublic holds the default value on creation for the CanCreatePublic field.
+	// userpermissions.DefaultCanCreatePublic holds the default value on creation for the can_create_public field.
 	userpermissions.DefaultCanCreatePublic = userpermissionsDescCanCreatePublic.Default.(bool)
 	// userpermissionsDescID is the schema descriptor for id field.
 	userpermissionsDescID := userpermissionsMixinFields1[0].Descriptor()

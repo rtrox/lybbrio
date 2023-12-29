@@ -2695,7 +2695,6 @@ type LanguageMutation struct {
 	id            *ksuid.ID
 	calibre_id    *int64
 	addcalibre_id *int64
-	name          *string
 	code          *string
 	clearedFields map[string]struct{}
 	books         map[ksuid.ID]struct{}
@@ -2866,42 +2865,6 @@ func (m *LanguageMutation) ResetCalibreID() {
 	m.addcalibre_id = nil
 }
 
-// SetName sets the "name" field.
-func (m *LanguageMutation) SetName(s string) {
-	m.name = &s
-}
-
-// Name returns the value of the "name" field in the mutation.
-func (m *LanguageMutation) Name() (r string, exists bool) {
-	v := m.name
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldName returns the old "name" field's value of the Language entity.
-// If the Language object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *LanguageMutation) OldName(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldName is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldName requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldName: %w", err)
-	}
-	return oldValue.Name, nil
-}
-
-// ResetName resets all changes to the "name" field.
-func (m *LanguageMutation) ResetName() {
-	m.name = nil
-}
-
 // SetCode sets the "code" field.
 func (m *LanguageMutation) SetCode(s string) {
 	m.code = &s
@@ -3026,12 +2989,9 @@ func (m *LanguageMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *LanguageMutation) Fields() []string {
-	fields := make([]string, 0, 3)
+	fields := make([]string, 0, 2)
 	if m.calibre_id != nil {
 		fields = append(fields, language.FieldCalibreID)
-	}
-	if m.name != nil {
-		fields = append(fields, language.FieldName)
 	}
 	if m.code != nil {
 		fields = append(fields, language.FieldCode)
@@ -3046,8 +3006,6 @@ func (m *LanguageMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case language.FieldCalibreID:
 		return m.CalibreID()
-	case language.FieldName:
-		return m.Name()
 	case language.FieldCode:
 		return m.Code()
 	}
@@ -3061,8 +3019,6 @@ func (m *LanguageMutation) OldField(ctx context.Context, name string) (ent.Value
 	switch name {
 	case language.FieldCalibreID:
 		return m.OldCalibreID(ctx)
-	case language.FieldName:
-		return m.OldName(ctx)
 	case language.FieldCode:
 		return m.OldCode(ctx)
 	}
@@ -3080,13 +3036,6 @@ func (m *LanguageMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetCalibreID(v)
-		return nil
-	case language.FieldName:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetName(v)
 		return nil
 	case language.FieldCode:
 		v, ok := value.(string)
@@ -3161,9 +3110,6 @@ func (m *LanguageMutation) ResetField(name string) error {
 	switch name {
 	case language.FieldCalibreID:
 		m.ResetCalibreID()
-		return nil
-	case language.FieldName:
-		m.ResetName()
 		return nil
 	case language.FieldCode:
 		m.ResetCode()
@@ -5524,10 +5470,10 @@ type TaskMutation struct {
 	addprogress    *float64
 	message        *string
 	error          *string
-	isSystemTask   *bool
+	is_system_task *bool
 	clearedFields  map[string]struct{}
-	creator        *ksuid.ID
-	clearedcreator bool
+	user           *ksuid.ID
+	cleareduser    bool
 	done           bool
 	oldValue       func(context.Context) (*Task, error)
 	predicates     []predicate.Task
@@ -5935,70 +5881,70 @@ func (m *TaskMutation) ResetError() {
 	delete(m.clearedFields, task.FieldError)
 }
 
-// SetCreatedBy sets the "createdBy" field.
-func (m *TaskMutation) SetCreatedBy(k ksuid.ID) {
-	m.creator = &k
+// SetUserID sets the "user_id" field.
+func (m *TaskMutation) SetUserID(k ksuid.ID) {
+	m.user = &k
 }
 
-// CreatedBy returns the value of the "createdBy" field in the mutation.
-func (m *TaskMutation) CreatedBy() (r ksuid.ID, exists bool) {
-	v := m.creator
+// UserID returns the value of the "user_id" field in the mutation.
+func (m *TaskMutation) UserID() (r ksuid.ID, exists bool) {
+	v := m.user
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldCreatedBy returns the old "createdBy" field's value of the Task entity.
+// OldUserID returns the old "user_id" field's value of the Task entity.
 // If the Task object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *TaskMutation) OldCreatedBy(ctx context.Context) (v ksuid.ID, err error) {
+func (m *TaskMutation) OldUserID(ctx context.Context) (v ksuid.ID, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldCreatedBy is only allowed on UpdateOne operations")
+		return v, errors.New("OldUserID is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldCreatedBy requires an ID field in the mutation")
+		return v, errors.New("OldUserID requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldCreatedBy: %w", err)
+		return v, fmt.Errorf("querying old value for OldUserID: %w", err)
 	}
-	return oldValue.CreatedBy, nil
+	return oldValue.UserID, nil
 }
 
-// ClearCreatedBy clears the value of the "createdBy" field.
-func (m *TaskMutation) ClearCreatedBy() {
-	m.creator = nil
-	m.clearedFields[task.FieldCreatedBy] = struct{}{}
+// ClearUserID clears the value of the "user_id" field.
+func (m *TaskMutation) ClearUserID() {
+	m.user = nil
+	m.clearedFields[task.FieldUserID] = struct{}{}
 }
 
-// CreatedByCleared returns if the "createdBy" field was cleared in this mutation.
-func (m *TaskMutation) CreatedByCleared() bool {
-	_, ok := m.clearedFields[task.FieldCreatedBy]
+// UserIDCleared returns if the "user_id" field was cleared in this mutation.
+func (m *TaskMutation) UserIDCleared() bool {
+	_, ok := m.clearedFields[task.FieldUserID]
 	return ok
 }
 
-// ResetCreatedBy resets all changes to the "createdBy" field.
-func (m *TaskMutation) ResetCreatedBy() {
-	m.creator = nil
-	delete(m.clearedFields, task.FieldCreatedBy)
+// ResetUserID resets all changes to the "user_id" field.
+func (m *TaskMutation) ResetUserID() {
+	m.user = nil
+	delete(m.clearedFields, task.FieldUserID)
 }
 
-// SetIsSystemTask sets the "isSystemTask" field.
+// SetIsSystemTask sets the "is_system_task" field.
 func (m *TaskMutation) SetIsSystemTask(b bool) {
-	m.isSystemTask = &b
+	m.is_system_task = &b
 }
 
-// IsSystemTask returns the value of the "isSystemTask" field in the mutation.
+// IsSystemTask returns the value of the "is_system_task" field in the mutation.
 func (m *TaskMutation) IsSystemTask() (r bool, exists bool) {
-	v := m.isSystemTask
+	v := m.is_system_task
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldIsSystemTask returns the old "isSystemTask" field's value of the Task entity.
+// OldIsSystemTask returns the old "is_system_task" field's value of the Task entity.
 // If the Task object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
 func (m *TaskMutation) OldIsSystemTask(ctx context.Context) (v bool, err error) {
@@ -6015,49 +5961,36 @@ func (m *TaskMutation) OldIsSystemTask(ctx context.Context) (v bool, err error) 
 	return oldValue.IsSystemTask, nil
 }
 
-// ResetIsSystemTask resets all changes to the "isSystemTask" field.
+// ResetIsSystemTask resets all changes to the "is_system_task" field.
 func (m *TaskMutation) ResetIsSystemTask() {
-	m.isSystemTask = nil
+	m.is_system_task = nil
 }
 
-// SetCreatorID sets the "creator" edge to the User entity by id.
-func (m *TaskMutation) SetCreatorID(id ksuid.ID) {
-	m.creator = &id
+// ClearUser clears the "user" edge to the User entity.
+func (m *TaskMutation) ClearUser() {
+	m.cleareduser = true
+	m.clearedFields[task.FieldUserID] = struct{}{}
 }
 
-// ClearCreator clears the "creator" edge to the User entity.
-func (m *TaskMutation) ClearCreator() {
-	m.clearedcreator = true
-	m.clearedFields[task.FieldCreatedBy] = struct{}{}
+// UserCleared reports if the "user" edge to the User entity was cleared.
+func (m *TaskMutation) UserCleared() bool {
+	return m.UserIDCleared() || m.cleareduser
 }
 
-// CreatorCleared reports if the "creator" edge to the User entity was cleared.
-func (m *TaskMutation) CreatorCleared() bool {
-	return m.CreatedByCleared() || m.clearedcreator
-}
-
-// CreatorID returns the "creator" edge ID in the mutation.
-func (m *TaskMutation) CreatorID() (id ksuid.ID, exists bool) {
-	if m.creator != nil {
-		return *m.creator, true
-	}
-	return
-}
-
-// CreatorIDs returns the "creator" edge IDs in the mutation.
+// UserIDs returns the "user" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// CreatorID instead. It exists only for internal usage by the builders.
-func (m *TaskMutation) CreatorIDs() (ids []ksuid.ID) {
-	if id := m.creator; id != nil {
+// UserID instead. It exists only for internal usage by the builders.
+func (m *TaskMutation) UserIDs() (ids []ksuid.ID) {
+	if id := m.user; id != nil {
 		ids = append(ids, *id)
 	}
 	return
 }
 
-// ResetCreator resets all changes to the "creator" edge.
-func (m *TaskMutation) ResetCreator() {
-	m.creator = nil
-	m.clearedcreator = false
+// ResetUser resets all changes to the "user" edge.
+func (m *TaskMutation) ResetUser() {
+	m.user = nil
+	m.cleareduser = false
 }
 
 // Where appends a list predicates to the TaskMutation builder.
@@ -6116,10 +6049,10 @@ func (m *TaskMutation) Fields() []string {
 	if m.error != nil {
 		fields = append(fields, task.FieldError)
 	}
-	if m.creator != nil {
-		fields = append(fields, task.FieldCreatedBy)
+	if m.user != nil {
+		fields = append(fields, task.FieldUserID)
 	}
-	if m.isSystemTask != nil {
+	if m.is_system_task != nil {
 		fields = append(fields, task.FieldIsSystemTask)
 	}
 	return fields
@@ -6144,8 +6077,8 @@ func (m *TaskMutation) Field(name string) (ent.Value, bool) {
 		return m.Message()
 	case task.FieldError:
 		return m.Error()
-	case task.FieldCreatedBy:
-		return m.CreatedBy()
+	case task.FieldUserID:
+		return m.UserID()
 	case task.FieldIsSystemTask:
 		return m.IsSystemTask()
 	}
@@ -6171,8 +6104,8 @@ func (m *TaskMutation) OldField(ctx context.Context, name string) (ent.Value, er
 		return m.OldMessage(ctx)
 	case task.FieldError:
 		return m.OldError(ctx)
-	case task.FieldCreatedBy:
-		return m.OldCreatedBy(ctx)
+	case task.FieldUserID:
+		return m.OldUserID(ctx)
 	case task.FieldIsSystemTask:
 		return m.OldIsSystemTask(ctx)
 	}
@@ -6233,12 +6166,12 @@ func (m *TaskMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetError(v)
 		return nil
-	case task.FieldCreatedBy:
+	case task.FieldUserID:
 		v, ok := value.(ksuid.ID)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetCreatedBy(v)
+		m.SetUserID(v)
 		return nil
 	case task.FieldIsSystemTask:
 		v, ok := value.(bool)
@@ -6298,8 +6231,8 @@ func (m *TaskMutation) ClearedFields() []string {
 	if m.FieldCleared(task.FieldError) {
 		fields = append(fields, task.FieldError)
 	}
-	if m.FieldCleared(task.FieldCreatedBy) {
-		fields = append(fields, task.FieldCreatedBy)
+	if m.FieldCleared(task.FieldUserID) {
+		fields = append(fields, task.FieldUserID)
 	}
 	return fields
 }
@@ -6321,8 +6254,8 @@ func (m *TaskMutation) ClearField(name string) error {
 	case task.FieldError:
 		m.ClearError()
 		return nil
-	case task.FieldCreatedBy:
-		m.ClearCreatedBy()
+	case task.FieldUserID:
+		m.ClearUserID()
 		return nil
 	}
 	return fmt.Errorf("unknown Task nullable field %s", name)
@@ -6353,8 +6286,8 @@ func (m *TaskMutation) ResetField(name string) error {
 	case task.FieldError:
 		m.ResetError()
 		return nil
-	case task.FieldCreatedBy:
-		m.ResetCreatedBy()
+	case task.FieldUserID:
+		m.ResetUserID()
 		return nil
 	case task.FieldIsSystemTask:
 		m.ResetIsSystemTask()
@@ -6366,8 +6299,8 @@ func (m *TaskMutation) ResetField(name string) error {
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *TaskMutation) AddedEdges() []string {
 	edges := make([]string, 0, 1)
-	if m.creator != nil {
-		edges = append(edges, task.EdgeCreator)
+	if m.user != nil {
+		edges = append(edges, task.EdgeUser)
 	}
 	return edges
 }
@@ -6376,8 +6309,8 @@ func (m *TaskMutation) AddedEdges() []string {
 // name in this mutation.
 func (m *TaskMutation) AddedIDs(name string) []ent.Value {
 	switch name {
-	case task.EdgeCreator:
-		if id := m.creator; id != nil {
+	case task.EdgeUser:
+		if id := m.user; id != nil {
 			return []ent.Value{*id}
 		}
 	}
@@ -6399,8 +6332,8 @@ func (m *TaskMutation) RemovedIDs(name string) []ent.Value {
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *TaskMutation) ClearedEdges() []string {
 	edges := make([]string, 0, 1)
-	if m.clearedcreator {
-		edges = append(edges, task.EdgeCreator)
+	if m.cleareduser {
+		edges = append(edges, task.EdgeUser)
 	}
 	return edges
 }
@@ -6409,8 +6342,8 @@ func (m *TaskMutation) ClearedEdges() []string {
 // was cleared in this mutation.
 func (m *TaskMutation) EdgeCleared(name string) bool {
 	switch name {
-	case task.EdgeCreator:
-		return m.clearedcreator
+	case task.EdgeUser:
+		return m.cleareduser
 	}
 	return false
 }
@@ -6419,8 +6352,8 @@ func (m *TaskMutation) EdgeCleared(name string) bool {
 // if that edge is not defined in the schema.
 func (m *TaskMutation) ClearEdge(name string) error {
 	switch name {
-	case task.EdgeCreator:
-		m.ClearCreator()
+	case task.EdgeUser:
+		m.ClearUser()
 		return nil
 	}
 	return fmt.Errorf("unknown Task unique edge %s", name)
@@ -6430,8 +6363,8 @@ func (m *TaskMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *TaskMutation) ResetEdge(name string) error {
 	switch name {
-	case task.EdgeCreator:
-		m.ResetCreator()
+	case task.EdgeUser:
+		m.ResetUser()
 		return nil
 	}
 	return fmt.Errorf("unknown Task edge %s", name)
@@ -6440,21 +6373,21 @@ func (m *TaskMutation) ResetEdge(name string) error {
 // UserMutation represents an operation that mutates the User nodes in the graph.
 type UserMutation struct {
 	config
-	op                     Op
-	typ                    string
-	id                     *ksuid.ID
-	username               *string
-	passwordHash           *string
-	email                  *string
-	clearedFields          map[string]struct{}
-	shelves                map[ksuid.ID]struct{}
-	removedshelves         map[ksuid.ID]struct{}
-	clearedshelves         bool
-	userPermissions        *ksuid.ID
-	cleareduserPermissions bool
-	done                   bool
-	oldValue               func(context.Context) (*User, error)
-	predicates             []predicate.User
+	op                      Op
+	typ                     string
+	id                      *ksuid.ID
+	username                *string
+	password_hash           *string
+	email                   *string
+	clearedFields           map[string]struct{}
+	shelves                 map[ksuid.ID]struct{}
+	removedshelves          map[ksuid.ID]struct{}
+	clearedshelves          bool
+	user_permissions        *ksuid.ID
+	cleareduser_permissions bool
+	done                    bool
+	oldValue                func(context.Context) (*User, error)
+	predicates              []predicate.User
 }
 
 var _ ent.Mutation = (*UserMutation)(nil)
@@ -6597,21 +6530,21 @@ func (m *UserMutation) ResetUsername() {
 	m.username = nil
 }
 
-// SetPasswordHash sets the "passwordHash" field.
+// SetPasswordHash sets the "password_hash" field.
 func (m *UserMutation) SetPasswordHash(s string) {
-	m.passwordHash = &s
+	m.password_hash = &s
 }
 
-// PasswordHash returns the value of the "passwordHash" field in the mutation.
+// PasswordHash returns the value of the "password_hash" field in the mutation.
 func (m *UserMutation) PasswordHash() (r string, exists bool) {
-	v := m.passwordHash
+	v := m.password_hash
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldPasswordHash returns the old "passwordHash" field's value of the User entity.
+// OldPasswordHash returns the old "password_hash" field's value of the User entity.
 // If the User object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
 func (m *UserMutation) OldPasswordHash(ctx context.Context) (v string, err error) {
@@ -6628,21 +6561,21 @@ func (m *UserMutation) OldPasswordHash(ctx context.Context) (v string, err error
 	return oldValue.PasswordHash, nil
 }
 
-// ClearPasswordHash clears the value of the "passwordHash" field.
+// ClearPasswordHash clears the value of the "password_hash" field.
 func (m *UserMutation) ClearPasswordHash() {
-	m.passwordHash = nil
+	m.password_hash = nil
 	m.clearedFields[user.FieldPasswordHash] = struct{}{}
 }
 
-// PasswordHashCleared returns if the "passwordHash" field was cleared in this mutation.
+// PasswordHashCleared returns if the "password_hash" field was cleared in this mutation.
 func (m *UserMutation) PasswordHashCleared() bool {
 	_, ok := m.clearedFields[user.FieldPasswordHash]
 	return ok
 }
 
-// ResetPasswordHash resets all changes to the "passwordHash" field.
+// ResetPasswordHash resets all changes to the "password_hash" field.
 func (m *UserMutation) ResetPasswordHash() {
-	m.passwordHash = nil
+	m.password_hash = nil
 	delete(m.clearedFields, user.FieldPasswordHash)
 }
 
@@ -6736,43 +6669,43 @@ func (m *UserMutation) ResetShelves() {
 	m.removedshelves = nil
 }
 
-// SetUserPermissionsID sets the "userPermissions" edge to the UserPermissions entity by id.
+// SetUserPermissionsID sets the "user_permissions" edge to the UserPermissions entity by id.
 func (m *UserMutation) SetUserPermissionsID(id ksuid.ID) {
-	m.userPermissions = &id
+	m.user_permissions = &id
 }
 
-// ClearUserPermissions clears the "userPermissions" edge to the UserPermissions entity.
+// ClearUserPermissions clears the "user_permissions" edge to the UserPermissions entity.
 func (m *UserMutation) ClearUserPermissions() {
-	m.cleareduserPermissions = true
+	m.cleareduser_permissions = true
 }
 
-// UserPermissionsCleared reports if the "userPermissions" edge to the UserPermissions entity was cleared.
+// UserPermissionsCleared reports if the "user_permissions" edge to the UserPermissions entity was cleared.
 func (m *UserMutation) UserPermissionsCleared() bool {
-	return m.cleareduserPermissions
+	return m.cleareduser_permissions
 }
 
-// UserPermissionsID returns the "userPermissions" edge ID in the mutation.
+// UserPermissionsID returns the "user_permissions" edge ID in the mutation.
 func (m *UserMutation) UserPermissionsID() (id ksuid.ID, exists bool) {
-	if m.userPermissions != nil {
-		return *m.userPermissions, true
+	if m.user_permissions != nil {
+		return *m.user_permissions, true
 	}
 	return
 }
 
-// UserPermissionsIDs returns the "userPermissions" edge IDs in the mutation.
+// UserPermissionsIDs returns the "user_permissions" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
 // UserPermissionsID instead. It exists only for internal usage by the builders.
 func (m *UserMutation) UserPermissionsIDs() (ids []ksuid.ID) {
-	if id := m.userPermissions; id != nil {
+	if id := m.user_permissions; id != nil {
 		ids = append(ids, *id)
 	}
 	return
 }
 
-// ResetUserPermissions resets all changes to the "userPermissions" edge.
+// ResetUserPermissions resets all changes to the "user_permissions" edge.
 func (m *UserMutation) ResetUserPermissions() {
-	m.userPermissions = nil
-	m.cleareduserPermissions = false
+	m.user_permissions = nil
+	m.cleareduser_permissions = false
 }
 
 // Where appends a list predicates to the UserMutation builder.
@@ -6813,7 +6746,7 @@ func (m *UserMutation) Fields() []string {
 	if m.username != nil {
 		fields = append(fields, user.FieldUsername)
 	}
-	if m.passwordHash != nil {
+	if m.password_hash != nil {
 		fields = append(fields, user.FieldPasswordHash)
 	}
 	if m.email != nil {
@@ -6955,7 +6888,7 @@ func (m *UserMutation) AddedEdges() []string {
 	if m.shelves != nil {
 		edges = append(edges, user.EdgeShelves)
 	}
-	if m.userPermissions != nil {
+	if m.user_permissions != nil {
 		edges = append(edges, user.EdgeUserPermissions)
 	}
 	return edges
@@ -6972,7 +6905,7 @@ func (m *UserMutation) AddedIDs(name string) []ent.Value {
 		}
 		return ids
 	case user.EdgeUserPermissions:
-		if id := m.userPermissions; id != nil {
+		if id := m.user_permissions; id != nil {
 			return []ent.Value{*id}
 		}
 	}
@@ -7008,7 +6941,7 @@ func (m *UserMutation) ClearedEdges() []string {
 	if m.clearedshelves {
 		edges = append(edges, user.EdgeShelves)
 	}
-	if m.cleareduserPermissions {
+	if m.cleareduser_permissions {
 		edges = append(edges, user.EdgeUserPermissions)
 	}
 	return edges
@@ -7021,7 +6954,7 @@ func (m *UserMutation) EdgeCleared(name string) bool {
 	case user.EdgeShelves:
 		return m.clearedshelves
 	case user.EdgeUserPermissions:
-		return m.cleareduserPermissions
+		return m.cleareduser_permissions
 	}
 	return false
 }
@@ -7054,17 +6987,17 @@ func (m *UserMutation) ResetEdge(name string) error {
 // UserPermissionsMutation represents an operation that mutates the UserPermissions nodes in the graph.
 type UserPermissionsMutation struct {
 	config
-	op               Op
-	typ              string
-	id               *ksuid.ID
-	admin            *bool
-	_CanCreatePublic *bool
-	clearedFields    map[string]struct{}
-	user             *ksuid.ID
-	cleareduser      bool
-	done             bool
-	oldValue         func(context.Context) (*UserPermissions, error)
-	predicates       []predicate.UserPermissions
+	op                Op
+	typ               string
+	id                *ksuid.ID
+	admin             *bool
+	can_create_public *bool
+	clearedFields     map[string]struct{}
+	user              *ksuid.ID
+	cleareduser       bool
+	done              bool
+	oldValue          func(context.Context) (*UserPermissions, error)
+	predicates        []predicate.UserPermissions
 }
 
 var _ ent.Mutation = (*UserPermissionsMutation)(nil)
@@ -7256,21 +7189,21 @@ func (m *UserPermissionsMutation) ResetAdmin() {
 	m.admin = nil
 }
 
-// SetCanCreatePublic sets the "CanCreatePublic" field.
+// SetCanCreatePublic sets the "can_create_public" field.
 func (m *UserPermissionsMutation) SetCanCreatePublic(b bool) {
-	m._CanCreatePublic = &b
+	m.can_create_public = &b
 }
 
-// CanCreatePublic returns the value of the "CanCreatePublic" field in the mutation.
+// CanCreatePublic returns the value of the "can_create_public" field in the mutation.
 func (m *UserPermissionsMutation) CanCreatePublic() (r bool, exists bool) {
-	v := m._CanCreatePublic
+	v := m.can_create_public
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldCanCreatePublic returns the old "CanCreatePublic" field's value of the UserPermissions entity.
+// OldCanCreatePublic returns the old "can_create_public" field's value of the UserPermissions entity.
 // If the UserPermissions object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
 func (m *UserPermissionsMutation) OldCanCreatePublic(ctx context.Context) (v bool, err error) {
@@ -7287,9 +7220,9 @@ func (m *UserPermissionsMutation) OldCanCreatePublic(ctx context.Context) (v boo
 	return oldValue.CanCreatePublic, nil
 }
 
-// ResetCanCreatePublic resets all changes to the "CanCreatePublic" field.
+// ResetCanCreatePublic resets all changes to the "can_create_public" field.
 func (m *UserPermissionsMutation) ResetCanCreatePublic() {
-	m._CanCreatePublic = nil
+	m.can_create_public = nil
 }
 
 // ClearUser clears the "user" edge to the User entity.
@@ -7360,7 +7293,7 @@ func (m *UserPermissionsMutation) Fields() []string {
 	if m.admin != nil {
 		fields = append(fields, userpermissions.FieldAdmin)
 	}
-	if m._CanCreatePublic != nil {
+	if m.can_create_public != nil {
 		fields = append(fields, userpermissions.FieldCanCreatePublic)
 	}
 	return fields

@@ -20,13 +20,13 @@ import (
 // TaskQuery is the builder for querying Task entities.
 type TaskQuery struct {
 	config
-	ctx         *QueryContext
-	order       []task.OrderOption
-	inters      []Interceptor
-	predicates  []predicate.Task
-	withCreator *UserQuery
-	modifiers   []func(*sql.Selector)
-	loadTotal   []func(context.Context, []*Task) error
+	ctx        *QueryContext
+	order      []task.OrderOption
+	inters     []Interceptor
+	predicates []predicate.Task
+	withUser   *UserQuery
+	modifiers  []func(*sql.Selector)
+	loadTotal  []func(context.Context, []*Task) error
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -63,8 +63,8 @@ func (tq *TaskQuery) Order(o ...task.OrderOption) *TaskQuery {
 	return tq
 }
 
-// QueryCreator chains the current query on the "creator" edge.
-func (tq *TaskQuery) QueryCreator() *UserQuery {
+// QueryUser chains the current query on the "user" edge.
+func (tq *TaskQuery) QueryUser() *UserQuery {
 	query := (&UserClient{config: tq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := tq.prepareQuery(ctx); err != nil {
@@ -77,7 +77,7 @@ func (tq *TaskQuery) QueryCreator() *UserQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(task.Table, task.FieldID, selector),
 			sqlgraph.To(user.Table, user.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, task.CreatorTable, task.CreatorColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, task.UserTable, task.UserColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(tq.driver.Dialect(), step)
 		return fromU, nil
@@ -272,26 +272,26 @@ func (tq *TaskQuery) Clone() *TaskQuery {
 		return nil
 	}
 	return &TaskQuery{
-		config:      tq.config,
-		ctx:         tq.ctx.Clone(),
-		order:       append([]task.OrderOption{}, tq.order...),
-		inters:      append([]Interceptor{}, tq.inters...),
-		predicates:  append([]predicate.Task{}, tq.predicates...),
-		withCreator: tq.withCreator.Clone(),
+		config:     tq.config,
+		ctx:        tq.ctx.Clone(),
+		order:      append([]task.OrderOption{}, tq.order...),
+		inters:     append([]Interceptor{}, tq.inters...),
+		predicates: append([]predicate.Task{}, tq.predicates...),
+		withUser:   tq.withUser.Clone(),
 		// clone intermediate query.
 		sql:  tq.sql.Clone(),
 		path: tq.path,
 	}
 }
 
-// WithCreator tells the query-builder to eager-load the nodes that are connected to
-// the "creator" edge. The optional arguments are used to configure the query builder of the edge.
-func (tq *TaskQuery) WithCreator(opts ...func(*UserQuery)) *TaskQuery {
+// WithUser tells the query-builder to eager-load the nodes that are connected to
+// the "user" edge. The optional arguments are used to configure the query builder of the edge.
+func (tq *TaskQuery) WithUser(opts ...func(*UserQuery)) *TaskQuery {
 	query := (&UserClient{config: tq.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	tq.withCreator = query
+	tq.withUser = query
 	return tq
 }
 
@@ -380,7 +380,7 @@ func (tq *TaskQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Task, e
 		nodes       = []*Task{}
 		_spec       = tq.querySpec()
 		loadedTypes = [1]bool{
-			tq.withCreator != nil,
+			tq.withUser != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -404,9 +404,9 @@ func (tq *TaskQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Task, e
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-	if query := tq.withCreator; query != nil {
-		if err := tq.loadCreator(ctx, query, nodes, nil,
-			func(n *Task, e *User) { n.Edges.Creator = e }); err != nil {
+	if query := tq.withUser; query != nil {
+		if err := tq.loadUser(ctx, query, nodes, nil,
+			func(n *Task, e *User) { n.Edges.User = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -418,11 +418,11 @@ func (tq *TaskQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Task, e
 	return nodes, nil
 }
 
-func (tq *TaskQuery) loadCreator(ctx context.Context, query *UserQuery, nodes []*Task, init func(*Task), assign func(*Task, *User)) error {
+func (tq *TaskQuery) loadUser(ctx context.Context, query *UserQuery, nodes []*Task, init func(*Task), assign func(*Task, *User)) error {
 	ids := make([]ksuid.ID, 0, len(nodes))
 	nodeids := make(map[ksuid.ID][]*Task)
 	for i := range nodes {
-		fk := nodes[i].CreatedBy
+		fk := nodes[i].UserID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -439,7 +439,7 @@ func (tq *TaskQuery) loadCreator(ctx context.Context, query *UserQuery, nodes []
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "createdBy" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "user_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -476,8 +476,8 @@ func (tq *TaskQuery) querySpec() *sqlgraph.QuerySpec {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
 		}
-		if tq.withCreator != nil {
-			_spec.Node.AddColumnOnce(task.FieldCreatedBy)
+		if tq.withUser != nil {
+			_spec.Node.AddColumnOnce(task.FieldUserID)
 		}
 	}
 	if ps := tq.predicates; len(ps) > 0 {

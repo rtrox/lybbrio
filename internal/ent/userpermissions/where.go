@@ -66,7 +66,7 @@ func Admin(v bool) predicate.UserPermissions {
 	return predicate.UserPermissions(sql.FieldEQ(FieldAdmin, v))
 }
 
-// CanCreatePublic applies equality check predicate on the "CanCreatePublic" field. It's identical to CanCreatePublicEQ.
+// CanCreatePublic applies equality check predicate on the "can_create_public" field. It's identical to CanCreatePublicEQ.
 func CanCreatePublic(v bool) predicate.UserPermissions {
 	return predicate.UserPermissions(sql.FieldEQ(FieldCanCreatePublic, v))
 }
@@ -175,12 +175,12 @@ func AdminNEQ(v bool) predicate.UserPermissions {
 	return predicate.UserPermissions(sql.FieldNEQ(FieldAdmin, v))
 }
 
-// CanCreatePublicEQ applies the EQ predicate on the "CanCreatePublic" field.
+// CanCreatePublicEQ applies the EQ predicate on the "can_create_public" field.
 func CanCreatePublicEQ(v bool) predicate.UserPermissions {
 	return predicate.UserPermissions(sql.FieldEQ(FieldCanCreatePublic, v))
 }
 
-// CanCreatePublicNEQ applies the NEQ predicate on the "CanCreatePublic" field.
+// CanCreatePublicNEQ applies the NEQ predicate on the "can_create_public" field.
 func CanCreatePublicNEQ(v bool) predicate.UserPermissions {
 	return predicate.UserPermissions(sql.FieldNEQ(FieldCanCreatePublic, v))
 }

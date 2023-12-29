@@ -41,6 +41,7 @@ func (Task) Fields() []ent.Field {
 		field.Enum("type").
 			GoType(task_enums.TaskType("")).
 			Default(string(task_enums.TypeNoOp)).
+			Immutable().
 			Annotations(
 				entgql.OrderField("TYPE"),
 			),
@@ -59,12 +60,12 @@ func (Task) Fields() []ent.Field {
 		field.String("error").
 			Optional().
 			Comment("Error message of the task"),
-		field.String("createdBy").
+		field.String("user_id").
 			GoType(ksuid.ID("")).
 			Optional().
 			Immutable().
 			Comment("The user who created this task. Empty for System Task"),
-		field.Bool("isSystemTask").
+		field.Bool("is_system_task").
 			Default(false).
 			Comment("Whether this task is created by the system"),
 	}
@@ -73,8 +74,8 @@ func (Task) Fields() []ent.Field {
 // Edges of the Task.
 func (Task) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("creator", User.Type).
-			Field("createdBy").
+		edge.To("user", User.Type).
+			Field("user_id").
 			Unique().
 			Immutable(),
 	}
@@ -84,10 +85,16 @@ func (Task) Edges() []ent.Edge {
 func (Task) Policy() ent.Policy {
 	return privacy.Policy{
 		Query: privacy.QueryPolicy{
+			rule.AllowIfAdmin(),
+			rule.FilterUserOrSystemRule(),
 			privacy.AlwaysAllowRule(),
 		},
 		Mutation: privacy.MutationPolicy{
 			rule.AllowIfAdmin(),
+			rule.DenySystemTaskForNonAdmin(),
+			rule.DenyMismatchedUserRule(),
+			rule.AllowTasksOfType(task_enums.TypeNoOp),
+			// Technically Unreachable, AllowTasksOfType will always allow or deny
 			privacy.AlwaysDenyRule(),
 		},
 	}

@@ -113,7 +113,7 @@ var (
 			},
 			{
 				Name:    "identifier_type_value",
-				Unique:  true,
+				Unique:  false,
 				Columns: []*schema.Column{IdentifiersColumns[2], IdentifiersColumns[3]},
 			},
 		},
@@ -122,7 +122,6 @@ var (
 	LanguagesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeString},
 		{Name: "calibre_id", Type: field.TypeInt64, Unique: true},
-		{Name: "name", Type: field.TypeString},
 		{Name: "code", Type: field.TypeString},
 	}
 	// LanguagesTable holds the schema information for the "languages" table.
@@ -137,14 +136,9 @@ var (
 				Columns: []*schema.Column{LanguagesColumns[1]},
 			},
 			{
-				Name:    "language_name",
-				Unique:  false,
-				Columns: []*schema.Column{LanguagesColumns[2]},
-			},
-			{
 				Name:    "language_code",
 				Unique:  false,
-				Columns: []*schema.Column{LanguagesColumns[3]},
+				Columns: []*schema.Column{LanguagesColumns[2]},
 			},
 		},
 	}
@@ -261,7 +255,7 @@ var (
 		{Name: "message", Type: field.TypeString, Nullable: true},
 		{Name: "error", Type: field.TypeString, Nullable: true},
 		{Name: "is_system_task", Type: field.TypeBool, Default: false},
-		{Name: "created_by", Type: field.TypeString, Nullable: true},
+		{Name: "user_id", Type: field.TypeString, Nullable: true},
 	}
 	// TasksTable holds the schema information for the "tasks" table.
 	TasksTable = &schema.Table{
@@ -270,7 +264,7 @@ var (
 		PrimaryKey: []*schema.Column{TasksColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "tasks_users_creator",
+				Symbol:     "tasks_users_user",
 				Columns:    []*schema.Column{TasksColumns[9]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.SetNull,
@@ -316,7 +310,7 @@ var (
 		PrimaryKey: []*schema.Column{UserPermissionsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "user_permissions_users_userPermissions",
+				Symbol:     "user_permissions_users_user_permissions",
 				Columns:    []*schema.Column{UserPermissionsColumns[3]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.SetNull,

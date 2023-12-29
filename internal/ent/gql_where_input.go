@@ -1369,21 +1369,6 @@ type LanguageWhereInput struct {
 	CalibreIDLT    *int64  `json:"calibreIDLT,omitempty"`
 	CalibreIDLTE   *int64  `json:"calibreIDLTE,omitempty"`
 
-	// "name" field predicates.
-	Name             *string  `json:"name,omitempty"`
-	NameNEQ          *string  `json:"nameNEQ,omitempty"`
-	NameIn           []string `json:"nameIn,omitempty"`
-	NameNotIn        []string `json:"nameNotIn,omitempty"`
-	NameGT           *string  `json:"nameGT,omitempty"`
-	NameGTE          *string  `json:"nameGTE,omitempty"`
-	NameLT           *string  `json:"nameLT,omitempty"`
-	NameLTE          *string  `json:"nameLTE,omitempty"`
-	NameContains     *string  `json:"nameContains,omitempty"`
-	NameHasPrefix    *string  `json:"nameHasPrefix,omitempty"`
-	NameHasSuffix    *string  `json:"nameHasSuffix,omitempty"`
-	NameEqualFold    *string  `json:"nameEqualFold,omitempty"`
-	NameContainsFold *string  `json:"nameContainsFold,omitempty"`
-
 	// "code" field predicates.
 	Code             *string  `json:"code,omitempty"`
 	CodeNEQ          *string  `json:"codeNEQ,omitempty"`
@@ -1522,45 +1507,6 @@ func (i *LanguageWhereInput) P() (predicate.Language, error) {
 	}
 	if i.CalibreIDLTE != nil {
 		predicates = append(predicates, language.CalibreIDLTE(*i.CalibreIDLTE))
-	}
-	if i.Name != nil {
-		predicates = append(predicates, language.NameEQ(*i.Name))
-	}
-	if i.NameNEQ != nil {
-		predicates = append(predicates, language.NameNEQ(*i.NameNEQ))
-	}
-	if len(i.NameIn) > 0 {
-		predicates = append(predicates, language.NameIn(i.NameIn...))
-	}
-	if len(i.NameNotIn) > 0 {
-		predicates = append(predicates, language.NameNotIn(i.NameNotIn...))
-	}
-	if i.NameGT != nil {
-		predicates = append(predicates, language.NameGT(*i.NameGT))
-	}
-	if i.NameGTE != nil {
-		predicates = append(predicates, language.NameGTE(*i.NameGTE))
-	}
-	if i.NameLT != nil {
-		predicates = append(predicates, language.NameLT(*i.NameLT))
-	}
-	if i.NameLTE != nil {
-		predicates = append(predicates, language.NameLTE(*i.NameLTE))
-	}
-	if i.NameContains != nil {
-		predicates = append(predicates, language.NameContains(*i.NameContains))
-	}
-	if i.NameHasPrefix != nil {
-		predicates = append(predicates, language.NameHasPrefix(*i.NameHasPrefix))
-	}
-	if i.NameHasSuffix != nil {
-		predicates = append(predicates, language.NameHasSuffix(*i.NameHasSuffix))
-	}
-	if i.NameEqualFold != nil {
-		predicates = append(predicates, language.NameEqualFold(*i.NameEqualFold))
-	}
-	if i.NameContainsFold != nil {
-		predicates = append(predicates, language.NameContainsFold(*i.NameContainsFold))
 	}
 	if i.Code != nil {
 		predicates = append(predicates, language.CodeEQ(*i.Code))
@@ -2827,30 +2773,30 @@ type TaskWhereInput struct {
 	ErrorEqualFold    *string  `json:"errorEqualFold,omitempty"`
 	ErrorContainsFold *string  `json:"errorContainsFold,omitempty"`
 
-	// "createdBy" field predicates.
-	CreatedBy             *ksuid.ID  `json:"createdby,omitempty"`
-	CreatedByNEQ          *ksuid.ID  `json:"createdbyNEQ,omitempty"`
-	CreatedByIn           []ksuid.ID `json:"createdbyIn,omitempty"`
-	CreatedByNotIn        []ksuid.ID `json:"createdbyNotIn,omitempty"`
-	CreatedByGT           *ksuid.ID  `json:"createdbyGT,omitempty"`
-	CreatedByGTE          *ksuid.ID  `json:"createdbyGTE,omitempty"`
-	CreatedByLT           *ksuid.ID  `json:"createdbyLT,omitempty"`
-	CreatedByLTE          *ksuid.ID  `json:"createdbyLTE,omitempty"`
-	CreatedByContains     *ksuid.ID  `json:"createdbyContains,omitempty"`
-	CreatedByHasPrefix    *ksuid.ID  `json:"createdbyHasPrefix,omitempty"`
-	CreatedByHasSuffix    *ksuid.ID  `json:"createdbyHasSuffix,omitempty"`
-	CreatedByIsNil        bool       `json:"createdbyIsNil,omitempty"`
-	CreatedByNotNil       bool       `json:"createdbyNotNil,omitempty"`
-	CreatedByEqualFold    *ksuid.ID  `json:"createdbyEqualFold,omitempty"`
-	CreatedByContainsFold *ksuid.ID  `json:"createdbyContainsFold,omitempty"`
+	// "user_id" field predicates.
+	UserID             *ksuid.ID  `json:"userID,omitempty"`
+	UserIDNEQ          *ksuid.ID  `json:"userIDNEQ,omitempty"`
+	UserIDIn           []ksuid.ID `json:"userIDIn,omitempty"`
+	UserIDNotIn        []ksuid.ID `json:"userIDNotIn,omitempty"`
+	UserIDGT           *ksuid.ID  `json:"userIDGT,omitempty"`
+	UserIDGTE          *ksuid.ID  `json:"userIDGTE,omitempty"`
+	UserIDLT           *ksuid.ID  `json:"userIDLT,omitempty"`
+	UserIDLTE          *ksuid.ID  `json:"userIDLTE,omitempty"`
+	UserIDContains     *ksuid.ID  `json:"userIDContains,omitempty"`
+	UserIDHasPrefix    *ksuid.ID  `json:"userIDHasPrefix,omitempty"`
+	UserIDHasSuffix    *ksuid.ID  `json:"userIDHasSuffix,omitempty"`
+	UserIDIsNil        bool       `json:"userIDIsNil,omitempty"`
+	UserIDNotNil       bool       `json:"userIDNotNil,omitempty"`
+	UserIDEqualFold    *ksuid.ID  `json:"userIDEqualFold,omitempty"`
+	UserIDContainsFold *ksuid.ID  `json:"userIDContainsFold,omitempty"`
 
-	// "isSystemTask" field predicates.
-	IsSystemTask    *bool `json:"issystemtask,omitempty"`
-	IsSystemTaskNEQ *bool `json:"issystemtaskNEQ,omitempty"`
+	// "is_system_task" field predicates.
+	IsSystemTask    *bool `json:"isSystemTask,omitempty"`
+	IsSystemTaskNEQ *bool `json:"isSystemTaskNEQ,omitempty"`
 
-	// "creator" edge predicates.
-	HasCreator     *bool             `json:"hasCreator,omitempty"`
-	HasCreatorWith []*UserWhereInput `json:"hasCreatorWith,omitempty"`
+	// "user" edge predicates.
+	HasUser     *bool             `json:"hasUser,omitempty"`
+	HasUserWith []*UserWhereInput `json:"hasUserWith,omitempty"`
 }
 
 // AddPredicates adds custom predicates to the where input to be used during the filtering phase.
@@ -3134,50 +3080,50 @@ func (i *TaskWhereInput) P() (predicate.Task, error) {
 	if i.ErrorContainsFold != nil {
 		predicates = append(predicates, task.ErrorContainsFold(*i.ErrorContainsFold))
 	}
-	if i.CreatedBy != nil {
-		predicates = append(predicates, task.CreatedByEQ(*i.CreatedBy))
+	if i.UserID != nil {
+		predicates = append(predicates, task.UserIDEQ(*i.UserID))
 	}
-	if i.CreatedByNEQ != nil {
-		predicates = append(predicates, task.CreatedByNEQ(*i.CreatedByNEQ))
+	if i.UserIDNEQ != nil {
+		predicates = append(predicates, task.UserIDNEQ(*i.UserIDNEQ))
 	}
-	if len(i.CreatedByIn) > 0 {
-		predicates = append(predicates, task.CreatedByIn(i.CreatedByIn...))
+	if len(i.UserIDIn) > 0 {
+		predicates = append(predicates, task.UserIDIn(i.UserIDIn...))
 	}
-	if len(i.CreatedByNotIn) > 0 {
-		predicates = append(predicates, task.CreatedByNotIn(i.CreatedByNotIn...))
+	if len(i.UserIDNotIn) > 0 {
+		predicates = append(predicates, task.UserIDNotIn(i.UserIDNotIn...))
 	}
-	if i.CreatedByGT != nil {
-		predicates = append(predicates, task.CreatedByGT(*i.CreatedByGT))
+	if i.UserIDGT != nil {
+		predicates = append(predicates, task.UserIDGT(*i.UserIDGT))
 	}
-	if i.CreatedByGTE != nil {
-		predicates = append(predicates, task.CreatedByGTE(*i.CreatedByGTE))
+	if i.UserIDGTE != nil {
+		predicates = append(predicates, task.UserIDGTE(*i.UserIDGTE))
 	}
-	if i.CreatedByLT != nil {
-		predicates = append(predicates, task.CreatedByLT(*i.CreatedByLT))
+	if i.UserIDLT != nil {
+		predicates = append(predicates, task.UserIDLT(*i.UserIDLT))
 	}
-	if i.CreatedByLTE != nil {
-		predicates = append(predicates, task.CreatedByLTE(*i.CreatedByLTE))
+	if i.UserIDLTE != nil {
+		predicates = append(predicates, task.UserIDLTE(*i.UserIDLTE))
 	}
-	if i.CreatedByContains != nil {
-		predicates = append(predicates, task.CreatedByContains(*i.CreatedByContains))
+	if i.UserIDContains != nil {
+		predicates = append(predicates, task.UserIDContains(*i.UserIDContains))
 	}
-	if i.CreatedByHasPrefix != nil {
-		predicates = append(predicates, task.CreatedByHasPrefix(*i.CreatedByHasPrefix))
+	if i.UserIDHasPrefix != nil {
+		predicates = append(predicates, task.UserIDHasPrefix(*i.UserIDHasPrefix))
 	}
-	if i.CreatedByHasSuffix != nil {
-		predicates = append(predicates, task.CreatedByHasSuffix(*i.CreatedByHasSuffix))
+	if i.UserIDHasSuffix != nil {
+		predicates = append(predicates, task.UserIDHasSuffix(*i.UserIDHasSuffix))
 	}
-	if i.CreatedByIsNil {
-		predicates = append(predicates, task.CreatedByIsNil())
+	if i.UserIDIsNil {
+		predicates = append(predicates, task.UserIDIsNil())
 	}
-	if i.CreatedByNotNil {
-		predicates = append(predicates, task.CreatedByNotNil())
+	if i.UserIDNotNil {
+		predicates = append(predicates, task.UserIDNotNil())
 	}
-	if i.CreatedByEqualFold != nil {
-		predicates = append(predicates, task.CreatedByEqualFold(*i.CreatedByEqualFold))
+	if i.UserIDEqualFold != nil {
+		predicates = append(predicates, task.UserIDEqualFold(*i.UserIDEqualFold))
 	}
-	if i.CreatedByContainsFold != nil {
-		predicates = append(predicates, task.CreatedByContainsFold(*i.CreatedByContainsFold))
+	if i.UserIDContainsFold != nil {
+		predicates = append(predicates, task.UserIDContainsFold(*i.UserIDContainsFold))
 	}
 	if i.IsSystemTask != nil {
 		predicates = append(predicates, task.IsSystemTaskEQ(*i.IsSystemTask))
@@ -3186,23 +3132,23 @@ func (i *TaskWhereInput) P() (predicate.Task, error) {
 		predicates = append(predicates, task.IsSystemTaskNEQ(*i.IsSystemTaskNEQ))
 	}
 
-	if i.HasCreator != nil {
-		p := task.HasCreator()
-		if !*i.HasCreator {
+	if i.HasUser != nil {
+		p := task.HasUser()
+		if !*i.HasUser {
 			p = task.Not(p)
 		}
 		predicates = append(predicates, p)
 	}
-	if len(i.HasCreatorWith) > 0 {
-		with := make([]predicate.User, 0, len(i.HasCreatorWith))
-		for _, w := range i.HasCreatorWith {
+	if len(i.HasUserWith) > 0 {
+		with := make([]predicate.User, 0, len(i.HasUserWith))
+		for _, w := range i.HasUserWith {
 			p, err := w.P()
 			if err != nil {
-				return nil, fmt.Errorf("%w: field 'HasCreatorWith'", err)
+				return nil, fmt.Errorf("%w: field 'HasUserWith'", err)
 			}
 			with = append(with, p)
 		}
-		predicates = append(predicates, task.HasCreatorWith(with...))
+		predicates = append(predicates, task.HasUserWith(with...))
 	}
 	switch len(predicates) {
 	case 0:
@@ -3246,22 +3192,22 @@ type UserWhereInput struct {
 	UsernameEqualFold    *string  `json:"usernameEqualFold,omitempty"`
 	UsernameContainsFold *string  `json:"usernameContainsFold,omitempty"`
 
-	// "passwordHash" field predicates.
-	PasswordHash             *string  `json:"passwordhash,omitempty"`
-	PasswordHashNEQ          *string  `json:"passwordhashNEQ,omitempty"`
-	PasswordHashIn           []string `json:"passwordhashIn,omitempty"`
-	PasswordHashNotIn        []string `json:"passwordhashNotIn,omitempty"`
-	PasswordHashGT           *string  `json:"passwordhashGT,omitempty"`
-	PasswordHashGTE          *string  `json:"passwordhashGTE,omitempty"`
-	PasswordHashLT           *string  `json:"passwordhashLT,omitempty"`
-	PasswordHashLTE          *string  `json:"passwordhashLTE,omitempty"`
-	PasswordHashContains     *string  `json:"passwordhashContains,omitempty"`
-	PasswordHashHasPrefix    *string  `json:"passwordhashHasPrefix,omitempty"`
-	PasswordHashHasSuffix    *string  `json:"passwordhashHasSuffix,omitempty"`
-	PasswordHashIsNil        bool     `json:"passwordhashIsNil,omitempty"`
-	PasswordHashNotNil       bool     `json:"passwordhashNotNil,omitempty"`
-	PasswordHashEqualFold    *string  `json:"passwordhashEqualFold,omitempty"`
-	PasswordHashContainsFold *string  `json:"passwordhashContainsFold,omitempty"`
+	// "password_hash" field predicates.
+	PasswordHash             *string  `json:"passwordHash,omitempty"`
+	PasswordHashNEQ          *string  `json:"passwordHashNEQ,omitempty"`
+	PasswordHashIn           []string `json:"passwordHashIn,omitempty"`
+	PasswordHashNotIn        []string `json:"passwordHashNotIn,omitempty"`
+	PasswordHashGT           *string  `json:"passwordHashGT,omitempty"`
+	PasswordHashGTE          *string  `json:"passwordHashGTE,omitempty"`
+	PasswordHashLT           *string  `json:"passwordHashLT,omitempty"`
+	PasswordHashLTE          *string  `json:"passwordHashLTE,omitempty"`
+	PasswordHashContains     *string  `json:"passwordHashContains,omitempty"`
+	PasswordHashHasPrefix    *string  `json:"passwordHashHasPrefix,omitempty"`
+	PasswordHashHasSuffix    *string  `json:"passwordHashHasSuffix,omitempty"`
+	PasswordHashIsNil        bool     `json:"passwordHashIsNil,omitempty"`
+	PasswordHashNotNil       bool     `json:"passwordHashNotNil,omitempty"`
+	PasswordHashEqualFold    *string  `json:"passwordHashEqualFold,omitempty"`
+	PasswordHashContainsFold *string  `json:"passwordHashContainsFold,omitempty"`
 
 	// "email" field predicates.
 	Email             *string  `json:"email,omitempty"`
@@ -3282,7 +3228,7 @@ type UserWhereInput struct {
 	HasShelves     *bool              `json:"hasShelves,omitempty"`
 	HasShelvesWith []*ShelfWhereInput `json:"hasShelvesWith,omitempty"`
 
-	// "userPermissions" edge predicates.
+	// "user_permissions" edge predicates.
 	HasUserPermissions     *bool                        `json:"hasUserPermissions,omitempty"`
 	HasUserPermissionsWith []*UserPermissionsWhereInput `json:"hasUserPermissionsWith,omitempty"`
 }
@@ -3590,9 +3536,9 @@ type UserPermissionsWhereInput struct {
 	Admin    *bool `json:"admin,omitempty"`
 	AdminNEQ *bool `json:"adminNEQ,omitempty"`
 
-	// "CanCreatePublic" field predicates.
-	CanCreatePublic    *bool `json:"cancreatepublic,omitempty"`
-	CanCreatePublicNEQ *bool `json:"cancreatepublicNEQ,omitempty"`
+	// "can_create_public" field predicates.
+	CanCreatePublic    *bool `json:"canCreatePublic,omitempty"`
+	CanCreatePublicNEQ *bool `json:"canCreatePublicNEQ,omitempty"`
 
 	// "user" edge predicates.
 	HasUser     *bool             `json:"hasUser,omitempty"`

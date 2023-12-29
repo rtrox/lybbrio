@@ -1709,15 +1709,15 @@ func (c *TaskClient) GetX(ctx context.Context, id ksuid.ID) *Task {
 	return obj
 }
 
-// QueryCreator queries the creator edge of a Task.
-func (c *TaskClient) QueryCreator(t *Task) *UserQuery {
+// QueryUser queries the user edge of a Task.
+func (c *TaskClient) QueryUser(t *Task) *UserQuery {
 	query := (&UserClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := t.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(task.Table, task.FieldID, id),
 			sqlgraph.To(user.Table, user.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, task.CreatorTable, task.CreatorColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, task.UserTable, task.UserColumn),
 		)
 		fromV = sqlgraph.Neighbors(t.driver.Dialect(), step)
 		return fromV, nil
@@ -1875,7 +1875,7 @@ func (c *UserClient) QueryShelves(u *User) *ShelfQuery {
 	return query
 }
 
-// QueryUserPermissions queries the userPermissions edge of a User.
+// QueryUserPermissions queries the user_permissions edge of a User.
 func (c *UserClient) QueryUserPermissions(u *User) *UserPermissionsQuery {
 	query := (&UserPermissionsClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {

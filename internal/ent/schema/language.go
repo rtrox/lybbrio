@@ -36,8 +36,6 @@ func (Language) Mixin() []ent.Mixin {
 // Fields of the Language.
 func (Language) Fields() []ent.Field {
 	return []ent.Field{
-		field.String("name").NotEmpty().
-			Annotations(entgql.OrderField("NAME")),
 		field.String("code").NotEmpty(),
 	}
 }
@@ -55,7 +53,6 @@ func (Language) Edges() []ent.Edge {
 
 func (Language) Indexes() []ent.Index {
 	return []ent.Index{
-		index.Fields("name"),
 		index.Fields("code"),
 	}
 }

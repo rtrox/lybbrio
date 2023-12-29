@@ -91,7 +91,6 @@ var schemaGraph = func() *sqlgraph.Schema {
 		Type: "Language",
 		Fields: map[string]*sqlgraph.FieldSpec{
 			language.FieldCalibreID: {Type: field.TypeInt64, Column: language.FieldCalibreID},
-			language.FieldName:      {Type: field.TypeString, Column: language.FieldName},
 			language.FieldCode:      {Type: field.TypeString, Column: language.FieldCode},
 		},
 	}
@@ -176,7 +175,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			task.FieldProgress:     {Type: field.TypeFloat64, Column: task.FieldProgress},
 			task.FieldMessage:      {Type: field.TypeString, Column: task.FieldMessage},
 			task.FieldError:        {Type: field.TypeString, Column: task.FieldError},
-			task.FieldCreatedBy:    {Type: field.TypeString, Column: task.FieldCreatedBy},
+			task.FieldUserID:       {Type: field.TypeString, Column: task.FieldUserID},
 			task.FieldIsSystemTask: {Type: field.TypeBool, Column: task.FieldIsSystemTask},
 		},
 	}
@@ -393,12 +392,12 @@ var schemaGraph = func() *sqlgraph.Schema {
 		"Book",
 	)
 	graph.MustAddE(
-		"creator",
+		"user",
 		&sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   task.CreatorTable,
-			Columns: []string{task.CreatorColumn},
+			Table:   task.UserTable,
+			Columns: []string{task.UserColumn},
 			Bidi:    false,
 		},
 		"Task",
@@ -417,7 +416,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 		"Shelf",
 	)
 	graph.MustAddE(
-		"userPermissions",
+		"user_permissions",
 		&sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
 			Inverse: false,
@@ -815,11 +814,6 @@ func (f *LanguageFilter) WhereCalibreID(p entql.Int64P) {
 	f.Where(p.Field(language.FieldCalibreID))
 }
 
-// WhereName applies the entql string predicate on the name field.
-func (f *LanguageFilter) WhereName(p entql.StringP) {
-	f.Where(p.Field(language.FieldName))
-}
-
 // WhereCode applies the entql string predicate on the code field.
 func (f *LanguageFilter) WhereCode(p entql.StringP) {
 	f.Where(p.Field(language.FieldCode))
@@ -1199,24 +1193,24 @@ func (f *TaskFilter) WhereError(p entql.StringP) {
 	f.Where(p.Field(task.FieldError))
 }
 
-// WhereCreatedBy applies the entql string predicate on the createdBy field.
-func (f *TaskFilter) WhereCreatedBy(p entql.StringP) {
-	f.Where(p.Field(task.FieldCreatedBy))
+// WhereUserID applies the entql string predicate on the user_id field.
+func (f *TaskFilter) WhereUserID(p entql.StringP) {
+	f.Where(p.Field(task.FieldUserID))
 }
 
-// WhereIsSystemTask applies the entql bool predicate on the isSystemTask field.
+// WhereIsSystemTask applies the entql bool predicate on the is_system_task field.
 func (f *TaskFilter) WhereIsSystemTask(p entql.BoolP) {
 	f.Where(p.Field(task.FieldIsSystemTask))
 }
 
-// WhereHasCreator applies a predicate to check if query has an edge creator.
-func (f *TaskFilter) WhereHasCreator() {
-	f.Where(entql.HasEdge("creator"))
+// WhereHasUser applies a predicate to check if query has an edge user.
+func (f *TaskFilter) WhereHasUser() {
+	f.Where(entql.HasEdge("user"))
 }
 
-// WhereHasCreatorWith applies a predicate to check if query has an edge creator with a given conditions (other predicates).
-func (f *TaskFilter) WhereHasCreatorWith(preds ...predicate.User) {
-	f.Where(entql.HasEdgeWith("creator", sqlgraph.WrapFunc(func(s *sql.Selector) {
+// WhereHasUserWith applies a predicate to check if query has an edge user with a given conditions (other predicates).
+func (f *TaskFilter) WhereHasUserWith(preds ...predicate.User) {
+	f.Where(entql.HasEdgeWith("user", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
 		}
@@ -1268,7 +1262,7 @@ func (f *UserFilter) WhereUsername(p entql.StringP) {
 	f.Where(p.Field(user.FieldUsername))
 }
 
-// WherePasswordHash applies the entql string predicate on the passwordHash field.
+// WherePasswordHash applies the entql string predicate on the password_hash field.
 func (f *UserFilter) WherePasswordHash(p entql.StringP) {
 	f.Where(p.Field(user.FieldPasswordHash))
 }
@@ -1292,14 +1286,14 @@ func (f *UserFilter) WhereHasShelvesWith(preds ...predicate.Shelf) {
 	})))
 }
 
-// WhereHasUserPermissions applies a predicate to check if query has an edge userPermissions.
+// WhereHasUserPermissions applies a predicate to check if query has an edge user_permissions.
 func (f *UserFilter) WhereHasUserPermissions() {
-	f.Where(entql.HasEdge("userPermissions"))
+	f.Where(entql.HasEdge("user_permissions"))
 }
 
-// WhereHasUserPermissionsWith applies a predicate to check if query has an edge userPermissions with a given conditions (other predicates).
+// WhereHasUserPermissionsWith applies a predicate to check if query has an edge user_permissions with a given conditions (other predicates).
 func (f *UserFilter) WhereHasUserPermissionsWith(preds ...predicate.UserPermissions) {
-	f.Where(entql.HasEdgeWith("userPermissions", sqlgraph.WrapFunc(func(s *sql.Selector) {
+	f.Where(entql.HasEdgeWith("user_permissions", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
 		}
@@ -1356,7 +1350,7 @@ func (f *UserPermissionsFilter) WhereAdmin(p entql.BoolP) {
 	f.Where(p.Field(userpermissions.FieldAdmin))
 }
 
-// WhereCanCreatePublic applies the entql bool predicate on the CanCreatePublic field.
+// WhereCanCreatePublic applies the entql bool predicate on the can_create_public field.
 func (f *UserPermissionsFilter) WhereCanCreatePublic(p entql.BoolP) {
 	f.Where(p.Field(userpermissions.FieldCanCreatePublic))
 }

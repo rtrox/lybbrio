@@ -35,9 +35,9 @@ type Task struct {
 	// Error message of the task
 	Error string `json:"error,omitempty"`
 	// The user who created this task. Empty for System Task
-	CreatedBy ksuid.ID `json:"createdBy,omitempty"`
+	UserID ksuid.ID `json:"user_id,omitempty"`
 	// Whether this task is created by the system
-	IsSystemTask bool `json:"isSystemTask,omitempty"`
+	IsSystemTask bool `json:"is_system_task,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the TaskQuery when eager-loading is set.
 	Edges        TaskEdges `json:"edges"`
@@ -46,8 +46,8 @@ type Task struct {
 
 // TaskEdges holds the relations/edges for other nodes in the graph.
 type TaskEdges struct {
-	// Creator holds the value of the creator edge.
-	Creator *User `json:"creator,omitempty"`
+	// User holds the value of the user edge.
+	User *User `json:"user,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [1]bool
@@ -55,17 +55,17 @@ type TaskEdges struct {
 	totalCount [1]map[string]int
 }
 
-// CreatorOrErr returns the Creator value or an error if the edge
+// UserOrErr returns the User value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
-func (e TaskEdges) CreatorOrErr() (*User, error) {
+func (e TaskEdges) UserOrErr() (*User, error) {
 	if e.loadedTypes[0] {
-		if e.Creator == nil {
+		if e.User == nil {
 			// Edge was loaded but was not found.
 			return nil, &NotFoundError{label: user.Label}
 		}
-		return e.Creator, nil
+		return e.User, nil
 	}
-	return nil, &NotLoadedError{edge: "creator"}
+	return nil, &NotLoadedError{edge: "user"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -77,7 +77,7 @@ func (*Task) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullBool)
 		case task.FieldProgress:
 			values[i] = new(sql.NullFloat64)
-		case task.FieldID, task.FieldType, task.FieldStatus, task.FieldMessage, task.FieldError, task.FieldCreatedBy:
+		case task.FieldID, task.FieldType, task.FieldStatus, task.FieldMessage, task.FieldError, task.FieldUserID:
 			values[i] = new(sql.NullString)
 		case task.FieldCreateTime, task.FieldUpdateTime:
 			values[i] = new(sql.NullTime)
@@ -144,15 +144,15 @@ func (t *Task) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				t.Error = value.String
 			}
-		case task.FieldCreatedBy:
+		case task.FieldUserID:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field createdBy", values[i])
+				return fmt.Errorf("unexpected type %T for field user_id", values[i])
 			} else if value.Valid {
-				t.CreatedBy = ksuid.ID(value.String)
+				t.UserID = ksuid.ID(value.String)
 			}
 		case task.FieldIsSystemTask:
 			if value, ok := values[i].(*sql.NullBool); !ok {
-				return fmt.Errorf("unexpected type %T for field isSystemTask", values[i])
+				return fmt.Errorf("unexpected type %T for field is_system_task", values[i])
 			} else if value.Valid {
 				t.IsSystemTask = value.Bool
 			}
@@ -169,9 +169,9 @@ func (t *Task) Value(name string) (ent.Value, error) {
 	return t.selectValues.Get(name)
 }
 
-// QueryCreator queries the "creator" edge of the Task entity.
-func (t *Task) QueryCreator() *UserQuery {
-	return NewTaskClient(t.config).QueryCreator(t)
+// QueryUser queries the "user" edge of the Task entity.
+func (t *Task) QueryUser() *UserQuery {
+	return NewTaskClient(t.config).QueryUser(t)
 }
 
 // Update returns a builder for updating this Task.
@@ -218,10 +218,10 @@ func (t *Task) String() string {
 	builder.WriteString("error=")
 	builder.WriteString(t.Error)
 	builder.WriteString(", ")
-	builder.WriteString("createdBy=")
-	builder.WriteString(fmt.Sprintf("%v", t.CreatedBy))
+	builder.WriteString("user_id=")
+	builder.WriteString(fmt.Sprintf("%v", t.UserID))
 	builder.WriteString(", ")
-	builder.WriteString("isSystemTask=")
+	builder.WriteString("is_system_task=")
 	builder.WriteString(fmt.Sprintf("%v", t.IsSystemTask))
 	builder.WriteByte(')')
 	return builder.String()

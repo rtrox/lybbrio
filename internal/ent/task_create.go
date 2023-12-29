@@ -124,27 +124,27 @@ func (tc *TaskCreate) SetNillableError(s *string) *TaskCreate {
 	return tc
 }
 
-// SetCreatedBy sets the "createdBy" field.
-func (tc *TaskCreate) SetCreatedBy(k ksuid.ID) *TaskCreate {
-	tc.mutation.SetCreatedBy(k)
+// SetUserID sets the "user_id" field.
+func (tc *TaskCreate) SetUserID(k ksuid.ID) *TaskCreate {
+	tc.mutation.SetUserID(k)
 	return tc
 }
 
-// SetNillableCreatedBy sets the "createdBy" field if the given value is not nil.
-func (tc *TaskCreate) SetNillableCreatedBy(k *ksuid.ID) *TaskCreate {
+// SetNillableUserID sets the "user_id" field if the given value is not nil.
+func (tc *TaskCreate) SetNillableUserID(k *ksuid.ID) *TaskCreate {
 	if k != nil {
-		tc.SetCreatedBy(*k)
+		tc.SetUserID(*k)
 	}
 	return tc
 }
 
-// SetIsSystemTask sets the "isSystemTask" field.
+// SetIsSystemTask sets the "is_system_task" field.
 func (tc *TaskCreate) SetIsSystemTask(b bool) *TaskCreate {
 	tc.mutation.SetIsSystemTask(b)
 	return tc
 }
 
-// SetNillableIsSystemTask sets the "isSystemTask" field if the given value is not nil.
+// SetNillableIsSystemTask sets the "is_system_task" field if the given value is not nil.
 func (tc *TaskCreate) SetNillableIsSystemTask(b *bool) *TaskCreate {
 	if b != nil {
 		tc.SetIsSystemTask(*b)
@@ -166,23 +166,9 @@ func (tc *TaskCreate) SetNillableID(k *ksuid.ID) *TaskCreate {
 	return tc
 }
 
-// SetCreatorID sets the "creator" edge to the User entity by ID.
-func (tc *TaskCreate) SetCreatorID(id ksuid.ID) *TaskCreate {
-	tc.mutation.SetCreatorID(id)
-	return tc
-}
-
-// SetNillableCreatorID sets the "creator" edge to the User entity by ID if the given value is not nil.
-func (tc *TaskCreate) SetNillableCreatorID(id *ksuid.ID) *TaskCreate {
-	if id != nil {
-		tc = tc.SetCreatorID(*id)
-	}
-	return tc
-}
-
-// SetCreator sets the "creator" edge to the User entity.
-func (tc *TaskCreate) SetCreator(u *User) *TaskCreate {
-	return tc.SetCreatorID(u.ID)
+// SetUser sets the "user" edge to the User entity.
+func (tc *TaskCreate) SetUser(u *User) *TaskCreate {
+	return tc.SetUserID(u.ID)
 }
 
 // Mutation returns the TaskMutation object of the builder.
@@ -290,7 +276,7 @@ func (tc *TaskCreate) check() error {
 		return &ValidationError{Name: "progress", err: errors.New(`ent: missing required field "Task.progress"`)}
 	}
 	if _, ok := tc.mutation.IsSystemTask(); !ok {
-		return &ValidationError{Name: "isSystemTask", err: errors.New(`ent: missing required field "Task.isSystemTask"`)}
+		return &ValidationError{Name: "is_system_task", err: errors.New(`ent: missing required field "Task.is_system_task"`)}
 	}
 	return nil
 }
@@ -360,12 +346,12 @@ func (tc *TaskCreate) createSpec() (*Task, *sqlgraph.CreateSpec) {
 		_spec.SetField(task.FieldIsSystemTask, field.TypeBool, value)
 		_node.IsSystemTask = value
 	}
-	if nodes := tc.mutation.CreatorIDs(); len(nodes) > 0 {
+	if nodes := tc.mutation.UserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   task.CreatorTable,
-			Columns: []string{task.CreatorColumn},
+			Table:   task.UserTable,
+			Columns: []string{task.UserColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeString),
@@ -374,7 +360,7 @@ func (tc *TaskCreate) createSpec() (*Task, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.CreatedBy = nodes[0]
+		_node.UserID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
@@ -438,18 +424,6 @@ func (u *TaskUpsert) SetUpdateTime(v time.Time) *TaskUpsert {
 // UpdateUpdateTime sets the "update_time" field to the value that was provided on create.
 func (u *TaskUpsert) UpdateUpdateTime() *TaskUpsert {
 	u.SetExcluded(task.FieldUpdateTime)
-	return u
-}
-
-// SetType sets the "type" field.
-func (u *TaskUpsert) SetType(v task_enums.TaskType) *TaskUpsert {
-	u.Set(task.FieldType, v)
-	return u
-}
-
-// UpdateType sets the "type" field to the value that was provided on create.
-func (u *TaskUpsert) UpdateType() *TaskUpsert {
-	u.SetExcluded(task.FieldType)
 	return u
 }
 
@@ -519,13 +493,13 @@ func (u *TaskUpsert) ClearError() *TaskUpsert {
 	return u
 }
 
-// SetIsSystemTask sets the "isSystemTask" field.
+// SetIsSystemTask sets the "is_system_task" field.
 func (u *TaskUpsert) SetIsSystemTask(v bool) *TaskUpsert {
 	u.Set(task.FieldIsSystemTask, v)
 	return u
 }
 
-// UpdateIsSystemTask sets the "isSystemTask" field to the value that was provided on create.
+// UpdateIsSystemTask sets the "is_system_task" field to the value that was provided on create.
 func (u *TaskUpsert) UpdateIsSystemTask() *TaskUpsert {
 	u.SetExcluded(task.FieldIsSystemTask)
 	return u
@@ -551,8 +525,11 @@ func (u *TaskUpsertOne) UpdateNewValues() *TaskUpsertOne {
 		if _, exists := u.create.mutation.CreateTime(); exists {
 			s.SetIgnore(task.FieldCreateTime)
 		}
-		if _, exists := u.create.mutation.CreatedBy(); exists {
-			s.SetIgnore(task.FieldCreatedBy)
+		if _, exists := u.create.mutation.GetType(); exists {
+			s.SetIgnore(task.FieldType)
+		}
+		if _, exists := u.create.mutation.UserID(); exists {
+			s.SetIgnore(task.FieldUserID)
 		}
 	}))
 	return u
@@ -596,20 +573,6 @@ func (u *TaskUpsertOne) SetUpdateTime(v time.Time) *TaskUpsertOne {
 func (u *TaskUpsertOne) UpdateUpdateTime() *TaskUpsertOne {
 	return u.Update(func(s *TaskUpsert) {
 		s.UpdateUpdateTime()
-	})
-}
-
-// SetType sets the "type" field.
-func (u *TaskUpsertOne) SetType(v task_enums.TaskType) *TaskUpsertOne {
-	return u.Update(func(s *TaskUpsert) {
-		s.SetType(v)
-	})
-}
-
-// UpdateType sets the "type" field to the value that was provided on create.
-func (u *TaskUpsertOne) UpdateType() *TaskUpsertOne {
-	return u.Update(func(s *TaskUpsert) {
-		s.UpdateType()
 	})
 }
 
@@ -690,14 +653,14 @@ func (u *TaskUpsertOne) ClearError() *TaskUpsertOne {
 	})
 }
 
-// SetIsSystemTask sets the "isSystemTask" field.
+// SetIsSystemTask sets the "is_system_task" field.
 func (u *TaskUpsertOne) SetIsSystemTask(v bool) *TaskUpsertOne {
 	return u.Update(func(s *TaskUpsert) {
 		s.SetIsSystemTask(v)
 	})
 }
 
-// UpdateIsSystemTask sets the "isSystemTask" field to the value that was provided on create.
+// UpdateIsSystemTask sets the "is_system_task" field to the value that was provided on create.
 func (u *TaskUpsertOne) UpdateIsSystemTask() *TaskUpsertOne {
 	return u.Update(func(s *TaskUpsert) {
 		s.UpdateIsSystemTask()
@@ -890,8 +853,11 @@ func (u *TaskUpsertBulk) UpdateNewValues() *TaskUpsertBulk {
 			if _, exists := b.mutation.CreateTime(); exists {
 				s.SetIgnore(task.FieldCreateTime)
 			}
-			if _, exists := b.mutation.CreatedBy(); exists {
-				s.SetIgnore(task.FieldCreatedBy)
+			if _, exists := b.mutation.GetType(); exists {
+				s.SetIgnore(task.FieldType)
+			}
+			if _, exists := b.mutation.UserID(); exists {
+				s.SetIgnore(task.FieldUserID)
 			}
 		}
 	}))
@@ -936,20 +902,6 @@ func (u *TaskUpsertBulk) SetUpdateTime(v time.Time) *TaskUpsertBulk {
 func (u *TaskUpsertBulk) UpdateUpdateTime() *TaskUpsertBulk {
 	return u.Update(func(s *TaskUpsert) {
 		s.UpdateUpdateTime()
-	})
-}
-
-// SetType sets the "type" field.
-func (u *TaskUpsertBulk) SetType(v task_enums.TaskType) *TaskUpsertBulk {
-	return u.Update(func(s *TaskUpsert) {
-		s.SetType(v)
-	})
-}
-
-// UpdateType sets the "type" field to the value that was provided on create.
-func (u *TaskUpsertBulk) UpdateType() *TaskUpsertBulk {
-	return u.Update(func(s *TaskUpsert) {
-		s.UpdateType()
 	})
 }
 
@@ -1030,14 +982,14 @@ func (u *TaskUpsertBulk) ClearError() *TaskUpsertBulk {
 	})
 }
 
-// SetIsSystemTask sets the "isSystemTask" field.
+// SetIsSystemTask sets the "is_system_task" field.
 func (u *TaskUpsertBulk) SetIsSystemTask(v bool) *TaskUpsertBulk {
 	return u.Update(func(s *TaskUpsert) {
 		s.SetIsSystemTask(v)
 	})
 }
 
-// UpdateIsSystemTask sets the "isSystemTask" field to the value that was provided on create.
+// UpdateIsSystemTask sets the "is_system_task" field to the value that was provided on create.
 func (u *TaskUpsertBulk) UpdateIsSystemTask() *TaskUpsertBulk {
 	return u.Update(func(s *TaskUpsert) {
 		s.UpdateIsSystemTask()

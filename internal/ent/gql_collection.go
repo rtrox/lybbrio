@@ -665,11 +665,6 @@ func (l *LanguageQuery) collectField(ctx context.Context, opCtx *graphql.Operati
 				selectedFields = append(selectedFields, language.FieldCalibreID)
 				fieldSeen[language.FieldCalibreID] = struct{}{}
 			}
-		case "name":
-			if _, ok := fieldSeen[language.FieldName]; !ok {
-				selectedFields = append(selectedFields, language.FieldName)
-				fieldSeen[language.FieldName] = struct{}{}
-			}
 		case "code":
 			if _, ok := fieldSeen[language.FieldCode]; !ok {
 				selectedFields = append(selectedFields, language.FieldCode)
@@ -1470,7 +1465,7 @@ func (t *TaskQuery) collectField(ctx context.Context, opCtx *graphql.OperationCo
 	)
 	for _, field := range graphql.CollectFields(opCtx, collected.Selections, satisfies) {
 		switch field.Name {
-		case "creator":
+		case "user":
 			var (
 				alias = field.Alias
 				path  = append(path, alias)
@@ -1479,10 +1474,10 @@ func (t *TaskQuery) collectField(ctx context.Context, opCtx *graphql.OperationCo
 			if err := query.collectField(ctx, opCtx, field, path, satisfies...); err != nil {
 				return err
 			}
-			t.withCreator = query
-			if _, ok := fieldSeen[task.FieldCreatedBy]; !ok {
-				selectedFields = append(selectedFields, task.FieldCreatedBy)
-				fieldSeen[task.FieldCreatedBy] = struct{}{}
+			t.withUser = query
+			if _, ok := fieldSeen[task.FieldUserID]; !ok {
+				selectedFields = append(selectedFields, task.FieldUserID)
+				fieldSeen[task.FieldUserID] = struct{}{}
 			}
 		case "createTime":
 			if _, ok := fieldSeen[task.FieldCreateTime]; !ok {
@@ -1519,12 +1514,12 @@ func (t *TaskQuery) collectField(ctx context.Context, opCtx *graphql.OperationCo
 				selectedFields = append(selectedFields, task.FieldError)
 				fieldSeen[task.FieldError] = struct{}{}
 			}
-		case "createdby":
-			if _, ok := fieldSeen[task.FieldCreatedBy]; !ok {
-				selectedFields = append(selectedFields, task.FieldCreatedBy)
-				fieldSeen[task.FieldCreatedBy] = struct{}{}
+		case "userID":
+			if _, ok := fieldSeen[task.FieldUserID]; !ok {
+				selectedFields = append(selectedFields, task.FieldUserID)
+				fieldSeen[task.FieldUserID] = struct{}{}
 			}
-		case "issystemtask":
+		case "isSystemTask":
 			if _, ok := fieldSeen[task.FieldIsSystemTask]; !ok {
 				selectedFields = append(selectedFields, task.FieldIsSystemTask)
 				fieldSeen[task.FieldIsSystemTask] = struct{}{}
@@ -1631,7 +1626,7 @@ func (u *UserQuery) collectField(ctx context.Context, opCtx *graphql.OperationCo
 			u.WithNamedShelves(alias, func(wq *ShelfQuery) {
 				*wq = *query
 			})
-		case "userpermissions":
+		case "userPermissions":
 			var (
 				alias = field.Alias
 				path  = append(path, alias)
@@ -1759,7 +1754,7 @@ func (up *UserPermissionsQuery) collectField(ctx context.Context, opCtx *graphql
 				selectedFields = append(selectedFields, userpermissions.FieldAdmin)
 				fieldSeen[userpermissions.FieldAdmin] = struct{}{}
 			}
-		case "cancreatepublic":
+		case "canCreatePublic":
 			if _, ok := fieldSeen[userpermissions.FieldCanCreatePublic]; !ok {
 				selectedFields = append(selectedFields, userpermissions.FieldCanCreatePublic)
 				fieldSeen[userpermissions.FieldCanCreatePublic] = struct{}{}

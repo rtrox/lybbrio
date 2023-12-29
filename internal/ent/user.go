@@ -20,7 +20,7 @@ type User struct {
 	ID ksuid.ID `json:"id,omitempty"`
 	// Username holds the value of the "username" field.
 	Username string `json:"username,omitempty"`
-	// PasswordHash holds the value of the "passwordHash" field.
+	// PasswordHash holds the value of the "password_hash" field.
 	PasswordHash string `json:"-"`
 	// Email holds the value of the "email" field.
 	Email string `json:"email,omitempty"`
@@ -34,8 +34,8 @@ type User struct {
 type UserEdges struct {
 	// Shelves holds the value of the shelves edge.
 	Shelves []*Shelf `json:"shelves,omitempty"`
-	// UserPermissions holds the value of the userPermissions edge.
-	UserPermissions *UserPermissions `json:"userPermissions,omitempty"`
+	// UserPermissions holds the value of the user_permissions edge.
+	UserPermissions *UserPermissions `json:"user_permissions,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [2]bool
@@ -64,7 +64,7 @@ func (e UserEdges) UserPermissionsOrErr() (*UserPermissions, error) {
 		}
 		return e.UserPermissions, nil
 	}
-	return nil, &NotLoadedError{edge: "userPermissions"}
+	return nil, &NotLoadedError{edge: "user_permissions"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -103,7 +103,7 @@ func (u *User) assignValues(columns []string, values []any) error {
 			}
 		case user.FieldPasswordHash:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field passwordHash", values[i])
+				return fmt.Errorf("unexpected type %T for field password_hash", values[i])
 			} else if value.Valid {
 				u.PasswordHash = value.String
 			}
@@ -131,7 +131,7 @@ func (u *User) QueryShelves() *ShelfQuery {
 	return NewUserClient(u.config).QueryShelves(u)
 }
 
-// QueryUserPermissions queries the "userPermissions" edge of the User entity.
+// QueryUserPermissions queries the "user_permissions" edge of the User entity.
 func (u *User) QueryUserPermissions() *UserPermissionsQuery {
 	return NewUserClient(u.config).QueryUserPermissions(u)
 }
@@ -162,7 +162,7 @@ func (u *User) String() string {
 	builder.WriteString("username=")
 	builder.WriteString(u.Username)
 	builder.WriteString(", ")
-	builder.WriteString("passwordHash=<sensitive>")
+	builder.WriteString("password_hash=<sensitive>")
 	builder.WriteString(", ")
 	builder.WriteString("email=")
 	builder.WriteString(u.Email)

@@ -31,13 +31,13 @@ func (uc *UserCreate) SetUsername(s string) *UserCreate {
 	return uc
 }
 
-// SetPasswordHash sets the "passwordHash" field.
+// SetPasswordHash sets the "password_hash" field.
 func (uc *UserCreate) SetPasswordHash(s string) *UserCreate {
 	uc.mutation.SetPasswordHash(s)
 	return uc
 }
 
-// SetNillablePasswordHash sets the "passwordHash" field if the given value is not nil.
+// SetNillablePasswordHash sets the "password_hash" field if the given value is not nil.
 func (uc *UserCreate) SetNillablePasswordHash(s *string) *UserCreate {
 	if s != nil {
 		uc.SetPasswordHash(*s)
@@ -80,13 +80,13 @@ func (uc *UserCreate) AddShelves(s ...*Shelf) *UserCreate {
 	return uc.AddShelfIDs(ids...)
 }
 
-// SetUserPermissionsID sets the "userPermissions" edge to the UserPermissions entity by ID.
+// SetUserPermissionsID sets the "user_permissions" edge to the UserPermissions entity by ID.
 func (uc *UserCreate) SetUserPermissionsID(id ksuid.ID) *UserCreate {
 	uc.mutation.SetUserPermissionsID(id)
 	return uc
 }
 
-// SetUserPermissions sets the "userPermissions" edge to the UserPermissions entity.
+// SetUserPermissions sets the "user_permissions" edge to the UserPermissions entity.
 func (uc *UserCreate) SetUserPermissions(u *UserPermissions) *UserCreate {
 	return uc.SetUserPermissionsID(u.ID)
 }
@@ -157,7 +157,7 @@ func (uc *UserCreate) check() error {
 		}
 	}
 	if _, ok := uc.mutation.UserPermissionsID(); !ok {
-		return &ValidationError{Name: "userPermissions", err: errors.New(`ent: missing required edge "User.userPermissions"`)}
+		return &ValidationError{Name: "user_permissions", err: errors.New(`ent: missing required edge "User.user_permissions"`)}
 	}
 	return nil
 }
@@ -303,19 +303,19 @@ func (u *UserUpsert) UpdateUsername() *UserUpsert {
 	return u
 }
 
-// SetPasswordHash sets the "passwordHash" field.
+// SetPasswordHash sets the "password_hash" field.
 func (u *UserUpsert) SetPasswordHash(v string) *UserUpsert {
 	u.Set(user.FieldPasswordHash, v)
 	return u
 }
 
-// UpdatePasswordHash sets the "passwordHash" field to the value that was provided on create.
+// UpdatePasswordHash sets the "password_hash" field to the value that was provided on create.
 func (u *UserUpsert) UpdatePasswordHash() *UserUpsert {
 	u.SetExcluded(user.FieldPasswordHash)
 	return u
 }
 
-// ClearPasswordHash clears the value of the "passwordHash" field.
+// ClearPasswordHash clears the value of the "password_hash" field.
 func (u *UserUpsert) ClearPasswordHash() *UserUpsert {
 	u.SetNull(user.FieldPasswordHash)
 	return u
@@ -395,21 +395,21 @@ func (u *UserUpsertOne) UpdateUsername() *UserUpsertOne {
 	})
 }
 
-// SetPasswordHash sets the "passwordHash" field.
+// SetPasswordHash sets the "password_hash" field.
 func (u *UserUpsertOne) SetPasswordHash(v string) *UserUpsertOne {
 	return u.Update(func(s *UserUpsert) {
 		s.SetPasswordHash(v)
 	})
 }
 
-// UpdatePasswordHash sets the "passwordHash" field to the value that was provided on create.
+// UpdatePasswordHash sets the "password_hash" field to the value that was provided on create.
 func (u *UserUpsertOne) UpdatePasswordHash() *UserUpsertOne {
 	return u.Update(func(s *UserUpsert) {
 		s.UpdatePasswordHash()
 	})
 }
 
-// ClearPasswordHash clears the value of the "passwordHash" field.
+// ClearPasswordHash clears the value of the "password_hash" field.
 func (u *UserUpsertOne) ClearPasswordHash() *UserUpsertOne {
 	return u.Update(func(s *UserUpsert) {
 		s.ClearPasswordHash()
@@ -659,21 +659,21 @@ func (u *UserUpsertBulk) UpdateUsername() *UserUpsertBulk {
 	})
 }
 
-// SetPasswordHash sets the "passwordHash" field.
+// SetPasswordHash sets the "password_hash" field.
 func (u *UserUpsertBulk) SetPasswordHash(v string) *UserUpsertBulk {
 	return u.Update(func(s *UserUpsert) {
 		s.SetPasswordHash(v)
 	})
 }
 
-// UpdatePasswordHash sets the "passwordHash" field to the value that was provided on create.
+// UpdatePasswordHash sets the "password_hash" field to the value that was provided on create.
 func (u *UserUpsertBulk) UpdatePasswordHash() *UserUpsertBulk {
 	return u.Update(func(s *UserUpsert) {
 		s.UpdatePasswordHash()
 	})
 }
 
-// ClearPasswordHash clears the value of the "passwordHash" field.
+// ClearPasswordHash clears the value of the "password_hash" field.
 func (u *UserUpsertBulk) ClearPasswordHash() *UserUpsertBulk {
 	return u.Update(func(s *UserUpsert) {
 		s.ClearPasswordHash()

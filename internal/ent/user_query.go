@@ -89,7 +89,7 @@ func (uq *UserQuery) QueryShelves() *ShelfQuery {
 	return query
 }
 
-// QueryUserPermissions chains the current query on the "userPermissions" edge.
+// QueryUserPermissions chains the current query on the "user_permissions" edge.
 func (uq *UserQuery) QueryUserPermissions() *UserPermissionsQuery {
 	query := (&UserPermissionsClient{config: uq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
@@ -323,7 +323,7 @@ func (uq *UserQuery) WithShelves(opts ...func(*ShelfQuery)) *UserQuery {
 }
 
 // WithUserPermissions tells the query-builder to eager-load the nodes that are connected to
-// the "userPermissions" edge. The optional arguments are used to configure the query builder of the edge.
+// the "user_permissions" edge. The optional arguments are used to configure the query builder of the edge.
 func (uq *UserQuery) WithUserPermissions(opts ...func(*UserPermissionsQuery)) *UserQuery {
 	query := (&UserPermissionsClient{config: uq.config}).Query()
 	for _, opt := range opts {

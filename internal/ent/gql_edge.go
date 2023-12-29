@@ -225,10 +225,10 @@ func (t *Tag) Books(
 	return t.QueryBooks().Paginate(ctx, after, first, before, last, opts...)
 }
 
-func (t *Task) Creator(ctx context.Context) (*User, error) {
-	result, err := t.Edges.CreatorOrErr()
+func (t *Task) User(ctx context.Context) (*User, error) {
+	result, err := t.Edges.UserOrErr()
 	if IsNotLoaded(err) {
-		result, err = t.QueryCreator().Only(ctx)
+		result, err = t.QueryUser().Only(ctx)
 	}
 	return result, MaskNotFound(err)
 }

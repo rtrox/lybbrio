@@ -19,7 +19,7 @@ const (
 	FieldUserID = "user_id"
 	// FieldAdmin holds the string denoting the admin field in the database.
 	FieldAdmin = "admin"
-	// FieldCanCreatePublic holds the string denoting the cancreatepublic field in the database.
+	// FieldCanCreatePublic holds the string denoting the can_create_public field in the database.
 	FieldCanCreatePublic = "can_create_public"
 	// EdgeUser holds the string denoting the user edge name in mutations.
 	EdgeUser = "user"
@@ -62,7 +62,7 @@ var (
 	Policy ent.Policy
 	// DefaultAdmin holds the default value on creation for the "admin" field.
 	DefaultAdmin bool
-	// DefaultCanCreatePublic holds the default value on creation for the "CanCreatePublic" field.
+	// DefaultCanCreatePublic holds the default value on creation for the "can_create_public" field.
 	DefaultCanCreatePublic bool
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() ksuid.ID
@@ -86,7 +86,7 @@ func ByAdmin(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldAdmin, opts...).ToFunc()
 }
 
-// ByCanCreatePublic orders the results by the CanCreatePublic field.
+// ByCanCreatePublic orders the results by the can_create_public field.
 func ByCanCreatePublic(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldCanCreatePublic, opts...).ToFunc()
 }

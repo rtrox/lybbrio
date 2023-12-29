@@ -35,20 +35,6 @@ func (tu *TaskUpdate) SetUpdateTime(t time.Time) *TaskUpdate {
 	return tu
 }
 
-// SetType sets the "type" field.
-func (tu *TaskUpdate) SetType(tet task_enums.TaskType) *TaskUpdate {
-	tu.mutation.SetType(tet)
-	return tu
-}
-
-// SetNillableType sets the "type" field if the given value is not nil.
-func (tu *TaskUpdate) SetNillableType(tet *task_enums.TaskType) *TaskUpdate {
-	if tet != nil {
-		tu.SetType(*tet)
-	}
-	return tu
-}
-
 // SetStatus sets the "status" field.
 func (tu *TaskUpdate) SetStatus(te task_enums.Status) *TaskUpdate {
 	tu.mutation.SetStatus(te)
@@ -124,13 +110,13 @@ func (tu *TaskUpdate) ClearError() *TaskUpdate {
 	return tu
 }
 
-// SetIsSystemTask sets the "isSystemTask" field.
+// SetIsSystemTask sets the "is_system_task" field.
 func (tu *TaskUpdate) SetIsSystemTask(b bool) *TaskUpdate {
 	tu.mutation.SetIsSystemTask(b)
 	return tu
 }
 
-// SetNillableIsSystemTask sets the "isSystemTask" field if the given value is not nil.
+// SetNillableIsSystemTask sets the "is_system_task" field if the given value is not nil.
 func (tu *TaskUpdate) SetNillableIsSystemTask(b *bool) *TaskUpdate {
 	if b != nil {
 		tu.SetIsSystemTask(*b)
@@ -187,11 +173,6 @@ func (tu *TaskUpdate) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (tu *TaskUpdate) check() error {
-	if v, ok := tu.mutation.GetType(); ok {
-		if err := task.TypeValidator(v); err != nil {
-			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "Task.type": %w`, err)}
-		}
-	}
 	if v, ok := tu.mutation.Status(); ok {
 		if err := task.StatusValidator(v); err != nil {
 			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "Task.status": %w`, err)}
@@ -214,9 +195,6 @@ func (tu *TaskUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := tu.mutation.UpdateTime(); ok {
 		_spec.SetField(task.FieldUpdateTime, field.TypeTime, value)
-	}
-	if value, ok := tu.mutation.GetType(); ok {
-		_spec.SetField(task.FieldType, field.TypeEnum, value)
 	}
 	if value, ok := tu.mutation.Status(); ok {
 		_spec.SetField(task.FieldStatus, field.TypeEnum, value)
@@ -265,20 +243,6 @@ type TaskUpdateOne struct {
 // SetUpdateTime sets the "update_time" field.
 func (tuo *TaskUpdateOne) SetUpdateTime(t time.Time) *TaskUpdateOne {
 	tuo.mutation.SetUpdateTime(t)
-	return tuo
-}
-
-// SetType sets the "type" field.
-func (tuo *TaskUpdateOne) SetType(tet task_enums.TaskType) *TaskUpdateOne {
-	tuo.mutation.SetType(tet)
-	return tuo
-}
-
-// SetNillableType sets the "type" field if the given value is not nil.
-func (tuo *TaskUpdateOne) SetNillableType(tet *task_enums.TaskType) *TaskUpdateOne {
-	if tet != nil {
-		tuo.SetType(*tet)
-	}
 	return tuo
 }
 
@@ -357,13 +321,13 @@ func (tuo *TaskUpdateOne) ClearError() *TaskUpdateOne {
 	return tuo
 }
 
-// SetIsSystemTask sets the "isSystemTask" field.
+// SetIsSystemTask sets the "is_system_task" field.
 func (tuo *TaskUpdateOne) SetIsSystemTask(b bool) *TaskUpdateOne {
 	tuo.mutation.SetIsSystemTask(b)
 	return tuo
 }
 
-// SetNillableIsSystemTask sets the "isSystemTask" field if the given value is not nil.
+// SetNillableIsSystemTask sets the "is_system_task" field if the given value is not nil.
 func (tuo *TaskUpdateOne) SetNillableIsSystemTask(b *bool) *TaskUpdateOne {
 	if b != nil {
 		tuo.SetIsSystemTask(*b)
@@ -433,11 +397,6 @@ func (tuo *TaskUpdateOne) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (tuo *TaskUpdateOne) check() error {
-	if v, ok := tuo.mutation.GetType(); ok {
-		if err := task.TypeValidator(v); err != nil {
-			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "Task.type": %w`, err)}
-		}
-	}
 	if v, ok := tuo.mutation.Status(); ok {
 		if err := task.StatusValidator(v); err != nil {
 			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "Task.status": %w`, err)}
@@ -477,9 +436,6 @@ func (tuo *TaskUpdateOne) sqlSave(ctx context.Context) (_node *Task, err error) 
 	}
 	if value, ok := tuo.mutation.UpdateTime(); ok {
 		_spec.SetField(task.FieldUpdateTime, field.TypeTime, value)
-	}
-	if value, ok := tuo.mutation.GetType(); ok {
-		_spec.SetField(task.FieldType, field.TypeEnum, value)
 	}
 	if value, ok := tuo.mutation.Status(); ok {
 		_spec.SetField(task.FieldStatus, field.TypeEnum, value)

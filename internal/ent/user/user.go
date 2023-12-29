@@ -17,14 +17,14 @@ const (
 	FieldID = "id"
 	// FieldUsername holds the string denoting the username field in the database.
 	FieldUsername = "username"
-	// FieldPasswordHash holds the string denoting the passwordhash field in the database.
+	// FieldPasswordHash holds the string denoting the password_hash field in the database.
 	FieldPasswordHash = "password_hash"
 	// FieldEmail holds the string denoting the email field in the database.
 	FieldEmail = "email"
 	// EdgeShelves holds the string denoting the shelves edge name in mutations.
 	EdgeShelves = "shelves"
-	// EdgeUserPermissions holds the string denoting the userpermissions edge name in mutations.
-	EdgeUserPermissions = "userPermissions"
+	// EdgeUserPermissions holds the string denoting the user_permissions edge name in mutations.
+	EdgeUserPermissions = "user_permissions"
 	// Table holds the table name of the user in the database.
 	Table = "users"
 	// ShelvesTable is the table that holds the shelves relation/edge.
@@ -34,12 +34,12 @@ const (
 	ShelvesInverseTable = "shelves"
 	// ShelvesColumn is the table column denoting the shelves relation/edge.
 	ShelvesColumn = "user_id"
-	// UserPermissionsTable is the table that holds the userPermissions relation/edge.
+	// UserPermissionsTable is the table that holds the user_permissions relation/edge.
 	UserPermissionsTable = "user_permissions"
 	// UserPermissionsInverseTable is the table name for the UserPermissions entity.
 	// It exists in this package in order to avoid circular dependency with the "userpermissions" package.
 	UserPermissionsInverseTable = "user_permissions"
-	// UserPermissionsColumn is the table column denoting the userPermissions relation/edge.
+	// UserPermissionsColumn is the table column denoting the user_permissions relation/edge.
 	UserPermissionsColumn = "user_id"
 )
 
@@ -90,7 +90,7 @@ func ByUsername(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldUsername, opts...).ToFunc()
 }
 
-// ByPasswordHash orders the results by the passwordHash field.
+// ByPasswordHash orders the results by the password_hash field.
 func ByPasswordHash(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldPasswordHash, opts...).ToFunc()
 }
@@ -114,7 +114,7 @@ func ByShelves(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	}
 }
 
-// ByUserPermissionsField orders the results by userPermissions field.
+// ByUserPermissionsField orders the results by user_permissions field.
 func ByUserPermissionsField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
 		sqlgraph.OrderByNeighborTerms(s, newUserPermissionsStep(), sql.OrderByField(field, opts...))

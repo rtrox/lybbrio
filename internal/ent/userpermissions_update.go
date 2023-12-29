@@ -63,13 +63,13 @@ func (upu *UserPermissionsUpdate) SetNillableAdmin(b *bool) *UserPermissionsUpda
 	return upu
 }
 
-// SetCanCreatePublic sets the "CanCreatePublic" field.
+// SetCanCreatePublic sets the "can_create_public" field.
 func (upu *UserPermissionsUpdate) SetCanCreatePublic(b bool) *UserPermissionsUpdate {
 	upu.mutation.SetCanCreatePublic(b)
 	return upu
 }
 
-// SetNillableCanCreatePublic sets the "CanCreatePublic" field if the given value is not nil.
+// SetNillableCanCreatePublic sets the "can_create_public" field if the given value is not nil.
 func (upu *UserPermissionsUpdate) SetNillableCanCreatePublic(b *bool) *UserPermissionsUpdate {
 	if b != nil {
 		upu.SetCanCreatePublic(*b)
@@ -218,13 +218,13 @@ func (upuo *UserPermissionsUpdateOne) SetNillableAdmin(b *bool) *UserPermissions
 	return upuo
 }
 
-// SetCanCreatePublic sets the "CanCreatePublic" field.
+// SetCanCreatePublic sets the "can_create_public" field.
 func (upuo *UserPermissionsUpdateOne) SetCanCreatePublic(b bool) *UserPermissionsUpdateOne {
 	upuo.mutation.SetCanCreatePublic(b)
 	return upuo
 }
 
-// SetNillableCanCreatePublic sets the "CanCreatePublic" field if the given value is not nil.
+// SetNillableCanCreatePublic sets the "can_create_public" field if the given value is not nil.
 func (upuo *UserPermissionsUpdateOne) SetNillableCanCreatePublic(b *bool) *UserPermissionsUpdateOne {
 	if b != nil {
 		upuo.SetCanCreatePublic(*b)

@@ -43,13 +43,13 @@ func (uu *UserUpdate) SetNillableUsername(s *string) *UserUpdate {
 	return uu
 }
 
-// SetPasswordHash sets the "passwordHash" field.
+// SetPasswordHash sets the "password_hash" field.
 func (uu *UserUpdate) SetPasswordHash(s string) *UserUpdate {
 	uu.mutation.SetPasswordHash(s)
 	return uu
 }
 
-// SetNillablePasswordHash sets the "passwordHash" field if the given value is not nil.
+// SetNillablePasswordHash sets the "password_hash" field if the given value is not nil.
 func (uu *UserUpdate) SetNillablePasswordHash(s *string) *UserUpdate {
 	if s != nil {
 		uu.SetPasswordHash(*s)
@@ -57,7 +57,7 @@ func (uu *UserUpdate) SetNillablePasswordHash(s *string) *UserUpdate {
 	return uu
 }
 
-// ClearPasswordHash clears the value of the "passwordHash" field.
+// ClearPasswordHash clears the value of the "password_hash" field.
 func (uu *UserUpdate) ClearPasswordHash() *UserUpdate {
 	uu.mutation.ClearPasswordHash()
 	return uu
@@ -158,7 +158,7 @@ func (uu *UserUpdate) check() error {
 		}
 	}
 	if _, ok := uu.mutation.UserPermissionsID(); uu.mutation.UserPermissionsCleared() && !ok {
-		return errors.New(`ent: clearing a required unique edge "User.userPermissions"`)
+		return errors.New(`ent: clearing a required unique edge "User.user_permissions"`)
 	}
 	return nil
 }
@@ -266,13 +266,13 @@ func (uuo *UserUpdateOne) SetNillableUsername(s *string) *UserUpdateOne {
 	return uuo
 }
 
-// SetPasswordHash sets the "passwordHash" field.
+// SetPasswordHash sets the "password_hash" field.
 func (uuo *UserUpdateOne) SetPasswordHash(s string) *UserUpdateOne {
 	uuo.mutation.SetPasswordHash(s)
 	return uuo
 }
 
-// SetNillablePasswordHash sets the "passwordHash" field if the given value is not nil.
+// SetNillablePasswordHash sets the "password_hash" field if the given value is not nil.
 func (uuo *UserUpdateOne) SetNillablePasswordHash(s *string) *UserUpdateOne {
 	if s != nil {
 		uuo.SetPasswordHash(*s)
@@ -280,7 +280,7 @@ func (uuo *UserUpdateOne) SetNillablePasswordHash(s *string) *UserUpdateOne {
 	return uuo
 }
 
-// ClearPasswordHash clears the value of the "passwordHash" field.
+// ClearPasswordHash clears the value of the "password_hash" field.
 func (uuo *UserUpdateOne) ClearPasswordHash() *UserUpdateOne {
 	uuo.mutation.ClearPasswordHash()
 	return uuo
@@ -394,7 +394,7 @@ func (uuo *UserUpdateOne) check() error {
 		}
 	}
 	if _, ok := uuo.mutation.UserPermissionsID(); uuo.mutation.UserPermissionsCleared() && !ok {
-		return errors.New(`ent: clearing a required unique edge "User.userPermissions"`)
+		return errors.New(`ent: clearing a required unique edge "User.user_permissions"`)
 	}
 	return nil
 }
