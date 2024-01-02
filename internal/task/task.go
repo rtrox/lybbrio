@@ -56,6 +56,8 @@ func (t *concurrentTaskMap) RegisterTasks(taskMap TaskMap) {
 func NoOpTask(ctx context.Context, task *ent.Task, cb ProgressCallback) (msg string, err error) {
 	log := log.Ctx(ctx)
 	log.Info().Interface("task", task).Msg("NoOpTask")
-	cb(1)
+	if err := cb(1); err != nil {
+		return "", err
+	}
 	return "done", nil
 }

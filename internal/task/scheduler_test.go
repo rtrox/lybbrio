@@ -68,7 +68,7 @@ func TestSchedulerSchedule(t *testing.T) {
 	require.NoError(err)
 
 	require.NotPanics(func() {
-		s.Schedule(ctx)
+		require.NoError(s.Schedule(ctx))
 	})
 
 	select {

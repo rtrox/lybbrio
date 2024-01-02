@@ -18,7 +18,7 @@ func Test_PrometheusMiddleware(t *testing.T) {
 		{
 			name: "200 OK",
 			handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				w.Write([]byte("OK"))
+				w.Write([]byte("OK")) // nolint: errcheck
 				w.WriteHeader(http.StatusOK)
 			}),
 			expectedMetrics: []string{
