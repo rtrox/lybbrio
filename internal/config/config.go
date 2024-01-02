@@ -32,6 +32,9 @@ func RegisterFlags(flagSet *flag.FlagSet) {
 	flagSet.Int("db.max-idle-conns", 10, "Database max idle connections")
 	flagSet.Int("db.max-open-conns", 100, "Database max open connections")
 	flagSet.Duration("db.conn-max-lifetime", 1*time.Hour, "Database connection max lifetime")
+	flagSet.Int("task.workers", 10, "Number of workers")
+	flagSet.Int("task.queue-length", 100, "Task queue length")
+	flagSet.Duration("task.cadence", 5*time.Second, "Task cadence")
 }
 
 type DatabaseConfig struct {
@@ -43,6 +46,12 @@ type DatabaseConfig struct {
 	MaxIdleConns    int           `koanf:"max-idle-conns"`
 	MaxOpenConns    int           `koanf:"max-open-conns"`
 	ConnMaxLifetime time.Duration `koanf:"conn-max-lifetime"`
+}
+
+type TaskConfig struct {
+	Workers     int           `koanf:"workers" validate:"required|int|gt:0"`
+	QueueLength int           `koanf:"queue-length" validate:"required|int|gt:0"`
+	Cadence     time.Duration `koanf:"cadence" validate:"required"`
 }
 
 type Config struct {
@@ -61,7 +70,8 @@ type Config struct {
 
 	CalibreDBPath string `koanf:"calibre-db-path" validate:"required"`
 
-	DB DatabaseConfig `koanf:"db"`
+	DB   DatabaseConfig `koanf:"db"`
+	Task TaskConfig     `koanf:"task"`
 
 	JWTSecret string        `koanf:"jwt-secret" validate:"required"`
 	JWTIssuer string        `koanf:"jwt-issuer" validate:"required"`
@@ -85,6 +95,10 @@ func (c *Config) Validate() error {
 	vd := validate.Struct(c.DB)
 	if !vd.Validate() {
 		return vd.Errors
+	}
+	vt := validate.Struct(c.Task)
+	if !vt.Validate() {
+		return vt.Errors
 	}
 	return nil
 }
@@ -121,6 +135,11 @@ func LoadConfig(flagSet *flag.FlagSet) (*Config, error) {
 			"max-idle-conns":    10,
 			"max-open-conns":    100,
 			"conn-max-lifetime": "1h",
+		},
+		"task": map[string]interface{}{
+			"workers":      10,
+			"queue-length": 100, // 1000 tasks
+			"cadence":      5 * time.Second,
 		},
 		"jwt-issuer": "http://localhost:8080",
 		"jwt-expiry": "1h",

@@ -14,8 +14,11 @@ func SuperRead(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		view := viewer.FromContext(ctx)
-		if view.IsAdmin() && r.URL.Query().Get("superRead") == "true" {
-			ctx = WithSuperRead(ctx)
+
+		if view != nil {
+			if view.IsAdmin() && r.URL.Query().Get("superRead") == "true" {
+				ctx = WithSuperRead(ctx)
+			}
 		}
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})

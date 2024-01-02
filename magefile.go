@@ -32,6 +32,8 @@ var (
 		"build":          Build.Build,
 		"clean":          Build.Clean,
 		"generate":       Build.Generate,
+		"test":           Check.Test,
+		"lint":           Check.Lint,
 		"new-ent":        Build.NewEnt,
 		"check":          Check.All,
 		"check:lint":     Check.Lint,
@@ -191,7 +193,7 @@ func (Check) LintFix() {
 func (Check) Test() {
 	mg.Deps(initVars)
 	fmt.Printf("Testing %s version %s, revision %s\n", name, VersionNumber, Revision)
-	runAndStreamOutput("go", "test", "-v", "./...")
+	runAndStreamOutput("go", "test", "-cover", "./...")
 }
 
 func (Check) Vet() {

@@ -13,7 +13,7 @@ import (
 var (
 	requestLatency = promauto.NewHistogramVec(
 		prometheus.HistogramOpts{
-			Namespace: "spotify_sentry",
+			Namespace: "lybbrio",
 			Name:      "http_request_duration_seconds",
 			Help:      "Histogram of latencies for HTTP requests.",
 			Buckets:   []float64{.25, .5, 1, 2.5, 5, 10},
@@ -22,7 +22,7 @@ var (
 	)
 	requests = promauto.NewCounterVec(
 		prometheus.CounterOpts{
-			Namespace: "spotify_sentry",
+			Namespace: "lybbrio",
 			Name:      "http_requests_total",
 			Help:      "Total number of HTTP requests made.",
 		},
@@ -30,7 +30,7 @@ var (
 	)
 	request_errors = promauto.NewCounterVec(
 		prometheus.CounterOpts{
-			Namespace: "spotify_sentry",
+			Namespace: "lybbrio",
 			Name:      "http_request_errors_total",
 			Help:      "Total number of HTTP requests that resulted in an error.",
 		},

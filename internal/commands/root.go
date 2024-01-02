@@ -3,7 +3,6 @@ package commands
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"net/http"
 	"os"
@@ -173,8 +172,8 @@ func rootRun(cmd *cobra.Command, args []string) {
 		client,
 		&task.WorkerPoolConfig{
 			Ctx:         schedulerVC,
-			NumWorkers:  5,   // TODO: Config
-			QueueLength: 100, // TODO: Config
+			NumWorkers:  conf.Task.Workers,
+			QueueLength: conf.Task.QueueLength,
 		},
 	)
 	workerPool.Start()
@@ -184,7 +183,7 @@ func rootRun(cmd *cobra.Command, args []string) {
 		&task.SchedulerConfig{
 			Ctx:       schedulerVC,
 			WorkQueue: workerPool.WorkQueue(),
-			Cadence:   5 * time.Second, // TODO: Config
+			Cadence:   conf.Task.Cadence,
 		},
 	)
 	scheduler.RegisterTasks(calibre_tasks.TaskMap(cal, client))
