@@ -26,6 +26,10 @@
   "assignees": ["rtrox"],
   "assignAutomerge": true,
   "labels": ["dependencies"],
+  "postUpdateOptions": [
+    "gomodTidy",
+    "gomodUpdateImportPaths",
+  ]
   "packageRules": [
     // add labels according to package and update types
     {

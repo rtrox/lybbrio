@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v5
       - uses: pre-commit/action@v3.0.0
         with:
           extra_args: --config .github/lint/precommit-ci.yaml
@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-go@v4
+      - uses: actions/setup-go@v5
         with:
           go-version: ">=1.21.4"
       - name: Check Go Fmt
@@ -31,6 +31,7 @@ jobs:
           go version
           go mod tidy
           git diff --exit-code
+
   golangci-lint:
     runs-on: ubuntu-latest
     permissions:
@@ -39,7 +40,7 @@ jobs:
       checks: write
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-go@v4
+      - uses: actions/setup-go@v5
         with:
           go-version: ">=1.21.4"
       - uses: golangci/golangci-lint-action@v3
@@ -52,25 +53,24 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Set up Go
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@v5
         with:
           go-version: ">=1.21.4"
       - name: Tidy
         run: |
           go version
           go mod tidy
-          git diff --exit-code
       - name: Run Unit tests
         run: |
           go version
           go test -v -race -covermode atomic -coverprofile=covprofile ./...
 
-# - name: Install goveralls
-#   run: |
-#     go version
-#     go install github.com/mattn/goveralls@latest
+      - name: Install goveralls
+        run: |
+          go version
+          go install github.com/mattn/goveralls@latest
 
-# - name: Send coverage
-#   env:
-#     COVERALLS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#   run: goveralls -coverprofile=covprofile -service=github
+      - name: Send coverage
+        env:
+          COVERALLS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: goveralls -coverprofile=covprofile -service=github
