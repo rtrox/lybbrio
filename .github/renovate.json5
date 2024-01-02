@@ -29,7 +29,7 @@
   "postUpdateOptions": [
     "gomodTidy",
     "gomodUpdateImportPaths",
-  ]
+  ],
   "packageRules": [
     // add labels according to package and update types
     {
