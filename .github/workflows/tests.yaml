@@ -14,15 +14,11 @@ jobs:
         with:
           extra_args: --config .github/lint/precommit-ci.yaml
 
-  golangci-lint:
+  golang-basic-lint:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      pull-requests: read
-      checks: write
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-go@v3
+      - uses: actions/setup-go@v4
         with:
           go-version: ">=1.21.4"
       - name: Check Go Fmt
@@ -35,9 +31,20 @@ jobs:
           go version
           go mod tidy
           git diff --exit-code
+  golangci-lint:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+      checks: write
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-go@v4
+        with:
+          go-version: ">=1.21.4"
       - uses: golangci/golangci-lint-action@v3
         with:
-          version: v1.51.2
+          version: v1.54
           args: --timeout 5m --config .github/lint/golangci.yaml
 
   go-tests:
