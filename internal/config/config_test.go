@@ -54,6 +54,7 @@ func Test_LoadConfig_Defaults(t *testing.T) {
 	require.NotEqual(firstSecret, config2.JWTSecret, "JWT Secret should be unique when not set")
 }
 
+// nolint: errcheck
 func Test_LoadConfig_Flags(t *testing.T) {
 	t.Parallel()
 	require := require.New(t)
@@ -152,6 +153,7 @@ func Test_LoadConfig_Env(t *testing.T) {
 	require.Equal(12*time.Hour, config.JWTExpiry)
 }
 
+// nolint: errcheck
 func Test_LoadConfig_Env_Partials(t *testing.T) {
 	// env cannot be set in parallel tests
 	require := require.New(t)
