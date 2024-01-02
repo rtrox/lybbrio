@@ -216,9 +216,9 @@ func (Check) ModTidy() {
 
 func (Check) All() {
 	mg.Deps(initVars)
+	mg.Deps(Check.ModTidy)
+	mg.Deps(Check.Fmt)
+	mg.Deps(Check.Vet)
 	mg.Deps(Check.Lint)
 	mg.Deps(Check.Test)
-	mg.Deps(Check.Vet)
-	mg.Deps(Check.Fmt)
-	mg.Deps(Check.ModTidy)
 }
