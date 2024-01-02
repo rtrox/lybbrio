@@ -2,10 +2,7 @@ name: Run Tests
 on:
   workflow_call:
 
-permissions:
-  contents: read
-  pull-requests: read
-  checks: write
+
 
 jobs:
   pre-commit-check:
@@ -19,6 +16,10 @@ jobs:
 
   golangci-lint:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+      checks: write
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-go@v3
