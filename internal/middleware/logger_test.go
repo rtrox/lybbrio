@@ -28,7 +28,7 @@ func Test_StructuredLogger(t *testing.T) {
 		{
 			name: "200 OK",
 			handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				w.Write([]byte("OK"))
+				w.Write([]byte("OK")) // nolint: errcheck
 				w.WriteHeader(http.StatusOK)
 			}),
 			expectedFunc: func() map[string]interface{} {
@@ -72,7 +72,7 @@ func Test_StructuredLogger(t *testing.T) {
 
 			logLine := make(map[string]interface{})
 			require.NoError(
-				json.Unmarshal([]byte(out.String()), &logLine),
+				json.Unmarshal(out.Bytes(), &logLine),
 			)
 			require.NotEqual("", logLine["latency"])
 			for k, v := range tt.expectedFunc() {
@@ -153,7 +153,7 @@ func Test_StructeredLoggerPathLogging(t *testing.T) {
 			handle.ServeHTTP(httptest.NewRecorder(), httptest.NewRequest("GET", tt.path, nil))
 			logLine := make(map[string]interface{})
 			require.NoError(
-				json.Unmarshal([]byte(out.String()), &logLine),
+				json.Unmarshal(out.Bytes(), &logLine),
 			)
 			require.Equal(tt.path, logLine["path"])
 		})

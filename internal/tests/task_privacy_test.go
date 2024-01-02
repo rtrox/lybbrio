@@ -153,7 +153,7 @@ func Test_UpdateSystemTask(t *testing.T) {
 				SetType(task_enums.TypeNoOp).
 				SetIsSystemTask(true).
 				SaveX(adminCtx)
-			task, err := task.Update().
+			_, err := task.Update().
 				SetProgress(0.5).
 				Save(tt.updaterContext(data))
 			if tt.shouldUpdate {

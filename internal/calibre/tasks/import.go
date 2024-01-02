@@ -16,10 +16,6 @@ type importOutputCtxKey string
 
 const importOutputKey importOutputCtxKey = "importOutput"
 
-type identifierKey struct {
-	typ, val string
-}
-
 type importContext struct {
 	visitedAuthors    map[int64]ksuid.ID
 	visitedTags       map[int64]ksuid.ID
@@ -166,7 +162,12 @@ func ImportBooks(cal calibre.Calibre, client *ent.Client, ctx context.Context, c
 					Msg("Failed to create book")
 				ic.AddFailedBook(book.Title)
 			}
-			cb(float64(idx+1) / (float64(total)))
+			if err := cb(float64(idx+1) / (float64(total))); err != nil {
+				log.Warn().Err(err).
+					Str("book", book.Title).
+					Int64("bookID", book.ID).
+					Msg("Failed to update progress")
+			}
 			continue
 		}
 
@@ -217,7 +218,12 @@ func ImportBooks(cal calibre.Calibre, client *ent.Client, ctx context.Context, c
 				Int64("bookID", book.ID).
 				Msg("Failed to create series")
 		}
-		cb(float64(idx+1) / (float64(total)))
+		if err := cb(float64(idx+1) / (float64(total))); err != nil {
+			log.Warn().Err(err).
+				Str("book", book.Title).
+				Int64("bookID", book.ID).
+				Msg("Failed to update progress")
+		}
 	}
 
 	return nil
