@@ -10,6 +10,10 @@ import (
 	"gorm.io/gorm/clause"
 )
 
+func asdf() error {
+	return nil
+}
+
 type Calibre interface {
 	GetAuthor(ctx context.Context, id int64) (*Author, error)
 	GetAuthors(ctx context.Context) ([]*Author, error)
@@ -45,7 +49,7 @@ type CalibreSQLite struct {
 
 func NewCalibreSQLite(dbPath string) (*CalibreSQLite, error) {
 	db, err := gorm.Open(sqlite.Open(dbPath), &gorm.Config{})
-
+	asdf()
 	if err != nil {
 		return nil, err
 	}
