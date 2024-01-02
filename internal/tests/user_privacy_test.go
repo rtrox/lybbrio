@@ -1,0 +1,111 @@
+package test
+
+import (
+	"context"
+	"lybbrio/internal/ent/schema/ksuid"
+	"testing"
+
+	"github.com/stretchr/testify/require"
+)
+
+func Test_UserCannotMutateOtherUsers(t *testing.T) {
+	tests := []struct {
+		name           string
+		updaterContext func(testData) context.Context
+		updatedID      ksuid.ID
+		shouldUpdate   bool
+	}{
+		{
+			name:           "user1 updates user2",
+			updaterContext: func(data testData) context.Context { return data.user1ViewerContext },
+			updatedID:      USER_ID_2,
+			shouldUpdate:   false,
+		},
+		{
+			name:           "user1 updates user1",
+			updaterContext: func(data testData) context.Context { return data.user1ViewerContext },
+			updatedID:      USER_ID_1,
+			shouldUpdate:   true,
+		},
+		{
+			name:           "user2 updates user1",
+			updaterContext: func(data testData) context.Context { return data.user2ViewerContext },
+			updatedID:      USER_ID_1,
+			shouldUpdate:   false,
+		},
+		{
+			name:           "user2 updates user2",
+			updaterContext: func(data testData) context.Context { return data.user2ViewerContext },
+			updatedID:      USER_ID_2,
+			shouldUpdate:   true,
+		},
+		{
+			name:           "admin updates user1",
+			updaterContext: func(data testData) context.Context { return data.adminViewerContext },
+			updatedID:      USER_ID_1,
+			shouldUpdate:   true,
+		},
+		{
+			name:           "admin updates user2",
+			updaterContext: func(data testData) context.Context { return data.adminViewerContext },
+			updatedID:      USER_ID_2,
+			shouldUpdate:   true,
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			teardown, client, data := setupTest(t, tt.name)
+			defer teardown(t)
+
+			_, err := client.User.UpdateOneID(tt.updatedID).
+				SetUsername("newName").
+				Save(tt.updaterContext(data))
+			if tt.shouldUpdate {
+				require.NoError(t, err, "failed to update user")
+			} else {
+				require.Error(t, err, "expected error updating user")
+			}
+
+		})
+	}
+}
+
+func Test_UsersCanSeeEachOther(t *testing.T) {
+	tests := []struct {
+		name          string
+		viewerContext func(testData) context.Context
+		expectedCount int
+	}{
+		{
+			name:          "user1 views users",
+			viewerContext: func(data testData) context.Context { return data.user1ViewerContext },
+			expectedCount: 3,
+		},
+		{
+			name:          "user2 views users",
+			viewerContext: func(data testData) context.Context { return data.user2ViewerContext },
+			expectedCount: 3,
+		},
+		{
+			name:          "admin views users",
+			viewerContext: func(data testData) context.Context { return data.adminViewerContext },
+			expectedCount: 3,
+		},
+	}
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			teardown, client, data := setupTest(t, tt.name)
+			defer teardown(t)
+
+			users, err := client.User.Query().
+				All(tt.viewerContext(data))
+			require.NoError(t, err, "failed to query users")
+			require.Len(t, users, tt.expectedCount, "incorrect number of users")
+		})
+
+	}
+}

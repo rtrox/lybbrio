@@ -31,6 +31,7 @@ type Book struct {
 	Publisher    []Publisher  `json:"publishers,omitempty" gorm:"many2many:books_publishers_link;foreignKey:id;joinForeignKey:book;References:ID;JoinReferences:publisher"`
 	Comments     Comment      `json:"comments" gorm:"foreignKey:book"`
 	Languages    []Language   `json:"languages,omitempty" gorm:"many2many:books_languages_link;foreignKey:id;joinForeignKey:book;References:ID;JoinReferences:lang_code"`
+	Series       []Series     `json:"series,omitempty" gorm:"many2many:books_series_link;foreignKey:id;joinForeignKey:book;References:ID;JoinReferences:series"`
 }
 
 type Identifier struct {

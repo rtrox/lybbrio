@@ -5,27 +5,33 @@ import (
 	"fmt"
 
 	"net/http"
-	"net/url"
 	"os"
 	"os/signal"
 	"syscall"
 
+	"entgo.io/contrib/entgql"
+	"github.com/99designs/gqlgen/graphql/handler"
+	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/go-chi/chi"
 	chi_middleware "github.com/go-chi/chi/middleware"
+	"github.com/go-chi/render"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/collectors"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
-	httpSwagger "github.com/swaggo/http-swagger/v2"
 
-	"lybbrio/docs"
+	"lybbrio/internal/auth"
 	"lybbrio/internal/calibre"
+	calibre_tasks "lybbrio/internal/calibre/tasks"
 	"lybbrio/internal/config"
-	"lybbrio/internal/handlers"
+	"lybbrio/internal/db"
+	"lybbrio/internal/graph"
 	"lybbrio/internal/metrics"
 	"lybbrio/internal/middleware"
+	"lybbrio/internal/task"
+	"lybbrio/internal/viewer"
 )
 
 type AppInfo struct {
@@ -52,20 +58,9 @@ func Execute(a AppInfo) error {
 }
 
 func init() {
-	cobra.OnInitialize(initConfig, initLogger, initDocs)
+	cobra.OnInitialize(initConfig, initLogger)
 
 	config.RegisterFlags(rootCmd.PersistentFlags())
-}
-
-func initDocs() {
-	docs.SwaggerInfo.Title = rootCmd.Short
-	docs.SwaggerInfo.Description = rootCmd.Long
-	docs.SwaggerInfo.Version = "0.1.0" // API Version, differs from app version
-	u, _ := url.Parse(conf.BaseURL)
-	p, _ := url.JoinPath(u.Host, u.Path)
-	docs.SwaggerInfo.Host = p
-	docs.SwaggerInfo.BasePath = "/api/v2"
-	docs.SwaggerInfo.Schemes = []string{"http", "https"}
 }
 
 func initConfig() {
@@ -106,6 +101,7 @@ func initLogger() {
 func rootRun(cmd *cobra.Command, args []string) {
 	var srv http.Server
 
+	schedulerCtx := context.Background()
 	idleConnsClosed := make(chan struct{})
 
 	go func() {
@@ -131,6 +127,7 @@ func rootRun(cmd *cobra.Command, args []string) {
 		Str("build_time", appInfo.BuildTime).
 		Str("revision", appInfo.Revision).
 		Msg("App Started.")
+	log.Debug().Interface("config", conf).Msg("Loaded config")
 
 	appFunc := metrics.AppInfoGaugeFunc(metrics.AppInfoOpts{
 		Name:      appInfo.Name,
@@ -158,10 +155,51 @@ func rootRun(cmd *cobra.Command, args []string) {
 	}
 
 	// Database
+	client, err := db.Open(&conf.DB)
+	if err != nil {
+		log.Fatal().Err(err).Msg("opening ent client")
+	}
+	// TODO: Better Migrations
+	if err := client.Schema.Create(
+		context.Background(),
+	); err != nil {
+		log.Fatal().Err(err).Msg("migrating ent client")
+	}
 
-	// Stores
+	// Task Scheduler
+	schedulerVC := viewer.NewSystemAdminContext(schedulerCtx)
+	workerPool := task.NewWorkerPool(
+		client,
+		&task.WorkerPoolConfig{
+			Ctx:         schedulerVC,
+			NumWorkers:  conf.Task.Workers,
+			QueueLength: conf.Task.QueueLength,
+		},
+	)
+	workerPool.Start()
+
+	scheduler := task.NewScheduler(
+		client,
+		&task.SchedulerConfig{
+			Ctx:       schedulerVC,
+			WorkQueue: workerPool.WorkQueue(),
+			Cadence:   conf.Task.Cadence,
+		},
+	)
+	scheduler.RegisterTasks(calibre_tasks.TaskMap(cal, client))
+	scheduler.Start()
 
 	// Auth Provider
+	jwtProvider, err := auth.NewJWTProvider(conf.JWTSecret, conf.JWTIssuer, conf.JWTExpiry)
+	if err != nil {
+		log.Fatal().Err(err).Msg("Failed to initialize JWT Provider")
+	}
+
+	// GraphQL
+	graphqlHandler := handler.NewDefaultServer(graph.NewSchema(client))
+	graphqlHandler.Use(
+		entgql.Transactioner{TxOpener: client},
+	)
 
 	// HTTP
 	r := chi.NewRouter()
@@ -173,23 +211,21 @@ func rootRun(cmd *cobra.Command, args []string) {
 	r.Use(middleware.Prometheus(reg))
 	r.Use(chi_middleware.Recoverer)
 
-	r.Get("/healthz", handlers.Health)
+	r.Get("/healthz", func(w http.ResponseWriter, r *http.Request) {
+		render.JSON(w, r, map[string]string{"status": "ok"})
+	})
+
 	r.Handle("/metrics", promhttp.HandlerFor(reg, promhttp.HandlerOpts{}))
 
-	r.Route("/api/v2", func(r chi.Router) {
-		// r.Mount("/auth", handlers.AuthRoutes(store, authProvider))
-		r.Route("/", func(r chi.Router) {
-			// r.Use(middleware.Auth(authProvider))
-			r.Mount("/books", handlers.BookRoutes(cal))
-			r.Mount("/authors", handlers.AuthorRoutes(cal))
-			r.Mount("/series", handlers.SeriesRoutes(cal))
-			r.Mount("/tags", handlers.TagRoutes(cal))
-			r.Mount("/publishers", handlers.PublisherRoutes(cal))
-			r.Mount("/languages", handlers.LanguageRoutes(cal))
-		})
-		r.NotFound(handlers.NotFoundHandler)
+	r.Mount("/auth", auth.Routes(client, jwtProvider))
+	r.Route("/graphql", func(r chi.Router) {
+		r.With(
+			auth.Middleware(jwtProvider),
+			middleware.ViewerContextMiddleware(client),
+			middleware.SuperRead,
+		).Handle("/", graphqlHandler)
+		r.Handle("/playground", playground.Handler("Lybbrio GraphQL playground", "/graphql"))
 	})
-	r.Mount("/swagger", httpSwagger.WrapHandler)
 
 	srv.Addr = fmt.Sprintf("%s:%d", conf.Interface, conf.Port)
 	srv.Handler = r

@@ -1,0 +1,29 @@
+{{ define "ksuid" }}
+
+{{ $pkg := base $.Config.Package }}
+{{ template "header" $ }}
+
+// prefixMap maps KSUID prefixes to table names.
+var prefixMap = map[ksuid.ID]string{
+	{{- range $node := $.Nodes }}
+		{{- if $annotation := $node.Annotations.KSUID }}
+			"{{ $annotation.Prefix }}": {{ $node.Package }}.Table,
+		{{- end }}
+	{{- end }}
+}
+
+// IDToType maps a pulid.ID to the underlying table.a
+func IDToType(ctx context.Context, id ksuid.ID) (string, error) {
+	if len(id) < 4 {
+		return "", fmt.Errorf("IDToType: id too short")
+	}
+	prefix := id[:4]
+    prefix = prefix[:3] // remove underscore
+	typ := prefixMap[prefix]
+	if typ == "" {
+		return "", fmt.Errorf("IDToType: could not map prefix '%s' to a type", prefix)
+	}
+	return typ, nil
+}
+
+{{ end }}
