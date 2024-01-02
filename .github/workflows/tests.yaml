@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-go@v4
+      - uses: actions/setup-go@v5
         with:
           go-version: ">=1.21.4"
       - name: Check Go Fmt
@@ -39,7 +39,7 @@ jobs:
       checks: write
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-go@v4
+      - uses: actions/setup-go@v5
         with:
           go-version: ">=1.21.4"
       - uses: golangci/golangci-lint-action@v3
@@ -52,7 +52,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Set up Go
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@v5
         with:
           go-version: ">=1.21.4"
       - name: Tidy
