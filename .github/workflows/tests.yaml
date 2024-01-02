@@ -31,6 +31,7 @@ jobs:
           go version
           go mod tidy
           git diff --exit-code
+
   golangci-lint:
     runs-on: ubuntu-latest
     permissions:
@@ -59,18 +60,17 @@ jobs:
         run: |
           go version
           go mod tidy
-          git diff --exit-code
       - name: Run Unit tests
         run: |
           go version
           go test -v -race -covermode atomic -coverprofile=covprofile ./...
 
-# - name: Install goveralls
-#   run: |
-#     go version
-#     go install github.com/mattn/goveralls@latest
+      - name: Install goveralls
+        run: |
+          go version
+          go install github.com/mattn/goveralls@latest
 
-# - name: Send coverage
-#   env:
-#     COVERALLS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#   run: goveralls -coverprofile=covprofile -service=github
+      - name: Send coverage
+        env:
+          COVERALLS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: goveralls -coverprofile=covprofile -service=github
