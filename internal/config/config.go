@@ -16,8 +16,34 @@ import (
 	flag "github.com/spf13/pflag"
 )
 
+var defaultSettings = map[string]interface{}{
+	"log-level":                 "info",
+	"log-format":                "text",
+	"graceful-shutdown-timeout": 1 * time.Second,
+	"base-url":                  "http://localhost:8080",
+	"port":                      8080,
+	"interface":                 "127.0.0.1",
+	"go-collector":              true,
+	"process-collector":         true,
+	"calibre-db-path":           "database/metadata.db",
+	"db": map[string]interface{}{
+		"driver":            "sqlite3",
+		"dsn":               "file:database/app.db?cache=shared&_fk=1",
+		"max-idle-conns":    10,
+		"max-open-conns":    100,
+		"conn-max-lifetime": 1 * time.Hour,
+	},
+	"task": map[string]interface{}{
+		"workers":      10,
+		"queue-length": 100, // 1000 tasks
+		"cadence":      5 * time.Second,
+	},
+	"jwt-issuer": "http://localhost:8080",
+	"jwt-expiry": 1 * time.Hour,
+}
+
 func RegisterFlags(flagSet *flag.FlagSet) {
-	flagSet.String("config", "config.yaml", "Path to config file")
+	// flagSet.String("config", "config.yaml", "Path to config file")
 	flagSet.String("log-level", "info", "Log level")
 	flagSet.String("log-format", "text", "Log format (text, json)")
 	flagSet.Duration("graceful-shutdown-timeout", 1*time.Second, "Graceful shutdown timeout prior to killing the process")
@@ -35,13 +61,13 @@ func RegisterFlags(flagSet *flag.FlagSet) {
 	flagSet.Int("task.workers", 10, "Number of workers")
 	flagSet.Int("task.queue-length", 100, "Task queue length")
 	flagSet.Duration("task.cadence", 5*time.Second, "Task cadence")
+	flagSet.String("jwt-issuer", "http://localhost:8080", "JWT Issuer")
+	flagSet.Duration("jwt-expiry", 1*time.Hour, "JWT Expiry")
+	flagSet.String("jwt-secret", "", "JWT Secret")
 }
 
 type DatabaseConfig struct {
 	Driver          string        `koanf:"driver" validate:"required|in:sqlite3,mysql,postgres"`
-	Username        string        `koanf:"username"`
-	Password        string        `koanf:"password"`
-	DatabaseName    string        `koanf:"database-name"`
 	DSN             string        `koanf:"dsn" validate:"required"`
 	MaxIdleConns    int           `koanf:"max-idle-conns"`
 	MaxOpenConns    int           `koanf:"max-open-conns"`
@@ -119,31 +145,7 @@ func LoadConfig(flagSet *flag.FlagSet) (*Config, error) {
 	k := koanf.New(".")
 
 	// Defaults
-	if err := k.Load(confmap.Provider(map[string]interface{}{
-		"log-level":                 "info",
-		"log-format":                "text",
-		"graceful-shutdown-timeout": "1s",
-		"base-url":                  "http://localhost:8080",
-		"port":                      8080,
-		"interface":                 "127.0.0.1",
-		"go-collector":              true,
-		"process-collector":         true,
-		"calibre-db-path":           "database/metadata.db",
-		"db": map[string]interface{}{
-			"driver":            "sqlite3",
-			"dsn":               "file:database/app.db?cache=shared&_fk=1",
-			"max-idle-conns":    10,
-			"max-open-conns":    100,
-			"conn-max-lifetime": "1h",
-		},
-		"task": map[string]interface{}{
-			"workers":      10,
-			"queue-length": 100, // 1000 tasks
-			"cadence":      5 * time.Second,
-		},
-		"jwt-issuer": "http://localhost:8080",
-		"jwt-expiry": "1h",
-	}, "."), nil); err != nil {
+	if err := k.Load(confmap.Provider(defaultSettings, "."), nil); err != nil {
 		return nil, err
 	}
 

@@ -181,7 +181,7 @@ type Check mg.Namespace
 func (Check) Lint() {
 	mg.Deps(initVars)
 	fmt.Printf("Linting %s version %s, revision %s\n", name, VersionNumber, Revision)
-	runAndStreamOutput("golangci-lint", "run")
+	runAndStreamOutput("golangci-lint", "run", "--config", ".github/lint/golangci.yaml")
 }
 
 func (Check) LintFix() {

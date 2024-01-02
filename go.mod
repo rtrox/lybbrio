@@ -1,6 +1,6 @@
 module lybbrio
 
-go 1.21.4
+go 1.21
 
 require (
 	entgo.io/contrib v0.4.5
