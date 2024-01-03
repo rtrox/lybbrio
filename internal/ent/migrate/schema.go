@@ -11,7 +11,7 @@ var (
 	// AuthorsColumns holds the columns for the "authors" table.
 	AuthorsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeString},
-		{Name: "calibre_id", Type: field.TypeInt64, Unique: true},
+		{Name: "calibre_id", Type: field.TypeInt64, Unique: true, Nullable: true},
 		{Name: "name", Type: field.TypeString, Unique: true},
 		{Name: "sort", Type: field.TypeString},
 		{Name: "link", Type: field.TypeString, Nullable: true},
@@ -42,7 +42,7 @@ var (
 	// BooksColumns holds the columns for the "books" table.
 	BooksColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeString},
-		{Name: "calibre_id", Type: field.TypeInt64, Unique: true},
+		{Name: "calibre_id", Type: field.TypeInt64, Unique: true, Nullable: true},
 		{Name: "title", Type: field.TypeString, Size: 2147483647},
 		{Name: "sort", Type: field.TypeString, Size: 2147483647},
 		{Name: "published_date", Type: field.TypeTime, Nullable: true},
@@ -87,7 +87,7 @@ var (
 	// IdentifiersColumns holds the columns for the "identifiers" table.
 	IdentifiersColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeString},
-		{Name: "calibre_id", Type: field.TypeInt64, Unique: true},
+		{Name: "calibre_id", Type: field.TypeInt64, Unique: true, Nullable: true},
 		{Name: "type", Type: field.TypeString},
 		{Name: "value", Type: field.TypeString},
 		{Name: "identifier_book", Type: field.TypeString},
@@ -121,7 +121,7 @@ var (
 	// LanguagesColumns holds the columns for the "languages" table.
 	LanguagesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeString},
-		{Name: "calibre_id", Type: field.TypeInt64, Unique: true},
+		{Name: "calibre_id", Type: field.TypeInt64, Unique: true, Nullable: true},
 		{Name: "code", Type: field.TypeString},
 	}
 	// LanguagesTable holds the schema information for the "languages" table.
@@ -145,7 +145,7 @@ var (
 	// PublishersColumns holds the columns for the "publishers" table.
 	PublishersColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeString},
-		{Name: "calibre_id", Type: field.TypeInt64, Unique: true},
+		{Name: "calibre_id", Type: field.TypeInt64, Unique: true, Nullable: true},
 		{Name: "name", Type: field.TypeString},
 	}
 	// PublishersTable holds the schema information for the "publishers" table.
@@ -169,7 +169,7 @@ var (
 	// SeriesColumns holds the columns for the "series" table.
 	SeriesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeString},
-		{Name: "calibre_id", Type: field.TypeInt64, Unique: true},
+		{Name: "calibre_id", Type: field.TypeInt64, Unique: true, Nullable: true},
 		{Name: "name", Type: field.TypeString},
 		{Name: "sort", Type: field.TypeString},
 	}
@@ -223,7 +223,7 @@ var (
 	// TagsColumns holds the columns for the "tags" table.
 	TagsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeString},
-		{Name: "calibre_id", Type: field.TypeInt64, Unique: true},
+		{Name: "calibre_id", Type: field.TypeInt64, Unique: true, Nullable: true},
 		{Name: "name", Type: field.TypeString},
 	}
 	// TagsTable holds the schema information for the "tags" table.
@@ -299,6 +299,7 @@ var (
 	// UserPermissionsColumns holds the columns for the "user_permissions" table.
 	UserPermissionsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeString},
+		{Name: "can_edit", Type: field.TypeBool, Default: false},
 		{Name: "admin", Type: field.TypeBool, Default: false},
 		{Name: "can_create_public", Type: field.TypeBool, Default: false},
 		{Name: "user_id", Type: field.TypeString, Unique: true, Nullable: true},
@@ -311,7 +312,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "user_permissions_users_user_permissions",
-				Columns:    []*schema.Column{UserPermissionsColumns[3]},
+				Columns:    []*schema.Column{UserPermissionsColumns[4]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.SetNull,
 			},

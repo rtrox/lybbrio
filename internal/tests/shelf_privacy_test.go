@@ -141,11 +141,11 @@ func Test_ShelfViewRespectsUserFilter(t *testing.T) {
 
 			view := viewer.FromContext(tt.viewer(data))
 			if !view.IsAdmin() {
-				u, ok := view.User()
+				uid, ok := view.UserID()
 				for _, shelf := range shelves {
 					require.True(t, ok, "viewer should have a user")
 					if !shelf.Public {
-						require.Equal(t, u.ID, shelf.UserID, "user should not be able to see shelves belonging to other users")
+						require.Equal(t, uid, shelf.UserID, "user should not be able to see shelves belonging to other users")
 					}
 				}
 			}
@@ -183,10 +183,10 @@ func Test_CreatePublicShelfRespectsPermissionsRule(t *testing.T) {
 			defer teardown(t)
 
 			ctx := tt.creatorContext(data)
-			user, _ := viewer.FromContext(ctx).User()
+			uid, _ := viewer.FromContext(ctx).UserID()
 
 			_, err := client.Shelf.Create().
-				SetUserID(user.ID).
+				SetUserID(uid).
 				SetName("test").
 				SetPublic(true).
 				Save(ctx)

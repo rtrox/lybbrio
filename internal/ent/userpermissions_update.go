@@ -49,13 +49,27 @@ func (upu *UserPermissionsUpdate) ClearUserID() *UserPermissionsUpdate {
 	return upu
 }
 
-// SetAdmin sets the "admin" field.
+// SetCanEdit sets the "CanEdit" field.
+func (upu *UserPermissionsUpdate) SetCanEdit(b bool) *UserPermissionsUpdate {
+	upu.mutation.SetCanEdit(b)
+	return upu
+}
+
+// SetNillableCanEdit sets the "CanEdit" field if the given value is not nil.
+func (upu *UserPermissionsUpdate) SetNillableCanEdit(b *bool) *UserPermissionsUpdate {
+	if b != nil {
+		upu.SetCanEdit(*b)
+	}
+	return upu
+}
+
+// SetAdmin sets the "Admin" field.
 func (upu *UserPermissionsUpdate) SetAdmin(b bool) *UserPermissionsUpdate {
 	upu.mutation.SetAdmin(b)
 	return upu
 }
 
-// SetNillableAdmin sets the "admin" field if the given value is not nil.
+// SetNillableAdmin sets the "Admin" field if the given value is not nil.
 func (upu *UserPermissionsUpdate) SetNillableAdmin(b *bool) *UserPermissionsUpdate {
 	if b != nil {
 		upu.SetAdmin(*b)
@@ -63,13 +77,13 @@ func (upu *UserPermissionsUpdate) SetNillableAdmin(b *bool) *UserPermissionsUpda
 	return upu
 }
 
-// SetCanCreatePublic sets the "can_create_public" field.
+// SetCanCreatePublic sets the "CanCreatePublic" field.
 func (upu *UserPermissionsUpdate) SetCanCreatePublic(b bool) *UserPermissionsUpdate {
 	upu.mutation.SetCanCreatePublic(b)
 	return upu
 }
 
-// SetNillableCanCreatePublic sets the "can_create_public" field if the given value is not nil.
+// SetNillableCanCreatePublic sets the "CanCreatePublic" field if the given value is not nil.
 func (upu *UserPermissionsUpdate) SetNillableCanCreatePublic(b *bool) *UserPermissionsUpdate {
 	if b != nil {
 		upu.SetCanCreatePublic(*b)
@@ -128,6 +142,9 @@ func (upu *UserPermissionsUpdate) sqlSave(ctx context.Context) (n int, err error
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := upu.mutation.CanEdit(); ok {
+		_spec.SetField(userpermissions.FieldCanEdit, field.TypeBool, value)
 	}
 	if value, ok := upu.mutation.Admin(); ok {
 		_spec.SetField(userpermissions.FieldAdmin, field.TypeBool, value)
@@ -204,13 +221,27 @@ func (upuo *UserPermissionsUpdateOne) ClearUserID() *UserPermissionsUpdateOne {
 	return upuo
 }
 
-// SetAdmin sets the "admin" field.
+// SetCanEdit sets the "CanEdit" field.
+func (upuo *UserPermissionsUpdateOne) SetCanEdit(b bool) *UserPermissionsUpdateOne {
+	upuo.mutation.SetCanEdit(b)
+	return upuo
+}
+
+// SetNillableCanEdit sets the "CanEdit" field if the given value is not nil.
+func (upuo *UserPermissionsUpdateOne) SetNillableCanEdit(b *bool) *UserPermissionsUpdateOne {
+	if b != nil {
+		upuo.SetCanEdit(*b)
+	}
+	return upuo
+}
+
+// SetAdmin sets the "Admin" field.
 func (upuo *UserPermissionsUpdateOne) SetAdmin(b bool) *UserPermissionsUpdateOne {
 	upuo.mutation.SetAdmin(b)
 	return upuo
 }
 
-// SetNillableAdmin sets the "admin" field if the given value is not nil.
+// SetNillableAdmin sets the "Admin" field if the given value is not nil.
 func (upuo *UserPermissionsUpdateOne) SetNillableAdmin(b *bool) *UserPermissionsUpdateOne {
 	if b != nil {
 		upuo.SetAdmin(*b)
@@ -218,13 +249,13 @@ func (upuo *UserPermissionsUpdateOne) SetNillableAdmin(b *bool) *UserPermissions
 	return upuo
 }
 
-// SetCanCreatePublic sets the "can_create_public" field.
+// SetCanCreatePublic sets the "CanCreatePublic" field.
 func (upuo *UserPermissionsUpdateOne) SetCanCreatePublic(b bool) *UserPermissionsUpdateOne {
 	upuo.mutation.SetCanCreatePublic(b)
 	return upuo
 }
 
-// SetNillableCanCreatePublic sets the "can_create_public" field if the given value is not nil.
+// SetNillableCanCreatePublic sets the "CanCreatePublic" field if the given value is not nil.
 func (upuo *UserPermissionsUpdateOne) SetNillableCanCreatePublic(b *bool) *UserPermissionsUpdateOne {
 	if b != nil {
 		upuo.SetCanCreatePublic(*b)
@@ -313,6 +344,9 @@ func (upuo *UserPermissionsUpdateOne) sqlSave(ctx context.Context) (_node *UserP
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := upuo.mutation.CanEdit(); ok {
+		_spec.SetField(userpermissions.FieldCanEdit, field.TypeBool, value)
 	}
 	if value, ok := upuo.mutation.Admin(); ok {
 		_spec.SetField(userpermissions.FieldAdmin, field.TypeBool, value)

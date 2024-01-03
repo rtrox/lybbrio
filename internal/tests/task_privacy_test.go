@@ -220,11 +220,11 @@ func Test_UpdateTaskOfType(t *testing.T) {
 			defer tearDown(t)
 			adminCtx := viewer.NewSystemAdminContext(context.Background())
 			updaterCtx := tt.updaterContext(data)
-			user, _ := viewer.FromContext(updaterCtx).User()
+			userID, _ := viewer.FromContext(updaterCtx).UserID()
 
 			task := client.Task.Create().
 				SetType(tt.taskType).
-				SetUser(user).
+				SetUserID(userID).
 				SaveX(adminCtx)
 			_, err := task.Update().
 				SetProgress(0.5).
@@ -363,10 +363,10 @@ func Test_ViewTask(t *testing.T) {
 			require.Equal(tt.taskCount, len(tasks), "wrong number of tasks returned")
 
 			view := viewer.FromContext(tt.viewer(data))
-			user, _ := view.User()
+			uid, _ := view.UserID()
 			for _, task := range tasks {
 				if !view.IsAdmin() && !task.IsSystemTask {
-					require.Equal(user.ID, task.UserID, "task does not belong to user")
+					require.Equal(uid, task.UserID, "task does not belong to user")
 				}
 			}
 		})

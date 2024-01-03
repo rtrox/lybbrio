@@ -40,14 +40,16 @@ type AuthorWhereInput struct {
 	IDLTE   *ksuid.ID  `json:"idLTE,omitempty"`
 
 	// "calibre_id" field predicates.
-	CalibreID      *int64  `json:"calibreID,omitempty"`
-	CalibreIDNEQ   *int64  `json:"calibreIDNEQ,omitempty"`
-	CalibreIDIn    []int64 `json:"calibreIDIn,omitempty"`
-	CalibreIDNotIn []int64 `json:"calibreIDNotIn,omitempty"`
-	CalibreIDGT    *int64  `json:"calibreIDGT,omitempty"`
-	CalibreIDGTE   *int64  `json:"calibreIDGTE,omitempty"`
-	CalibreIDLT    *int64  `json:"calibreIDLT,omitempty"`
-	CalibreIDLTE   *int64  `json:"calibreIDLTE,omitempty"`
+	CalibreID       *int64  `json:"calibreID,omitempty"`
+	CalibreIDNEQ    *int64  `json:"calibreIDNEQ,omitempty"`
+	CalibreIDIn     []int64 `json:"calibreIDIn,omitempty"`
+	CalibreIDNotIn  []int64 `json:"calibreIDNotIn,omitempty"`
+	CalibreIDGT     *int64  `json:"calibreIDGT,omitempty"`
+	CalibreIDGTE    *int64  `json:"calibreIDGTE,omitempty"`
+	CalibreIDLT     *int64  `json:"calibreIDLT,omitempty"`
+	CalibreIDLTE    *int64  `json:"calibreIDLTE,omitempty"`
+	CalibreIDIsNil  bool    `json:"calibreIDIsNil,omitempty"`
+	CalibreIDNotNil bool    `json:"calibreIDNotNil,omitempty"`
 
 	// "name" field predicates.
 	Name             *string  `json:"name,omitempty"`
@@ -220,6 +222,12 @@ func (i *AuthorWhereInput) P() (predicate.Author, error) {
 	if i.CalibreIDLTE != nil {
 		predicates = append(predicates, author.CalibreIDLTE(*i.CalibreIDLTE))
 	}
+	if i.CalibreIDIsNil {
+		predicates = append(predicates, author.CalibreIDIsNil())
+	}
+	if i.CalibreIDNotNil {
+		predicates = append(predicates, author.CalibreIDNotNil())
+	}
 	if i.Name != nil {
 		predicates = append(predicates, author.NameEQ(*i.Name))
 	}
@@ -390,14 +398,16 @@ type BookWhereInput struct {
 	IDLTE   *ksuid.ID  `json:"idLTE,omitempty"`
 
 	// "calibre_id" field predicates.
-	CalibreID      *int64  `json:"calibreID,omitempty"`
-	CalibreIDNEQ   *int64  `json:"calibreIDNEQ,omitempty"`
-	CalibreIDIn    []int64 `json:"calibreIDIn,omitempty"`
-	CalibreIDNotIn []int64 `json:"calibreIDNotIn,omitempty"`
-	CalibreIDGT    *int64  `json:"calibreIDGT,omitempty"`
-	CalibreIDGTE   *int64  `json:"calibreIDGTE,omitempty"`
-	CalibreIDLT    *int64  `json:"calibreIDLT,omitempty"`
-	CalibreIDLTE   *int64  `json:"calibreIDLTE,omitempty"`
+	CalibreID       *int64  `json:"calibreID,omitempty"`
+	CalibreIDNEQ    *int64  `json:"calibreIDNEQ,omitempty"`
+	CalibreIDIn     []int64 `json:"calibreIDIn,omitempty"`
+	CalibreIDNotIn  []int64 `json:"calibreIDNotIn,omitempty"`
+	CalibreIDGT     *int64  `json:"calibreIDGT,omitempty"`
+	CalibreIDGTE    *int64  `json:"calibreIDGTE,omitempty"`
+	CalibreIDLT     *int64  `json:"calibreIDLT,omitempty"`
+	CalibreIDLTE    *int64  `json:"calibreIDLTE,omitempty"`
+	CalibreIDIsNil  bool    `json:"calibreIDIsNil,omitempty"`
+	CalibreIDNotNil bool    `json:"calibreIDNotNil,omitempty"`
 
 	// "title" field predicates.
 	Title             *string  `json:"title,omitempty"`
@@ -649,6 +659,12 @@ func (i *BookWhereInput) P() (predicate.Book, error) {
 	}
 	if i.CalibreIDLTE != nil {
 		predicates = append(predicates, book.CalibreIDLTE(*i.CalibreIDLTE))
+	}
+	if i.CalibreIDIsNil {
+		predicates = append(predicates, book.CalibreIDIsNil())
+	}
+	if i.CalibreIDNotNil {
+		predicates = append(predicates, book.CalibreIDNotNil())
 	}
 	if i.Title != nil {
 		predicates = append(predicates, book.TitleEQ(*i.Title))
@@ -1072,14 +1088,16 @@ type IdentifierWhereInput struct {
 	IDLTE   *ksuid.ID  `json:"idLTE,omitempty"`
 
 	// "calibre_id" field predicates.
-	CalibreID      *int64  `json:"calibreID,omitempty"`
-	CalibreIDNEQ   *int64  `json:"calibreIDNEQ,omitempty"`
-	CalibreIDIn    []int64 `json:"calibreIDIn,omitempty"`
-	CalibreIDNotIn []int64 `json:"calibreIDNotIn,omitempty"`
-	CalibreIDGT    *int64  `json:"calibreIDGT,omitempty"`
-	CalibreIDGTE   *int64  `json:"calibreIDGTE,omitempty"`
-	CalibreIDLT    *int64  `json:"calibreIDLT,omitempty"`
-	CalibreIDLTE   *int64  `json:"calibreIDLTE,omitempty"`
+	CalibreID       *int64  `json:"calibreID,omitempty"`
+	CalibreIDNEQ    *int64  `json:"calibreIDNEQ,omitempty"`
+	CalibreIDIn     []int64 `json:"calibreIDIn,omitempty"`
+	CalibreIDNotIn  []int64 `json:"calibreIDNotIn,omitempty"`
+	CalibreIDGT     *int64  `json:"calibreIDGT,omitempty"`
+	CalibreIDGTE    *int64  `json:"calibreIDGTE,omitempty"`
+	CalibreIDLT     *int64  `json:"calibreIDLT,omitempty"`
+	CalibreIDLTE    *int64  `json:"calibreIDLTE,omitempty"`
+	CalibreIDIsNil  bool    `json:"calibreIDIsNil,omitempty"`
+	CalibreIDNotNil bool    `json:"calibreIDNotNil,omitempty"`
 
 	// "type" field predicates.
 	Type             *string  `json:"type,omitempty"`
@@ -1235,6 +1253,12 @@ func (i *IdentifierWhereInput) P() (predicate.Identifier, error) {
 	if i.CalibreIDLTE != nil {
 		predicates = append(predicates, identifier.CalibreIDLTE(*i.CalibreIDLTE))
 	}
+	if i.CalibreIDIsNil {
+		predicates = append(predicates, identifier.CalibreIDIsNil())
+	}
+	if i.CalibreIDNotNil {
+		predicates = append(predicates, identifier.CalibreIDNotNil())
+	}
 	if i.Type != nil {
 		predicates = append(predicates, identifier.TypeEQ(*i.Type))
 	}
@@ -1360,14 +1384,16 @@ type LanguageWhereInput struct {
 	IDLTE   *ksuid.ID  `json:"idLTE,omitempty"`
 
 	// "calibre_id" field predicates.
-	CalibreID      *int64  `json:"calibreID,omitempty"`
-	CalibreIDNEQ   *int64  `json:"calibreIDNEQ,omitempty"`
-	CalibreIDIn    []int64 `json:"calibreIDIn,omitempty"`
-	CalibreIDNotIn []int64 `json:"calibreIDNotIn,omitempty"`
-	CalibreIDGT    *int64  `json:"calibreIDGT,omitempty"`
-	CalibreIDGTE   *int64  `json:"calibreIDGTE,omitempty"`
-	CalibreIDLT    *int64  `json:"calibreIDLT,omitempty"`
-	CalibreIDLTE   *int64  `json:"calibreIDLTE,omitempty"`
+	CalibreID       *int64  `json:"calibreID,omitempty"`
+	CalibreIDNEQ    *int64  `json:"calibreIDNEQ,omitempty"`
+	CalibreIDIn     []int64 `json:"calibreIDIn,omitempty"`
+	CalibreIDNotIn  []int64 `json:"calibreIDNotIn,omitempty"`
+	CalibreIDGT     *int64  `json:"calibreIDGT,omitempty"`
+	CalibreIDGTE    *int64  `json:"calibreIDGTE,omitempty"`
+	CalibreIDLT     *int64  `json:"calibreIDLT,omitempty"`
+	CalibreIDLTE    *int64  `json:"calibreIDLTE,omitempty"`
+	CalibreIDIsNil  bool    `json:"calibreIDIsNil,omitempty"`
+	CalibreIDNotNil bool    `json:"calibreIDNotNil,omitempty"`
 
 	// "code" field predicates.
 	Code             *string  `json:"code,omitempty"`
@@ -1508,6 +1534,12 @@ func (i *LanguageWhereInput) P() (predicate.Language, error) {
 	if i.CalibreIDLTE != nil {
 		predicates = append(predicates, language.CalibreIDLTE(*i.CalibreIDLTE))
 	}
+	if i.CalibreIDIsNil {
+		predicates = append(predicates, language.CalibreIDIsNil())
+	}
+	if i.CalibreIDNotNil {
+		predicates = append(predicates, language.CalibreIDNotNil())
+	}
 	if i.Code != nil {
 		predicates = append(predicates, language.CodeEQ(*i.Code))
 	}
@@ -1594,14 +1626,16 @@ type PublisherWhereInput struct {
 	IDLTE   *ksuid.ID  `json:"idLTE,omitempty"`
 
 	// "calibre_id" field predicates.
-	CalibreID      *int64  `json:"calibreID,omitempty"`
-	CalibreIDNEQ   *int64  `json:"calibreIDNEQ,omitempty"`
-	CalibreIDIn    []int64 `json:"calibreIDIn,omitempty"`
-	CalibreIDNotIn []int64 `json:"calibreIDNotIn,omitempty"`
-	CalibreIDGT    *int64  `json:"calibreIDGT,omitempty"`
-	CalibreIDGTE   *int64  `json:"calibreIDGTE,omitempty"`
-	CalibreIDLT    *int64  `json:"calibreIDLT,omitempty"`
-	CalibreIDLTE   *int64  `json:"calibreIDLTE,omitempty"`
+	CalibreID       *int64  `json:"calibreID,omitempty"`
+	CalibreIDNEQ    *int64  `json:"calibreIDNEQ,omitempty"`
+	CalibreIDIn     []int64 `json:"calibreIDIn,omitempty"`
+	CalibreIDNotIn  []int64 `json:"calibreIDNotIn,omitempty"`
+	CalibreIDGT     *int64  `json:"calibreIDGT,omitempty"`
+	CalibreIDGTE    *int64  `json:"calibreIDGTE,omitempty"`
+	CalibreIDLT     *int64  `json:"calibreIDLT,omitempty"`
+	CalibreIDLTE    *int64  `json:"calibreIDLTE,omitempty"`
+	CalibreIDIsNil  bool    `json:"calibreIDIsNil,omitempty"`
+	CalibreIDNotNil bool    `json:"calibreIDNotNil,omitempty"`
 
 	// "name" field predicates.
 	Name             *string  `json:"name,omitempty"`
@@ -1742,6 +1776,12 @@ func (i *PublisherWhereInput) P() (predicate.Publisher, error) {
 	if i.CalibreIDLTE != nil {
 		predicates = append(predicates, publisher.CalibreIDLTE(*i.CalibreIDLTE))
 	}
+	if i.CalibreIDIsNil {
+		predicates = append(predicates, publisher.CalibreIDIsNil())
+	}
+	if i.CalibreIDNotNil {
+		predicates = append(predicates, publisher.CalibreIDNotNil())
+	}
 	if i.Name != nil {
 		predicates = append(predicates, publisher.NameEQ(*i.Name))
 	}
@@ -1828,14 +1868,16 @@ type SeriesWhereInput struct {
 	IDLTE   *ksuid.ID  `json:"idLTE,omitempty"`
 
 	// "calibre_id" field predicates.
-	CalibreID      *int64  `json:"calibreID,omitempty"`
-	CalibreIDNEQ   *int64  `json:"calibreIDNEQ,omitempty"`
-	CalibreIDIn    []int64 `json:"calibreIDIn,omitempty"`
-	CalibreIDNotIn []int64 `json:"calibreIDNotIn,omitempty"`
-	CalibreIDGT    *int64  `json:"calibreIDGT,omitempty"`
-	CalibreIDGTE   *int64  `json:"calibreIDGTE,omitempty"`
-	CalibreIDLT    *int64  `json:"calibreIDLT,omitempty"`
-	CalibreIDLTE   *int64  `json:"calibreIDLTE,omitempty"`
+	CalibreID       *int64  `json:"calibreID,omitempty"`
+	CalibreIDNEQ    *int64  `json:"calibreIDNEQ,omitempty"`
+	CalibreIDIn     []int64 `json:"calibreIDIn,omitempty"`
+	CalibreIDNotIn  []int64 `json:"calibreIDNotIn,omitempty"`
+	CalibreIDGT     *int64  `json:"calibreIDGT,omitempty"`
+	CalibreIDGTE    *int64  `json:"calibreIDGTE,omitempty"`
+	CalibreIDLT     *int64  `json:"calibreIDLT,omitempty"`
+	CalibreIDLTE    *int64  `json:"calibreIDLTE,omitempty"`
+	CalibreIDIsNil  bool    `json:"calibreIDIsNil,omitempty"`
+	CalibreIDNotNil bool    `json:"calibreIDNotNil,omitempty"`
 
 	// "name" field predicates.
 	Name             *string  `json:"name,omitempty"`
@@ -1990,6 +2032,12 @@ func (i *SeriesWhereInput) P() (predicate.Series, error) {
 	}
 	if i.CalibreIDLTE != nil {
 		predicates = append(predicates, series.CalibreIDLTE(*i.CalibreIDLTE))
+	}
+	if i.CalibreIDIsNil {
+		predicates = append(predicates, series.CalibreIDIsNil())
+	}
+	if i.CalibreIDNotNil {
+		predicates = append(predicates, series.CalibreIDNotNil())
 	}
 	if i.Name != nil {
 		predicates = append(predicates, series.NameEQ(*i.Name))
@@ -2464,14 +2512,16 @@ type TagWhereInput struct {
 	IDLTE   *ksuid.ID  `json:"idLTE,omitempty"`
 
 	// "calibre_id" field predicates.
-	CalibreID      *int64  `json:"calibreID,omitempty"`
-	CalibreIDNEQ   *int64  `json:"calibreIDNEQ,omitempty"`
-	CalibreIDIn    []int64 `json:"calibreIDIn,omitempty"`
-	CalibreIDNotIn []int64 `json:"calibreIDNotIn,omitempty"`
-	CalibreIDGT    *int64  `json:"calibreIDGT,omitempty"`
-	CalibreIDGTE   *int64  `json:"calibreIDGTE,omitempty"`
-	CalibreIDLT    *int64  `json:"calibreIDLT,omitempty"`
-	CalibreIDLTE   *int64  `json:"calibreIDLTE,omitempty"`
+	CalibreID       *int64  `json:"calibreID,omitempty"`
+	CalibreIDNEQ    *int64  `json:"calibreIDNEQ,omitempty"`
+	CalibreIDIn     []int64 `json:"calibreIDIn,omitempty"`
+	CalibreIDNotIn  []int64 `json:"calibreIDNotIn,omitempty"`
+	CalibreIDGT     *int64  `json:"calibreIDGT,omitempty"`
+	CalibreIDGTE    *int64  `json:"calibreIDGTE,omitempty"`
+	CalibreIDLT     *int64  `json:"calibreIDLT,omitempty"`
+	CalibreIDLTE    *int64  `json:"calibreIDLTE,omitempty"`
+	CalibreIDIsNil  bool    `json:"calibreIDIsNil,omitempty"`
+	CalibreIDNotNil bool    `json:"calibreIDNotNil,omitempty"`
 
 	// "name" field predicates.
 	Name             *string  `json:"name,omitempty"`
@@ -2611,6 +2661,12 @@ func (i *TagWhereInput) P() (predicate.Tag, error) {
 	}
 	if i.CalibreIDLTE != nil {
 		predicates = append(predicates, tag.CalibreIDLTE(*i.CalibreIDLTE))
+	}
+	if i.CalibreIDIsNil {
+		predicates = append(predicates, tag.CalibreIDIsNil())
+	}
+	if i.CalibreIDNotNil {
+		predicates = append(predicates, tag.CalibreIDNotNil())
 	}
 	if i.Name != nil {
 		predicates = append(predicates, tag.NameEQ(*i.Name))
@@ -3532,13 +3588,17 @@ type UserPermissionsWhereInput struct {
 	UserIDEqualFold    *ksuid.ID  `json:"userIDEqualFold,omitempty"`
 	UserIDContainsFold *ksuid.ID  `json:"userIDContainsFold,omitempty"`
 
-	// "admin" field predicates.
+	// "CanEdit" field predicates.
+	CanEdit    *bool `json:"canedit,omitempty"`
+	CanEditNEQ *bool `json:"caneditNEQ,omitempty"`
+
+	// "Admin" field predicates.
 	Admin    *bool `json:"admin,omitempty"`
 	AdminNEQ *bool `json:"adminNEQ,omitempty"`
 
-	// "can_create_public" field predicates.
-	CanCreatePublic    *bool `json:"canCreatePublic,omitempty"`
-	CanCreatePublicNEQ *bool `json:"canCreatePublicNEQ,omitempty"`
+	// "CanCreatePublic" field predicates.
+	CanCreatePublic    *bool `json:"cancreatepublic,omitempty"`
+	CanCreatePublicNEQ *bool `json:"cancreatepublicNEQ,omitempty"`
 
 	// "user" edge predicates.
 	HasUser     *bool             `json:"hasUser,omitempty"`
@@ -3684,6 +3744,12 @@ func (i *UserPermissionsWhereInput) P() (predicate.UserPermissions, error) {
 	}
 	if i.UserIDContainsFold != nil {
 		predicates = append(predicates, userpermissions.UserIDContainsFold(*i.UserIDContainsFold))
+	}
+	if i.CanEdit != nil {
+		predicates = append(predicates, userpermissions.CanEditEQ(*i.CanEdit))
+	}
+	if i.CanEditNEQ != nil {
+		predicates = append(predicates, userpermissions.CanEditNEQ(*i.CanEditNEQ))
 	}
 	if i.Admin != nil {
 		predicates = append(predicates, userpermissions.AdminEQ(*i.Admin))

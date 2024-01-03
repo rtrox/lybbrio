@@ -13,8 +13,9 @@ type JWTProvider struct {
 }
 
 type Claims struct {
-	UserID   string `json:"user_id"`
-	UserName string `json:"user_name"`
+	UserID      string   `json:"user_id"`
+	UserName    string   `json:"user_name"`
+	Permissions []string `json:"permissions"`
 	jwt.RegisteredClaims
 }
 
@@ -54,10 +55,11 @@ func NewJWTProvider(signingKey string, issuer string, expiry time.Duration) (*JW
 	}, nil
 }
 
-func (p *JWTProvider) CreateToken(userID, userName string) (SignedToken, error) {
+func (p *JWTProvider) CreateToken(userID, userName string, permissions []string) (SignedToken, error) {
 	claims := Claims{
-		UserID:   userID,
-		UserName: userName,
+		UserID:      userID,
+		UserName:    userName,
+		Permissions: permissions,
 		RegisteredClaims: jwt.RegisteredClaims{
 			Issuer:    p.issuer,
 			Subject:   userID,

@@ -30,6 +30,14 @@ func (sc *SeriesCreate) SetCalibreID(i int64) *SeriesCreate {
 	return sc
 }
 
+// SetNillableCalibreID sets the "calibre_id" field if the given value is not nil.
+func (sc *SeriesCreate) SetNillableCalibreID(i *int64) *SeriesCreate {
+	if i != nil {
+		sc.SetCalibreID(*i)
+	}
+	return sc
+}
+
 // SetName sets the "name" field.
 func (sc *SeriesCreate) SetName(s string) *SeriesCreate {
 	sc.mutation.SetName(s)
@@ -120,9 +128,6 @@ func (sc *SeriesCreate) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (sc *SeriesCreate) check() error {
-	if _, ok := sc.mutation.CalibreID(); !ok {
-		return &ValidationError{Name: "calibre_id", err: errors.New(`ent: missing required field "Series.calibre_id"`)}
-	}
 	if _, ok := sc.mutation.Name(); !ok {
 		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "Series.name"`)}
 	}
@@ -273,6 +278,12 @@ func (u *SeriesUpsert) AddCalibreID(v int64) *SeriesUpsert {
 	return u
 }
 
+// ClearCalibreID clears the value of the "calibre_id" field.
+func (u *SeriesUpsert) ClearCalibreID() *SeriesUpsert {
+	u.SetNull(series.FieldCalibreID)
+	return u
+}
+
 // SetName sets the "name" field.
 func (u *SeriesUpsert) SetName(v string) *SeriesUpsert {
 	u.Set(series.FieldName, v)
@@ -363,6 +374,13 @@ func (u *SeriesUpsertOne) AddCalibreID(v int64) *SeriesUpsertOne {
 func (u *SeriesUpsertOne) UpdateCalibreID() *SeriesUpsertOne {
 	return u.Update(func(s *SeriesUpsert) {
 		s.UpdateCalibreID()
+	})
+}
+
+// ClearCalibreID clears the value of the "calibre_id" field.
+func (u *SeriesUpsertOne) ClearCalibreID() *SeriesUpsertOne {
+	return u.Update(func(s *SeriesUpsert) {
+		s.ClearCalibreID()
 	})
 }
 
@@ -627,6 +645,13 @@ func (u *SeriesUpsertBulk) AddCalibreID(v int64) *SeriesUpsertBulk {
 func (u *SeriesUpsertBulk) UpdateCalibreID() *SeriesUpsertBulk {
 	return u.Update(func(s *SeriesUpsert) {
 		s.UpdateCalibreID()
+	})
+}
+
+// ClearCalibreID clears the value of the "calibre_id" field.
+func (u *SeriesUpsertBulk) ClearCalibreID() *SeriesUpsertBulk {
+	return u.Update(func(s *SeriesUpsert) {
+		s.ClearCalibreID()
 	})
 }
 

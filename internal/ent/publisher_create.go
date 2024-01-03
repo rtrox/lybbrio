@@ -30,6 +30,14 @@ func (pc *PublisherCreate) SetCalibreID(i int64) *PublisherCreate {
 	return pc
 }
 
+// SetNillableCalibreID sets the "calibre_id" field if the given value is not nil.
+func (pc *PublisherCreate) SetNillableCalibreID(i *int64) *PublisherCreate {
+	if i != nil {
+		pc.SetCalibreID(*i)
+	}
+	return pc
+}
+
 // SetName sets the "name" field.
 func (pc *PublisherCreate) SetName(s string) *PublisherCreate {
 	pc.mutation.SetName(s)
@@ -114,9 +122,6 @@ func (pc *PublisherCreate) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (pc *PublisherCreate) check() error {
-	if _, ok := pc.mutation.CalibreID(); !ok {
-		return &ValidationError{Name: "calibre_id", err: errors.New(`ent: missing required field "Publisher.calibre_id"`)}
-	}
 	if _, ok := pc.mutation.Name(); !ok {
 		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "Publisher.name"`)}
 	}
@@ -255,6 +260,12 @@ func (u *PublisherUpsert) AddCalibreID(v int64) *PublisherUpsert {
 	return u
 }
 
+// ClearCalibreID clears the value of the "calibre_id" field.
+func (u *PublisherUpsert) ClearCalibreID() *PublisherUpsert {
+	u.SetNull(publisher.FieldCalibreID)
+	return u
+}
+
 // SetName sets the "name" field.
 func (u *PublisherUpsert) SetName(v string) *PublisherUpsert {
 	u.Set(publisher.FieldName, v)
@@ -333,6 +344,13 @@ func (u *PublisherUpsertOne) AddCalibreID(v int64) *PublisherUpsertOne {
 func (u *PublisherUpsertOne) UpdateCalibreID() *PublisherUpsertOne {
 	return u.Update(func(s *PublisherUpsert) {
 		s.UpdateCalibreID()
+	})
+}
+
+// ClearCalibreID clears the value of the "calibre_id" field.
+func (u *PublisherUpsertOne) ClearCalibreID() *PublisherUpsertOne {
+	return u.Update(func(s *PublisherUpsert) {
+		s.ClearCalibreID()
 	})
 }
 
@@ -583,6 +601,13 @@ func (u *PublisherUpsertBulk) AddCalibreID(v int64) *PublisherUpsertBulk {
 func (u *PublisherUpsertBulk) UpdateCalibreID() *PublisherUpsertBulk {
 	return u.Update(func(s *PublisherUpsert) {
 		s.UpdateCalibreID()
+	})
+}
+
+// ClearCalibreID clears the value of the "calibre_id" field.
+func (u *PublisherUpsertBulk) ClearCalibreID() *PublisherUpsertBulk {
+	return u.Update(func(s *PublisherUpsert) {
+		s.ClearCalibreID()
 	})
 }
 

@@ -57,6 +57,12 @@ func (bu *BookUpdate) AddCalibreID(i int64) *BookUpdate {
 	return bu
 }
 
+// ClearCalibreID clears the value of the "calibre_id" field.
+func (bu *BookUpdate) ClearCalibreID() *BookUpdate {
+	bu.mutation.ClearCalibreID()
+	return bu
+}
+
 // SetTitle sets the "title" field.
 func (bu *BookUpdate) SetTitle(s string) *BookUpdate {
 	bu.mutation.SetTitle(s)
@@ -503,6 +509,9 @@ func (bu *BookUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := bu.mutation.AddedCalibreID(); ok {
 		_spec.AddField(book.FieldCalibreID, field.TypeInt64, value)
 	}
+	if bu.mutation.CalibreIDCleared() {
+		_spec.ClearField(book.FieldCalibreID, field.TypeInt64)
+	}
 	if value, ok := bu.mutation.Title(); ok {
 		_spec.SetField(book.FieldTitle, field.TypeString, value)
 	}
@@ -892,6 +901,12 @@ func (buo *BookUpdateOne) SetNillableCalibreID(i *int64) *BookUpdateOne {
 // AddCalibreID adds i to the "calibre_id" field.
 func (buo *BookUpdateOne) AddCalibreID(i int64) *BookUpdateOne {
 	buo.mutation.AddCalibreID(i)
+	return buo
+}
+
+// ClearCalibreID clears the value of the "calibre_id" field.
+func (buo *BookUpdateOne) ClearCalibreID() *BookUpdateOne {
+	buo.mutation.ClearCalibreID()
 	return buo
 }
 
@@ -1370,6 +1385,9 @@ func (buo *BookUpdateOne) sqlSave(ctx context.Context) (_node *Book, err error) 
 	}
 	if value, ok := buo.mutation.AddedCalibreID(); ok {
 		_spec.AddField(book.FieldCalibreID, field.TypeInt64, value)
+	}
+	if buo.mutation.CalibreIDCleared() {
+		_spec.ClearField(book.FieldCalibreID, field.TypeInt64)
 	}
 	if value, ok := buo.mutation.Title(); ok {
 		_spec.SetField(book.FieldTitle, field.TypeString, value)

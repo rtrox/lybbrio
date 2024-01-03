@@ -3,6 +3,7 @@ package auth
 import (
 	"fmt"
 	"lybbrio/internal/ent"
+	"lybbrio/internal/ent/schema/permissions"
 	"lybbrio/internal/ent/user"
 	"lybbrio/internal/viewer"
 	"net/http"
@@ -49,7 +50,12 @@ func TestAuthDONOTUSE(client *ent.Client, jwt *JWTProvider) http.HandlerFunc {
 				return
 			}
 		}
-		token, err := jwt.CreateToken(string(staticUser.ID), staticUser.Username)
+		perms := staticUser.QueryUserPermissions().FirstX(adminViewerCtx)
+		token, err := jwt.CreateToken(
+			staticUser.ID.String(),
+			staticUser.Username,
+			permissions.From(perms).StringSlice(),
+		)
 		if err != nil {
 			log.Error().Err(err).Msg("Failed to create token")
 			w.WriteHeader(http.StatusInternalServerError)

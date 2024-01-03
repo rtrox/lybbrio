@@ -136,6 +136,16 @@ func CalibreIDLTE(v int64) predicate.Book {
 	return predicate.Book(sql.FieldLTE(FieldCalibreID, v))
 }
 
+// CalibreIDIsNil applies the IsNil predicate on the "calibre_id" field.
+func CalibreIDIsNil() predicate.Book {
+	return predicate.Book(sql.FieldIsNull(FieldCalibreID))
+}
+
+// CalibreIDNotNil applies the NotNil predicate on the "calibre_id" field.
+func CalibreIDNotNil() predicate.Book {
+	return predicate.Book(sql.FieldNotNull(FieldCalibreID))
+}
+
 // TitleEQ applies the EQ predicate on the "title" field.
 func TitleEQ(v string) predicate.Book {
 	return predicate.Book(sql.FieldEQ(FieldTitle, v))

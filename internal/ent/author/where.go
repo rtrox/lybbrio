@@ -115,6 +115,16 @@ func CalibreIDLTE(v int64) predicate.Author {
 	return predicate.Author(sql.FieldLTE(FieldCalibreID, v))
 }
 
+// CalibreIDIsNil applies the IsNil predicate on the "calibre_id" field.
+func CalibreIDIsNil() predicate.Author {
+	return predicate.Author(sql.FieldIsNull(FieldCalibreID))
+}
+
+// CalibreIDNotNil applies the NotNil predicate on the "calibre_id" field.
+func CalibreIDNotNil() predicate.Author {
+	return predicate.Author(sql.FieldNotNull(FieldCalibreID))
+}
+
 // NameEQ applies the EQ predicate on the "name" field.
 func NameEQ(v string) predicate.Author {
 	return predicate.Author(sql.FieldEQ(FieldName, v))

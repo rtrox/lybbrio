@@ -17,9 +17,11 @@ const (
 	FieldID = "id"
 	// FieldUserID holds the string denoting the user_id field in the database.
 	FieldUserID = "user_id"
+	// FieldCanEdit holds the string denoting the canedit field in the database.
+	FieldCanEdit = "can_edit"
 	// FieldAdmin holds the string denoting the admin field in the database.
 	FieldAdmin = "admin"
-	// FieldCanCreatePublic holds the string denoting the can_create_public field in the database.
+	// FieldCanCreatePublic holds the string denoting the cancreatepublic field in the database.
 	FieldCanCreatePublic = "can_create_public"
 	// EdgeUser holds the string denoting the user edge name in mutations.
 	EdgeUser = "user"
@@ -38,6 +40,7 @@ const (
 var Columns = []string{
 	FieldID,
 	FieldUserID,
+	FieldCanEdit,
 	FieldAdmin,
 	FieldCanCreatePublic,
 }
@@ -60,9 +63,11 @@ func ValidColumn(column string) bool {
 var (
 	Hooks  [1]ent.Hook
 	Policy ent.Policy
-	// DefaultAdmin holds the default value on creation for the "admin" field.
+	// DefaultCanEdit holds the default value on creation for the "CanEdit" field.
+	DefaultCanEdit bool
+	// DefaultAdmin holds the default value on creation for the "Admin" field.
 	DefaultAdmin bool
-	// DefaultCanCreatePublic holds the default value on creation for the "can_create_public" field.
+	// DefaultCanCreatePublic holds the default value on creation for the "CanCreatePublic" field.
 	DefaultCanCreatePublic bool
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() ksuid.ID
@@ -81,12 +86,17 @@ func ByUserID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldUserID, opts...).ToFunc()
 }
 
-// ByAdmin orders the results by the admin field.
+// ByCanEdit orders the results by the CanEdit field.
+func ByCanEdit(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldCanEdit, opts...).ToFunc()
+}
+
+// ByAdmin orders the results by the Admin field.
 func ByAdmin(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldAdmin, opts...).ToFunc()
 }
 
-// ByCanCreatePublic orders the results by the can_create_public field.
+// ByCanCreatePublic orders the results by the CanCreatePublic field.
 func ByCanCreatePublic(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldCanCreatePublic, opts...).ToFunc()
 }

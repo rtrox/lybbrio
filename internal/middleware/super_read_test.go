@@ -31,7 +31,7 @@ func Test_SuperRead(t *testing.T) {
 			reqFunc: func() *http.Request {
 				req := httptest.NewRequest("GET", "/?superRead=true", nil)
 				req = req.WithContext(
-					viewer.NewContext(req.Context(), nil, nil),
+					viewer.NewContext(req.Context(), "", nil),
 				)
 				return req
 			},
@@ -53,7 +53,7 @@ func Test_SuperRead(t *testing.T) {
 			reqFunc: func() *http.Request {
 				req := httptest.NewRequest("GET", "/", nil)
 				req = req.WithContext(
-					viewer.NewContext(req.Context(), nil, nil),
+					viewer.NewContext(req.Context(), "", nil),
 				)
 				return req
 			},

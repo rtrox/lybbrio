@@ -30,6 +30,14 @@ func (ic *IdentifierCreate) SetCalibreID(i int64) *IdentifierCreate {
 	return ic
 }
 
+// SetNillableCalibreID sets the "calibre_id" field if the given value is not nil.
+func (ic *IdentifierCreate) SetNillableCalibreID(i *int64) *IdentifierCreate {
+	if i != nil {
+		ic.SetCalibreID(*i)
+	}
+	return ic
+}
+
 // SetType sets the "type" field.
 func (ic *IdentifierCreate) SetType(s string) *IdentifierCreate {
 	ic.mutation.SetType(s)
@@ -116,9 +124,6 @@ func (ic *IdentifierCreate) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (ic *IdentifierCreate) check() error {
-	if _, ok := ic.mutation.CalibreID(); !ok {
-		return &ValidationError{Name: "calibre_id", err: errors.New(`ent: missing required field "Identifier.calibre_id"`)}
-	}
 	if _, ok := ic.mutation.GetType(); !ok {
 		return &ValidationError{Name: "type", err: errors.New(`ent: missing required field "Identifier.type"`)}
 	}
@@ -273,6 +278,12 @@ func (u *IdentifierUpsert) AddCalibreID(v int64) *IdentifierUpsert {
 	return u
 }
 
+// ClearCalibreID clears the value of the "calibre_id" field.
+func (u *IdentifierUpsert) ClearCalibreID() *IdentifierUpsert {
+	u.SetNull(identifier.FieldCalibreID)
+	return u
+}
+
 // SetType sets the "type" field.
 func (u *IdentifierUpsert) SetType(v string) *IdentifierUpsert {
 	u.Set(identifier.FieldType, v)
@@ -363,6 +374,13 @@ func (u *IdentifierUpsertOne) AddCalibreID(v int64) *IdentifierUpsertOne {
 func (u *IdentifierUpsertOne) UpdateCalibreID() *IdentifierUpsertOne {
 	return u.Update(func(s *IdentifierUpsert) {
 		s.UpdateCalibreID()
+	})
+}
+
+// ClearCalibreID clears the value of the "calibre_id" field.
+func (u *IdentifierUpsertOne) ClearCalibreID() *IdentifierUpsertOne {
+	return u.Update(func(s *IdentifierUpsert) {
+		s.ClearCalibreID()
 	})
 }
 
@@ -627,6 +645,13 @@ func (u *IdentifierUpsertBulk) AddCalibreID(v int64) *IdentifierUpsertBulk {
 func (u *IdentifierUpsertBulk) UpdateCalibreID() *IdentifierUpsertBulk {
 	return u.Update(func(s *IdentifierUpsert) {
 		s.UpdateCalibreID()
+	})
+}
+
+// ClearCalibreID clears the value of the "calibre_id" field.
+func (u *IdentifierUpsertBulk) ClearCalibreID() *IdentifierUpsertBulk {
+	return u.Update(func(s *IdentifierUpsert) {
+		s.ClearCalibreID()
 	})
 }
 

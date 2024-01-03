@@ -37,6 +37,14 @@ func (bc *BookCreate) SetCalibreID(i int64) *BookCreate {
 	return bc
 }
 
+// SetNillableCalibreID sets the "calibre_id" field if the given value is not nil.
+func (bc *BookCreate) SetNillableCalibreID(i *int64) *BookCreate {
+	if i != nil {
+		bc.SetCalibreID(*i)
+	}
+	return bc
+}
+
 // SetTitle sets the "title" field.
 func (bc *BookCreate) SetTitle(s string) *BookCreate {
 	bc.mutation.SetTitle(s)
@@ -279,9 +287,6 @@ func (bc *BookCreate) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (bc *BookCreate) check() error {
-	if _, ok := bc.mutation.CalibreID(); !ok {
-		return &ValidationError{Name: "calibre_id", err: errors.New(`ent: missing required field "Book.calibre_id"`)}
-	}
 	if _, ok := bc.mutation.Title(); !ok {
 		return &ValidationError{Name: "title", err: errors.New(`ent: missing required field "Book.title"`)}
 	}
@@ -551,6 +556,12 @@ func (u *BookUpsert) AddCalibreID(v int64) *BookUpsert {
 	return u
 }
 
+// ClearCalibreID clears the value of the "calibre_id" field.
+func (u *BookUpsert) ClearCalibreID() *BookUpsert {
+	u.SetNull(book.FieldCalibreID)
+	return u
+}
+
 // SetTitle sets the "title" field.
 func (u *BookUpsert) SetTitle(v string) *BookUpsert {
 	u.Set(book.FieldTitle, v)
@@ -731,6 +742,13 @@ func (u *BookUpsertOne) AddCalibreID(v int64) *BookUpsertOne {
 func (u *BookUpsertOne) UpdateCalibreID() *BookUpsertOne {
 	return u.Update(func(s *BookUpsert) {
 		s.UpdateCalibreID()
+	})
+}
+
+// ClearCalibreID clears the value of the "calibre_id" field.
+func (u *BookUpsertOne) ClearCalibreID() *BookUpsertOne {
+	return u.Update(func(s *BookUpsert) {
+		s.ClearCalibreID()
 	})
 }
 
@@ -1100,6 +1118,13 @@ func (u *BookUpsertBulk) AddCalibreID(v int64) *BookUpsertBulk {
 func (u *BookUpsertBulk) UpdateCalibreID() *BookUpsertBulk {
 	return u.Update(func(s *BookUpsert) {
 		s.UpdateCalibreID()
+	})
+}
+
+// ClearCalibreID clears the value of the "calibre_id" field.
+func (u *BookUpsertBulk) ClearCalibreID() *BookUpsertBulk {
+	return u.Update(func(s *BookUpsert) {
+		s.ClearCalibreID()
 	})
 }
 

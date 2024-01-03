@@ -30,6 +30,14 @@ func (ac *AuthorCreate) SetCalibreID(i int64) *AuthorCreate {
 	return ac
 }
 
+// SetNillableCalibreID sets the "calibre_id" field if the given value is not nil.
+func (ac *AuthorCreate) SetNillableCalibreID(i *int64) *AuthorCreate {
+	if i != nil {
+		ac.SetCalibreID(*i)
+	}
+	return ac
+}
+
 // SetName sets the "name" field.
 func (ac *AuthorCreate) SetName(s string) *AuthorCreate {
 	ac.mutation.SetName(s)
@@ -134,9 +142,6 @@ func (ac *AuthorCreate) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (ac *AuthorCreate) check() error {
-	if _, ok := ac.mutation.CalibreID(); !ok {
-		return &ValidationError{Name: "calibre_id", err: errors.New(`ent: missing required field "Author.calibre_id"`)}
-	}
 	if _, ok := ac.mutation.Name(); !ok {
 		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "Author.name"`)}
 	}
@@ -286,6 +291,12 @@ func (u *AuthorUpsert) AddCalibreID(v int64) *AuthorUpsert {
 	return u
 }
 
+// ClearCalibreID clears the value of the "calibre_id" field.
+func (u *AuthorUpsert) ClearCalibreID() *AuthorUpsert {
+	u.SetNull(author.FieldCalibreID)
+	return u
+}
+
 // SetName sets the "name" field.
 func (u *AuthorUpsert) SetName(v string) *AuthorUpsert {
 	u.Set(author.FieldName, v)
@@ -394,6 +405,13 @@ func (u *AuthorUpsertOne) AddCalibreID(v int64) *AuthorUpsertOne {
 func (u *AuthorUpsertOne) UpdateCalibreID() *AuthorUpsertOne {
 	return u.Update(func(s *AuthorUpsert) {
 		s.UpdateCalibreID()
+	})
+}
+
+// ClearCalibreID clears the value of the "calibre_id" field.
+func (u *AuthorUpsertOne) ClearCalibreID() *AuthorUpsertOne {
+	return u.Update(func(s *AuthorUpsert) {
+		s.ClearCalibreID()
 	})
 }
 
@@ -679,6 +697,13 @@ func (u *AuthorUpsertBulk) AddCalibreID(v int64) *AuthorUpsertBulk {
 func (u *AuthorUpsertBulk) UpdateCalibreID() *AuthorUpsertBulk {
 	return u.Update(func(s *AuthorUpsert) {
 		s.UpdateCalibreID()
+	})
+}
+
+// ClearCalibreID clears the value of the "calibre_id" field.
+func (u *AuthorUpsertBulk) ClearCalibreID() *AuthorUpsertBulk {
+	return u.Update(func(s *AuthorUpsert) {
+		s.ClearCalibreID()
 	})
 }
 

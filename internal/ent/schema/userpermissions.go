@@ -3,6 +3,7 @@ package schema
 import (
 	"lybbrio/internal/ent/privacy"
 	"lybbrio/internal/ent/schema/ksuid"
+	"lybbrio/internal/ent/schema/permissions"
 	"lybbrio/internal/rule"
 
 	"entgo.io/ent"
@@ -24,17 +25,19 @@ func (UserPermissions) Mixin() []ent.Mixin {
 
 // Fields of the UserPermissions.
 func (UserPermissions) Fields() []ent.Field {
-	return []ent.Field{
+	fields := []ent.Field{
 		field.String("user_id").
 			GoType(ksuid.ID("")).
 			Optional(),
-		field.Bool("admin").
-			Default(false).
-			Comment("Admin users can do anything."),
-		field.Bool("can_create_public").
-			Default(false).
-			Comment("Can create publicly visible objects."),
 	}
+	for p := range permissions.All() {
+		fields = append(fields,
+			field.Bool(p.String()).
+				Default(false),
+		)
+	}
+
+	return fields
 }
 
 // Edges of the UserPermissions.

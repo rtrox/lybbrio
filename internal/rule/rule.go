@@ -10,6 +10,7 @@ import (
 	"lybbrio/internal/ent"
 	"lybbrio/internal/ent/privacy"
 	"lybbrio/internal/ent/schema/ksuid"
+	"lybbrio/internal/ent/schema/permissions"
 	"lybbrio/internal/ent/schema/task_enums"
 	"lybbrio/internal/middleware"
 	"lybbrio/internal/viewer"
@@ -62,7 +63,7 @@ func FilterUserRule() privacy.QueryMutationRule {
 	}
 	return privacy.FilterFunc(func(ctx context.Context, f privacy.Filter) error {
 		view := viewer.FromContext(ctx)
-		user, ok := view.User()
+		uid, ok := view.UserID()
 		if !ok {
 			return privacy.Denyf("missing user information in viewer-context")
 		}
@@ -70,7 +71,7 @@ func FilterUserRule() privacy.QueryMutationRule {
 		if !ok {
 			return privacy.Denyf("filter does not implement UserFilter")
 		}
-		uf.WhereUserID(entql.StringEQ(user.ID.String()))
+		uf.WhereUserID(entql.StringEQ(uid.String()))
 		return privacy.Skip
 	})
 }
@@ -82,7 +83,7 @@ func FilterUserOrPublicRule() privacy.QueryMutationRule {
 			WherePublic(entql.BoolP)
 		}
 		view := viewer.FromContext(ctx)
-		user, ok := view.User()
+		uid, ok := view.UserID()
 		if !ok {
 			return privacy.Denyf("missing user information in viewer-context")
 		}
@@ -92,7 +93,7 @@ func FilterUserOrPublicRule() privacy.QueryMutationRule {
 		}
 		f.Where(
 			entql.Or(
-				entql.FieldEQ("user_id", user.ID.String()),
+				entql.FieldEQ("user_id", uid.String()),
 				entql.FieldEQ("public", true),
 			),
 		)
@@ -112,11 +113,7 @@ func DenyPublicWithoutPermissionRule() privacy.MutationRule {
 		public, mutated := pm.Public()
 		if mutated && public {
 			view := viewer.FromContext(ctx)
-			perms, ok := view.Permissions()
-			if !ok {
-				return privacy.Denyf("missing permissions information in viewer-context")
-			}
-			if !perms.CanCreatePublic {
+			if !view.Has(permissions.CanCreatePublic) {
 				return privacy.Denyf("user does not have permission to create public objects")
 			}
 		}
@@ -137,7 +134,7 @@ func DenyMismatchedUserRule() privacy.MutationRule {
 			return privacy.Denyf("mutation does not implement UserableMutation")
 		}
 		view := viewer.FromContext(ctx)
-		user, ok := view.User()
+		viewerID, ok := view.UserID()
 		if !ok {
 			return privacy.Denyf("missing user information in viewer-context")
 		}
@@ -147,7 +144,7 @@ func DenyMismatchedUserRule() privacy.MutationRule {
 		case ent.OpCreate:
 			var ok bool
 			uid, ok = m.(UserableMutation).UserID()
-			if ok && uid != user.ID {
+			if ok && uid != viewerID {
 				return privacy.Denyf("cannot create objects owned by other users")
 			}
 		case ent.OpUpdateOne:
@@ -156,7 +153,7 @@ func DenyMismatchedUserRule() privacy.MutationRule {
 			if err != nil {
 				return err
 			}
-			if uid != user.ID {
+			if uid != viewerID {
 				return privacy.Denyf("cannot mutate objects owned by other users")
 			}
 		}
@@ -172,7 +169,7 @@ func FilterSelfRule() privacy.QueryMutationRule {
 	}
 	return privacy.FilterFunc(func(ctx context.Context, f privacy.Filter) error {
 		view := viewer.FromContext(ctx)
-		user, ok := view.User()
+		uid, ok := view.UserID()
 		if !ok {
 			return privacy.Denyf("missing user information in viewer-context")
 		}
@@ -180,7 +177,7 @@ func FilterSelfRule() privacy.QueryMutationRule {
 		if !ok {
 			return privacy.Denyf("filter does not implement SelfFilter")
 		}
-		sf.WhereID(entql.StringEQ(user.ID.String()))
+		sf.WhereID(entql.StringEQ(uid.String()))
 		return privacy.Skip
 	})
 }
@@ -192,7 +189,7 @@ func FilterUserOrSystemRule() privacy.QueryMutationRule {
 	}
 	return privacy.FilterFunc(func(ctx context.Context, f privacy.Filter) error {
 		view := viewer.FromContext(ctx)
-		user, ok := view.User()
+		uid, ok := view.UserID()
 		if !ok {
 			return privacy.Denyf("missing user information in viewer-context")
 		}
@@ -202,7 +199,7 @@ func FilterUserOrSystemRule() privacy.QueryMutationRule {
 		}
 		f.Where(
 			entql.Or(
-				entql.FieldEQ("user_id", user.ID.String()),
+				entql.FieldEQ("user_id", uid.String()),
 				entql.FieldEQ("is_system_task", true),
 			),
 		)

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"lybbrio/internal/ent"
 	"lybbrio/internal/ent/privacy"
+	"lybbrio/internal/ent/schema/permissions"
 	"lybbrio/internal/ent/schema/task_enums"
 	"lybbrio/internal/middleware"
 	"lybbrio/internal/viewer"
@@ -29,7 +30,7 @@ func Test_DenyIfNoViewer(t *testing.T) {
 		{
 			name: "viewer is not nil",
 			contextFunc: func() context.Context {
-				return viewer.NewContext(context.Background(), nil, nil)
+				return viewer.NewContext(context.Background(), "", nil)
 			},
 			wantErr: false,
 		},
@@ -65,14 +66,14 @@ func Test_AllowIfAdmin(t *testing.T) {
 		{
 			name: "viewer is not admin",
 			contextFunc: func() context.Context {
-				return viewer.NewContext(context.Background(), nil, nil)
+				return viewer.NewContext(context.Background(), "", nil)
 			},
 			wantErr: true,
 		},
 		{
 			name: "viewer is admin",
 			contextFunc: func() context.Context {
-				return viewer.NewContext(context.Background(), nil, &ent.UserPermissions{Admin: true})
+				return viewer.NewContext(context.Background(), "", permissions.NewPermissions(permissions.Admin))
 			},
 			wantErr: false,
 		},
@@ -107,7 +108,7 @@ func Test_AllowIfSuperRead(t *testing.T) {
 		{
 			name: "viewer is not admin",
 			contextFunc: func() context.Context {
-				return viewer.NewContext(context.Background(), nil, nil)
+				return viewer.NewContext(context.Background(), "", nil)
 			},
 			superRead: true,
 			wantErr:   true,
@@ -115,7 +116,7 @@ func Test_AllowIfSuperRead(t *testing.T) {
 		{
 			name: "viewer is admin",
 			contextFunc: func() context.Context {
-				return viewer.NewContext(context.Background(), nil, &ent.UserPermissions{Admin: true})
+				return viewer.NewContext(context.Background(), "", permissions.NewPermissions(permissions.Admin))
 			},
 			superRead: true,
 			wantErr:   false,
@@ -123,7 +124,7 @@ func Test_AllowIfSuperRead(t *testing.T) {
 		{
 			name: "viewer is admin but superRead is false",
 			contextFunc: func() context.Context {
-				return viewer.NewContext(context.Background(), nil, &ent.UserPermissions{Admin: true})
+				return viewer.NewContext(context.Background(), "", permissions.NewPermissions(permissions.Admin))
 			},
 			superRead: false,
 			wantErr:   true,
@@ -131,7 +132,7 @@ func Test_AllowIfSuperRead(t *testing.T) {
 		{
 			name: "viewer is not admin and superRead is false",
 			contextFunc: func() context.Context {
-				return viewer.NewContext(context.Background(), nil, nil)
+				return viewer.NewContext(context.Background(), "", nil)
 			},
 			superRead: false,
 			wantErr:   true,
@@ -172,14 +173,14 @@ func Test_FilterUserRule(t *testing.T) {
 		{
 			name: "viewer does not container user",
 			contextFunc: func() context.Context {
-				return viewer.NewContext(context.Background(), nil, nil)
+				return viewer.NewContext(context.Background(), "", nil)
 			},
 			wantErr: privacy.Deny,
 		},
 		{
 			name: "viewer contains user",
 			contextFunc: func() context.Context {
-				return viewer.NewContext(context.Background(), &ent.User{ID: "asdf"}, nil)
+				return viewer.NewContext(context.Background(), "asdf", nil)
 			},
 			wantErr: privacy.Skip,
 			query:   &ent.ShelfQuery{},
@@ -187,7 +188,7 @@ func Test_FilterUserRule(t *testing.T) {
 		{
 			name: "filter does not implement UserFilter",
 			contextFunc: func() context.Context {
-				return viewer.NewContext(context.Background(), &ent.User{ID: "asdf"}, nil)
+				return viewer.NewContext(context.Background(), "asdf", nil)
 			},
 			wantErr: privacy.Deny,
 			query:   &ent.BookQuery{},
@@ -230,7 +231,7 @@ func Test_FilterUserOrPublicRule(t *testing.T) {
 		{
 			name: "viewer does not container user",
 			contextFunc: func() context.Context {
-				return viewer.NewContext(context.Background(), nil, nil)
+				return viewer.NewContext(context.Background(), "", nil)
 			},
 			wantErr: privacy.Deny,
 			query:   &ent.ShelfQuery{},
@@ -238,7 +239,7 @@ func Test_FilterUserOrPublicRule(t *testing.T) {
 		{
 			name: "viewer contains user",
 			contextFunc: func() context.Context {
-				return viewer.NewContext(context.Background(), &ent.User{ID: "asdf"}, nil)
+				return viewer.NewContext(context.Background(), "asdf", nil)
 			},
 			wantErr: privacy.Skip,
 			query:   &ent.ShelfQuery{},
@@ -246,7 +247,7 @@ func Test_FilterUserOrPublicRule(t *testing.T) {
 		{
 			name: "filter does not implement UserOrPublicFilter",
 			contextFunc: func() context.Context {
-				return viewer.NewContext(context.Background(), &ent.User{ID: "asdf"}, nil)
+				return viewer.NewContext(context.Background(), "asdf", nil)
 			},
 			wantErr: privacy.Deny,
 			query:   &ent.BookQuery{},
@@ -289,7 +290,7 @@ func Test_DenyPublicWithoutPermissionRule(t *testing.T) {
 		{
 			name: "viewer does not contain perms",
 			contextFunc: func() context.Context {
-				return viewer.NewContext(context.Background(), nil, nil)
+				return viewer.NewContext(context.Background(), "", nil)
 			},
 			wantErr: privacy.Deny,
 			mutationFunc: func() ent.Mutation {
@@ -303,8 +304,8 @@ func Test_DenyPublicWithoutPermissionRule(t *testing.T) {
 			contextFunc: func() context.Context {
 				return viewer.NewContext(
 					context.Background(),
-					nil,
-					&ent.UserPermissions{CanCreatePublic: true},
+					"",
+					permissions.NewPermissions(permissions.CanCreatePublic),
 				)
 			},
 			wantErr: privacy.Deny,
@@ -317,8 +318,8 @@ func Test_DenyPublicWithoutPermissionRule(t *testing.T) {
 			contextFunc: func() context.Context {
 				return viewer.NewContext(
 					context.Background(),
-					nil,
-					&ent.UserPermissions{CanCreatePublic: false},
+					"",
+					permissions.NewPermissions(permissions.CanEdit),
 				)
 			},
 			wantErr: privacy.Deny,
@@ -333,8 +334,8 @@ func Test_DenyPublicWithoutPermissionRule(t *testing.T) {
 			contextFunc: func() context.Context {
 				return viewer.NewContext(
 					context.Background(),
-					nil,
-					&ent.UserPermissions{CanCreatePublic: true},
+					"",
+					permissions.NewPermissions(permissions.CanCreatePublic),
 				)
 			},
 			wantErr: privacy.Skip,
@@ -372,9 +373,7 @@ func Test_DenyMismatchedUserRule(t *testing.T) {
 		{
 			name: "mutation does not implement UserableMutation",
 			contextFunc: func() context.Context {
-				return viewer.NewContext(context.Background(), &ent.User{
-					ID: "asdf",
-				}, nil)
+				return viewer.NewContext(context.Background(), "asdf", nil)
 			},
 			wantErr: privacy.Deny,
 			mutationFunc: func() ent.Mutation {
@@ -384,7 +383,7 @@ func Test_DenyMismatchedUserRule(t *testing.T) {
 		{
 			name: "viewer does not contain user",
 			contextFunc: func() context.Context {
-				return viewer.NewContext(context.Background(), nil, nil)
+				return viewer.NewContext(context.Background(), "", nil)
 			},
 			wantErr: privacy.Deny,
 			mutationFunc: func() ent.Mutation {
@@ -397,9 +396,7 @@ func Test_DenyMismatchedUserRule(t *testing.T) {
 		{
 			name: "viewer contains mismatched user - create",
 			contextFunc: func() context.Context {
-				return viewer.NewContext(context.Background(), &ent.User{
-					ID: "asdf",
-				}, nil)
+				return viewer.NewContext(context.Background(), "asdf", nil)
 			},
 			wantErr: privacy.Deny,
 			mutationFunc: func() ent.Mutation {
@@ -412,9 +409,7 @@ func Test_DenyMismatchedUserRule(t *testing.T) {
 		{
 			name: "viewer contains matched user - create",
 			contextFunc: func() context.Context {
-				return viewer.NewContext(context.Background(), &ent.User{
-					ID: "asdf",
-				}, nil)
+				return viewer.NewContext(context.Background(), "asdf", nil)
 			},
 			wantErr: privacy.Skip,
 			mutationFunc: func() ent.Mutation {
@@ -452,14 +447,14 @@ func Test_FilterSelfRule(t *testing.T) {
 		{
 			name: "viewer does not container user",
 			contextFunc: func() context.Context {
-				return viewer.NewContext(context.Background(), nil, nil)
+				return viewer.NewContext(context.Background(), "", nil)
 			},
 			wantErr: privacy.Deny,
 		},
 		{
 			name: "viewer contains user",
 			contextFunc: func() context.Context {
-				return viewer.NewContext(context.Background(), &ent.User{ID: "asdf"}, nil)
+				return viewer.NewContext(context.Background(), "asdf", nil)
 			},
 			wantErr: privacy.Skip,
 			query:   &ent.UserQuery{},
@@ -502,7 +497,7 @@ func Test_FilterUserOrSystemRule(t *testing.T) {
 		{
 			name: "viewer does not container user",
 			contextFunc: func() context.Context {
-				return viewer.NewContext(context.Background(), nil, nil)
+				return viewer.NewContext(context.Background(), "", nil)
 			},
 			wantErr: privacy.Deny,
 			query:   &ent.ShelfQuery{},
@@ -510,7 +505,7 @@ func Test_FilterUserOrSystemRule(t *testing.T) {
 		{
 			name: "viewer contains user",
 			contextFunc: func() context.Context {
-				return viewer.NewContext(context.Background(), &ent.User{ID: "asdf"}, nil)
+				return viewer.NewContext(context.Background(), "asdf", nil)
 			},
 			wantErr: privacy.Skip,
 			query:   &ent.TaskQuery{},
@@ -518,7 +513,7 @@ func Test_FilterUserOrSystemRule(t *testing.T) {
 		{
 			name: "filter does not implement UserOrPublicFilter",
 			contextFunc: func() context.Context {
-				return viewer.NewContext(context.Background(), &ent.User{ID: "asdf"}, nil)
+				return viewer.NewContext(context.Background(), "asdf", nil)
 			},
 			wantErr: privacy.Deny,
 			query:   &ent.ShelfQuery{},
@@ -561,7 +556,7 @@ func Test_AllowTasksOfType(t *testing.T) {
 		{
 			name: "mutation is missing task type",
 			contextFunc: func() context.Context {
-				return viewer.NewContext(context.Background(), nil, nil)
+				return viewer.NewContext(context.Background(), "", nil)
 			},
 			wantErr: privacy.Deny,
 			mutationFunc: func() *ent.TaskMutation {
@@ -571,7 +566,7 @@ func Test_AllowTasksOfType(t *testing.T) {
 		{
 			name: "NoOp allowed - create",
 			contextFunc: func() context.Context {
-				return viewer.NewContext(context.Background(), nil, nil)
+				return viewer.NewContext(context.Background(), "", nil)
 			},
 			wantErr: privacy.Allow,
 			mutationFunc: func() *ent.TaskMutation {
@@ -584,7 +579,7 @@ func Test_AllowTasksOfType(t *testing.T) {
 		{
 			name: "CalibreImport denied - create",
 			contextFunc: func() context.Context {
-				return viewer.NewContext(context.Background(), nil, nil)
+				return viewer.NewContext(context.Background(), "", nil)
 			},
 			wantErr: privacy.Deny,
 			mutationFunc: func() *ent.TaskMutation {
@@ -624,7 +619,7 @@ func Test_DenySystemTaskForNonAdmin(t *testing.T) {
 		{
 			name: "viewer is admin system task",
 			contextFunc: func() context.Context {
-				return viewer.NewContext(context.Background(), nil, &ent.UserPermissions{Admin: true})
+				return viewer.NewContext(context.Background(), "", permissions.NewPermissions(permissions.Admin))
 			},
 			wantErr: privacy.Skip,
 			mutationFunc: func() *ent.TaskMutation {
@@ -637,7 +632,7 @@ func Test_DenySystemTaskForNonAdmin(t *testing.T) {
 		{
 			name: "viewer is admin not system task",
 			contextFunc: func() context.Context {
-				return viewer.NewContext(context.Background(), nil, &ent.UserPermissions{Admin: true})
+				return viewer.NewContext(context.Background(), "", permissions.NewPermissions(permissions.Admin))
 			},
 			wantErr: privacy.Skip,
 			mutationFunc: func() *ent.TaskMutation {
@@ -650,7 +645,7 @@ func Test_DenySystemTaskForNonAdmin(t *testing.T) {
 		{
 			name: "viewer is not admin system task",
 			contextFunc: func() context.Context {
-				return viewer.NewContext(context.Background(), nil, nil)
+				return viewer.NewContext(context.Background(), "", nil)
 			},
 			wantErr: privacy.Deny,
 			mutationFunc: func() *ent.TaskMutation {

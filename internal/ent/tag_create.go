@@ -30,6 +30,14 @@ func (tc *TagCreate) SetCalibreID(i int64) *TagCreate {
 	return tc
 }
 
+// SetNillableCalibreID sets the "calibre_id" field if the given value is not nil.
+func (tc *TagCreate) SetNillableCalibreID(i *int64) *TagCreate {
+	if i != nil {
+		tc.SetCalibreID(*i)
+	}
+	return tc
+}
+
 // SetName sets the "name" field.
 func (tc *TagCreate) SetName(s string) *TagCreate {
 	tc.mutation.SetName(s)
@@ -114,9 +122,6 @@ func (tc *TagCreate) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (tc *TagCreate) check() error {
-	if _, ok := tc.mutation.CalibreID(); !ok {
-		return &ValidationError{Name: "calibre_id", err: errors.New(`ent: missing required field "Tag.calibre_id"`)}
-	}
 	if _, ok := tc.mutation.Name(); !ok {
 		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "Tag.name"`)}
 	}
@@ -255,6 +260,12 @@ func (u *TagUpsert) AddCalibreID(v int64) *TagUpsert {
 	return u
 }
 
+// ClearCalibreID clears the value of the "calibre_id" field.
+func (u *TagUpsert) ClearCalibreID() *TagUpsert {
+	u.SetNull(tag.FieldCalibreID)
+	return u
+}
+
 // SetName sets the "name" field.
 func (u *TagUpsert) SetName(v string) *TagUpsert {
 	u.Set(tag.FieldName, v)
@@ -333,6 +344,13 @@ func (u *TagUpsertOne) AddCalibreID(v int64) *TagUpsertOne {
 func (u *TagUpsertOne) UpdateCalibreID() *TagUpsertOne {
 	return u.Update(func(s *TagUpsert) {
 		s.UpdateCalibreID()
+	})
+}
+
+// ClearCalibreID clears the value of the "calibre_id" field.
+func (u *TagUpsertOne) ClearCalibreID() *TagUpsertOne {
+	return u.Update(func(s *TagUpsert) {
+		s.ClearCalibreID()
 	})
 }
 
@@ -583,6 +601,13 @@ func (u *TagUpsertBulk) AddCalibreID(v int64) *TagUpsertBulk {
 func (u *TagUpsertBulk) UpdateCalibreID() *TagUpsertBulk {
 	return u.Update(func(s *TagUpsert) {
 		s.UpdateCalibreID()
+	})
+}
+
+// ClearCalibreID clears the value of the "calibre_id" field.
+func (u *TagUpsertBulk) ClearCalibreID() *TagUpsertBulk {
+	return u.Update(func(s *TagUpsert) {
+		s.ClearCalibreID()
 	})
 }
 

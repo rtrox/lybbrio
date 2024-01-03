@@ -6,6 +6,7 @@ import (
 	"lybbrio/internal/ent"
 	"lybbrio/internal/viewer"
 
+	"lybbrio/internal/ent/schema/permissions"
 	"lybbrio/internal/ent/schema/task_enums"
 
 	"github.com/rs/zerolog/log"
@@ -93,7 +94,7 @@ func (w *Worker) startTask(ctx context.Context, task TaskWrapper) error {
 		if err != nil {
 			return fmt.Errorf("failed to get task creator permissions: %w", err)
 		}
-		taskCtx = viewer.NewContext(ctx, user, perms)
+		taskCtx = viewer.NewContext(ctx, user.ID, permissions.From(perms))
 	}
 
 	msg, err := func() (msg string, err error) {

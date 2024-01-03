@@ -2,7 +2,8 @@ package viewer
 
 import (
 	"context"
-	"lybbrio/internal/ent"
+	"lybbrio/internal/ent/schema/ksuid"
+	"lybbrio/internal/ent/schema/permissions"
 )
 
 type viewerCtxKeyType string
@@ -11,38 +12,38 @@ const viewerCtxKey viewerCtxKeyType = "viewer"
 
 type Viewer interface {
 	IsAdmin() bool
-	User() (*ent.User, bool)
-	Permissions() (*ent.UserPermissions, bool)
+	UserID() (ksuid.ID, bool)
+	Has(permissions.Permission) bool
 }
 
 type UserViewer struct {
-	u *ent.User
-	p *ent.UserPermissions
+	uid ksuid.ID
+	p   permissions.Permissions
 }
 
 func (v UserViewer) IsAdmin() bool {
 	if v.p == nil {
 		return false
 	}
-	return v.p.Admin
+	return v.p.Has(permissions.Admin)
 }
 
-func (v UserViewer) User() (*ent.User, bool) {
-	if v.u != nil {
-		return v.u, true
+func (v UserViewer) UserID() (ksuid.ID, bool) {
+	if v.uid != "" {
+		return v.uid, true
 	}
-	return nil, false
+	return "", false
 }
 
-func (v UserViewer) Permissions() (*ent.UserPermissions, bool) {
-	if v.p != nil {
-		return v.p, true
+func (v UserViewer) Has(p permissions.Permission) bool {
+	if v.p == nil {
+		return false
 	}
-	return nil, false
+	return v.p.Has(p)
 }
 
-func NewContext(ctx context.Context, u *ent.User, p *ent.UserPermissions) context.Context {
-	return context.WithValue(ctx, viewerCtxKey, UserViewer{u: u, p: p})
+func NewContext(ctx context.Context, uid ksuid.ID, permissions permissions.Permissions) context.Context {
+	return context.WithValue(ctx, viewerCtxKey, UserViewer{uid: uid, p: permissions})
 }
 
 func FromContext(ctx context.Context) Viewer {
@@ -59,12 +60,12 @@ func (v SystemAdminViewer) IsAdmin() bool {
 	return true
 }
 
-func (v SystemAdminViewer) User() (*ent.User, bool) {
-	return nil, false
+func (v SystemAdminViewer) UserID() (ksuid.ID, bool) {
+	return "", false
 }
 
-func (v SystemAdminViewer) Permissions() (*ent.UserPermissions, bool) {
-	return nil, false
+func (v SystemAdminViewer) Has(p permissions.Permission) bool {
+	return p == permissions.Admin
 }
 
 func NewSystemAdminContext(ctx context.Context) context.Context {

@@ -17,7 +17,7 @@ func Test_CreateToken(t *testing.T) {
 	)
 	require.NoError(err)
 
-	signedToken, err := provider.CreateToken("some_user_id", "some_user_name")
+	signedToken, err := provider.CreateToken("some_user_id", "some_user_name", []string{"some_permission"})
 	require.NoError(err)
 
 	claims := signedToken.Claims()
@@ -26,6 +26,7 @@ func Test_CreateToken(t *testing.T) {
 	require.Equal("some_issuer", claims.Issuer)
 	require.Equal("some_user_id", claims.Subject)
 	require.Equal("some_issuer", claims.Audience[0])
+	require.Contains(claims.Permissions, "some_permission")
 
 	claims2, err := provider.ParseToken(signedToken.String())
 	require.NoError(err)
