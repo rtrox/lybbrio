@@ -17,6 +17,17 @@ func Test_String(t *testing.T) {
 	require.Equal("", Permission(0).String())
 }
 
+func Test_FromString(t *testing.T) {
+	t.Parallel()
+	require := require.New(t)
+
+	for i := Admin; i < count; i++ {
+		require.Equal(i, FromString(Permission(i).String()))
+	}
+
+	require.Equal(Permission(0), FromString("asdf"))
+}
+
 func Test_NewPermissions(t *testing.T) {
 	t.Parallel()
 	require := require.New(t)
@@ -39,6 +50,40 @@ func Test_Permissions_Has(t *testing.T) {
 	require.True(p.Has(Admin))
 	require.True(p.Has(CanCreatePublic))
 	require.False(p.Has(CanEdit))
+}
+
+func Test_Permissions_Add(t *testing.T) {
+	t.Parallel()
+	require := require.New(t)
+
+	p := Permissions{}
+
+	p.Add(Admin)
+	require.True(p.Has(Admin))
+	require.False(p.Has(CanCreatePublic))
+	require.False(p.Has(CanEdit))
+
+	p.Add(CanCreatePublic)
+	require.True(p.Has(Admin))
+	require.True(p.Has(CanCreatePublic))
+	require.False(p.Has(CanEdit))
+
+	p.Add(CanEdit)
+	require.True(p.Has(Admin))
+	require.True(p.Has(CanCreatePublic))
+	require.True(p.Has(CanEdit))
+}
+
+func Test_Permissions_StringSlice(t *testing.T) {
+	t.Parallel()
+	require := require.New(t)
+
+	p := Permissions{
+		Admin:           struct{}{},
+		CanCreatePublic: struct{}{},
+	}
+
+	require.Equal([]string{"Admin", "CanCreatePublic"}, p.StringSlice())
 }
 
 func Test_From(t *testing.T) {
