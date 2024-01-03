@@ -50,6 +50,12 @@ func (iu *IdentifierUpdate) AddCalibreID(i int64) *IdentifierUpdate {
 	return iu
 }
 
+// ClearCalibreID clears the value of the "calibre_id" field.
+func (iu *IdentifierUpdate) ClearCalibreID() *IdentifierUpdate {
+	iu.mutation.ClearCalibreID()
+	return iu
+}
+
 // SetType sets the "type" field.
 func (iu *IdentifierUpdate) SetType(s string) *IdentifierUpdate {
 	iu.mutation.SetType(s)
@@ -163,6 +169,9 @@ func (iu *IdentifierUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := iu.mutation.AddedCalibreID(); ok {
 		_spec.AddField(identifier.FieldCalibreID, field.TypeInt64, value)
 	}
+	if iu.mutation.CalibreIDCleared() {
+		_spec.ClearField(identifier.FieldCalibreID, field.TypeInt64)
+	}
 	if value, ok := iu.mutation.GetType(); ok {
 		_spec.SetField(identifier.FieldType, field.TypeString, value)
 	}
@@ -236,6 +245,12 @@ func (iuo *IdentifierUpdateOne) SetNillableCalibreID(i *int64) *IdentifierUpdate
 // AddCalibreID adds i to the "calibre_id" field.
 func (iuo *IdentifierUpdateOne) AddCalibreID(i int64) *IdentifierUpdateOne {
 	iuo.mutation.AddCalibreID(i)
+	return iuo
+}
+
+// ClearCalibreID clears the value of the "calibre_id" field.
+func (iuo *IdentifierUpdateOne) ClearCalibreID() *IdentifierUpdateOne {
+	iuo.mutation.ClearCalibreID()
 	return iuo
 }
 
@@ -381,6 +396,9 @@ func (iuo *IdentifierUpdateOne) sqlSave(ctx context.Context) (_node *Identifier,
 	}
 	if value, ok := iuo.mutation.AddedCalibreID(); ok {
 		_spec.AddField(identifier.FieldCalibreID, field.TypeInt64, value)
+	}
+	if iuo.mutation.CalibreIDCleared() {
+		_spec.ClearField(identifier.FieldCalibreID, field.TypeInt64)
 	}
 	if value, ok := iuo.mutation.GetType(); ok {
 		_spec.SetField(identifier.FieldType, field.TypeString, value)

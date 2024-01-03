@@ -28,6 +28,7 @@ func Test_Middleware(t *testing.T) {
 	token, err := provider.CreateToken(
 		"some_user_id",
 		"some_user_name",
+		[]string{"some_permission"},
 	)
 	require.NoError(err)
 
@@ -58,6 +59,7 @@ func Test_Middleware_BadToken(t *testing.T) {
 	token, err := wrong_provider.CreateToken(
 		"some_user_id",
 		"some_user_name",
+		[]string{"some_permission"},
 	)
 	require.NoError(err)
 

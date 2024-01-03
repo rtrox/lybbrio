@@ -122,7 +122,8 @@ type CalibreMixin struct {
 func (CalibreMixin) Fields() []ent.Field {
 	return []ent.Field{
 		field.Int64("calibre_id").
-			Unique(),
+			Unique().
+			Optional(),
 	}
 }
 

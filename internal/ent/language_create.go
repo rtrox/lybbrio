@@ -30,6 +30,14 @@ func (lc *LanguageCreate) SetCalibreID(i int64) *LanguageCreate {
 	return lc
 }
 
+// SetNillableCalibreID sets the "calibre_id" field if the given value is not nil.
+func (lc *LanguageCreate) SetNillableCalibreID(i *int64) *LanguageCreate {
+	if i != nil {
+		lc.SetCalibreID(*i)
+	}
+	return lc
+}
+
 // SetCode sets the "code" field.
 func (lc *LanguageCreate) SetCode(s string) *LanguageCreate {
 	lc.mutation.SetCode(s)
@@ -114,9 +122,6 @@ func (lc *LanguageCreate) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (lc *LanguageCreate) check() error {
-	if _, ok := lc.mutation.CalibreID(); !ok {
-		return &ValidationError{Name: "calibre_id", err: errors.New(`ent: missing required field "Language.calibre_id"`)}
-	}
 	if _, ok := lc.mutation.Code(); !ok {
 		return &ValidationError{Name: "code", err: errors.New(`ent: missing required field "Language.code"`)}
 	}
@@ -255,6 +260,12 @@ func (u *LanguageUpsert) AddCalibreID(v int64) *LanguageUpsert {
 	return u
 }
 
+// ClearCalibreID clears the value of the "calibre_id" field.
+func (u *LanguageUpsert) ClearCalibreID() *LanguageUpsert {
+	u.SetNull(language.FieldCalibreID)
+	return u
+}
+
 // SetCode sets the "code" field.
 func (u *LanguageUpsert) SetCode(v string) *LanguageUpsert {
 	u.Set(language.FieldCode, v)
@@ -333,6 +344,13 @@ func (u *LanguageUpsertOne) AddCalibreID(v int64) *LanguageUpsertOne {
 func (u *LanguageUpsertOne) UpdateCalibreID() *LanguageUpsertOne {
 	return u.Update(func(s *LanguageUpsert) {
 		s.UpdateCalibreID()
+	})
+}
+
+// ClearCalibreID clears the value of the "calibre_id" field.
+func (u *LanguageUpsertOne) ClearCalibreID() *LanguageUpsertOne {
+	return u.Update(func(s *LanguageUpsert) {
+		s.ClearCalibreID()
 	})
 }
 
@@ -583,6 +601,13 @@ func (u *LanguageUpsertBulk) AddCalibreID(v int64) *LanguageUpsertBulk {
 func (u *LanguageUpsertBulk) UpdateCalibreID() *LanguageUpsertBulk {
 	return u.Update(func(s *LanguageUpsert) {
 		s.UpdateCalibreID()
+	})
+}
+
+// ClearCalibreID clears the value of the "calibre_id" field.
+func (u *LanguageUpsertBulk) ClearCalibreID() *LanguageUpsertBulk {
+	return u.Update(func(s *LanguageUpsert) {
+		s.ClearCalibreID()
 	})
 }
 

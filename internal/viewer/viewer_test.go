@@ -4,19 +4,19 @@ import (
 	"context"
 	"testing"
 
-	"lybbrio/internal/ent"
 	"lybbrio/internal/ent/schema/ksuid"
+	"lybbrio/internal/ent/schema/permissions"
 
 	"github.com/stretchr/testify/assert"
 )
 
 func Test_EmptyViewer(t *testing.T) {
 	assert := assert.New(t)
-	ctx := NewContext(context.Background(), nil, nil)
+	ctx := NewContext(context.Background(), "", nil)
 	v := FromContext(ctx)
 	assert.False(v.IsAdmin())
-	assert.Nil(v.User())
-	assert.Nil(v.Permissions())
+	assert.Empty(v.UserID())
+	assert.False(v.Has(permissions.Admin))
 }
 
 func Test_NoViewer(t *testing.T) {
@@ -55,22 +55,17 @@ func Test_UserViewerDefaultNoAdmin(t *testing.T) {
 func Test_UserViewerPermissionsAdmin(t *testing.T) {
 	params := []struct {
 		name        string
-		p           *ent.UserPermissions
+		p           permissions.Permissions
 		shouldAdmin bool
 	}{
 		{
-			name:        "nil",
-			p:           nil,
-			shouldAdmin: false,
-		},
-		{
 			name:        "not admin",
-			p:           &ent.UserPermissions{Admin: false},
+			p:           permissions.NewPermissions(),
 			shouldAdmin: false,
 		},
 		{
 			name:        "admin",
-			p:           &ent.UserPermissions{Admin: true},
+			p:           permissions.NewPermissions(permissions.Admin),
 			shouldAdmin: true,
 		},
 	}
@@ -80,6 +75,56 @@ func Test_UserViewerPermissionsAdmin(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 			assert.Equal(tt.shouldAdmin, UserViewer{p: tt.p}.IsAdmin())
+			assert.Equal(tt.shouldAdmin, UserViewer{p: tt.p}.Has(permissions.Admin))
+		})
+	}
+}
+
+func Test_UserViewerHasPermissions(t *testing.T) {
+	tests := []struct {
+		name          string
+		p             permissions.Permissions
+		shouldHave    permissions.Permission
+		shouldNotHave permissions.Permission
+	}{
+		{
+			name:          "no permissions",
+			p:             permissions.NewPermissions(),
+			shouldHave:    0,
+			shouldNotHave: permissions.Admin,
+		},
+		{
+			name:          "admin",
+			p:             permissions.NewPermissions(permissions.Admin),
+			shouldHave:    permissions.Admin,
+			shouldNotHave: permissions.CanCreatePublic,
+		},
+		{
+			name:          "can create public",
+			p:             permissions.NewPermissions(permissions.CanCreatePublic),
+			shouldHave:    permissions.CanCreatePublic,
+			shouldNotHave: permissions.CanEdit,
+		},
+		{
+			name:          "can edit",
+			p:             permissions.NewPermissions(permissions.CanEdit),
+			shouldHave:    permissions.CanEdit,
+			shouldNotHave: permissions.CanCreatePublic,
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			assert := assert.New(t)
+			v := UserViewer{p: tt.p}
+			if tt.shouldNotHave != 0 {
+				assert.False(v.Has(tt.shouldNotHave))
+			}
+			if tt.shouldHave != 0 {
+				assert.True(v.Has(tt.shouldHave))
+			}
 		})
 	}
 }
@@ -89,8 +134,8 @@ func Test_NewContext(t *testing.T) {
 	expectedID := ksuid.MustNew("usr")
 	ctx := NewContext(
 		context.Background(),
-		&ent.User{ID: expectedID},
-		&ent.UserPermissions{Admin: true},
+		expectedID,
+		permissions.NewPermissions(permissions.Admin),
 	)
 	if !assert.NotNil(ctx, "NewContext should not return nil") {
 		t.FailNow()
@@ -100,13 +145,11 @@ func Test_NewContext(t *testing.T) {
 		t.FailNow()
 	}
 	assert.Implements((*Viewer)(nil), v, "FromContext should return a Viewer")
-	u, ok := v.User()
+	uid, ok := v.UserID()
 	assert.True(ok, "FromContext should return the user")
-	assert.Equal(expectedID, u.ID, "FromContext should return the same user")
-	p, ok := v.Permissions()
-	assert.True(ok, "FromContext should return the permissions")
-	assert.Equal(true, p.Admin, "FromContext should return the same permissions")
+	assert.Equal(expectedID, uid, "FromContext should return the same user")
 	assert.True(v.IsAdmin(), "FromContext should return the same permissions")
+	assert.True(v.Has(permissions.Admin), "FromContext should return the same permissions")
 }
 
 func Test_NewSystemAdminContext(t *testing.T) {
@@ -120,12 +163,8 @@ func Test_NewSystemAdminContext(t *testing.T) {
 		t.FailNow()
 	}
 	assert.Implements((*Viewer)(nil), v, "FromContext should return a Viewer")
-	u, ok := v.User()
-	assert.Nil(u, "FromContext should not return a user")
+	_, ok := v.UserID()
 	assert.False(ok, "FromContext should not return a user")
 	assert.True(v.IsAdmin(), "FromContext should return admin permissions")
-
-	p, ok := v.Permissions()
-	assert.Nil(p, "FromContext should not return permissions")
-	assert.False(ok, "FromContext should not return permissions")
+	assert.True(v.Has(permissions.Admin), "FromContext should return admin permissions")
 }

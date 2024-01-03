@@ -110,6 +110,16 @@ func CalibreIDLTE(v int64) predicate.Identifier {
 	return predicate.Identifier(sql.FieldLTE(FieldCalibreID, v))
 }
 
+// CalibreIDIsNil applies the IsNil predicate on the "calibre_id" field.
+func CalibreIDIsNil() predicate.Identifier {
+	return predicate.Identifier(sql.FieldIsNull(FieldCalibreID))
+}
+
+// CalibreIDNotNil applies the NotNil predicate on the "calibre_id" field.
+func CalibreIDNotNil() predicate.Identifier {
+	return predicate.Identifier(sql.FieldNotNull(FieldCalibreID))
+}
+
 // TypeEQ applies the EQ predicate on the "type" field.
 func TypeEQ(v string) predicate.Identifier {
 	return predicate.Identifier(sql.FieldEQ(FieldType, v))

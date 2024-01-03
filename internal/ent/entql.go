@@ -207,6 +207,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 		Type: "UserPermissions",
 		Fields: map[string]*sqlgraph.FieldSpec{
 			userpermissions.FieldUserID:          {Type: field.TypeString, Column: userpermissions.FieldUserID},
+			userpermissions.FieldCanEdit:         {Type: field.TypeBool, Column: userpermissions.FieldCanEdit},
 			userpermissions.FieldAdmin:           {Type: field.TypeBool, Column: userpermissions.FieldAdmin},
 			userpermissions.FieldCanCreatePublic: {Type: field.TypeBool, Column: userpermissions.FieldCanCreatePublic},
 		},
@@ -1345,12 +1346,17 @@ func (f *UserPermissionsFilter) WhereUserID(p entql.StringP) {
 	f.Where(p.Field(userpermissions.FieldUserID))
 }
 
-// WhereAdmin applies the entql bool predicate on the admin field.
+// WhereCanEdit applies the entql bool predicate on the CanEdit field.
+func (f *UserPermissionsFilter) WhereCanEdit(p entql.BoolP) {
+	f.Where(p.Field(userpermissions.FieldCanEdit))
+}
+
+// WhereAdmin applies the entql bool predicate on the Admin field.
 func (f *UserPermissionsFilter) WhereAdmin(p entql.BoolP) {
 	f.Where(p.Field(userpermissions.FieldAdmin))
 }
 
-// WhereCanCreatePublic applies the entql bool predicate on the can_create_public field.
+// WhereCanCreatePublic applies the entql bool predicate on the CanCreatePublic field.
 func (f *UserPermissionsFilter) WhereCanCreatePublic(p entql.BoolP) {
 	f.Where(p.Field(userpermissions.FieldCanCreatePublic))
 }

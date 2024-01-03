@@ -4,6 +4,7 @@ import (
 	"lybbrio/internal/auth"
 	"lybbrio/internal/ent"
 	"lybbrio/internal/ent/schema/ksuid"
+	"lybbrio/internal/ent/schema/permissions"
 	"lybbrio/internal/ent/user"
 	"lybbrio/internal/viewer"
 	"net/http"
@@ -37,7 +38,7 @@ func ViewerContextMiddleware(client *ent.Client) func(http.Handler) http.Handler
 				render.JSON(w, r, map[string]string{"error": "Unauthorized"})
 				return
 			}
-			viewerCtx := viewer.NewContext(ctx, user, perms)
+			viewerCtx := viewer.NewContext(ctx, user.ID, permissions.From(perms))
 			next.ServeHTTP(w, r.WithContext(viewerCtx))
 		})
 	}

@@ -105,6 +105,16 @@ func CalibreIDLTE(v int64) predicate.Tag {
 	return predicate.Tag(sql.FieldLTE(FieldCalibreID, v))
 }
 
+// CalibreIDIsNil applies the IsNil predicate on the "calibre_id" field.
+func CalibreIDIsNil() predicate.Tag {
+	return predicate.Tag(sql.FieldIsNull(FieldCalibreID))
+}
+
+// CalibreIDNotNil applies the NotNil predicate on the "calibre_id" field.
+func CalibreIDNotNil() predicate.Tag {
+	return predicate.Tag(sql.FieldNotNull(FieldCalibreID))
+}
+
 // NameEQ applies the EQ predicate on the "name" field.
 func NameEQ(v string) predicate.Tag {
 	return predicate.Tag(sql.FieldEQ(FieldName, v))

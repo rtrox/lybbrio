@@ -5,6 +5,7 @@ import (
 	"lybbrio/internal/db"
 	"lybbrio/internal/ent"
 	"lybbrio/internal/ent/schema/ksuid"
+	"lybbrio/internal/ent/schema/permissions"
 	"lybbrio/internal/viewer"
 	"testing"
 
@@ -25,6 +26,10 @@ type testData struct {
 	user1ViewerContext context.Context
 	user2ViewerContext context.Context
 	adminViewerContext context.Context
+}
+
+func contextFromUserAndPerms(user *ent.User, perms *ent.UserPermissions) context.Context {
+	return viewer.NewContext(context.Background(), user.ID, permissions.From(perms))
 }
 
 func setupTest(t *testing.T, testName string) (teardownFunc func(t *testing.T), client *ent.Client, data testData) {
@@ -59,9 +64,9 @@ func setupTest(t *testing.T, testName string) (teardownFunc func(t *testing.T), 
 		SaveX(adminContext)
 
 	data = testData{
-		user1ViewerContext: viewer.NewContext(context.Background(), user1, user1perms),
-		user2ViewerContext: viewer.NewContext(context.Background(), user2, user2perms),
-		adminViewerContext: viewer.NewContext(context.Background(), admin, adminperms),
+		user1ViewerContext: contextFromUserAndPerms(user1, user1perms),
+		user2ViewerContext: contextFromUserAndPerms(user2, user2perms),
+		adminViewerContext: contextFromUserAndPerms(admin, adminperms),
 	}
 
 	teardownFunc = func(t *testing.T) {

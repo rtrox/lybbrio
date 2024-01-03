@@ -50,6 +50,12 @@ func (tu *TagUpdate) AddCalibreID(i int64) *TagUpdate {
 	return tu
 }
 
+// ClearCalibreID clears the value of the "calibre_id" field.
+func (tu *TagUpdate) ClearCalibreID() *TagUpdate {
+	tu.mutation.ClearCalibreID()
+	return tu
+}
+
 // SetName sets the "name" field.
 func (tu *TagUpdate) SetName(s string) *TagUpdate {
 	tu.mutation.SetName(s)
@@ -160,6 +166,9 @@ func (tu *TagUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := tu.mutation.AddedCalibreID(); ok {
 		_spec.AddField(tag.FieldCalibreID, field.TypeInt64, value)
 	}
+	if tu.mutation.CalibreIDCleared() {
+		_spec.ClearField(tag.FieldCalibreID, field.TypeInt64)
+	}
 	if value, ok := tu.mutation.Name(); ok {
 		_spec.SetField(tag.FieldName, field.TypeString, value)
 	}
@@ -246,6 +255,12 @@ func (tuo *TagUpdateOne) SetNillableCalibreID(i *int64) *TagUpdateOne {
 // AddCalibreID adds i to the "calibre_id" field.
 func (tuo *TagUpdateOne) AddCalibreID(i int64) *TagUpdateOne {
 	tuo.mutation.AddCalibreID(i)
+	return tuo
+}
+
+// ClearCalibreID clears the value of the "calibre_id" field.
+func (tuo *TagUpdateOne) ClearCalibreID() *TagUpdateOne {
+	tuo.mutation.ClearCalibreID()
 	return tuo
 }
 
@@ -388,6 +403,9 @@ func (tuo *TagUpdateOne) sqlSave(ctx context.Context) (_node *Tag, err error) {
 	}
 	if value, ok := tuo.mutation.AddedCalibreID(); ok {
 		_spec.AddField(tag.FieldCalibreID, field.TypeInt64, value)
+	}
+	if tuo.mutation.CalibreIDCleared() {
+		_spec.ClearField(tag.FieldCalibreID, field.TypeInt64)
 	}
 	if value, ok := tuo.mutation.Name(); ok {
 		_spec.SetField(tag.FieldName, field.TypeString, value)

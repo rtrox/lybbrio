@@ -50,6 +50,12 @@ func (su *SeriesUpdate) AddCalibreID(i int64) *SeriesUpdate {
 	return su
 }
 
+// ClearCalibreID clears the value of the "calibre_id" field.
+func (su *SeriesUpdate) ClearCalibreID() *SeriesUpdate {
+	su.mutation.ClearCalibreID()
+	return su
+}
+
 // SetName sets the "name" field.
 func (su *SeriesUpdate) SetName(s string) *SeriesUpdate {
 	su.mutation.SetName(s)
@@ -179,6 +185,9 @@ func (su *SeriesUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := su.mutation.AddedCalibreID(); ok {
 		_spec.AddField(series.FieldCalibreID, field.TypeInt64, value)
 	}
+	if su.mutation.CalibreIDCleared() {
+		_spec.ClearField(series.FieldCalibreID, field.TypeInt64)
+	}
 	if value, ok := su.mutation.Name(); ok {
 		_spec.SetField(series.FieldName, field.TypeString, value)
 	}
@@ -268,6 +277,12 @@ func (suo *SeriesUpdateOne) SetNillableCalibreID(i *int64) *SeriesUpdateOne {
 // AddCalibreID adds i to the "calibre_id" field.
 func (suo *SeriesUpdateOne) AddCalibreID(i int64) *SeriesUpdateOne {
 	suo.mutation.AddCalibreID(i)
+	return suo
+}
+
+// ClearCalibreID clears the value of the "calibre_id" field.
+func (suo *SeriesUpdateOne) ClearCalibreID() *SeriesUpdateOne {
+	suo.mutation.ClearCalibreID()
 	return suo
 }
 
@@ -429,6 +444,9 @@ func (suo *SeriesUpdateOne) sqlSave(ctx context.Context) (_node *Series, err err
 	}
 	if value, ok := suo.mutation.AddedCalibreID(); ok {
 		_spec.AddField(series.FieldCalibreID, field.TypeInt64, value)
+	}
+	if suo.mutation.CalibreIDCleared() {
+		_spec.ClearField(series.FieldCalibreID, field.TypeInt64)
 	}
 	if value, ok := suo.mutation.Name(); ok {
 		_spec.SetField(series.FieldName, field.TypeString, value)

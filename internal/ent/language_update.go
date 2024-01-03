@@ -50,6 +50,12 @@ func (lu *LanguageUpdate) AddCalibreID(i int64) *LanguageUpdate {
 	return lu
 }
 
+// ClearCalibreID clears the value of the "calibre_id" field.
+func (lu *LanguageUpdate) ClearCalibreID() *LanguageUpdate {
+	lu.mutation.ClearCalibreID()
+	return lu
+}
+
 // SetCode sets the "code" field.
 func (lu *LanguageUpdate) SetCode(s string) *LanguageUpdate {
 	lu.mutation.SetCode(s)
@@ -160,6 +166,9 @@ func (lu *LanguageUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := lu.mutation.AddedCalibreID(); ok {
 		_spec.AddField(language.FieldCalibreID, field.TypeInt64, value)
 	}
+	if lu.mutation.CalibreIDCleared() {
+		_spec.ClearField(language.FieldCalibreID, field.TypeInt64)
+	}
 	if value, ok := lu.mutation.Code(); ok {
 		_spec.SetField(language.FieldCode, field.TypeString, value)
 	}
@@ -246,6 +255,12 @@ func (luo *LanguageUpdateOne) SetNillableCalibreID(i *int64) *LanguageUpdateOne 
 // AddCalibreID adds i to the "calibre_id" field.
 func (luo *LanguageUpdateOne) AddCalibreID(i int64) *LanguageUpdateOne {
 	luo.mutation.AddCalibreID(i)
+	return luo
+}
+
+// ClearCalibreID clears the value of the "calibre_id" field.
+func (luo *LanguageUpdateOne) ClearCalibreID() *LanguageUpdateOne {
+	luo.mutation.ClearCalibreID()
 	return luo
 }
 
@@ -388,6 +403,9 @@ func (luo *LanguageUpdateOne) sqlSave(ctx context.Context) (_node *Language, err
 	}
 	if value, ok := luo.mutation.AddedCalibreID(); ok {
 		_spec.AddField(language.FieldCalibreID, field.TypeInt64, value)
+	}
+	if luo.mutation.CalibreIDCleared() {
+		_spec.ClearField(language.FieldCalibreID, field.TypeInt64)
 	}
 	if value, ok := luo.mutation.Code(); ok {
 		_spec.SetField(language.FieldCode, field.TypeString, value)

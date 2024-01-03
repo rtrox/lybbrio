@@ -6,6 +6,7 @@ import (
 	"lybbrio/internal/db"
 	"lybbrio/internal/ent"
 	"lybbrio/internal/ent/enttest"
+	"lybbrio/internal/ent/schema/permissions"
 	"lybbrio/internal/ent/schema/task_enums"
 	"lybbrio/internal/viewer"
 	"testing"
@@ -118,7 +119,7 @@ func TestWorkerPoolRunsAsUser(t *testing.T) {
 		SaveX(adminCtx)
 
 	ctx, cancel := context.WithTimeout(
-		viewer.NewContext(context.Background(), user, userPerms),
+		viewer.NewContext(context.Background(), user.ID, permissions.From(userPerms)),
 		1*time.Second,
 	)
 	defer cancel()
@@ -142,9 +143,9 @@ func TestWorkerPoolRunsAsUser(t *testing.T) {
 			close(done)
 			view := viewer.FromContext(ctx)
 			require.NotNil(t, view, "Viewer is nil")
-			taskUser, ok := view.User()
+			taskUserID, ok := view.UserID()
 			require.True(t, ok, "Viewer does not have user")
-			require.Equal(t, user.ID, taskUser.ID, "Task viewer context is not the same as the user who created the task")
+			require.Equal(t, user.ID, taskUserID, "Task viewer context is not the same as the user who created the task")
 			return "done", nil
 		},
 	}

@@ -9,7 +9,7 @@ import (
 
 // CreateAuthorInput represents a mutation input for creating authors.
 type CreateAuthorInput struct {
-	CalibreID int64
+	CalibreID *int64
 	Name      string
 	Sort      string
 	Link      *string
@@ -18,7 +18,9 @@ type CreateAuthorInput struct {
 
 // Mutate applies the CreateAuthorInput on the AuthorMutation builder.
 func (i *CreateAuthorInput) Mutate(m *AuthorMutation) {
-	m.SetCalibreID(i.CalibreID)
+	if v := i.CalibreID; v != nil {
+		m.SetCalibreID(*v)
+	}
 	m.SetName(i.Name)
 	m.SetSort(i.Sort)
 	if v := i.Link; v != nil {
@@ -37,18 +39,22 @@ func (c *AuthorCreate) SetInput(i CreateAuthorInput) *AuthorCreate {
 
 // UpdateAuthorInput represents a mutation input for updating authors.
 type UpdateAuthorInput struct {
-	CalibreID     *int64
-	Name          *string
-	Sort          *string
-	ClearLink     bool
-	Link          *string
-	ClearBooks    bool
-	AddBookIDs    []ksuid.ID
-	RemoveBookIDs []ksuid.ID
+	ClearCalibreID bool
+	CalibreID      *int64
+	Name           *string
+	Sort           *string
+	ClearLink      bool
+	Link           *string
+	ClearBooks     bool
+	AddBookIDs     []ksuid.ID
+	RemoveBookIDs  []ksuid.ID
 }
 
 // Mutate applies the UpdateAuthorInput on the AuthorMutation builder.
 func (i *UpdateAuthorInput) Mutate(m *AuthorMutation) {
+	if i.ClearCalibreID {
+		m.ClearCalibreID()
+	}
 	if v := i.CalibreID; v != nil {
 		m.SetCalibreID(*v)
 	}
@@ -89,7 +95,7 @@ func (c *AuthorUpdateOne) SetInput(i UpdateAuthorInput) *AuthorUpdateOne {
 
 // CreateBookInput represents a mutation input for creating books.
 type CreateBookInput struct {
-	CalibreID     int64
+	CalibreID     *int64
 	Title         string
 	Sort          string
 	PublishedDate *time.Time
@@ -108,7 +114,9 @@ type CreateBookInput struct {
 
 // Mutate applies the CreateBookInput on the BookMutation builder.
 func (i *CreateBookInput) Mutate(m *BookMutation) {
-	m.SetCalibreID(i.CalibreID)
+	if v := i.CalibreID; v != nil {
+		m.SetCalibreID(*v)
+	}
 	m.SetTitle(i.Title)
 	m.SetSort(i.Sort)
 	if v := i.PublishedDate; v != nil {
@@ -155,6 +163,7 @@ func (c *BookCreate) SetInput(i CreateBookInput) *BookCreate {
 
 // UpdateBookInput represents a mutation input for updating books.
 type UpdateBookInput struct {
+	ClearCalibreID      bool
 	CalibreID           *int64
 	Title               *string
 	Sort                *string
@@ -192,6 +201,9 @@ type UpdateBookInput struct {
 
 // Mutate applies the UpdateBookInput on the BookMutation builder.
 func (i *UpdateBookInput) Mutate(m *BookMutation) {
+	if i.ClearCalibreID {
+		m.ClearCalibreID()
+	}
 	if v := i.CalibreID; v != nil {
 		m.SetCalibreID(*v)
 	}
@@ -307,7 +319,7 @@ func (c *BookUpdateOne) SetInput(i UpdateBookInput) *BookUpdateOne {
 
 // CreateIdentifierInput represents a mutation input for creating identifiers.
 type CreateIdentifierInput struct {
-	CalibreID int64
+	CalibreID *int64
 	Type      string
 	Value     string
 	BookID    ksuid.ID
@@ -315,7 +327,9 @@ type CreateIdentifierInput struct {
 
 // Mutate applies the CreateIdentifierInput on the IdentifierMutation builder.
 func (i *CreateIdentifierInput) Mutate(m *IdentifierMutation) {
-	m.SetCalibreID(i.CalibreID)
+	if v := i.CalibreID; v != nil {
+		m.SetCalibreID(*v)
+	}
 	m.SetType(i.Type)
 	m.SetValue(i.Value)
 	m.SetBookID(i.BookID)
@@ -329,14 +343,18 @@ func (c *IdentifierCreate) SetInput(i CreateIdentifierInput) *IdentifierCreate {
 
 // UpdateIdentifierInput represents a mutation input for updating identifiers.
 type UpdateIdentifierInput struct {
-	CalibreID *int64
-	Type      *string
-	Value     *string
-	BookID    *ksuid.ID
+	ClearCalibreID bool
+	CalibreID      *int64
+	Type           *string
+	Value          *string
+	BookID         *ksuid.ID
 }
 
 // Mutate applies the UpdateIdentifierInput on the IdentifierMutation builder.
 func (i *UpdateIdentifierInput) Mutate(m *IdentifierMutation) {
+	if i.ClearCalibreID {
+		m.ClearCalibreID()
+	}
 	if v := i.CalibreID; v != nil {
 		m.SetCalibreID(*v)
 	}
@@ -365,14 +383,16 @@ func (c *IdentifierUpdateOne) SetInput(i UpdateIdentifierInput) *IdentifierUpdat
 
 // CreateLanguageInput represents a mutation input for creating languages.
 type CreateLanguageInput struct {
-	CalibreID int64
+	CalibreID *int64
 	Code      string
 	BookIDs   []ksuid.ID
 }
 
 // Mutate applies the CreateLanguageInput on the LanguageMutation builder.
 func (i *CreateLanguageInput) Mutate(m *LanguageMutation) {
-	m.SetCalibreID(i.CalibreID)
+	if v := i.CalibreID; v != nil {
+		m.SetCalibreID(*v)
+	}
 	m.SetCode(i.Code)
 	if v := i.BookIDs; len(v) > 0 {
 		m.AddBookIDs(v...)
@@ -387,15 +407,19 @@ func (c *LanguageCreate) SetInput(i CreateLanguageInput) *LanguageCreate {
 
 // UpdateLanguageInput represents a mutation input for updating languages.
 type UpdateLanguageInput struct {
-	CalibreID     *int64
-	Code          *string
-	ClearBooks    bool
-	AddBookIDs    []ksuid.ID
-	RemoveBookIDs []ksuid.ID
+	ClearCalibreID bool
+	CalibreID      *int64
+	Code           *string
+	ClearBooks     bool
+	AddBookIDs     []ksuid.ID
+	RemoveBookIDs  []ksuid.ID
 }
 
 // Mutate applies the UpdateLanguageInput on the LanguageMutation builder.
 func (i *UpdateLanguageInput) Mutate(m *LanguageMutation) {
+	if i.ClearCalibreID {
+		m.ClearCalibreID()
+	}
 	if v := i.CalibreID; v != nil {
 		m.SetCalibreID(*v)
 	}
@@ -427,14 +451,16 @@ func (c *LanguageUpdateOne) SetInput(i UpdateLanguageInput) *LanguageUpdateOne {
 
 // CreatePublisherInput represents a mutation input for creating publishers.
 type CreatePublisherInput struct {
-	CalibreID int64
+	CalibreID *int64
 	Name      string
 	BookIDs   []ksuid.ID
 }
 
 // Mutate applies the CreatePublisherInput on the PublisherMutation builder.
 func (i *CreatePublisherInput) Mutate(m *PublisherMutation) {
-	m.SetCalibreID(i.CalibreID)
+	if v := i.CalibreID; v != nil {
+		m.SetCalibreID(*v)
+	}
 	m.SetName(i.Name)
 	if v := i.BookIDs; len(v) > 0 {
 		m.AddBookIDs(v...)
@@ -449,15 +475,19 @@ func (c *PublisherCreate) SetInput(i CreatePublisherInput) *PublisherCreate {
 
 // UpdatePublisherInput represents a mutation input for updating publishers.
 type UpdatePublisherInput struct {
-	CalibreID     *int64
-	Name          *string
-	ClearBooks    bool
-	AddBookIDs    []ksuid.ID
-	RemoveBookIDs []ksuid.ID
+	ClearCalibreID bool
+	CalibreID      *int64
+	Name           *string
+	ClearBooks     bool
+	AddBookIDs     []ksuid.ID
+	RemoveBookIDs  []ksuid.ID
 }
 
 // Mutate applies the UpdatePublisherInput on the PublisherMutation builder.
 func (i *UpdatePublisherInput) Mutate(m *PublisherMutation) {
+	if i.ClearCalibreID {
+		m.ClearCalibreID()
+	}
 	if v := i.CalibreID; v != nil {
 		m.SetCalibreID(*v)
 	}
@@ -489,7 +519,7 @@ func (c *PublisherUpdateOne) SetInput(i UpdatePublisherInput) *PublisherUpdateOn
 
 // CreateSeriesInput represents a mutation input for creating seriesslice.
 type CreateSeriesInput struct {
-	CalibreID int64
+	CalibreID *int64
 	Name      string
 	Sort      string
 	BookIDs   []ksuid.ID
@@ -497,7 +527,9 @@ type CreateSeriesInput struct {
 
 // Mutate applies the CreateSeriesInput on the SeriesMutation builder.
 func (i *CreateSeriesInput) Mutate(m *SeriesMutation) {
-	m.SetCalibreID(i.CalibreID)
+	if v := i.CalibreID; v != nil {
+		m.SetCalibreID(*v)
+	}
 	m.SetName(i.Name)
 	m.SetSort(i.Sort)
 	if v := i.BookIDs; len(v) > 0 {
@@ -513,16 +545,20 @@ func (c *SeriesCreate) SetInput(i CreateSeriesInput) *SeriesCreate {
 
 // UpdateSeriesInput represents a mutation input for updating seriesslice.
 type UpdateSeriesInput struct {
-	CalibreID     *int64
-	Name          *string
-	Sort          *string
-	ClearBooks    bool
-	AddBookIDs    []ksuid.ID
-	RemoveBookIDs []ksuid.ID
+	ClearCalibreID bool
+	CalibreID      *int64
+	Name           *string
+	Sort           *string
+	ClearBooks     bool
+	AddBookIDs     []ksuid.ID
+	RemoveBookIDs  []ksuid.ID
 }
 
 // Mutate applies the UpdateSeriesInput on the SeriesMutation builder.
 func (i *UpdateSeriesInput) Mutate(m *SeriesMutation) {
+	if i.ClearCalibreID {
+		m.ClearCalibreID()
+	}
 	if v := i.CalibreID; v != nil {
 		m.SetCalibreID(*v)
 	}
@@ -605,14 +641,16 @@ func (c *ShelfUpdateOne) SetInput(i UpdateShelfInput) *ShelfUpdateOne {
 
 // CreateTagInput represents a mutation input for creating tags.
 type CreateTagInput struct {
-	CalibreID int64
+	CalibreID *int64
 	Name      string
 	BookIDs   []ksuid.ID
 }
 
 // Mutate applies the CreateTagInput on the TagMutation builder.
 func (i *CreateTagInput) Mutate(m *TagMutation) {
-	m.SetCalibreID(i.CalibreID)
+	if v := i.CalibreID; v != nil {
+		m.SetCalibreID(*v)
+	}
 	m.SetName(i.Name)
 	if v := i.BookIDs; len(v) > 0 {
 		m.AddBookIDs(v...)
@@ -627,15 +665,19 @@ func (c *TagCreate) SetInput(i CreateTagInput) *TagCreate {
 
 // UpdateTagInput represents a mutation input for updating tags.
 type UpdateTagInput struct {
-	CalibreID     *int64
-	Name          *string
-	ClearBooks    bool
-	AddBookIDs    []ksuid.ID
-	RemoveBookIDs []ksuid.ID
+	ClearCalibreID bool
+	CalibreID      *int64
+	Name           *string
+	ClearBooks     bool
+	AddBookIDs     []ksuid.ID
+	RemoveBookIDs  []ksuid.ID
 }
 
 // Mutate applies the UpdateTagInput on the TagMutation builder.
 func (i *UpdateTagInput) Mutate(m *TagMutation) {
+	if i.ClearCalibreID {
+		m.ClearCalibreID()
+	}
 	if v := i.CalibreID; v != nil {
 		m.SetCalibreID(*v)
 	}

@@ -4,6 +4,7 @@ import (
 	"context"
 	"lybbrio/internal/auth"
 	"lybbrio/internal/db"
+	"lybbrio/internal/ent/schema/permissions"
 	"lybbrio/internal/middleware"
 	"lybbrio/internal/viewer"
 	"net/http"
@@ -39,7 +40,10 @@ func Test_ViewerContextGetsSet(t *testing.T) {
 	)
 	require.NoError(err)
 
-	token, err := jwtProvider.CreateToken(user.ID.String(), user.Username)
+	token, err := jwtProvider.CreateToken(
+		user.ID.String(),
+		user.Username,
+		permissions.From(perms).StringSlice())
 	require.NoError(err)
 
 	r := chi.NewRouter()
@@ -50,13 +54,11 @@ func Test_ViewerContextGetsSet(t *testing.T) {
 		viewerCtx := viewer.FromContext(r.Context())
 		require.NotNil(viewerCtx)
 
-		viewerUser, ok := viewerCtx.User()
-		require.True(ok)
-		viewerPerms, ok := viewerCtx.Permissions()
+		viewerUserID, ok := viewerCtx.UserID()
 		require.True(ok)
 
-		require.Equal(user.ID, viewerUser.ID)
-		require.Equal(perms.ID, viewerPerms.ID)
+		require.Equal(user.ID, viewerUserID)
+		require.True(viewerCtx.Has(permissions.Admin))
 		require.True(viewerCtx.IsAdmin())
 	})
 

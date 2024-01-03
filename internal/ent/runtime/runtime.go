@@ -299,13 +299,17 @@ func init() {
 	_ = userpermissionsMixinFields1
 	userpermissionsFields := schema.UserPermissions{}.Fields()
 	_ = userpermissionsFields
-	// userpermissionsDescAdmin is the schema descriptor for admin field.
-	userpermissionsDescAdmin := userpermissionsFields[1].Descriptor()
-	// userpermissions.DefaultAdmin holds the default value on creation for the admin field.
+	// userpermissionsDescCanEdit is the schema descriptor for CanEdit field.
+	userpermissionsDescCanEdit := userpermissionsFields[1].Descriptor()
+	// userpermissions.DefaultCanEdit holds the default value on creation for the CanEdit field.
+	userpermissions.DefaultCanEdit = userpermissionsDescCanEdit.Default.(bool)
+	// userpermissionsDescAdmin is the schema descriptor for Admin field.
+	userpermissionsDescAdmin := userpermissionsFields[2].Descriptor()
+	// userpermissions.DefaultAdmin holds the default value on creation for the Admin field.
 	userpermissions.DefaultAdmin = userpermissionsDescAdmin.Default.(bool)
-	// userpermissionsDescCanCreatePublic is the schema descriptor for can_create_public field.
-	userpermissionsDescCanCreatePublic := userpermissionsFields[2].Descriptor()
-	// userpermissions.DefaultCanCreatePublic holds the default value on creation for the can_create_public field.
+	// userpermissionsDescCanCreatePublic is the schema descriptor for CanCreatePublic field.
+	userpermissionsDescCanCreatePublic := userpermissionsFields[3].Descriptor()
+	// userpermissions.DefaultCanCreatePublic holds the default value on creation for the CanCreatePublic field.
 	userpermissions.DefaultCanCreatePublic = userpermissionsDescCanCreatePublic.Default.(bool)
 	// userpermissionsDescID is the schema descriptor for id field.
 	userpermissionsDescID := userpermissionsMixinFields1[0].Descriptor()

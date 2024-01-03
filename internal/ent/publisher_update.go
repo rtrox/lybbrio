@@ -50,6 +50,12 @@ func (pu *PublisherUpdate) AddCalibreID(i int64) *PublisherUpdate {
 	return pu
 }
 
+// ClearCalibreID clears the value of the "calibre_id" field.
+func (pu *PublisherUpdate) ClearCalibreID() *PublisherUpdate {
+	pu.mutation.ClearCalibreID()
+	return pu
+}
+
 // SetName sets the "name" field.
 func (pu *PublisherUpdate) SetName(s string) *PublisherUpdate {
 	pu.mutation.SetName(s)
@@ -160,6 +166,9 @@ func (pu *PublisherUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := pu.mutation.AddedCalibreID(); ok {
 		_spec.AddField(publisher.FieldCalibreID, field.TypeInt64, value)
 	}
+	if pu.mutation.CalibreIDCleared() {
+		_spec.ClearField(publisher.FieldCalibreID, field.TypeInt64)
+	}
 	if value, ok := pu.mutation.Name(); ok {
 		_spec.SetField(publisher.FieldName, field.TypeString, value)
 	}
@@ -246,6 +255,12 @@ func (puo *PublisherUpdateOne) SetNillableCalibreID(i *int64) *PublisherUpdateOn
 // AddCalibreID adds i to the "calibre_id" field.
 func (puo *PublisherUpdateOne) AddCalibreID(i int64) *PublisherUpdateOne {
 	puo.mutation.AddCalibreID(i)
+	return puo
+}
+
+// ClearCalibreID clears the value of the "calibre_id" field.
+func (puo *PublisherUpdateOne) ClearCalibreID() *PublisherUpdateOne {
+	puo.mutation.ClearCalibreID()
 	return puo
 }
 
@@ -388,6 +403,9 @@ func (puo *PublisherUpdateOne) sqlSave(ctx context.Context) (_node *Publisher, e
 	}
 	if value, ok := puo.mutation.AddedCalibreID(); ok {
 		_spec.AddField(publisher.FieldCalibreID, field.TypeInt64, value)
+	}
+	if puo.mutation.CalibreIDCleared() {
+		_spec.ClearField(publisher.FieldCalibreID, field.TypeInt64)
 	}
 	if value, ok := puo.mutation.Name(); ok {
 		_spec.SetField(publisher.FieldName, field.TypeString, value)

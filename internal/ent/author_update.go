@@ -50,6 +50,12 @@ func (au *AuthorUpdate) AddCalibreID(i int64) *AuthorUpdate {
 	return au
 }
 
+// ClearCalibreID clears the value of the "calibre_id" field.
+func (au *AuthorUpdate) ClearCalibreID() *AuthorUpdate {
+	au.mutation.ClearCalibreID()
+	return au
+}
+
 // SetName sets the "name" field.
 func (au *AuthorUpdate) SetName(s string) *AuthorUpdate {
 	au.mutation.SetName(s)
@@ -194,6 +200,9 @@ func (au *AuthorUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := au.mutation.AddedCalibreID(); ok {
 		_spec.AddField(author.FieldCalibreID, field.TypeInt64, value)
 	}
+	if au.mutation.CalibreIDCleared() {
+		_spec.ClearField(author.FieldCalibreID, field.TypeInt64)
+	}
 	if value, ok := au.mutation.Name(); ok {
 		_spec.SetField(author.FieldName, field.TypeString, value)
 	}
@@ -289,6 +298,12 @@ func (auo *AuthorUpdateOne) SetNillableCalibreID(i *int64) *AuthorUpdateOne {
 // AddCalibreID adds i to the "calibre_id" field.
 func (auo *AuthorUpdateOne) AddCalibreID(i int64) *AuthorUpdateOne {
 	auo.mutation.AddCalibreID(i)
+	return auo
+}
+
+// ClearCalibreID clears the value of the "calibre_id" field.
+func (auo *AuthorUpdateOne) ClearCalibreID() *AuthorUpdateOne {
+	auo.mutation.ClearCalibreID()
 	return auo
 }
 
@@ -465,6 +480,9 @@ func (auo *AuthorUpdateOne) sqlSave(ctx context.Context) (_node *Author, err err
 	}
 	if value, ok := auo.mutation.AddedCalibreID(); ok {
 		_spec.AddField(author.FieldCalibreID, field.TypeInt64, value)
+	}
+	if auo.mutation.CalibreIDCleared() {
+		_spec.ClearField(author.FieldCalibreID, field.TypeInt64)
 	}
 	if value, ok := auo.mutation.Name(); ok {
 		_spec.SetField(author.FieldName, field.TypeString, value)

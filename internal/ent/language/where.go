@@ -105,6 +105,16 @@ func CalibreIDLTE(v int64) predicate.Language {
 	return predicate.Language(sql.FieldLTE(FieldCalibreID, v))
 }
 
+// CalibreIDIsNil applies the IsNil predicate on the "calibre_id" field.
+func CalibreIDIsNil() predicate.Language {
+	return predicate.Language(sql.FieldIsNull(FieldCalibreID))
+}
+
+// CalibreIDNotNil applies the NotNil predicate on the "calibre_id" field.
+func CalibreIDNotNil() predicate.Language {
+	return predicate.Language(sql.FieldNotNull(FieldCalibreID))
+}
+
 // CodeEQ applies the EQ predicate on the "code" field.
 func CodeEQ(v string) predicate.Language {
 	return predicate.Language(sql.FieldEQ(FieldCode, v))

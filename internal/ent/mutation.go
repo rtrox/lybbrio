@@ -223,10 +223,24 @@ func (m *AuthorMutation) AddedCalibreID() (r int64, exists bool) {
 	return *v, true
 }
 
+// ClearCalibreID clears the value of the "calibre_id" field.
+func (m *AuthorMutation) ClearCalibreID() {
+	m.calibre_id = nil
+	m.addcalibre_id = nil
+	m.clearedFields[author.FieldCalibreID] = struct{}{}
+}
+
+// CalibreIDCleared returns if the "calibre_id" field was cleared in this mutation.
+func (m *AuthorMutation) CalibreIDCleared() bool {
+	_, ok := m.clearedFields[author.FieldCalibreID]
+	return ok
+}
+
 // ResetCalibreID resets all changes to the "calibre_id" field.
 func (m *AuthorMutation) ResetCalibreID() {
 	m.calibre_id = nil
 	m.addcalibre_id = nil
+	delete(m.clearedFields, author.FieldCalibreID)
 }
 
 // SetName sets the "name" field.
@@ -566,6 +580,9 @@ func (m *AuthorMutation) AddField(name string, value ent.Value) error {
 // mutation.
 func (m *AuthorMutation) ClearedFields() []string {
 	var fields []string
+	if m.FieldCleared(author.FieldCalibreID) {
+		fields = append(fields, author.FieldCalibreID)
+	}
 	if m.FieldCleared(author.FieldLink) {
 		fields = append(fields, author.FieldLink)
 	}
@@ -583,6 +600,9 @@ func (m *AuthorMutation) FieldCleared(name string) bool {
 // error if the field is not defined in the schema.
 func (m *AuthorMutation) ClearField(name string) error {
 	switch name {
+	case author.FieldCalibreID:
+		m.ClearCalibreID()
+		return nil
 	case author.FieldLink:
 		m.ClearLink()
 		return nil
@@ -891,10 +911,24 @@ func (m *BookMutation) AddedCalibreID() (r int64, exists bool) {
 	return *v, true
 }
 
+// ClearCalibreID clears the value of the "calibre_id" field.
+func (m *BookMutation) ClearCalibreID() {
+	m.calibre_id = nil
+	m.addcalibre_id = nil
+	m.clearedFields[book.FieldCalibreID] = struct{}{}
+}
+
+// CalibreIDCleared returns if the "calibre_id" field was cleared in this mutation.
+func (m *BookMutation) CalibreIDCleared() bool {
+	_, ok := m.clearedFields[book.FieldCalibreID]
+	return ok
+}
+
 // ResetCalibreID resets all changes to the "calibre_id" field.
 func (m *BookMutation) ResetCalibreID() {
 	m.calibre_id = nil
 	m.addcalibre_id = nil
+	delete(m.clearedFields, book.FieldCalibreID)
 }
 
 // SetTitle sets the "title" field.
@@ -1830,6 +1864,9 @@ func (m *BookMutation) AddField(name string, value ent.Value) error {
 // mutation.
 func (m *BookMutation) ClearedFields() []string {
 	var fields []string
+	if m.FieldCleared(book.FieldCalibreID) {
+		fields = append(fields, book.FieldCalibreID)
+	}
 	if m.FieldCleared(book.FieldPublishedDate) {
 		fields = append(fields, book.FieldPublishedDate)
 	}
@@ -1856,6 +1893,9 @@ func (m *BookMutation) FieldCleared(name string) bool {
 // error if the field is not defined in the schema.
 func (m *BookMutation) ClearField(name string) error {
 	switch name {
+	case book.FieldCalibreID:
+		m.ClearCalibreID()
+		return nil
 	case book.FieldPublishedDate:
 		m.ClearPublishedDate()
 		return nil
@@ -2316,10 +2356,24 @@ func (m *IdentifierMutation) AddedCalibreID() (r int64, exists bool) {
 	return *v, true
 }
 
+// ClearCalibreID clears the value of the "calibre_id" field.
+func (m *IdentifierMutation) ClearCalibreID() {
+	m.calibre_id = nil
+	m.addcalibre_id = nil
+	m.clearedFields[identifier.FieldCalibreID] = struct{}{}
+}
+
+// CalibreIDCleared returns if the "calibre_id" field was cleared in this mutation.
+func (m *IdentifierMutation) CalibreIDCleared() bool {
+	_, ok := m.clearedFields[identifier.FieldCalibreID]
+	return ok
+}
+
 // ResetCalibreID resets all changes to the "calibre_id" field.
 func (m *IdentifierMutation) ResetCalibreID() {
 	m.calibre_id = nil
 	m.addcalibre_id = nil
+	delete(m.clearedFields, identifier.FieldCalibreID)
 }
 
 // SetType sets the "type" field.
@@ -2580,7 +2634,11 @@ func (m *IdentifierMutation) AddField(name string, value ent.Value) error {
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *IdentifierMutation) ClearedFields() []string {
-	return nil
+	var fields []string
+	if m.FieldCleared(identifier.FieldCalibreID) {
+		fields = append(fields, identifier.FieldCalibreID)
+	}
+	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -2593,6 +2651,11 @@ func (m *IdentifierMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *IdentifierMutation) ClearField(name string) error {
+	switch name {
+	case identifier.FieldCalibreID:
+		m.ClearCalibreID()
+		return nil
+	}
 	return fmt.Errorf("unknown Identifier nullable field %s", name)
 }
 
@@ -2859,10 +2922,24 @@ func (m *LanguageMutation) AddedCalibreID() (r int64, exists bool) {
 	return *v, true
 }
 
+// ClearCalibreID clears the value of the "calibre_id" field.
+func (m *LanguageMutation) ClearCalibreID() {
+	m.calibre_id = nil
+	m.addcalibre_id = nil
+	m.clearedFields[language.FieldCalibreID] = struct{}{}
+}
+
+// CalibreIDCleared returns if the "calibre_id" field was cleared in this mutation.
+func (m *LanguageMutation) CalibreIDCleared() bool {
+	_, ok := m.clearedFields[language.FieldCalibreID]
+	return ok
+}
+
 // ResetCalibreID resets all changes to the "calibre_id" field.
 func (m *LanguageMutation) ResetCalibreID() {
 	m.calibre_id = nil
 	m.addcalibre_id = nil
+	delete(m.clearedFields, language.FieldCalibreID)
 }
 
 // SetCode sets the "code" field.
@@ -3088,7 +3165,11 @@ func (m *LanguageMutation) AddField(name string, value ent.Value) error {
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *LanguageMutation) ClearedFields() []string {
-	return nil
+	var fields []string
+	if m.FieldCleared(language.FieldCalibreID) {
+		fields = append(fields, language.FieldCalibreID)
+	}
+	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -3101,6 +3182,11 @@ func (m *LanguageMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *LanguageMutation) ClearField(name string) error {
+	switch name {
+	case language.FieldCalibreID:
+		m.ClearCalibreID()
+		return nil
+	}
 	return fmt.Errorf("unknown Language nullable field %s", name)
 }
 
@@ -3374,10 +3460,24 @@ func (m *PublisherMutation) AddedCalibreID() (r int64, exists bool) {
 	return *v, true
 }
 
+// ClearCalibreID clears the value of the "calibre_id" field.
+func (m *PublisherMutation) ClearCalibreID() {
+	m.calibre_id = nil
+	m.addcalibre_id = nil
+	m.clearedFields[publisher.FieldCalibreID] = struct{}{}
+}
+
+// CalibreIDCleared returns if the "calibre_id" field was cleared in this mutation.
+func (m *PublisherMutation) CalibreIDCleared() bool {
+	_, ok := m.clearedFields[publisher.FieldCalibreID]
+	return ok
+}
+
 // ResetCalibreID resets all changes to the "calibre_id" field.
 func (m *PublisherMutation) ResetCalibreID() {
 	m.calibre_id = nil
 	m.addcalibre_id = nil
+	delete(m.clearedFields, publisher.FieldCalibreID)
 }
 
 // SetName sets the "name" field.
@@ -3603,7 +3703,11 @@ func (m *PublisherMutation) AddField(name string, value ent.Value) error {
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *PublisherMutation) ClearedFields() []string {
-	return nil
+	var fields []string
+	if m.FieldCleared(publisher.FieldCalibreID) {
+		fields = append(fields, publisher.FieldCalibreID)
+	}
+	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -3616,6 +3720,11 @@ func (m *PublisherMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *PublisherMutation) ClearField(name string) error {
+	switch name {
+	case publisher.FieldCalibreID:
+		m.ClearCalibreID()
+		return nil
+	}
 	return fmt.Errorf("unknown Publisher nullable field %s", name)
 }
 
@@ -3890,10 +3999,24 @@ func (m *SeriesMutation) AddedCalibreID() (r int64, exists bool) {
 	return *v, true
 }
 
+// ClearCalibreID clears the value of the "calibre_id" field.
+func (m *SeriesMutation) ClearCalibreID() {
+	m.calibre_id = nil
+	m.addcalibre_id = nil
+	m.clearedFields[series.FieldCalibreID] = struct{}{}
+}
+
+// CalibreIDCleared returns if the "calibre_id" field was cleared in this mutation.
+func (m *SeriesMutation) CalibreIDCleared() bool {
+	_, ok := m.clearedFields[series.FieldCalibreID]
+	return ok
+}
+
 // ResetCalibreID resets all changes to the "calibre_id" field.
 func (m *SeriesMutation) ResetCalibreID() {
 	m.calibre_id = nil
 	m.addcalibre_id = nil
+	delete(m.clearedFields, series.FieldCalibreID)
 }
 
 // SetName sets the "name" field.
@@ -4169,7 +4292,11 @@ func (m *SeriesMutation) AddField(name string, value ent.Value) error {
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *SeriesMutation) ClearedFields() []string {
-	return nil
+	var fields []string
+	if m.FieldCleared(series.FieldCalibreID) {
+		fields = append(fields, series.FieldCalibreID)
+	}
+	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -4182,6 +4309,11 @@ func (m *SeriesMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *SeriesMutation) ClearField(name string) error {
+	switch name {
+	case series.FieldCalibreID:
+		m.ClearCalibreID()
+		return nil
+	}
 	return fmt.Errorf("unknown Series nullable field %s", name)
 }
 
@@ -5113,10 +5245,24 @@ func (m *TagMutation) AddedCalibreID() (r int64, exists bool) {
 	return *v, true
 }
 
+// ClearCalibreID clears the value of the "calibre_id" field.
+func (m *TagMutation) ClearCalibreID() {
+	m.calibre_id = nil
+	m.addcalibre_id = nil
+	m.clearedFields[tag.FieldCalibreID] = struct{}{}
+}
+
+// CalibreIDCleared returns if the "calibre_id" field was cleared in this mutation.
+func (m *TagMutation) CalibreIDCleared() bool {
+	_, ok := m.clearedFields[tag.FieldCalibreID]
+	return ok
+}
+
 // ResetCalibreID resets all changes to the "calibre_id" field.
 func (m *TagMutation) ResetCalibreID() {
 	m.calibre_id = nil
 	m.addcalibre_id = nil
+	delete(m.clearedFields, tag.FieldCalibreID)
 }
 
 // SetName sets the "name" field.
@@ -5342,7 +5488,11 @@ func (m *TagMutation) AddField(name string, value ent.Value) error {
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *TagMutation) ClearedFields() []string {
-	return nil
+	var fields []string
+	if m.FieldCleared(tag.FieldCalibreID) {
+		fields = append(fields, tag.FieldCalibreID)
+	}
+	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -5355,6 +5505,11 @@ func (m *TagMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *TagMutation) ClearField(name string) error {
+	switch name {
+	case tag.FieldCalibreID:
+		m.ClearCalibreID()
+		return nil
+	}
 	return fmt.Errorf("unknown Tag nullable field %s", name)
 }
 
@@ -6987,17 +7142,18 @@ func (m *UserMutation) ResetEdge(name string) error {
 // UserPermissionsMutation represents an operation that mutates the UserPermissions nodes in the graph.
 type UserPermissionsMutation struct {
 	config
-	op                Op
-	typ               string
-	id                *ksuid.ID
-	admin             *bool
-	can_create_public *bool
-	clearedFields     map[string]struct{}
-	user              *ksuid.ID
-	cleareduser       bool
-	done              bool
-	oldValue          func(context.Context) (*UserPermissions, error)
-	predicates        []predicate.UserPermissions
+	op               Op
+	typ              string
+	id               *ksuid.ID
+	_CanEdit         *bool
+	_Admin           *bool
+	_CanCreatePublic *bool
+	clearedFields    map[string]struct{}
+	user             *ksuid.ID
+	cleareduser      bool
+	done             bool
+	oldValue         func(context.Context) (*UserPermissions, error)
+	predicates       []predicate.UserPermissions
 }
 
 var _ ent.Mutation = (*UserPermissionsMutation)(nil)
@@ -7153,21 +7309,57 @@ func (m *UserPermissionsMutation) ResetUserID() {
 	delete(m.clearedFields, userpermissions.FieldUserID)
 }
 
-// SetAdmin sets the "admin" field.
-func (m *UserPermissionsMutation) SetAdmin(b bool) {
-	m.admin = &b
+// SetCanEdit sets the "CanEdit" field.
+func (m *UserPermissionsMutation) SetCanEdit(b bool) {
+	m._CanEdit = &b
 }
 
-// Admin returns the value of the "admin" field in the mutation.
-func (m *UserPermissionsMutation) Admin() (r bool, exists bool) {
-	v := m.admin
+// CanEdit returns the value of the "CanEdit" field in the mutation.
+func (m *UserPermissionsMutation) CanEdit() (r bool, exists bool) {
+	v := m._CanEdit
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldAdmin returns the old "admin" field's value of the UserPermissions entity.
+// OldCanEdit returns the old "CanEdit" field's value of the UserPermissions entity.
+// If the UserPermissions object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserPermissionsMutation) OldCanEdit(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCanEdit is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCanEdit requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCanEdit: %w", err)
+	}
+	return oldValue.CanEdit, nil
+}
+
+// ResetCanEdit resets all changes to the "CanEdit" field.
+func (m *UserPermissionsMutation) ResetCanEdit() {
+	m._CanEdit = nil
+}
+
+// SetAdmin sets the "Admin" field.
+func (m *UserPermissionsMutation) SetAdmin(b bool) {
+	m._Admin = &b
+}
+
+// Admin returns the value of the "Admin" field in the mutation.
+func (m *UserPermissionsMutation) Admin() (r bool, exists bool) {
+	v := m._Admin
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAdmin returns the old "Admin" field's value of the UserPermissions entity.
 // If the UserPermissions object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
 func (m *UserPermissionsMutation) OldAdmin(ctx context.Context) (v bool, err error) {
@@ -7184,26 +7376,26 @@ func (m *UserPermissionsMutation) OldAdmin(ctx context.Context) (v bool, err err
 	return oldValue.Admin, nil
 }
 
-// ResetAdmin resets all changes to the "admin" field.
+// ResetAdmin resets all changes to the "Admin" field.
 func (m *UserPermissionsMutation) ResetAdmin() {
-	m.admin = nil
+	m._Admin = nil
 }
 
-// SetCanCreatePublic sets the "can_create_public" field.
+// SetCanCreatePublic sets the "CanCreatePublic" field.
 func (m *UserPermissionsMutation) SetCanCreatePublic(b bool) {
-	m.can_create_public = &b
+	m._CanCreatePublic = &b
 }
 
-// CanCreatePublic returns the value of the "can_create_public" field in the mutation.
+// CanCreatePublic returns the value of the "CanCreatePublic" field in the mutation.
 func (m *UserPermissionsMutation) CanCreatePublic() (r bool, exists bool) {
-	v := m.can_create_public
+	v := m._CanCreatePublic
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldCanCreatePublic returns the old "can_create_public" field's value of the UserPermissions entity.
+// OldCanCreatePublic returns the old "CanCreatePublic" field's value of the UserPermissions entity.
 // If the UserPermissions object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
 func (m *UserPermissionsMutation) OldCanCreatePublic(ctx context.Context) (v bool, err error) {
@@ -7220,9 +7412,9 @@ func (m *UserPermissionsMutation) OldCanCreatePublic(ctx context.Context) (v boo
 	return oldValue.CanCreatePublic, nil
 }
 
-// ResetCanCreatePublic resets all changes to the "can_create_public" field.
+// ResetCanCreatePublic resets all changes to the "CanCreatePublic" field.
 func (m *UserPermissionsMutation) ResetCanCreatePublic() {
-	m.can_create_public = nil
+	m._CanCreatePublic = nil
 }
 
 // ClearUser clears the "user" edge to the User entity.
@@ -7286,14 +7478,17 @@ func (m *UserPermissionsMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *UserPermissionsMutation) Fields() []string {
-	fields := make([]string, 0, 3)
+	fields := make([]string, 0, 4)
 	if m.user != nil {
 		fields = append(fields, userpermissions.FieldUserID)
 	}
-	if m.admin != nil {
+	if m._CanEdit != nil {
+		fields = append(fields, userpermissions.FieldCanEdit)
+	}
+	if m._Admin != nil {
 		fields = append(fields, userpermissions.FieldAdmin)
 	}
-	if m.can_create_public != nil {
+	if m._CanCreatePublic != nil {
 		fields = append(fields, userpermissions.FieldCanCreatePublic)
 	}
 	return fields
@@ -7306,6 +7501,8 @@ func (m *UserPermissionsMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case userpermissions.FieldUserID:
 		return m.UserID()
+	case userpermissions.FieldCanEdit:
+		return m.CanEdit()
 	case userpermissions.FieldAdmin:
 		return m.Admin()
 	case userpermissions.FieldCanCreatePublic:
@@ -7321,6 +7518,8 @@ func (m *UserPermissionsMutation) OldField(ctx context.Context, name string) (en
 	switch name {
 	case userpermissions.FieldUserID:
 		return m.OldUserID(ctx)
+	case userpermissions.FieldCanEdit:
+		return m.OldCanEdit(ctx)
 	case userpermissions.FieldAdmin:
 		return m.OldAdmin(ctx)
 	case userpermissions.FieldCanCreatePublic:
@@ -7340,6 +7539,13 @@ func (m *UserPermissionsMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetUserID(v)
+		return nil
+	case userpermissions.FieldCanEdit:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCanEdit(v)
 		return nil
 	case userpermissions.FieldAdmin:
 		v, ok := value.(bool)
@@ -7415,6 +7621,9 @@ func (m *UserPermissionsMutation) ResetField(name string) error {
 	switch name {
 	case userpermissions.FieldUserID:
 		m.ResetUserID()
+		return nil
+	case userpermissions.FieldCanEdit:
+		m.ResetCanEdit()
 		return nil
 	case userpermissions.FieldAdmin:
 		m.ResetAdmin()
