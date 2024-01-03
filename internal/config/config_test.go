@@ -1,10 +1,10 @@
 package config
 
 import (
+	"flag"
 	"testing"
 	"time"
 
-	flag "github.com/spf13/pflag"
 	"github.com/stretchr/testify/require"
 )
 

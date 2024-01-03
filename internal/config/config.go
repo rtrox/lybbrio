@@ -2,18 +2,21 @@ package config
 
 import (
 	"crypto/rand"
+	"flag"
 	"fmt"
 	"strings"
 	"time"
 
 	"github.com/google/uuid"
 	"github.com/gookit/validate"
-	"github.com/knadh/koanf"
+
+	"github.com/knadh/koanf/v2"
+
+	"github.com/knadh/koanf/providers/basicflag"
 	"github.com/knadh/koanf/providers/confmap"
 	"github.com/knadh/koanf/providers/env"
-	"github.com/knadh/koanf/providers/posflag"
+
 	"github.com/rs/zerolog"
-	flag "github.com/spf13/pflag"
 )
 
 var defaultSettings = map[string]interface{}{
@@ -165,7 +168,7 @@ func LoadConfig(flagSet *flag.FlagSet) (*Config, error) {
 		return nil, err
 	}
 
-	if err := k.Load(posflag.Provider(flagSet, ".", k), nil); err != nil {
+	if err := k.Load(basicflag.Provider(flagSet, ".", &basicflag.Opt{KeyMap: k}), nil); err != nil {
 		return nil, err
 	}
 
