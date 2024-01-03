@@ -2,6 +2,9 @@ package auth
 
 import (
 	"context"
+	"lybbrio/internal/ent/schema/ksuid"
+	"lybbrio/internal/ent/schema/permissions"
+	"lybbrio/internal/viewer"
 	"net/http"
 
 	"github.com/go-chi/render"
@@ -9,23 +12,15 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-type claimCtxKeyType string
-
-const claimCtxKey claimCtxKeyType = "claims"
-
-func withClaims(ctx context.Context, claims *Claims) context.Context {
-	return context.WithValue(ctx, claimCtxKey, claims)
-}
-
-func ClaimsFromCtx(ctx context.Context) *Claims {
-	claims, ok := ctx.Value(claimCtxKey).(*Claims)
-	if !ok {
-		return nil
+func viewerCtxFromClaims(ctx context.Context, claims *Claims) context.Context {
+	perms := permissions.NewPermissions()
+	for _, perm := range claims.Permissions {
+		perms.Add(permissions.FromString(perm))
 	}
-	return claims
+	return viewer.NewContext(ctx, ksuid.ID(claims.UserID), perms)
 }
 
-func Middleware(prov *JWTProvider) func(http.Handler) http.Handler {
+func ViewerContextMiddleware(prov *JWTProvider) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			ctx := r.Context()
@@ -53,7 +48,7 @@ func Middleware(prov *JWTProvider) func(http.Handler) http.Handler {
 				return
 			}
 
-			ctx = withClaims(ctx, claims)
+			ctx = viewerCtxFromClaims(ctx, claims)
 			log.UpdateContext(func(c zerolog.Context) zerolog.Context {
 				return c.Str("user_id", claims.UserID)
 			})
