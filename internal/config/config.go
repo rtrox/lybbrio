@@ -204,11 +204,3 @@ func (c DatabaseConfig) Translates() map[string]string {
 		"ConnMaxLifetime": "conn-max-lifetime",
 	}
 }
-
-func (c *DatabaseConfig) Validate() error {
-	v := validate.Struct(c)
-	if !v.Validate() {
-		return v.Errors
-	}
-	return nil
-}

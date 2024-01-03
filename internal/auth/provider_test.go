@@ -32,3 +32,55 @@ func Test_CreateToken(t *testing.T) {
 	require.NoError(err)
 	require.Equal(claims, *claims2)
 }
+
+func Test_InvalidSigningKey(t *testing.T) {
+	t.Parallel()
+	require := require.New(t)
+
+	_, err := NewJWTProvider(
+		"",
+		"some_issuer",
+		10*time.Second,
+	)
+	require.Error(err)
+	_, ok := err.(ErrInvalidSigningKey)
+	require.True(ok)
+}
+
+func Test_ExpiredToken(t *testing.T) {
+	t.Parallel()
+	require := require.New(t)
+
+	prov, err := NewJWTProvider(
+		"some_secret",
+		"some_issuer",
+		1*time.Nanosecond,
+	)
+	require.NoError(err)
+
+	token, err := prov.CreateToken(
+		"some_user_id",
+		"some_user_name",
+		[]string{"some_permission"},
+	)
+	require.NoError(err)
+
+	time.Sleep(2 * time.Nanosecond)
+	_, err = prov.ParseToken(token.String())
+	require.Error(err)
+}
+
+func Test_BadToken(t *testing.T) {
+	t.Parallel()
+	require := require.New(t)
+
+	prov, err := NewJWTProvider(
+		"some_secret",
+		"some_issuer",
+		10*time.Second,
+	)
+	require.NoError(err)
+
+	_, err = prov.ParseToken("some_bad_token")
+	require.Error(err)
+}
