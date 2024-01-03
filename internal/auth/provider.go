@@ -66,7 +66,7 @@ func (p *JWTProvider) CreateToken(userID, userName string) (SignedToken, error) 
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(p.expiry)),
 		},
 	}
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	token := jwt.NewWithClaims(jwt.SigningMethodHS512, claims)
 	signed, err := token.SignedString(p.signingKey)
 	if err != nil {
 		return SignedToken{}, err

@@ -8,12 +8,15 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/gookit/validate"
-	"github.com/knadh/koanf"
+	flag "github.com/spf13/pflag"
+
+	"github.com/knadh/koanf/v2"
+
 	"github.com/knadh/koanf/providers/confmap"
 	"github.com/knadh/koanf/providers/env"
 	"github.com/knadh/koanf/providers/posflag"
+
 	"github.com/rs/zerolog"
-	flag "github.com/spf13/pflag"
 )
 
 var defaultSettings = map[string]interface{}{

@@ -13,7 +13,10 @@ require (
 	github.com/gookit/validate v1.5.1
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/jackc/pgx/v5 v5.5.1
-	github.com/knadh/koanf v1.5.0
+	github.com/knadh/koanf/providers/confmap v0.1.0
+	github.com/knadh/koanf/providers/env v0.1.0
+	github.com/knadh/koanf/providers/posflag v0.1.0
+	github.com/knadh/koanf/v2 v2.0.1
 	github.com/magefile/mage v1.15.0
 	github.com/mattn/go-sqlite3 v1.14.19
 	github.com/mpalmer/gorm-zerolog v0.1.0
@@ -52,6 +55,7 @@ require (
 	github.com/jackc/puddle/v2 v2.2.1 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
+	github.com/knadh/koanf/maps v0.1.1 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.19 // indirect
 	github.com/matttproud/golang_protobuf_extensions/v2 v2.0.0 // indirect
