@@ -1,6 +1,8 @@
 package auth
 
 import (
+	"lybbrio/internal/ent/schema/permissions"
+	"lybbrio/internal/viewer"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -19,16 +21,19 @@ func Test_Middleware(t *testing.T) {
 	)
 	require.NoError(err)
 
-	handler := Middleware(provider)(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		claims := ClaimsFromCtx(r.Context())
-		require.Equal("some_user_id", claims.UserID)
-		require.Equal("some_user_name", claims.UserName)
+	handler := ViewerContextMiddleware(provider)(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		view := viewer.FromContext(r.Context())
+		uid, ok := view.UserID()
+		require.True(ok)
+		require.Equal("some_user_id", uid.String())
+		require.True(view.Has(permissions.Admin))
+
 	}))
 
 	token, err := provider.CreateToken(
 		"some_user_id",
 		"some_user_name",
-		[]string{"some_permission"},
+		[]string{"Admin"},
 	)
 	require.NoError(err)
 
@@ -59,11 +64,11 @@ func Test_Middleware_BadToken(t *testing.T) {
 	token, err := wrong_provider.CreateToken(
 		"some_user_id",
 		"some_user_name",
-		[]string{"some_permission"},
+		[]string{"Admin"},
 	)
 	require.NoError(err)
 
-	handler := Middleware(provider)(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	handler := ViewerContextMiddleware(provider)(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 	}))
 
@@ -96,7 +101,7 @@ func Test_Middleware_EmptyToken(t *testing.T) {
 	)
 	require.NoError(err)
 
-	handler := Middleware(provider)(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	handler := ViewerContextMiddleware(provider)(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 	}))
 

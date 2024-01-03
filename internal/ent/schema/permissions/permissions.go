@@ -7,7 +7,7 @@ import (
 type Permission int
 
 const (
-	Admin = iota + 1
+	Admin Permission = iota + 1
 	CanCreatePublic
 	CanEdit
 
@@ -28,6 +28,19 @@ func (p Permission) String() string {
 	return ""
 }
 
+func FromString(s string) Permission {
+	switch s {
+	case Admin.String():
+		return Admin
+	case CanCreatePublic.String():
+		return CanCreatePublic
+	case CanEdit.String():
+		return CanEdit
+	default:
+		return 0
+	}
+}
+
 type Permissions map[Permission]struct{}
 
 func NewPermissions(permissions ...Permission) Permissions {
@@ -41,6 +54,10 @@ func NewPermissions(permissions ...Permission) Permissions {
 func (p Permissions) Has(perm Permission) bool {
 	_, ok := p[perm]
 	return ok
+}
+
+func (p Permissions) Add(perm Permission) {
+	p[perm] = struct{}{}
 }
 
 func (p Permissions) StringSlice() []string {

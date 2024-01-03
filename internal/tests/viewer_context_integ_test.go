@@ -5,7 +5,6 @@ import (
 	"lybbrio/internal/auth"
 	"lybbrio/internal/db"
 	"lybbrio/internal/ent/schema/permissions"
-	"lybbrio/internal/middleware"
 	"lybbrio/internal/viewer"
 	"net/http"
 	"net/http/httptest"
@@ -47,8 +46,7 @@ func Test_ViewerContextGetsSet(t *testing.T) {
 	require.NoError(err)
 
 	r := chi.NewRouter()
-	r.Use(auth.Middleware(jwtProvider))
-	r.Use(middleware.ViewerContextMiddleware(client))
+	r.Use(auth.ViewerContextMiddleware(jwtProvider))
 
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		viewerCtx := viewer.FromContext(r.Context())
