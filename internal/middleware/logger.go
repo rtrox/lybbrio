@@ -7,7 +7,7 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 
-	chi_middleware "github.com/go-chi/chi/middleware"
+	chi_middleware "github.com/go-chi/chi/v5/middleware"
 )
 
 // Adapted from https://learninggolang.com/it5-gin-structured-logging.html
