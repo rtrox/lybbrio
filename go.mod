@@ -15,7 +15,7 @@ require (
 	github.com/jackc/pgx/v5 v5.5.1
 	github.com/knadh/koanf v1.5.0
 	github.com/magefile/mage v1.15.0
-	github.com/mattn/go-sqlite3 v1.14.17
+	github.com/mattn/go-sqlite3 v1.14.19
 	github.com/mpalmer/gorm-zerolog v0.1.0
 	github.com/prometheus/client_golang v1.18.0
 	github.com/rs/zerolog v1.31.0
