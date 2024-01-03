@@ -10,6 +10,22 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func Test_EmptyViewer(t *testing.T) {
+	assert := assert.New(t)
+	ctx := NewContext(context.Background(), nil, nil)
+	v := FromContext(ctx)
+	assert.False(v.IsAdmin())
+	assert.Nil(v.User())
+	assert.Nil(v.Permissions())
+}
+
+func Test_NoViewer(t *testing.T) {
+	assert := assert.New(t)
+	ctx := context.Background()
+	v := FromContext(ctx)
+	assert.Nil(v)
+}
+
 func Test_UserViewerImplementsViewer(t *testing.T) {
 	assert := assert.New(t)
 	assert.NotPanics(func() {
@@ -87,6 +103,9 @@ func Test_NewContext(t *testing.T) {
 	u, ok := v.User()
 	assert.True(ok, "FromContext should return the user")
 	assert.Equal(expectedID, u.ID, "FromContext should return the same user")
+	p, ok := v.Permissions()
+	assert.True(ok, "FromContext should return the permissions")
+	assert.Equal(true, p.Admin, "FromContext should return the same permissions")
 	assert.True(v.IsAdmin(), "FromContext should return the same permissions")
 }
 
@@ -101,7 +120,12 @@ func Test_NewSystemAdminContext(t *testing.T) {
 		t.FailNow()
 	}
 	assert.Implements((*Viewer)(nil), v, "FromContext should return a Viewer")
-	_, ok := v.User()
+	u, ok := v.User()
+	assert.Nil(u, "FromContext should not return a user")
 	assert.False(ok, "FromContext should not return a user")
 	assert.True(v.IsAdmin(), "FromContext should return admin permissions")
+
+	p, ok := v.Permissions()
+	assert.Nil(p, "FromContext should not return permissions")
+	assert.False(ok, "FromContext should not return permissions")
 }
