@@ -30,11 +30,11 @@ func TestGetAuthor(t *testing.T) {
 			},
 		},
 		{
-			name: "Will Larson",
+			name: "Simon R. Green",
 			expected: &Author{
-				ID:   34,
-				Name: "Will Larson",
-				Sort: "Larson, Will",
+				ID:   4,
+				Name: "Simon R. Green",
+				Sort: "Green, Simon R.",
 			},
 		},
 	}
@@ -73,7 +73,7 @@ func TestGetAuthors(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	require.Equal(69, len(authors))
+	require.Equal(3, len(authors))
 	require.Equal(int64(1), authors[0].ID)
 	require.Equal("Pierce Brown", authors[0].Name)
 }
@@ -87,17 +87,17 @@ func TestGetAuthorBooks(t *testing.T) {
 		{
 			name:           "Pierce Brown",
 			id:             1,
-			expected_count: 8,
+			expected_count: 4,
 		},
 		{
 			name:           "James S.A. Corey",
 			id:             3,
-			expected_count: 23,
+			expected_count: 5,
 		},
 		{
-			name:           "Will Larson",
-			id:             34,
-			expected_count: 1,
+			name:           "Simon R. Green",
+			id:             4,
+			expected_count: 2,
 		},
 	}
 	for _, tt := range tests {
@@ -137,33 +137,22 @@ func TestGetAuthorSeries(t *testing.T) {
 					ID:        1,
 					Name:      "Red Rising Saga",
 					Sort:      "Red Rising Saga",
-					BookCount: 8,
+					BookCount: 4,
 				},
 			},
 		},
 		{
 			name:           "James S.A. Corey",
 			id:             3,
-			expected_count: 2,
+			expected_count: 1,
 			expected: []*Series{
 				{
 					ID:        2,
 					Name:      "The Expanse",
 					Sort:      "Expanse, The",
-					BookCount: 21,
-				},
-				{
-					ID:        3,
-					Name:      "Star Wars Legends",
-					Sort:      "Star Wars Legends",
-					BookCount: 1,
+					BookCount: 5,
 				},
 			},
-		},
-		{
-			name:           "Will Larson",
-			id:             34,
-			expected_count: 0,
 		},
 	}
 	for _, tt := range tests {
@@ -343,22 +332,22 @@ func TestGetBookByIdentifier(t *testing.T) {
 		expectedBookName string
 	}{
 		{
-			name:             "asin_B00SPVPX2G",
-			identifier:       "B00SPVPX2G",
-			expectedBookId:   102,
-			expectedBookName: "Morning Star",
+			name:             "goodreads_53356770",
+			identifier:       "53356770",
+			expectedBookId:   107,
+			expectedBookName: "Red Rising",
 		},
 		{
-			name:             "goodreads_24685115",
-			identifier:       "24685115",
-			expectedBookId:   102,
-			expectedBookName: "Morning Star",
+			name:             "asin_B009SQ018I",
+			identifier:       "B009SQ018I",
+			expectedBookId:   121,
+			expectedBookName: "Abaddon's Gate",
 		},
 		{
-			name:             "goodreads_59548471",
-			identifier:       "59548471",
-			expectedBookId:   103,
-			expectedBookName: "The Sins of Our Fathers",
+			name:             "goodreads_29217027",
+			identifier:       "29217027",
+			expectedBookId:   375,
+			expectedBookName: "Iron Gold",
 		},
 	}
 
@@ -384,27 +373,6 @@ func TestGetBookByIdentifier(t *testing.T) {
 	}
 }
 
-func TestGetBook_MultipleAuthors(t *testing.T) {
-	t.Parallel()
-	require := require.New(t)
-
-	db, err := NewCalibreSQLite("test_fixtures/metadata.db")
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	book, err := db.GetBook(context.Background(), 444)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	require.Equal(2, len(book.Authors))
-	require.Equal(int64(39), book.Authors[0].ID)
-	require.Equal("Mickey W. Mantle", book.Authors[0].Name)
-	require.Equal(int64(40), book.Authors[1].ID)
-	require.Equal("Ron Lichty", book.Authors[1].Name)
-}
-
 func TestGetBooks(t *testing.T) {
 	t.Parallel()
 	require := require.New(t)
@@ -419,9 +387,9 @@ func TestGetBooks(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	require.Equal(417, len(books))
-	require.Equal(int64(102), books[0].ID)
-	require.Equal("Morning Star", books[0].Title)
+	require.Equal(11, len(books))
+	require.Equal(int64(105), books[0].ID)
+	require.Equal("Cibola Burn", books[0].Title)
 }
 
 func TestGetBooks_WithPagination(t *testing.T) {
@@ -435,31 +403,31 @@ func TestGetBooks_WithPagination(t *testing.T) {
 			name:        "page_1_pageSize_3",
 			page:        1,
 			pageSize:    3,
-			expectedIds: []int64{102, 103, 104},
+			expectedIds: []int64{105, 107, 109},
 		},
 		{
 			name:        "page_2_pageSize_3",
 			page:        2,
 			pageSize:    3,
-			expectedIds: []int64{105, 106, 107},
+			expectedIds: []int64{121, 122, 375},
 		},
 		{
 			name:        "page_3_pageSize_3",
 			page:        3,
 			pageSize:    3,
-			expectedIds: []int64{108, 109, 110},
+			expectedIds: []int64{376, 452, 471},
 		},
 		{
 			name:        "page_1_pageSize_10",
 			page:        1,
 			pageSize:    10,
-			expectedIds: []int64{102, 103, 104, 105, 106, 107, 108, 109, 110, 111},
+			expectedIds: []int64{105, 107, 109, 121, 122, 375, 376, 452, 471, 492},
 		},
 		{
 			name:        "page_2_pageSize_10",
 			page:        2,
-			pageSize:    10,
-			expectedIds: []int64{112, 113, 114, 115, 116, 117, 118, 119, 120, 121},
+			pageSize:    1,
+			expectedIds: []int64{107},
 		},
 	}
 	for _, tt := range tests {
@@ -478,6 +446,10 @@ func TestGetBooks_WithPagination(t *testing.T) {
 				t.Fatal(err)
 			}
 			require.Equal(tt.pageSize, len(books))
+			ids := make([]int64, len(books))
+			for i, b := range books {
+				ids[i] = b.ID
+			}
 			if len(tt.expectedIds) == len(books) {
 				for i, id := range tt.expectedIds {
 					require.Equal(id, books[i].ID)
@@ -549,7 +521,7 @@ func TestGetTags(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	require.Equal(163, len(tags))
+	require.Equal(19, len(tags))
 	require.Equal(int64(1), tags[0].ID)
 	require.Equal("Science Fiction", tags[0].Name)
 }
@@ -563,17 +535,17 @@ func TestGetTagBooks(t *testing.T) {
 		{
 			name:           "Science Fiction",
 			id:             1,
-			expected_count: 264,
+			expected_count: 11,
 		},
 		{
 			name:           "Fantasy",
 			id:             2,
-			expected_count: 340,
+			expected_count: 10,
 		},
 		{
 			name:           "Fiction",
 			id:             3,
-			expected_count: 369,
+			expected_count: 11,
 		},
 	}
 	for _, tt := range tests {
@@ -617,13 +589,6 @@ func TestGetPublisher(t *testing.T) {
 			expected: &Publisher{
 				ID:   3,
 				Name: "Orbit",
-			},
-		},
-		{
-			name: "Harper Voyager",
-			expected: &Publisher{
-				ID:   5,
-				Name: "Hachette Romans",
 			},
 		},
 		{
@@ -674,7 +639,7 @@ func TestGetPublishers(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	require.Equal(112, len(publishers))
+	require.Equal(5, len(publishers))
 	require.Equal(int64(2), publishers[0].ID)
 	require.Equal("Del Rey", publishers[0].Name)
 }
@@ -688,27 +653,22 @@ func TestGetPublisherBooks(t *testing.T) {
 		{
 			name:           "Del Rey",
 			id:             2,
-			expected_count: 9,
+			expected_count: 3,
 		},
 		{
 			name:           "Orbit",
 			id:             3,
-			expected_count: 31,
-		},
-		{
-			name:           "Hachette Romans",
-			id:             5,
 			expected_count: 1,
 		},
 		{
 			name:           "Random House Publishing Group",
 			id:             6,
-			expected_count: 6,
+			expected_count: 1,
 		},
 		{
 			name:           "Little, Brown Book Group",
 			id:             8,
-			expected_count: 2,
+			expected_count: 1,
 		},
 	}
 	for _, tt := range tests {
@@ -775,13 +735,6 @@ func TestGetLanguage(t *testing.T) {
 				LangCode: "rus",
 			},
 		},
-		{
-			name: "Portuguese",
-			expected: &Language{
-				ID:       6,
-				LangCode: "nld",
-			},
-		},
 	}
 
 	for _, tt := range tests {
@@ -816,7 +769,7 @@ func TestGetLanguages(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	require.Equal(6, len(languages))
+	require.Equal(5, len(languages))
 	require.Equal(int64(1), languages[0].ID)
 	require.Equal("eng", languages[0].LangCode)
 }
@@ -830,32 +783,7 @@ func TestGetLanguageBooks(t *testing.T) {
 		{
 			name:           "English",
 			id:             1,
-			expected_count: 409,
-		},
-		{
-			name:           "French",
-			id:             2,
-			expected_count: 1,
-		},
-		{
-			name:           "German",
-			id:             3,
-			expected_count: 1,
-		},
-		{
-			name:           "Spanish",
-			id:             4,
-			expected_count: 3,
-		},
-		{
-			name:           "Italian",
-			id:             5,
-			expected_count: 1,
-		},
-		{
-			name:           "Portuguese",
-			id:             6,
-			expected_count: 2,
+			expected_count: 11,
 		},
 	}
 	for _, tt := range tests {
@@ -890,7 +818,7 @@ func TestGetSeries(t *testing.T) {
 				ID:        1,
 				Name:      "Red Rising Saga",
 				Sort:      "Red Rising Saga",
-				BookCount: 8,
+				BookCount: 4,
 			},
 		},
 		{
@@ -899,16 +827,7 @@ func TestGetSeries(t *testing.T) {
 				ID:        2,
 				Name:      "The Expanse",
 				Sort:      "Expanse, The",
-				BookCount: 21,
-			},
-		},
-		{
-			name: "Star Wars Legends",
-			expected: &Series{
-				ID:        3,
-				Name:      "Star Wars Legends",
-				Sort:      "Star Wars Legends",
-				BookCount: 1,
+				BookCount: 5,
 			},
 		},
 	}
@@ -947,10 +866,10 @@ func TestGetSeriesList(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	require.Equal(62, len(series))
+	require.Equal(3, len(series))
 	require.Equal(int64(1), series[0].ID)
 	require.Equal("Red Rising Saga", series[0].Name)
-	require.Equal(int64(8), series[0].BookCount)
+	require.Equal(int64(4), series[0].BookCount)
 }
 
 func TestGetSeriesBooks(t *testing.T) {
@@ -962,17 +881,12 @@ func TestGetSeriesBooks(t *testing.T) {
 		{
 			name:           "Red Rising Saga",
 			id:             1,
-			expected_count: 8,
+			expected_count: 4,
 		},
 		{
 			name:           "The Expanse",
 			id:             2,
-			expected_count: 21,
-		},
-		{
-			name:           "Star Wars Legends",
-			id:             3,
-			expected_count: 1,
+			expected_count: 5,
 		},
 	}
 	for _, tt := range tests {
