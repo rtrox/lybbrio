@@ -83,7 +83,7 @@ func Test_Permissions_StringSlice(t *testing.T) {
 		CanCreatePublic: struct{}{},
 	}
 
-	require.Equal([]string{"Admin", "CanCreatePublic"}, p.StringSlice())
+	require.ElementsMatch([]string{"Admin", "CanCreatePublic"}, p.StringSlice())
 }
 
 func Test_From(t *testing.T) {
