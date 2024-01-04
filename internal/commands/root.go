@@ -98,7 +98,7 @@ func initLogger() {
 	}
 }
 
-func rootRun(cmd *cobra.Command, args []string) {
+func rootRun(_ *cobra.Command, _ []string) {
 	var srv http.Server
 
 	schedulerCtx := context.Background()
