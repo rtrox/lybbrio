@@ -20,12 +20,12 @@ type UserPermissions struct {
 	ID ksuid.ID `json:"id,omitempty"`
 	// UserID holds the value of the "user_id" field.
 	UserID ksuid.ID `json:"user_id,omitempty"`
-	// CanEdit holds the value of the "CanEdit" field.
-	CanEdit bool `json:"CanEdit,omitempty"`
 	// Admin holds the value of the "Admin" field.
 	Admin bool `json:"Admin,omitempty"`
 	// CanCreatePublic holds the value of the "CanCreatePublic" field.
 	CanCreatePublic bool `json:"CanCreatePublic,omitempty"`
+	// CanEdit holds the value of the "CanEdit" field.
+	CanEdit bool `json:"CanEdit,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the UserPermissionsQuery when eager-loading is set.
 	Edges        UserPermissionsEdges `json:"edges"`
@@ -61,7 +61,7 @@ func (*UserPermissions) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case userpermissions.FieldCanEdit, userpermissions.FieldAdmin, userpermissions.FieldCanCreatePublic:
+		case userpermissions.FieldAdmin, userpermissions.FieldCanCreatePublic, userpermissions.FieldCanEdit:
 			values[i] = new(sql.NullBool)
 		case userpermissions.FieldID, userpermissions.FieldUserID:
 			values[i] = new(sql.NullString)
@@ -92,12 +92,6 @@ func (up *UserPermissions) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				up.UserID = ksuid.ID(value.String)
 			}
-		case userpermissions.FieldCanEdit:
-			if value, ok := values[i].(*sql.NullBool); !ok {
-				return fmt.Errorf("unexpected type %T for field CanEdit", values[i])
-			} else if value.Valid {
-				up.CanEdit = value.Bool
-			}
 		case userpermissions.FieldAdmin:
 			if value, ok := values[i].(*sql.NullBool); !ok {
 				return fmt.Errorf("unexpected type %T for field Admin", values[i])
@@ -109,6 +103,12 @@ func (up *UserPermissions) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field CanCreatePublic", values[i])
 			} else if value.Valid {
 				up.CanCreatePublic = value.Bool
+			}
+		case userpermissions.FieldCanEdit:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field CanEdit", values[i])
+			} else if value.Valid {
+				up.CanEdit = value.Bool
 			}
 		default:
 			up.selectValues.Set(columns[i], values[i])
@@ -154,14 +154,14 @@ func (up *UserPermissions) String() string {
 	builder.WriteString("user_id=")
 	builder.WriteString(fmt.Sprintf("%v", up.UserID))
 	builder.WriteString(", ")
-	builder.WriteString("CanEdit=")
-	builder.WriteString(fmt.Sprintf("%v", up.CanEdit))
-	builder.WriteString(", ")
 	builder.WriteString("Admin=")
 	builder.WriteString(fmt.Sprintf("%v", up.Admin))
 	builder.WriteString(", ")
 	builder.WriteString("CanCreatePublic=")
 	builder.WriteString(fmt.Sprintf("%v", up.CanCreatePublic))
+	builder.WriteString(", ")
+	builder.WriteString("CanEdit=")
+	builder.WriteString(fmt.Sprintf("%v", up.CanEdit))
 	builder.WriteByte(')')
 	return builder.String()
 }

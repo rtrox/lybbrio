@@ -3,10 +3,15 @@ package tasks
 import (
 	"context"
 	"fmt"
+	"io/fs"
 	"lybbrio/internal/calibre"
 	"lybbrio/internal/ent"
+	"lybbrio/internal/ent/bookfile"
+	"lybbrio/internal/ent/schema/filetype"
 	"lybbrio/internal/ent/schema/ksuid"
 	"lybbrio/internal/task"
+	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/rs/zerolog/log"
@@ -218,6 +223,16 @@ func ImportBooks(cal calibre.Calibre, client *ent.Client, ctx context.Context, c
 				Int64("bookID", book.ID).
 				Msg("Failed to create series")
 		}
+
+		err = registerBookFiles(ctx, cal, client, entBook, *book)
+		if err != nil {
+			log.Warn().Err(err).
+				Str("book", book.Title).
+				Int64("bookID", book.ID).
+				Msg("Failed register book files")
+			ic.AddFailedBook(book.Title)
+		}
+
 		if err := cb(float64(idx+1) / (float64(total))); err != nil {
 			log.Warn().Err(err).
 				Str("book", book.Title).
@@ -426,6 +441,50 @@ func createOrAttachSeries(ctx context.Context, client *ent.Client, book *ent.Boo
 		return fmt.Errorf("failed to create series (%d): %w", series.ID, err)
 	}
 	ic.AddSeriesVisited(series.ID, newSeries.ID)
+	return nil
+}
+
+func registerBookFiles(ctx context.Context, cal calibre.Calibre, client *ent.Client, book *ent.Book, calBook calibre.Book) error {
+	files, err := os.ReadDir(calBook.FullPath(cal))
+	if err != nil {
+		return err
+	}
+	for _, file := range files {
+		if file.IsDir() {
+			continue
+		}
+		path := filepath.Join(calBook.FullPath(cal), file.Name())
+		err := registerBookFile(ctx, client, book.ID, path, file)
+		if err != nil {
+			log.Warn().Err(err).
+				Str("file", file.Name()).
+				Msg("Failed to register file")
+		}
+	}
+	return nil
+}
+
+func registerBookFile(ctx context.Context, client *ent.Client, bookID ksuid.ID, path string, file fs.DirEntry) error {
+	ext := strings.ToLower(filepath.Ext(file.Name()))
+	filetype := filetype.FromExtension(ext)
+
+	info, err := file.Info()
+	if err != nil {
+		log.Warn().Err(err).
+			Str("file", file.Name()).
+			Msg("Failed to get file info")
+		return fmt.Errorf("failed to get file info: %w", err)
+	}
+	size := info.Size()
+	_, err = client.BookFile.Create().
+		SetPath(path).
+		SetSize(size).
+		SetFormat(bookfile.Format(filetype.String())).
+		SetBookID(bookID).
+		Save(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to create book file: %w", err)
+	}
 	return nil
 }
 

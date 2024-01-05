@@ -147,7 +147,7 @@ func rootRun(_ *cobra.Command, _ []string) {
 	}
 
 	// Calibre
-	cal, error := calibre.NewCalibreSQLite(conf.CalibreDBPath)
+	cal, error := calibre.NewCalibreSQLite(conf.CalibreLibraryPath)
 	cal = cal.WithLogger(&log.Logger).(*calibre.CalibreSQLite)
 
 	if error != nil {

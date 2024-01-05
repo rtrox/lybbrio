@@ -38,20 +38,6 @@ func (upc *UserPermissionsCreate) SetNillableUserID(k *ksuid.ID) *UserPermission
 	return upc
 }
 
-// SetCanEdit sets the "CanEdit" field.
-func (upc *UserPermissionsCreate) SetCanEdit(b bool) *UserPermissionsCreate {
-	upc.mutation.SetCanEdit(b)
-	return upc
-}
-
-// SetNillableCanEdit sets the "CanEdit" field if the given value is not nil.
-func (upc *UserPermissionsCreate) SetNillableCanEdit(b *bool) *UserPermissionsCreate {
-	if b != nil {
-		upc.SetCanEdit(*b)
-	}
-	return upc
-}
-
 // SetAdmin sets the "Admin" field.
 func (upc *UserPermissionsCreate) SetAdmin(b bool) *UserPermissionsCreate {
 	upc.mutation.SetAdmin(b)
@@ -76,6 +62,20 @@ func (upc *UserPermissionsCreate) SetCanCreatePublic(b bool) *UserPermissionsCre
 func (upc *UserPermissionsCreate) SetNillableCanCreatePublic(b *bool) *UserPermissionsCreate {
 	if b != nil {
 		upc.SetCanCreatePublic(*b)
+	}
+	return upc
+}
+
+// SetCanEdit sets the "CanEdit" field.
+func (upc *UserPermissionsCreate) SetCanEdit(b bool) *UserPermissionsCreate {
+	upc.mutation.SetCanEdit(b)
+	return upc
+}
+
+// SetNillableCanEdit sets the "CanEdit" field if the given value is not nil.
+func (upc *UserPermissionsCreate) SetNillableCanEdit(b *bool) *UserPermissionsCreate {
+	if b != nil {
+		upc.SetCanEdit(*b)
 	}
 	return upc
 }
@@ -136,10 +136,6 @@ func (upc *UserPermissionsCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (upc *UserPermissionsCreate) defaults() error {
-	if _, ok := upc.mutation.CanEdit(); !ok {
-		v := userpermissions.DefaultCanEdit
-		upc.mutation.SetCanEdit(v)
-	}
 	if _, ok := upc.mutation.Admin(); !ok {
 		v := userpermissions.DefaultAdmin
 		upc.mutation.SetAdmin(v)
@@ -147,6 +143,10 @@ func (upc *UserPermissionsCreate) defaults() error {
 	if _, ok := upc.mutation.CanCreatePublic(); !ok {
 		v := userpermissions.DefaultCanCreatePublic
 		upc.mutation.SetCanCreatePublic(v)
+	}
+	if _, ok := upc.mutation.CanEdit(); !ok {
+		v := userpermissions.DefaultCanEdit
+		upc.mutation.SetCanEdit(v)
 	}
 	if _, ok := upc.mutation.ID(); !ok {
 		if userpermissions.DefaultID == nil {
@@ -160,14 +160,14 @@ func (upc *UserPermissionsCreate) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (upc *UserPermissionsCreate) check() error {
-	if _, ok := upc.mutation.CanEdit(); !ok {
-		return &ValidationError{Name: "CanEdit", err: errors.New(`ent: missing required field "UserPermissions.CanEdit"`)}
-	}
 	if _, ok := upc.mutation.Admin(); !ok {
 		return &ValidationError{Name: "Admin", err: errors.New(`ent: missing required field "UserPermissions.Admin"`)}
 	}
 	if _, ok := upc.mutation.CanCreatePublic(); !ok {
 		return &ValidationError{Name: "CanCreatePublic", err: errors.New(`ent: missing required field "UserPermissions.CanCreatePublic"`)}
+	}
+	if _, ok := upc.mutation.CanEdit(); !ok {
+		return &ValidationError{Name: "CanEdit", err: errors.New(`ent: missing required field "UserPermissions.CanEdit"`)}
 	}
 	return nil
 }
@@ -205,10 +205,6 @@ func (upc *UserPermissionsCreate) createSpec() (*UserPermissions, *sqlgraph.Crea
 		_node.ID = id
 		_spec.ID.Value = id
 	}
-	if value, ok := upc.mutation.CanEdit(); ok {
-		_spec.SetField(userpermissions.FieldCanEdit, field.TypeBool, value)
-		_node.CanEdit = value
-	}
 	if value, ok := upc.mutation.Admin(); ok {
 		_spec.SetField(userpermissions.FieldAdmin, field.TypeBool, value)
 		_node.Admin = value
@@ -216,6 +212,10 @@ func (upc *UserPermissionsCreate) createSpec() (*UserPermissions, *sqlgraph.Crea
 	if value, ok := upc.mutation.CanCreatePublic(); ok {
 		_spec.SetField(userpermissions.FieldCanCreatePublic, field.TypeBool, value)
 		_node.CanCreatePublic = value
+	}
+	if value, ok := upc.mutation.CanEdit(); ok {
+		_spec.SetField(userpermissions.FieldCanEdit, field.TypeBool, value)
+		_node.CanEdit = value
 	}
 	if nodes := upc.mutation.UserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -304,18 +304,6 @@ func (u *UserPermissionsUpsert) ClearUserID() *UserPermissionsUpsert {
 	return u
 }
 
-// SetCanEdit sets the "CanEdit" field.
-func (u *UserPermissionsUpsert) SetCanEdit(v bool) *UserPermissionsUpsert {
-	u.Set(userpermissions.FieldCanEdit, v)
-	return u
-}
-
-// UpdateCanEdit sets the "CanEdit" field to the value that was provided on create.
-func (u *UserPermissionsUpsert) UpdateCanEdit() *UserPermissionsUpsert {
-	u.SetExcluded(userpermissions.FieldCanEdit)
-	return u
-}
-
 // SetAdmin sets the "Admin" field.
 func (u *UserPermissionsUpsert) SetAdmin(v bool) *UserPermissionsUpsert {
 	u.Set(userpermissions.FieldAdmin, v)
@@ -337,6 +325,18 @@ func (u *UserPermissionsUpsert) SetCanCreatePublic(v bool) *UserPermissionsUpser
 // UpdateCanCreatePublic sets the "CanCreatePublic" field to the value that was provided on create.
 func (u *UserPermissionsUpsert) UpdateCanCreatePublic() *UserPermissionsUpsert {
 	u.SetExcluded(userpermissions.FieldCanCreatePublic)
+	return u
+}
+
+// SetCanEdit sets the "CanEdit" field.
+func (u *UserPermissionsUpsert) SetCanEdit(v bool) *UserPermissionsUpsert {
+	u.Set(userpermissions.FieldCanEdit, v)
+	return u
+}
+
+// UpdateCanEdit sets the "CanEdit" field to the value that was provided on create.
+func (u *UserPermissionsUpsert) UpdateCanEdit() *UserPermissionsUpsert {
+	u.SetExcluded(userpermissions.FieldCanEdit)
 	return u
 }
 
@@ -409,20 +409,6 @@ func (u *UserPermissionsUpsertOne) ClearUserID() *UserPermissionsUpsertOne {
 	})
 }
 
-// SetCanEdit sets the "CanEdit" field.
-func (u *UserPermissionsUpsertOne) SetCanEdit(v bool) *UserPermissionsUpsertOne {
-	return u.Update(func(s *UserPermissionsUpsert) {
-		s.SetCanEdit(v)
-	})
-}
-
-// UpdateCanEdit sets the "CanEdit" field to the value that was provided on create.
-func (u *UserPermissionsUpsertOne) UpdateCanEdit() *UserPermissionsUpsertOne {
-	return u.Update(func(s *UserPermissionsUpsert) {
-		s.UpdateCanEdit()
-	})
-}
-
 // SetAdmin sets the "Admin" field.
 func (u *UserPermissionsUpsertOne) SetAdmin(v bool) *UserPermissionsUpsertOne {
 	return u.Update(func(s *UserPermissionsUpsert) {
@@ -448,6 +434,20 @@ func (u *UserPermissionsUpsertOne) SetCanCreatePublic(v bool) *UserPermissionsUp
 func (u *UserPermissionsUpsertOne) UpdateCanCreatePublic() *UserPermissionsUpsertOne {
 	return u.Update(func(s *UserPermissionsUpsert) {
 		s.UpdateCanCreatePublic()
+	})
+}
+
+// SetCanEdit sets the "CanEdit" field.
+func (u *UserPermissionsUpsertOne) SetCanEdit(v bool) *UserPermissionsUpsertOne {
+	return u.Update(func(s *UserPermissionsUpsert) {
+		s.SetCanEdit(v)
+	})
+}
+
+// UpdateCanEdit sets the "CanEdit" field to the value that was provided on create.
+func (u *UserPermissionsUpsertOne) UpdateCanEdit() *UserPermissionsUpsertOne {
+	return u.Update(func(s *UserPermissionsUpsert) {
+		s.UpdateCanEdit()
 	})
 }
 
@@ -687,20 +687,6 @@ func (u *UserPermissionsUpsertBulk) ClearUserID() *UserPermissionsUpsertBulk {
 	})
 }
 
-// SetCanEdit sets the "CanEdit" field.
-func (u *UserPermissionsUpsertBulk) SetCanEdit(v bool) *UserPermissionsUpsertBulk {
-	return u.Update(func(s *UserPermissionsUpsert) {
-		s.SetCanEdit(v)
-	})
-}
-
-// UpdateCanEdit sets the "CanEdit" field to the value that was provided on create.
-func (u *UserPermissionsUpsertBulk) UpdateCanEdit() *UserPermissionsUpsertBulk {
-	return u.Update(func(s *UserPermissionsUpsert) {
-		s.UpdateCanEdit()
-	})
-}
-
 // SetAdmin sets the "Admin" field.
 func (u *UserPermissionsUpsertBulk) SetAdmin(v bool) *UserPermissionsUpsertBulk {
 	return u.Update(func(s *UserPermissionsUpsert) {
@@ -726,6 +712,20 @@ func (u *UserPermissionsUpsertBulk) SetCanCreatePublic(v bool) *UserPermissionsU
 func (u *UserPermissionsUpsertBulk) UpdateCanCreatePublic() *UserPermissionsUpsertBulk {
 	return u.Update(func(s *UserPermissionsUpsert) {
 		s.UpdateCanCreatePublic()
+	})
+}
+
+// SetCanEdit sets the "CanEdit" field.
+func (u *UserPermissionsUpsertBulk) SetCanEdit(v bool) *UserPermissionsUpsertBulk {
+	return u.Update(func(s *UserPermissionsUpsert) {
+		s.SetCanEdit(v)
+	})
+}
+
+// UpdateCanEdit sets the "CanEdit" field to the value that was provided on create.
+func (u *UserPermissionsUpsertBulk) UpdateCanEdit() *UserPermissionsUpsertBulk {
+	return u.Update(func(s *UserPermissionsUpsert) {
+		s.UpdateCanEdit()
 	})
 }
 

@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"lybbrio/internal/ent/author"
 	"lybbrio/internal/ent/book"
+	"lybbrio/internal/ent/bookfile"
 	"lybbrio/internal/ent/identifier"
 	"lybbrio/internal/ent/language"
 	"lybbrio/internal/ent/publisher"
@@ -85,6 +86,7 @@ func checkColumn(table, column string) error {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
 			author.Table:          author.ValidColumn,
 			book.Table:            book.ValidColumn,
+			bookfile.Table:        bookfile.ValidColumn,
 			identifier.Table:      identifier.ValidColumn,
 			language.Table:        language.ValidColumn,
 			publisher.Table:       publisher.ValidColumn,

@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"lybbrio"
 	"lybbrio/internal/ent"
+	"lybbrio/internal/ent/bookfile"
 	"lybbrio/internal/ent/schema/ksuid"
 	"lybbrio/internal/ent/schema/task_enums"
 	"strconv"
@@ -101,6 +102,14 @@ type ComplexityRoot struct {
 		Node   func(childComplexity int) int
 	}
 
+	BookFile struct {
+		Book   func(childComplexity int) int
+		Format func(childComplexity int) int
+		ID     func(childComplexity int) int
+		Path   func(childComplexity int) int
+		Size   func(childComplexity int) int
+	}
+
 	Identifier struct {
 		Book      func(childComplexity int) int
 		CalibreID func(childComplexity int) int
@@ -187,6 +196,7 @@ type ComplexityRoot struct {
 
 	Query struct {
 		Authors     func(childComplexity int, after *entgql.Cursor[ksuid.ID], first *int, before *entgql.Cursor[ksuid.ID], last *int, orderBy []*ent.AuthorOrder, where *ent.AuthorWhereInput) int
+		BookFiles   func(childComplexity int) int
 		Books       func(childComplexity int, after *entgql.Cursor[ksuid.ID], first *int, before *entgql.Cursor[ksuid.ID], last *int, orderBy []*ent.BookOrder, where *ent.BookWhereInput) int
 		Identifiers func(childComplexity int, after *entgql.Cursor[ksuid.ID], first *int, before *entgql.Cursor[ksuid.ID], last *int, orderBy []*ent.IdentifierOrder, where *ent.IdentifierWhereInput) int
 		Languages   func(childComplexity int, after *entgql.Cursor[ksuid.ID], first *int, before *entgql.Cursor[ksuid.ID], last *int, orderBy []*ent.LanguageOrder, where *ent.LanguageWhereInput) int
@@ -328,6 +338,7 @@ type QueryResolver interface {
 	Nodes(ctx context.Context, ids []ksuid.ID) ([]ent.Noder, error)
 	Authors(ctx context.Context, after *entgql.Cursor[ksuid.ID], first *int, before *entgql.Cursor[ksuid.ID], last *int, orderBy []*ent.AuthorOrder, where *ent.AuthorWhereInput) (*ent.AuthorConnection, error)
 	Books(ctx context.Context, after *entgql.Cursor[ksuid.ID], first *int, before *entgql.Cursor[ksuid.ID], last *int, orderBy []*ent.BookOrder, where *ent.BookWhereInput) (*ent.BookConnection, error)
+	BookFiles(ctx context.Context) ([]*ent.BookFile, error)
 	Identifiers(ctx context.Context, after *entgql.Cursor[ksuid.ID], first *int, before *entgql.Cursor[ksuid.ID], last *int, orderBy []*ent.IdentifierOrder, where *ent.IdentifierWhereInput) (*ent.IdentifierConnection, error)
 	Languages(ctx context.Context, after *entgql.Cursor[ksuid.ID], first *int, before *entgql.Cursor[ksuid.ID], last *int, orderBy []*ent.LanguageOrder, where *ent.LanguageWhereInput) (*ent.LanguageConnection, error)
 	Publishers(ctx context.Context, after *entgql.Cursor[ksuid.ID], first *int, before *entgql.Cursor[ksuid.ID], last *int, orderBy []*ent.PublisherOrder, where *ent.PublisherWhereInput) (*ent.PublisherConnection, error)
@@ -586,6 +597,41 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.BookEdge.Node(childComplexity), true
+
+	case "BookFile.book":
+		if e.complexity.BookFile.Book == nil {
+			break
+		}
+
+		return e.complexity.BookFile.Book(childComplexity), true
+
+	case "BookFile.format":
+		if e.complexity.BookFile.Format == nil {
+			break
+		}
+
+		return e.complexity.BookFile.Format(childComplexity), true
+
+	case "BookFile.id":
+		if e.complexity.BookFile.ID == nil {
+			break
+		}
+
+		return e.complexity.BookFile.ID(childComplexity), true
+
+	case "BookFile.path":
+		if e.complexity.BookFile.Path == nil {
+			break
+		}
+
+		return e.complexity.BookFile.Path(childComplexity), true
+
+	case "BookFile.size":
+		if e.complexity.BookFile.Size == nil {
+			break
+		}
+
+		return e.complexity.BookFile.Size(childComplexity), true
 
 	case "Identifier.book":
 		if e.complexity.Identifier.Book == nil {
@@ -1060,6 +1106,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.Authors(childComplexity, args["after"].(*entgql.Cursor[ksuid.ID]), args["first"].(*int), args["before"].(*entgql.Cursor[ksuid.ID]), args["last"].(*int), args["orderBy"].([]*ent.AuthorOrder), args["where"].(*ent.AuthorWhereInput)), true
+
+	case "Query.bookFiles":
+		if e.complexity.Query.BookFiles == nil {
+			break
+		}
+
+		return e.complexity.Query.BookFiles(childComplexity), true
 
 	case "Query.books":
 		if e.complexity.Query.Books == nil {
@@ -1621,6 +1674,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
 		ec.unmarshalInputAuthorOrder,
 		ec.unmarshalInputAuthorWhereInput,
+		ec.unmarshalInputBookFileWhereInput,
 		ec.unmarshalInputBookOrder,
 		ec.unmarshalInputBookWhereInput,
 		ec.unmarshalInputCreateAuthorInput,
@@ -1921,6 +1975,75 @@ type BookEdge {
   node: Book
   """A cursor for use in pagination."""
   cursor: Cursor!
+}
+type BookFile implements Node {
+  id: ID!
+  path: String!
+  """Size in bytes"""
+  size: Int!
+  format: BookFileFormat!
+  book: Book!
+}
+"""BookFileFormat is enum for the field format"""
+enum BookFileFormat @goModel(model: "lybbrio/internal/ent/bookfile.Format") {
+  AZW3
+  EPUB
+  KEPUB
+  PDF
+  CBC
+  CBR
+  CB7
+  CBZ
+  CBT
+}
+"""
+BookFileWhereInput is used for filtering BookFile objects.
+Input was generated by ent.
+"""
+input BookFileWhereInput {
+  not: BookFileWhereInput
+  and: [BookFileWhereInput!]
+  or: [BookFileWhereInput!]
+  """id field predicates"""
+  id: ID
+  idNEQ: ID
+  idIn: [ID!]
+  idNotIn: [ID!]
+  idGT: ID
+  idGTE: ID
+  idLT: ID
+  idLTE: ID
+  """path field predicates"""
+  path: String
+  pathNEQ: String
+  pathIn: [String!]
+  pathNotIn: [String!]
+  pathGT: String
+  pathGTE: String
+  pathLT: String
+  pathLTE: String
+  pathContains: String
+  pathHasPrefix: String
+  pathHasSuffix: String
+  pathEqualFold: String
+  pathContainsFold: String
+  """size field predicates"""
+  size: Int
+  sizeNEQ: Int
+  sizeIn: [Int!]
+  sizeNotIn: [Int!]
+  sizeGT: Int
+  sizeGTE: Int
+  sizeLT: Int
+  sizeLTE: Int
+  """format field predicates"""
+  format: BookFileFormat
+  formatNEQ: BookFileFormat
+  formatIn: [BookFileFormat!]
+  formatNotIn: [BookFileFormat!]
+  """book edge predicates"""
+  hasBook: Boolean
+  hasBookWith: [BookWhereInput!]
 }
 """Ordering options for Book connections"""
 input BookOrder {
@@ -2545,6 +2668,7 @@ type Query {
     """Filtering options for Books returned from the connection."""
     where: BookWhereInput
   ): BookConnection!
+  bookFiles: [BookFile!]!
   identifiers(
     """Returns the elements in the list that come after the specified cursor."""
     after: Cursor
@@ -3329,9 +3453,9 @@ enum UserOrderField {
 type UserPermissions implements Node {
   id: ID!
   userID: ID
-  canedit: Boolean! @goField(name: "CanEdit", forceResolver: false)
   admin: Boolean!
   cancreatepublic: Boolean! @goField(name: "CanCreatePublic", forceResolver: false)
+  canedit: Boolean! @goField(name: "CanEdit", forceResolver: false)
   user: User
 }
 """
@@ -3367,15 +3491,15 @@ input UserPermissionsWhereInput {
   userIDNotNil: Boolean
   userIDEqualFold: ID
   userIDContainsFold: ID
-  """CanEdit field predicates"""
-  canedit: Boolean
-  caneditNEQ: Boolean
   """Admin field predicates"""
   admin: Boolean
   adminNEQ: Boolean
   """CanCreatePublic field predicates"""
   cancreatepublic: Boolean
   cancreatepublicNEQ: Boolean
+  """CanEdit field predicates"""
+  canedit: Boolean
+  caneditNEQ: Boolean
   """user edge predicates"""
   hasUser: Boolean
   hasUserWith: [UserWhereInput!]
@@ -6312,6 +6436,260 @@ func (ec *executionContext) fieldContext_BookEdge_cursor(ctx context.Context, fi
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type Cursor does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _BookFile_id(ctx context.Context, field graphql.CollectedField, obj *ent.BookFile) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_BookFile_id(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(ksuid.ID)
+	fc.Result = res
+	return ec.marshalNID2lybbrioᚋinternalᚋentᚋschemaᚋksuidᚐID(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_BookFile_id(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "BookFile",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _BookFile_path(ctx context.Context, field graphql.CollectedField, obj *ent.BookFile) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_BookFile_path(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Path, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_BookFile_path(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "BookFile",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _BookFile_size(ctx context.Context, field graphql.CollectedField, obj *ent.BookFile) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_BookFile_size(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Size, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int64)
+	fc.Result = res
+	return ec.marshalNInt2int64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_BookFile_size(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "BookFile",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _BookFile_format(ctx context.Context, field graphql.CollectedField, obj *ent.BookFile) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_BookFile_format(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Format, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bookfile.Format)
+	fc.Result = res
+	return ec.marshalNBookFileFormat2lybbrioᚋinternalᚋentᚋbookfileᚐFormat(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_BookFile_format(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "BookFile",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type BookFileFormat does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _BookFile_book(ctx context.Context, field graphql.CollectedField, obj *ent.BookFile) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_BookFile_book(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Book(ctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.Book)
+	fc.Result = res
+	return ec.marshalNBook2ᚖlybbrioᚋinternalᚋentᚐBook(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_BookFile_book(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "BookFile",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Book_id(ctx, field)
+			case "calibreID":
+				return ec.fieldContext_Book_calibreID(ctx, field)
+			case "title":
+				return ec.fieldContext_Book_title(ctx, field)
+			case "sort":
+				return ec.fieldContext_Book_sort(ctx, field)
+			case "publishedDate":
+				return ec.fieldContext_Book_publishedDate(ctx, field)
+			case "path":
+				return ec.fieldContext_Book_path(ctx, field)
+			case "isbn":
+				return ec.fieldContext_Book_isbn(ctx, field)
+			case "description":
+				return ec.fieldContext_Book_description(ctx, field)
+			case "seriesIndex":
+				return ec.fieldContext_Book_seriesIndex(ctx, field)
+			case "authors":
+				return ec.fieldContext_Book_authors(ctx, field)
+			case "publisher":
+				return ec.fieldContext_Book_publisher(ctx, field)
+			case "series":
+				return ec.fieldContext_Book_series(ctx, field)
+			case "identifiers":
+				return ec.fieldContext_Book_identifiers(ctx, field)
+			case "tags":
+				return ec.fieldContext_Book_tags(ctx, field)
+			case "language":
+				return ec.fieldContext_Book_language(ctx, field)
+			case "shelf":
+				return ec.fieldContext_Book_shelf(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Book", field.Name)
 		},
 	}
 	return fc, nil
@@ -9345,6 +9723,62 @@ func (ec *executionContext) fieldContext_Query_books(ctx context.Context, field 
 	if fc.Args, err = ec.field_Query_books_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_bookFiles(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_bookFiles(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().BookFiles(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*ent.BookFile)
+	fc.Result = res
+	return ec.marshalNBookFile2ᚕᚖlybbrioᚋinternalᚋentᚐBookFileᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_bookFiles(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_BookFile_id(ctx, field)
+			case "path":
+				return ec.fieldContext_BookFile_path(ctx, field)
+			case "size":
+				return ec.fieldContext_BookFile_size(ctx, field)
+			case "format":
+				return ec.fieldContext_BookFile_format(ctx, field)
+			case "book":
+				return ec.fieldContext_BookFile_book(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type BookFile", field.Name)
+		},
 	}
 	return fc, nil
 }
@@ -12505,12 +12939,12 @@ func (ec *executionContext) fieldContext_User_userPermissions(ctx context.Contex
 				return ec.fieldContext_UserPermissions_id(ctx, field)
 			case "userID":
 				return ec.fieldContext_UserPermissions_userID(ctx, field)
-			case "canedit":
-				return ec.fieldContext_UserPermissions_canedit(ctx, field)
 			case "admin":
 				return ec.fieldContext_UserPermissions_admin(ctx, field)
 			case "cancreatepublic":
 				return ec.fieldContext_UserPermissions_cancreatepublic(ctx, field)
+			case "canedit":
+				return ec.fieldContext_UserPermissions_canedit(ctx, field)
 			case "user":
 				return ec.fieldContext_UserPermissions_user(ctx, field)
 			}
@@ -12605,50 +13039,6 @@ func (ec *executionContext) fieldContext_UserPermissions_userID(ctx context.Cont
 	return fc, nil
 }
 
-func (ec *executionContext) _UserPermissions_canedit(ctx context.Context, field graphql.CollectedField, obj *ent.UserPermissions) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_UserPermissions_canedit(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.CanEdit, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(bool)
-	fc.Result = res
-	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_UserPermissions_canedit(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "UserPermissions",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Boolean does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
 func (ec *executionContext) _UserPermissions_admin(ctx context.Context, field graphql.CollectedField, obj *ent.UserPermissions) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_UserPermissions_admin(ctx, field)
 	if err != nil {
@@ -12725,6 +13115,50 @@ func (ec *executionContext) _UserPermissions_cancreatepublic(ctx context.Context
 }
 
 func (ec *executionContext) fieldContext_UserPermissions_cancreatepublic(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "UserPermissions",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _UserPermissions_canedit(ctx context.Context, field graphql.CollectedField, obj *ent.UserPermissions) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_UserPermissions_canedit(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CanEdit, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_UserPermissions_canedit(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "UserPermissions",
 		Field:      field,
@@ -15063,6 +15497,292 @@ func (ec *executionContext) unmarshalInputAuthorWhereInput(ctx context.Context, 
 				return it, err
 			}
 			it.HasBooksWith = data
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputBookFileWhereInput(ctx context.Context, obj interface{}) (ent.BookFileWhereInput, error) {
+	var it ent.BookFileWhereInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "path", "pathNEQ", "pathIn", "pathNotIn", "pathGT", "pathGTE", "pathLT", "pathLTE", "pathContains", "pathHasPrefix", "pathHasSuffix", "pathEqualFold", "pathContainsFold", "size", "sizeNEQ", "sizeIn", "sizeNotIn", "sizeGT", "sizeGTE", "sizeLT", "sizeLTE", "format", "formatNEQ", "formatIn", "formatNotIn", "hasBook", "hasBookWith"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "not":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("not"))
+			data, err := ec.unmarshalOBookFileWhereInput2ᚖlybbrioᚋinternalᚋentᚐBookFileWhereInput(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Not = data
+		case "and":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("and"))
+			data, err := ec.unmarshalOBookFileWhereInput2ᚕᚖlybbrioᚋinternalᚋentᚐBookFileWhereInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.And = data
+		case "or":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("or"))
+			data, err := ec.unmarshalOBookFileWhereInput2ᚕᚖlybbrioᚋinternalᚋentᚐBookFileWhereInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Or = data
+		case "id":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+			data, err := ec.unmarshalOID2ᚖlybbrioᚋinternalᚋentᚋschemaᚋksuidᚐID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ID = data
+		case "idNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("idNEQ"))
+			data, err := ec.unmarshalOID2ᚖlybbrioᚋinternalᚋentᚋschemaᚋksuidᚐID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.IDNEQ = data
+		case "idIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("idIn"))
+			data, err := ec.unmarshalOID2ᚕlybbrioᚋinternalᚋentᚋschemaᚋksuidᚐIDᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.IDIn = data
+		case "idNotIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("idNotIn"))
+			data, err := ec.unmarshalOID2ᚕlybbrioᚋinternalᚋentᚋschemaᚋksuidᚐIDᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.IDNotIn = data
+		case "idGT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("idGT"))
+			data, err := ec.unmarshalOID2ᚖlybbrioᚋinternalᚋentᚋschemaᚋksuidᚐID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.IDGT = data
+		case "idGTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("idGTE"))
+			data, err := ec.unmarshalOID2ᚖlybbrioᚋinternalᚋentᚋschemaᚋksuidᚐID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.IDGTE = data
+		case "idLT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("idLT"))
+			data, err := ec.unmarshalOID2ᚖlybbrioᚋinternalᚋentᚋschemaᚋksuidᚐID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.IDLT = data
+		case "idLTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("idLTE"))
+			data, err := ec.unmarshalOID2ᚖlybbrioᚋinternalᚋentᚋschemaᚋksuidᚐID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.IDLTE = data
+		case "path":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("path"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Path = data
+		case "pathNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pathNEQ"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PathNEQ = data
+		case "pathIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pathIn"))
+			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PathIn = data
+		case "pathNotIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pathNotIn"))
+			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PathNotIn = data
+		case "pathGT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pathGT"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PathGT = data
+		case "pathGTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pathGTE"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PathGTE = data
+		case "pathLT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pathLT"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PathLT = data
+		case "pathLTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pathLTE"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PathLTE = data
+		case "pathContains":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pathContains"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PathContains = data
+		case "pathHasPrefix":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pathHasPrefix"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PathHasPrefix = data
+		case "pathHasSuffix":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pathHasSuffix"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PathHasSuffix = data
+		case "pathEqualFold":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pathEqualFold"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PathEqualFold = data
+		case "pathContainsFold":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pathContainsFold"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PathContainsFold = data
+		case "size":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("size"))
+			data, err := ec.unmarshalOInt2ᚖint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Size = data
+		case "sizeNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("sizeNEQ"))
+			data, err := ec.unmarshalOInt2ᚖint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.SizeNEQ = data
+		case "sizeIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("sizeIn"))
+			data, err := ec.unmarshalOInt2ᚕint64ᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.SizeIn = data
+		case "sizeNotIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("sizeNotIn"))
+			data, err := ec.unmarshalOInt2ᚕint64ᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.SizeNotIn = data
+		case "sizeGT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("sizeGT"))
+			data, err := ec.unmarshalOInt2ᚖint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.SizeGT = data
+		case "sizeGTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("sizeGTE"))
+			data, err := ec.unmarshalOInt2ᚖint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.SizeGTE = data
+		case "sizeLT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("sizeLT"))
+			data, err := ec.unmarshalOInt2ᚖint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.SizeLT = data
+		case "sizeLTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("sizeLTE"))
+			data, err := ec.unmarshalOInt2ᚖint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.SizeLTE = data
+		case "format":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("format"))
+			data, err := ec.unmarshalOBookFileFormat2ᚖlybbrioᚋinternalᚋentᚋbookfileᚐFormat(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Format = data
+		case "formatNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("formatNEQ"))
+			data, err := ec.unmarshalOBookFileFormat2ᚖlybbrioᚋinternalᚋentᚋbookfileᚐFormat(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.FormatNEQ = data
+		case "formatIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("formatIn"))
+			data, err := ec.unmarshalOBookFileFormat2ᚕlybbrioᚋinternalᚋentᚋbookfileᚐFormatᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.FormatIn = data
+		case "formatNotIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("formatNotIn"))
+			data, err := ec.unmarshalOBookFileFormat2ᚕlybbrioᚋinternalᚋentᚋbookfileᚐFormatᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.FormatNotIn = data
+		case "hasBook":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasBook"))
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HasBook = data
+		case "hasBookWith":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasBookWith"))
+			data, err := ec.unmarshalOBookWhereInput2ᚕᚖlybbrioᚋinternalᚋentᚐBookWhereInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HasBookWith = data
 		}
 	}
 
@@ -20256,7 +20976,7 @@ func (ec *executionContext) unmarshalInputUserPermissionsWhereInput(ctx context.
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "userID", "userIDNEQ", "userIDIn", "userIDNotIn", "userIDGT", "userIDGTE", "userIDLT", "userIDLTE", "userIDContains", "userIDHasPrefix", "userIDHasSuffix", "userIDIsNil", "userIDNotNil", "userIDEqualFold", "userIDContainsFold", "canedit", "caneditNEQ", "admin", "adminNEQ", "cancreatepublic", "cancreatepublicNEQ", "hasUser", "hasUserWith"}
+	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "userID", "userIDNEQ", "userIDIn", "userIDNotIn", "userIDGT", "userIDGTE", "userIDLT", "userIDLTE", "userIDContains", "userIDHasPrefix", "userIDHasSuffix", "userIDIsNil", "userIDNotNil", "userIDEqualFold", "userIDContainsFold", "admin", "adminNEQ", "cancreatepublic", "cancreatepublicNEQ", "canedit", "caneditNEQ", "hasUser", "hasUserWith"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -20445,20 +21165,6 @@ func (ec *executionContext) unmarshalInputUserPermissionsWhereInput(ctx context.
 				return it, err
 			}
 			it.UserIDContainsFold = data
-		case "canedit":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("canedit"))
-			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.CanEdit = data
-		case "caneditNEQ":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("caneditNEQ"))
-			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.CanEditNEQ = data
 		case "admin":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("admin"))
 			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
@@ -20487,6 +21193,20 @@ func (ec *executionContext) unmarshalInputUserPermissionsWhereInput(ctx context.
 				return it, err
 			}
 			it.CanCreatePublicNEQ = data
+		case "canedit":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("canedit"))
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CanEdit = data
+		case "caneditNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("caneditNEQ"))
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CanEditNEQ = data
 		case "hasUser":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasUser"))
 			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
@@ -20832,6 +21552,11 @@ func (ec *executionContext) _Node(ctx context.Context, sel ast.SelectionSet, obj
 			return graphql.Null
 		}
 		return ec._Book(ctx, sel, obj)
+	case *ent.BookFile:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._BookFile(ctx, sel, obj)
 	case *ent.Identifier:
 		if obj == nil {
 			return graphql.Null
@@ -21421,6 +22146,96 @@ func (ec *executionContext) _BookEdge(ctx context.Context, sel ast.SelectionSet,
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var bookFileImplementors = []string{"BookFile", "Node"}
+
+func (ec *executionContext) _BookFile(ctx context.Context, sel ast.SelectionSet, obj *ent.BookFile) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, bookFileImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("BookFile")
+		case "id":
+			out.Values[i] = ec._BookFile_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "path":
+			out.Values[i] = ec._BookFile_path(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "size":
+			out.Values[i] = ec._BookFile_size(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "format":
+			out.Values[i] = ec._BookFile_format(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "book":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._BookFile_book(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -22214,6 +23029,28 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_books(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "bookFiles":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_bookFiles(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
@@ -23341,11 +24178,6 @@ func (ec *executionContext) _UserPermissions(ctx context.Context, sel ast.Select
 			}
 		case "userID":
 			out.Values[i] = ec._UserPermissions_userID(ctx, field, obj)
-		case "canedit":
-			out.Values[i] = ec._UserPermissions_canedit(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&out.Invalids, 1)
-			}
 		case "admin":
 			out.Values[i] = ec._UserPermissions_admin(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -23353,6 +24185,11 @@ func (ec *executionContext) _UserPermissions(ctx context.Context, sel ast.Select
 			}
 		case "cancreatepublic":
 			out.Values[i] = ec._UserPermissions_cancreatepublic(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "canedit":
+			out.Values[i] = ec._UserPermissions_canedit(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
 			}
@@ -23810,6 +24647,75 @@ func (ec *executionContext) marshalNBookConnection2ᚖlybbrioᚋinternalᚋent�
 		return graphql.Null
 	}
 	return ec._BookConnection(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNBookFile2ᚕᚖlybbrioᚋinternalᚋentᚐBookFileᚄ(ctx context.Context, sel ast.SelectionSet, v []*ent.BookFile) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNBookFile2ᚖlybbrioᚋinternalᚋentᚐBookFile(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNBookFile2ᚖlybbrioᚋinternalᚋentᚐBookFile(ctx context.Context, sel ast.SelectionSet, v *ent.BookFile) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._BookFile(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNBookFileFormat2lybbrioᚋinternalᚋentᚋbookfileᚐFormat(ctx context.Context, v interface{}) (bookfile.Format, error) {
+	var res bookfile.Format
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNBookFileFormat2lybbrioᚋinternalᚋentᚋbookfileᚐFormat(ctx context.Context, sel ast.SelectionSet, v bookfile.Format) graphql.Marshaler {
+	return v
+}
+
+func (ec *executionContext) unmarshalNBookFileWhereInput2ᚖlybbrioᚋinternalᚋentᚐBookFileWhereInput(ctx context.Context, v interface{}) (*ent.BookFileWhereInput, error) {
+	res, err := ec.unmarshalInputBookFileWhereInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalNBookOrder2ᚖlybbrioᚋinternalᚋentᚐBookOrder(ctx context.Context, v interface{}) (*ent.BookOrder, error) {
@@ -25084,6 +25990,117 @@ func (ec *executionContext) marshalOBookEdge2ᚖlybbrioᚋinternalᚋentᚐBookE
 		return graphql.Null
 	}
 	return ec._BookEdge(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalOBookFileFormat2ᚕlybbrioᚋinternalᚋentᚋbookfileᚐFormatᚄ(ctx context.Context, v interface{}) ([]bookfile.Format, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var vSlice []interface{}
+	if v != nil {
+		vSlice = graphql.CoerceList(v)
+	}
+	var err error
+	res := make([]bookfile.Format, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNBookFileFormat2lybbrioᚋinternalᚋentᚋbookfileᚐFormat(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) marshalOBookFileFormat2ᚕlybbrioᚋinternalᚋentᚋbookfileᚐFormatᚄ(ctx context.Context, sel ast.SelectionSet, v []bookfile.Format) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNBookFileFormat2lybbrioᚋinternalᚋentᚋbookfileᚐFormat(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) unmarshalOBookFileFormat2ᚖlybbrioᚋinternalᚋentᚋbookfileᚐFormat(ctx context.Context, v interface{}) (*bookfile.Format, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var res = new(bookfile.Format)
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOBookFileFormat2ᚖlybbrioᚋinternalᚋentᚋbookfileᚐFormat(ctx context.Context, sel ast.SelectionSet, v *bookfile.Format) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return v
+}
+
+func (ec *executionContext) unmarshalOBookFileWhereInput2ᚕᚖlybbrioᚋinternalᚋentᚐBookFileWhereInputᚄ(ctx context.Context, v interface{}) ([]*ent.BookFileWhereInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var vSlice []interface{}
+	if v != nil {
+		vSlice = graphql.CoerceList(v)
+	}
+	var err error
+	res := make([]*ent.BookFileWhereInput, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNBookFileWhereInput2ᚖlybbrioᚋinternalᚋentᚐBookFileWhereInput(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) unmarshalOBookFileWhereInput2ᚖlybbrioᚋinternalᚋentᚐBookFileWhereInput(ctx context.Context, v interface{}) (*ent.BookFileWhereInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputBookFileWhereInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalOBookOrder2ᚕᚖlybbrioᚋinternalᚋentᚐBookOrderᚄ(ctx context.Context, v interface{}) ([]*ent.BookOrder, error) {

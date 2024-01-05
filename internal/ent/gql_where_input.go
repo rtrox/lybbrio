@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"lybbrio/internal/ent/author"
 	"lybbrio/internal/ent/book"
+	"lybbrio/internal/ent/bookfile"
 	"lybbrio/internal/ent/identifier"
 	"lybbrio/internal/ent/language"
 	"lybbrio/internal/ent/predicate"
@@ -1067,6 +1068,258 @@ func (i *BookWhereInput) P() (predicate.Book, error) {
 		return predicates[0], nil
 	default:
 		return book.And(predicates...), nil
+	}
+}
+
+// BookFileWhereInput represents a where input for filtering BookFile queries.
+type BookFileWhereInput struct {
+	Predicates []predicate.BookFile  `json:"-"`
+	Not        *BookFileWhereInput   `json:"not,omitempty"`
+	Or         []*BookFileWhereInput `json:"or,omitempty"`
+	And        []*BookFileWhereInput `json:"and,omitempty"`
+
+	// "id" field predicates.
+	ID      *ksuid.ID  `json:"id,omitempty"`
+	IDNEQ   *ksuid.ID  `json:"idNEQ,omitempty"`
+	IDIn    []ksuid.ID `json:"idIn,omitempty"`
+	IDNotIn []ksuid.ID `json:"idNotIn,omitempty"`
+	IDGT    *ksuid.ID  `json:"idGT,omitempty"`
+	IDGTE   *ksuid.ID  `json:"idGTE,omitempty"`
+	IDLT    *ksuid.ID  `json:"idLT,omitempty"`
+	IDLTE   *ksuid.ID  `json:"idLTE,omitempty"`
+
+	// "path" field predicates.
+	Path             *string  `json:"path,omitempty"`
+	PathNEQ          *string  `json:"pathNEQ,omitempty"`
+	PathIn           []string `json:"pathIn,omitempty"`
+	PathNotIn        []string `json:"pathNotIn,omitempty"`
+	PathGT           *string  `json:"pathGT,omitempty"`
+	PathGTE          *string  `json:"pathGTE,omitempty"`
+	PathLT           *string  `json:"pathLT,omitempty"`
+	PathLTE          *string  `json:"pathLTE,omitempty"`
+	PathContains     *string  `json:"pathContains,omitempty"`
+	PathHasPrefix    *string  `json:"pathHasPrefix,omitempty"`
+	PathHasSuffix    *string  `json:"pathHasSuffix,omitempty"`
+	PathEqualFold    *string  `json:"pathEqualFold,omitempty"`
+	PathContainsFold *string  `json:"pathContainsFold,omitempty"`
+
+	// "size" field predicates.
+	Size      *int64  `json:"size,omitempty"`
+	SizeNEQ   *int64  `json:"sizeNEQ,omitempty"`
+	SizeIn    []int64 `json:"sizeIn,omitempty"`
+	SizeNotIn []int64 `json:"sizeNotIn,omitempty"`
+	SizeGT    *int64  `json:"sizeGT,omitempty"`
+	SizeGTE   *int64  `json:"sizeGTE,omitempty"`
+	SizeLT    *int64  `json:"sizeLT,omitempty"`
+	SizeLTE   *int64  `json:"sizeLTE,omitempty"`
+
+	// "format" field predicates.
+	Format      *bookfile.Format  `json:"format,omitempty"`
+	FormatNEQ   *bookfile.Format  `json:"formatNEQ,omitempty"`
+	FormatIn    []bookfile.Format `json:"formatIn,omitempty"`
+	FormatNotIn []bookfile.Format `json:"formatNotIn,omitempty"`
+
+	// "book" edge predicates.
+	HasBook     *bool             `json:"hasBook,omitempty"`
+	HasBookWith []*BookWhereInput `json:"hasBookWith,omitempty"`
+}
+
+// AddPredicates adds custom predicates to the where input to be used during the filtering phase.
+func (i *BookFileWhereInput) AddPredicates(predicates ...predicate.BookFile) {
+	i.Predicates = append(i.Predicates, predicates...)
+}
+
+// Filter applies the BookFileWhereInput filter on the BookFileQuery builder.
+func (i *BookFileWhereInput) Filter(q *BookFileQuery) (*BookFileQuery, error) {
+	if i == nil {
+		return q, nil
+	}
+	p, err := i.P()
+	if err != nil {
+		if err == ErrEmptyBookFileWhereInput {
+			return q, nil
+		}
+		return nil, err
+	}
+	return q.Where(p), nil
+}
+
+// ErrEmptyBookFileWhereInput is returned in case the BookFileWhereInput is empty.
+var ErrEmptyBookFileWhereInput = errors.New("ent: empty predicate BookFileWhereInput")
+
+// P returns a predicate for filtering bookfiles.
+// An error is returned if the input is empty or invalid.
+func (i *BookFileWhereInput) P() (predicate.BookFile, error) {
+	var predicates []predicate.BookFile
+	if i.Not != nil {
+		p, err := i.Not.P()
+		if err != nil {
+			return nil, fmt.Errorf("%w: field 'not'", err)
+		}
+		predicates = append(predicates, bookfile.Not(p))
+	}
+	switch n := len(i.Or); {
+	case n == 1:
+		p, err := i.Or[0].P()
+		if err != nil {
+			return nil, fmt.Errorf("%w: field 'or'", err)
+		}
+		predicates = append(predicates, p)
+	case n > 1:
+		or := make([]predicate.BookFile, 0, n)
+		for _, w := range i.Or {
+			p, err := w.P()
+			if err != nil {
+				return nil, fmt.Errorf("%w: field 'or'", err)
+			}
+			or = append(or, p)
+		}
+		predicates = append(predicates, bookfile.Or(or...))
+	}
+	switch n := len(i.And); {
+	case n == 1:
+		p, err := i.And[0].P()
+		if err != nil {
+			return nil, fmt.Errorf("%w: field 'and'", err)
+		}
+		predicates = append(predicates, p)
+	case n > 1:
+		and := make([]predicate.BookFile, 0, n)
+		for _, w := range i.And {
+			p, err := w.P()
+			if err != nil {
+				return nil, fmt.Errorf("%w: field 'and'", err)
+			}
+			and = append(and, p)
+		}
+		predicates = append(predicates, bookfile.And(and...))
+	}
+	predicates = append(predicates, i.Predicates...)
+	if i.ID != nil {
+		predicates = append(predicates, bookfile.IDEQ(*i.ID))
+	}
+	if i.IDNEQ != nil {
+		predicates = append(predicates, bookfile.IDNEQ(*i.IDNEQ))
+	}
+	if len(i.IDIn) > 0 {
+		predicates = append(predicates, bookfile.IDIn(i.IDIn...))
+	}
+	if len(i.IDNotIn) > 0 {
+		predicates = append(predicates, bookfile.IDNotIn(i.IDNotIn...))
+	}
+	if i.IDGT != nil {
+		predicates = append(predicates, bookfile.IDGT(*i.IDGT))
+	}
+	if i.IDGTE != nil {
+		predicates = append(predicates, bookfile.IDGTE(*i.IDGTE))
+	}
+	if i.IDLT != nil {
+		predicates = append(predicates, bookfile.IDLT(*i.IDLT))
+	}
+	if i.IDLTE != nil {
+		predicates = append(predicates, bookfile.IDLTE(*i.IDLTE))
+	}
+	if i.Path != nil {
+		predicates = append(predicates, bookfile.PathEQ(*i.Path))
+	}
+	if i.PathNEQ != nil {
+		predicates = append(predicates, bookfile.PathNEQ(*i.PathNEQ))
+	}
+	if len(i.PathIn) > 0 {
+		predicates = append(predicates, bookfile.PathIn(i.PathIn...))
+	}
+	if len(i.PathNotIn) > 0 {
+		predicates = append(predicates, bookfile.PathNotIn(i.PathNotIn...))
+	}
+	if i.PathGT != nil {
+		predicates = append(predicates, bookfile.PathGT(*i.PathGT))
+	}
+	if i.PathGTE != nil {
+		predicates = append(predicates, bookfile.PathGTE(*i.PathGTE))
+	}
+	if i.PathLT != nil {
+		predicates = append(predicates, bookfile.PathLT(*i.PathLT))
+	}
+	if i.PathLTE != nil {
+		predicates = append(predicates, bookfile.PathLTE(*i.PathLTE))
+	}
+	if i.PathContains != nil {
+		predicates = append(predicates, bookfile.PathContains(*i.PathContains))
+	}
+	if i.PathHasPrefix != nil {
+		predicates = append(predicates, bookfile.PathHasPrefix(*i.PathHasPrefix))
+	}
+	if i.PathHasSuffix != nil {
+		predicates = append(predicates, bookfile.PathHasSuffix(*i.PathHasSuffix))
+	}
+	if i.PathEqualFold != nil {
+		predicates = append(predicates, bookfile.PathEqualFold(*i.PathEqualFold))
+	}
+	if i.PathContainsFold != nil {
+		predicates = append(predicates, bookfile.PathContainsFold(*i.PathContainsFold))
+	}
+	if i.Size != nil {
+		predicates = append(predicates, bookfile.SizeEQ(*i.Size))
+	}
+	if i.SizeNEQ != nil {
+		predicates = append(predicates, bookfile.SizeNEQ(*i.SizeNEQ))
+	}
+	if len(i.SizeIn) > 0 {
+		predicates = append(predicates, bookfile.SizeIn(i.SizeIn...))
+	}
+	if len(i.SizeNotIn) > 0 {
+		predicates = append(predicates, bookfile.SizeNotIn(i.SizeNotIn...))
+	}
+	if i.SizeGT != nil {
+		predicates = append(predicates, bookfile.SizeGT(*i.SizeGT))
+	}
+	if i.SizeGTE != nil {
+		predicates = append(predicates, bookfile.SizeGTE(*i.SizeGTE))
+	}
+	if i.SizeLT != nil {
+		predicates = append(predicates, bookfile.SizeLT(*i.SizeLT))
+	}
+	if i.SizeLTE != nil {
+		predicates = append(predicates, bookfile.SizeLTE(*i.SizeLTE))
+	}
+	if i.Format != nil {
+		predicates = append(predicates, bookfile.FormatEQ(*i.Format))
+	}
+	if i.FormatNEQ != nil {
+		predicates = append(predicates, bookfile.FormatNEQ(*i.FormatNEQ))
+	}
+	if len(i.FormatIn) > 0 {
+		predicates = append(predicates, bookfile.FormatIn(i.FormatIn...))
+	}
+	if len(i.FormatNotIn) > 0 {
+		predicates = append(predicates, bookfile.FormatNotIn(i.FormatNotIn...))
+	}
+
+	if i.HasBook != nil {
+		p := bookfile.HasBook()
+		if !*i.HasBook {
+			p = bookfile.Not(p)
+		}
+		predicates = append(predicates, p)
+	}
+	if len(i.HasBookWith) > 0 {
+		with := make([]predicate.Book, 0, len(i.HasBookWith))
+		for _, w := range i.HasBookWith {
+			p, err := w.P()
+			if err != nil {
+				return nil, fmt.Errorf("%w: field 'HasBookWith'", err)
+			}
+			with = append(with, p)
+		}
+		predicates = append(predicates, bookfile.HasBookWith(with...))
+	}
+	switch len(predicates) {
+	case 0:
+		return nil, ErrEmptyBookFileWhereInput
+	case 1:
+		return predicates[0], nil
+	default:
+		return bookfile.And(predicates...), nil
 	}
 }
 
@@ -3588,10 +3841,6 @@ type UserPermissionsWhereInput struct {
 	UserIDEqualFold    *ksuid.ID  `json:"userIDEqualFold,omitempty"`
 	UserIDContainsFold *ksuid.ID  `json:"userIDContainsFold,omitempty"`
 
-	// "CanEdit" field predicates.
-	CanEdit    *bool `json:"canedit,omitempty"`
-	CanEditNEQ *bool `json:"caneditNEQ,omitempty"`
-
 	// "Admin" field predicates.
 	Admin    *bool `json:"admin,omitempty"`
 	AdminNEQ *bool `json:"adminNEQ,omitempty"`
@@ -3599,6 +3848,10 @@ type UserPermissionsWhereInput struct {
 	// "CanCreatePublic" field predicates.
 	CanCreatePublic    *bool `json:"cancreatepublic,omitempty"`
 	CanCreatePublicNEQ *bool `json:"cancreatepublicNEQ,omitempty"`
+
+	// "CanEdit" field predicates.
+	CanEdit    *bool `json:"canedit,omitempty"`
+	CanEditNEQ *bool `json:"caneditNEQ,omitempty"`
 
 	// "user" edge predicates.
 	HasUser     *bool             `json:"hasUser,omitempty"`
@@ -3745,12 +3998,6 @@ func (i *UserPermissionsWhereInput) P() (predicate.UserPermissions, error) {
 	if i.UserIDContainsFold != nil {
 		predicates = append(predicates, userpermissions.UserIDContainsFold(*i.UserIDContainsFold))
 	}
-	if i.CanEdit != nil {
-		predicates = append(predicates, userpermissions.CanEditEQ(*i.CanEdit))
-	}
-	if i.CanEditNEQ != nil {
-		predicates = append(predicates, userpermissions.CanEditNEQ(*i.CanEditNEQ))
-	}
 	if i.Admin != nil {
 		predicates = append(predicates, userpermissions.AdminEQ(*i.Admin))
 	}
@@ -3762,6 +4009,12 @@ func (i *UserPermissionsWhereInput) P() (predicate.UserPermissions, error) {
 	}
 	if i.CanCreatePublicNEQ != nil {
 		predicates = append(predicates, userpermissions.CanCreatePublicNEQ(*i.CanCreatePublicNEQ))
+	}
+	if i.CanEdit != nil {
+		predicates = append(predicates, userpermissions.CanEditEQ(*i.CanEdit))
+	}
+	if i.CanEditNEQ != nil {
+		predicates = append(predicates, userpermissions.CanEditNEQ(*i.CanEditNEQ))
 	}
 
 	if i.HasUser != nil {

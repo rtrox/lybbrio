@@ -1,6 +1,9 @@
 package calibre
 
-import "time"
+import (
+	"path"
+	"time"
+)
 
 type Author struct {
 	ID    int64  `json:"id"`
@@ -32,6 +35,10 @@ type Book struct {
 	Comments     Comment      `json:"comments" gorm:"foreignKey:book"`
 	Languages    []Language   `json:"languages,omitempty" gorm:"many2many:books_languages_link;foreignKey:id;joinForeignKey:book;References:ID;JoinReferences:lang_code"`
 	Series       []Series     `json:"series,omitempty" gorm:"many2many:books_series_link;foreignKey:id;joinForeignKey:book;References:ID;JoinReferences:series"`
+}
+
+func (b *Book) FullPath(c Calibre) string {
+	return path.Join(c.LibraryPath(), b.Path)
 }
 
 type Identifier struct {

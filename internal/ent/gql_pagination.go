@@ -9,6 +9,7 @@ import (
 	"io"
 	"lybbrio/internal/ent/author"
 	"lybbrio/internal/ent/book"
+	"lybbrio/internal/ent/bookfile"
 	"lybbrio/internal/ent/identifier"
 	"lybbrio/internal/ent/language"
 	"lybbrio/internal/ent/publisher"
@@ -854,6 +855,252 @@ func (b *Book) ToEdge(order *BookOrder) *BookEdge {
 	return &BookEdge{
 		Node:   b,
 		Cursor: order.Field.toCursor(b),
+	}
+}
+
+// BookFileEdge is the edge representation of BookFile.
+type BookFileEdge struct {
+	Node   *BookFile `json:"node"`
+	Cursor Cursor    `json:"cursor"`
+}
+
+// BookFileConnection is the connection containing edges to BookFile.
+type BookFileConnection struct {
+	Edges      []*BookFileEdge `json:"edges"`
+	PageInfo   PageInfo        `json:"pageInfo"`
+	TotalCount int             `json:"totalCount"`
+}
+
+func (c *BookFileConnection) build(nodes []*BookFile, pager *bookfilePager, after *Cursor, first *int, before *Cursor, last *int) {
+	c.PageInfo.HasNextPage = before != nil
+	c.PageInfo.HasPreviousPage = after != nil
+	if first != nil && *first+1 == len(nodes) {
+		c.PageInfo.HasNextPage = true
+		nodes = nodes[:len(nodes)-1]
+	} else if last != nil && *last+1 == len(nodes) {
+		c.PageInfo.HasPreviousPage = true
+		nodes = nodes[:len(nodes)-1]
+	}
+	var nodeAt func(int) *BookFile
+	if last != nil {
+		n := len(nodes) - 1
+		nodeAt = func(i int) *BookFile {
+			return nodes[n-i]
+		}
+	} else {
+		nodeAt = func(i int) *BookFile {
+			return nodes[i]
+		}
+	}
+	c.Edges = make([]*BookFileEdge, len(nodes))
+	for i := range nodes {
+		node := nodeAt(i)
+		c.Edges[i] = &BookFileEdge{
+			Node:   node,
+			Cursor: pager.toCursor(node),
+		}
+	}
+	if l := len(c.Edges); l > 0 {
+		c.PageInfo.StartCursor = &c.Edges[0].Cursor
+		c.PageInfo.EndCursor = &c.Edges[l-1].Cursor
+	}
+	if c.TotalCount == 0 {
+		c.TotalCount = len(nodes)
+	}
+}
+
+// BookFilePaginateOption enables pagination customization.
+type BookFilePaginateOption func(*bookfilePager) error
+
+// WithBookFileOrder configures pagination ordering.
+func WithBookFileOrder(order *BookFileOrder) BookFilePaginateOption {
+	if order == nil {
+		order = DefaultBookFileOrder
+	}
+	o := *order
+	return func(pager *bookfilePager) error {
+		if err := o.Direction.Validate(); err != nil {
+			return err
+		}
+		if o.Field == nil {
+			o.Field = DefaultBookFileOrder.Field
+		}
+		pager.order = &o
+		return nil
+	}
+}
+
+// WithBookFileFilter configures pagination filter.
+func WithBookFileFilter(filter func(*BookFileQuery) (*BookFileQuery, error)) BookFilePaginateOption {
+	return func(pager *bookfilePager) error {
+		if filter == nil {
+			return errors.New("BookFileQuery filter cannot be nil")
+		}
+		pager.filter = filter
+		return nil
+	}
+}
+
+type bookfilePager struct {
+	reverse bool
+	order   *BookFileOrder
+	filter  func(*BookFileQuery) (*BookFileQuery, error)
+}
+
+func newBookFilePager(opts []BookFilePaginateOption, reverse bool) (*bookfilePager, error) {
+	pager := &bookfilePager{reverse: reverse}
+	for _, opt := range opts {
+		if err := opt(pager); err != nil {
+			return nil, err
+		}
+	}
+	if pager.order == nil {
+		pager.order = DefaultBookFileOrder
+	}
+	return pager, nil
+}
+
+func (p *bookfilePager) applyFilter(query *BookFileQuery) (*BookFileQuery, error) {
+	if p.filter != nil {
+		return p.filter(query)
+	}
+	return query, nil
+}
+
+func (p *bookfilePager) toCursor(bf *BookFile) Cursor {
+	return p.order.Field.toCursor(bf)
+}
+
+func (p *bookfilePager) applyCursors(query *BookFileQuery, after, before *Cursor) (*BookFileQuery, error) {
+	direction := p.order.Direction
+	if p.reverse {
+		direction = direction.Reverse()
+	}
+	for _, predicate := range entgql.CursorsPredicate(after, before, DefaultBookFileOrder.Field.column, p.order.Field.column, direction) {
+		query = query.Where(predicate)
+	}
+	return query, nil
+}
+
+func (p *bookfilePager) applyOrder(query *BookFileQuery) *BookFileQuery {
+	direction := p.order.Direction
+	if p.reverse {
+		direction = direction.Reverse()
+	}
+	query = query.Order(p.order.Field.toTerm(direction.OrderTermOption()))
+	if p.order.Field != DefaultBookFileOrder.Field {
+		query = query.Order(DefaultBookFileOrder.Field.toTerm(direction.OrderTermOption()))
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(p.order.Field.column)
+	}
+	return query
+}
+
+func (p *bookfilePager) orderExpr(query *BookFileQuery) sql.Querier {
+	direction := p.order.Direction
+	if p.reverse {
+		direction = direction.Reverse()
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(p.order.Field.column)
+	}
+	return sql.ExprFunc(func(b *sql.Builder) {
+		b.Ident(p.order.Field.column).Pad().WriteString(string(direction))
+		if p.order.Field != DefaultBookFileOrder.Field {
+			b.Comma().Ident(DefaultBookFileOrder.Field.column).Pad().WriteString(string(direction))
+		}
+	})
+}
+
+// Paginate executes the query and returns a relay based cursor connection to BookFile.
+func (bf *BookFileQuery) Paginate(
+	ctx context.Context, after *Cursor, first *int,
+	before *Cursor, last *int, opts ...BookFilePaginateOption,
+) (*BookFileConnection, error) {
+	if err := validateFirstLast(first, last); err != nil {
+		return nil, err
+	}
+	pager, err := newBookFilePager(opts, last != nil)
+	if err != nil {
+		return nil, err
+	}
+	if bf, err = pager.applyFilter(bf); err != nil {
+		return nil, err
+	}
+	conn := &BookFileConnection{Edges: []*BookFileEdge{}}
+	ignoredEdges := !hasCollectedField(ctx, edgesField)
+	if hasCollectedField(ctx, totalCountField) || hasCollectedField(ctx, pageInfoField) {
+		hasPagination := after != nil || first != nil || before != nil || last != nil
+		if hasPagination || ignoredEdges {
+			if conn.TotalCount, err = bf.Clone().Count(ctx); err != nil {
+				return nil, err
+			}
+			conn.PageInfo.HasNextPage = first != nil && conn.TotalCount > 0
+			conn.PageInfo.HasPreviousPage = last != nil && conn.TotalCount > 0
+		}
+	}
+	if ignoredEdges || (first != nil && *first == 0) || (last != nil && *last == 0) {
+		return conn, nil
+	}
+	if bf, err = pager.applyCursors(bf, after, before); err != nil {
+		return nil, err
+	}
+	if limit := paginateLimit(first, last); limit != 0 {
+		bf.Limit(limit)
+	}
+	if field := collectedField(ctx, edgesField, nodeField); field != nil {
+		if err := bf.collectField(ctx, graphql.GetOperationContext(ctx), *field, []string{edgesField, nodeField}); err != nil {
+			return nil, err
+		}
+	}
+	bf = pager.applyOrder(bf)
+	nodes, err := bf.All(ctx)
+	if err != nil {
+		return nil, err
+	}
+	conn.build(nodes, pager, after, first, before, last)
+	return conn, nil
+}
+
+// BookFileOrderField defines the ordering field of BookFile.
+type BookFileOrderField struct {
+	// Value extracts the ordering value from the given BookFile.
+	Value    func(*BookFile) (ent.Value, error)
+	column   string // field or computed.
+	toTerm   func(...sql.OrderTermOption) bookfile.OrderOption
+	toCursor func(*BookFile) Cursor
+}
+
+// BookFileOrder defines the ordering of BookFile.
+type BookFileOrder struct {
+	Direction OrderDirection      `json:"direction"`
+	Field     *BookFileOrderField `json:"field"`
+}
+
+// DefaultBookFileOrder is the default ordering of BookFile.
+var DefaultBookFileOrder = &BookFileOrder{
+	Direction: entgql.OrderDirectionAsc,
+	Field: &BookFileOrderField{
+		Value: func(bf *BookFile) (ent.Value, error) {
+			return bf.ID, nil
+		},
+		column: bookfile.FieldID,
+		toTerm: bookfile.ByID,
+		toCursor: func(bf *BookFile) Cursor {
+			return Cursor{ID: bf.ID}
+		},
+	},
+}
+
+// ToEdge converts BookFile into BookFileEdge.
+func (bf *BookFile) ToEdge(order *BookFileOrder) *BookFileEdge {
+	if order == nil {
+		order = DefaultBookFileOrder
+	}
+	return &BookFileEdge{
+		Node:   bf,
+		Cursor: order.Field.toCursor(bf),
 	}
 }
 

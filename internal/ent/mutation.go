@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"lybbrio/internal/ent/author"
 	"lybbrio/internal/ent/book"
+	"lybbrio/internal/ent/bookfile"
 	"lybbrio/internal/ent/identifier"
 	"lybbrio/internal/ent/language"
 	"lybbrio/internal/ent/predicate"
@@ -38,6 +39,7 @@ const (
 	// Node types.
 	TypeAuthor          = "Author"
 	TypeBook            = "Book"
+	TypeBookFile        = "BookFile"
 	TypeIdentifier      = "Identifier"
 	TypeLanguage        = "Language"
 	TypePublisher       = "Publisher"
@@ -2182,6 +2184,549 @@ func (m *BookMutation) ResetEdge(name string) error {
 		return nil
 	}
 	return fmt.Errorf("unknown Book edge %s", name)
+}
+
+// BookFileMutation represents an operation that mutates the BookFile nodes in the graph.
+type BookFileMutation struct {
+	config
+	op            Op
+	typ           string
+	id            *ksuid.ID
+	_path         *string
+	size          *int64
+	addsize       *int64
+	format        *bookfile.Format
+	clearedFields map[string]struct{}
+	book          *ksuid.ID
+	clearedbook   bool
+	done          bool
+	oldValue      func(context.Context) (*BookFile, error)
+	predicates    []predicate.BookFile
+}
+
+var _ ent.Mutation = (*BookFileMutation)(nil)
+
+// bookfileOption allows management of the mutation configuration using functional options.
+type bookfileOption func(*BookFileMutation)
+
+// newBookFileMutation creates new mutation for the BookFile entity.
+func newBookFileMutation(c config, op Op, opts ...bookfileOption) *BookFileMutation {
+	m := &BookFileMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeBookFile,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withBookFileID sets the ID field of the mutation.
+func withBookFileID(id ksuid.ID) bookfileOption {
+	return func(m *BookFileMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *BookFile
+		)
+		m.oldValue = func(ctx context.Context) (*BookFile, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().BookFile.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withBookFile sets the old BookFile of the mutation.
+func withBookFile(node *BookFile) bookfileOption {
+	return func(m *BookFileMutation) {
+		m.oldValue = func(context.Context) (*BookFile, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m BookFileMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m BookFileMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of BookFile entities.
+func (m *BookFileMutation) SetID(id ksuid.ID) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *BookFileMutation) ID() (id ksuid.ID, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *BookFileMutation) IDs(ctx context.Context) ([]ksuid.ID, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []ksuid.ID{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().BookFile.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetPath sets the "path" field.
+func (m *BookFileMutation) SetPath(s string) {
+	m._path = &s
+}
+
+// Path returns the value of the "path" field in the mutation.
+func (m *BookFileMutation) Path() (r string, exists bool) {
+	v := m._path
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPath returns the old "path" field's value of the BookFile entity.
+// If the BookFile object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *BookFileMutation) OldPath(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldPath is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldPath requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPath: %w", err)
+	}
+	return oldValue.Path, nil
+}
+
+// ResetPath resets all changes to the "path" field.
+func (m *BookFileMutation) ResetPath() {
+	m._path = nil
+}
+
+// SetSize sets the "size" field.
+func (m *BookFileMutation) SetSize(i int64) {
+	m.size = &i
+	m.addsize = nil
+}
+
+// Size returns the value of the "size" field in the mutation.
+func (m *BookFileMutation) Size() (r int64, exists bool) {
+	v := m.size
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSize returns the old "size" field's value of the BookFile entity.
+// If the BookFile object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *BookFileMutation) OldSize(ctx context.Context) (v int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSize is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSize requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSize: %w", err)
+	}
+	return oldValue.Size, nil
+}
+
+// AddSize adds i to the "size" field.
+func (m *BookFileMutation) AddSize(i int64) {
+	if m.addsize != nil {
+		*m.addsize += i
+	} else {
+		m.addsize = &i
+	}
+}
+
+// AddedSize returns the value that was added to the "size" field in this mutation.
+func (m *BookFileMutation) AddedSize() (r int64, exists bool) {
+	v := m.addsize
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetSize resets all changes to the "size" field.
+func (m *BookFileMutation) ResetSize() {
+	m.size = nil
+	m.addsize = nil
+}
+
+// SetFormat sets the "format" field.
+func (m *BookFileMutation) SetFormat(b bookfile.Format) {
+	m.format = &b
+}
+
+// Format returns the value of the "format" field in the mutation.
+func (m *BookFileMutation) Format() (r bookfile.Format, exists bool) {
+	v := m.format
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldFormat returns the old "format" field's value of the BookFile entity.
+// If the BookFile object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *BookFileMutation) OldFormat(ctx context.Context) (v bookfile.Format, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldFormat is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldFormat requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldFormat: %w", err)
+	}
+	return oldValue.Format, nil
+}
+
+// ResetFormat resets all changes to the "format" field.
+func (m *BookFileMutation) ResetFormat() {
+	m.format = nil
+}
+
+// SetBookID sets the "book" edge to the Book entity by id.
+func (m *BookFileMutation) SetBookID(id ksuid.ID) {
+	m.book = &id
+}
+
+// ClearBook clears the "book" edge to the Book entity.
+func (m *BookFileMutation) ClearBook() {
+	m.clearedbook = true
+}
+
+// BookCleared reports if the "book" edge to the Book entity was cleared.
+func (m *BookFileMutation) BookCleared() bool {
+	return m.clearedbook
+}
+
+// BookID returns the "book" edge ID in the mutation.
+func (m *BookFileMutation) BookID() (id ksuid.ID, exists bool) {
+	if m.book != nil {
+		return *m.book, true
+	}
+	return
+}
+
+// BookIDs returns the "book" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// BookID instead. It exists only for internal usage by the builders.
+func (m *BookFileMutation) BookIDs() (ids []ksuid.ID) {
+	if id := m.book; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetBook resets all changes to the "book" edge.
+func (m *BookFileMutation) ResetBook() {
+	m.book = nil
+	m.clearedbook = false
+}
+
+// Where appends a list predicates to the BookFileMutation builder.
+func (m *BookFileMutation) Where(ps ...predicate.BookFile) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the BookFileMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *BookFileMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.BookFile, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *BookFileMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *BookFileMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (BookFile).
+func (m *BookFileMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *BookFileMutation) Fields() []string {
+	fields := make([]string, 0, 3)
+	if m._path != nil {
+		fields = append(fields, bookfile.FieldPath)
+	}
+	if m.size != nil {
+		fields = append(fields, bookfile.FieldSize)
+	}
+	if m.format != nil {
+		fields = append(fields, bookfile.FieldFormat)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *BookFileMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case bookfile.FieldPath:
+		return m.Path()
+	case bookfile.FieldSize:
+		return m.Size()
+	case bookfile.FieldFormat:
+		return m.Format()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *BookFileMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case bookfile.FieldPath:
+		return m.OldPath(ctx)
+	case bookfile.FieldSize:
+		return m.OldSize(ctx)
+	case bookfile.FieldFormat:
+		return m.OldFormat(ctx)
+	}
+	return nil, fmt.Errorf("unknown BookFile field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *BookFileMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case bookfile.FieldPath:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPath(v)
+		return nil
+	case bookfile.FieldSize:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSize(v)
+		return nil
+	case bookfile.FieldFormat:
+		v, ok := value.(bookfile.Format)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetFormat(v)
+		return nil
+	}
+	return fmt.Errorf("unknown BookFile field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *BookFileMutation) AddedFields() []string {
+	var fields []string
+	if m.addsize != nil {
+		fields = append(fields, bookfile.FieldSize)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *BookFileMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case bookfile.FieldSize:
+		return m.AddedSize()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *BookFileMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case bookfile.FieldSize:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddSize(v)
+		return nil
+	}
+	return fmt.Errorf("unknown BookFile numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *BookFileMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *BookFileMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *BookFileMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown BookFile nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *BookFileMutation) ResetField(name string) error {
+	switch name {
+	case bookfile.FieldPath:
+		m.ResetPath()
+		return nil
+	case bookfile.FieldSize:
+		m.ResetSize()
+		return nil
+	case bookfile.FieldFormat:
+		m.ResetFormat()
+		return nil
+	}
+	return fmt.Errorf("unknown BookFile field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *BookFileMutation) AddedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.book != nil {
+		edges = append(edges, bookfile.EdgeBook)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *BookFileMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case bookfile.EdgeBook:
+		if id := m.book; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *BookFileMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 1)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *BookFileMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *BookFileMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.clearedbook {
+		edges = append(edges, bookfile.EdgeBook)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *BookFileMutation) EdgeCleared(name string) bool {
+	switch name {
+	case bookfile.EdgeBook:
+		return m.clearedbook
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *BookFileMutation) ClearEdge(name string) error {
+	switch name {
+	case bookfile.EdgeBook:
+		m.ClearBook()
+		return nil
+	}
+	return fmt.Errorf("unknown BookFile unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *BookFileMutation) ResetEdge(name string) error {
+	switch name {
+	case bookfile.EdgeBook:
+		m.ResetBook()
+		return nil
+	}
+	return fmt.Errorf("unknown BookFile edge %s", name)
 }
 
 // IdentifierMutation represents an operation that mutates the Identifier nodes in the graph.
@@ -7145,9 +7690,9 @@ type UserPermissionsMutation struct {
 	op               Op
 	typ              string
 	id               *ksuid.ID
-	_CanEdit         *bool
 	_Admin           *bool
 	_CanCreatePublic *bool
+	_CanEdit         *bool
 	clearedFields    map[string]struct{}
 	user             *ksuid.ID
 	cleareduser      bool
@@ -7309,42 +7854,6 @@ func (m *UserPermissionsMutation) ResetUserID() {
 	delete(m.clearedFields, userpermissions.FieldUserID)
 }
 
-// SetCanEdit sets the "CanEdit" field.
-func (m *UserPermissionsMutation) SetCanEdit(b bool) {
-	m._CanEdit = &b
-}
-
-// CanEdit returns the value of the "CanEdit" field in the mutation.
-func (m *UserPermissionsMutation) CanEdit() (r bool, exists bool) {
-	v := m._CanEdit
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldCanEdit returns the old "CanEdit" field's value of the UserPermissions entity.
-// If the UserPermissions object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *UserPermissionsMutation) OldCanEdit(ctx context.Context) (v bool, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldCanEdit is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldCanEdit requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldCanEdit: %w", err)
-	}
-	return oldValue.CanEdit, nil
-}
-
-// ResetCanEdit resets all changes to the "CanEdit" field.
-func (m *UserPermissionsMutation) ResetCanEdit() {
-	m._CanEdit = nil
-}
-
 // SetAdmin sets the "Admin" field.
 func (m *UserPermissionsMutation) SetAdmin(b bool) {
 	m._Admin = &b
@@ -7417,6 +7926,42 @@ func (m *UserPermissionsMutation) ResetCanCreatePublic() {
 	m._CanCreatePublic = nil
 }
 
+// SetCanEdit sets the "CanEdit" field.
+func (m *UserPermissionsMutation) SetCanEdit(b bool) {
+	m._CanEdit = &b
+}
+
+// CanEdit returns the value of the "CanEdit" field in the mutation.
+func (m *UserPermissionsMutation) CanEdit() (r bool, exists bool) {
+	v := m._CanEdit
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCanEdit returns the old "CanEdit" field's value of the UserPermissions entity.
+// If the UserPermissions object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserPermissionsMutation) OldCanEdit(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCanEdit is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCanEdit requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCanEdit: %w", err)
+	}
+	return oldValue.CanEdit, nil
+}
+
+// ResetCanEdit resets all changes to the "CanEdit" field.
+func (m *UserPermissionsMutation) ResetCanEdit() {
+	m._CanEdit = nil
+}
+
 // ClearUser clears the "user" edge to the User entity.
 func (m *UserPermissionsMutation) ClearUser() {
 	m.cleareduser = true
@@ -7482,14 +8027,14 @@ func (m *UserPermissionsMutation) Fields() []string {
 	if m.user != nil {
 		fields = append(fields, userpermissions.FieldUserID)
 	}
-	if m._CanEdit != nil {
-		fields = append(fields, userpermissions.FieldCanEdit)
-	}
 	if m._Admin != nil {
 		fields = append(fields, userpermissions.FieldAdmin)
 	}
 	if m._CanCreatePublic != nil {
 		fields = append(fields, userpermissions.FieldCanCreatePublic)
+	}
+	if m._CanEdit != nil {
+		fields = append(fields, userpermissions.FieldCanEdit)
 	}
 	return fields
 }
@@ -7501,12 +8046,12 @@ func (m *UserPermissionsMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case userpermissions.FieldUserID:
 		return m.UserID()
-	case userpermissions.FieldCanEdit:
-		return m.CanEdit()
 	case userpermissions.FieldAdmin:
 		return m.Admin()
 	case userpermissions.FieldCanCreatePublic:
 		return m.CanCreatePublic()
+	case userpermissions.FieldCanEdit:
+		return m.CanEdit()
 	}
 	return nil, false
 }
@@ -7518,12 +8063,12 @@ func (m *UserPermissionsMutation) OldField(ctx context.Context, name string) (en
 	switch name {
 	case userpermissions.FieldUserID:
 		return m.OldUserID(ctx)
-	case userpermissions.FieldCanEdit:
-		return m.OldCanEdit(ctx)
 	case userpermissions.FieldAdmin:
 		return m.OldAdmin(ctx)
 	case userpermissions.FieldCanCreatePublic:
 		return m.OldCanCreatePublic(ctx)
+	case userpermissions.FieldCanEdit:
+		return m.OldCanEdit(ctx)
 	}
 	return nil, fmt.Errorf("unknown UserPermissions field %s", name)
 }
@@ -7540,13 +8085,6 @@ func (m *UserPermissionsMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetUserID(v)
 		return nil
-	case userpermissions.FieldCanEdit:
-		v, ok := value.(bool)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetCanEdit(v)
-		return nil
 	case userpermissions.FieldAdmin:
 		v, ok := value.(bool)
 		if !ok {
@@ -7560,6 +8098,13 @@ func (m *UserPermissionsMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetCanCreatePublic(v)
+		return nil
+	case userpermissions.FieldCanEdit:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCanEdit(v)
 		return nil
 	}
 	return fmt.Errorf("unknown UserPermissions field %s", name)
@@ -7622,14 +8167,14 @@ func (m *UserPermissionsMutation) ResetField(name string) error {
 	case userpermissions.FieldUserID:
 		m.ResetUserID()
 		return nil
-	case userpermissions.FieldCanEdit:
-		m.ResetCanEdit()
-		return nil
 	case userpermissions.FieldAdmin:
 		m.ResetAdmin()
 		return nil
 	case userpermissions.FieldCanCreatePublic:
 		m.ResetCanCreatePublic()
+		return nil
+	case userpermissions.FieldCanEdit:
+		m.ResetCanEdit()
 		return nil
 	}
 	return fmt.Errorf("unknown UserPermissions field %s", name)

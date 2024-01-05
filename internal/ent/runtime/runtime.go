@@ -6,6 +6,7 @@ import (
 	"context"
 	"lybbrio/internal/ent/author"
 	"lybbrio/internal/ent/book"
+	"lybbrio/internal/ent/bookfile"
 	"lybbrio/internal/ent/identifier"
 	"lybbrio/internal/ent/language"
 	"lybbrio/internal/ent/publisher"
@@ -75,6 +76,32 @@ func init() {
 	bookDescID := bookMixinFields2[0].Descriptor()
 	// book.DefaultID holds the default value on creation for the id field.
 	book.DefaultID = bookDescID.Default.(func() ksuid.ID)
+	bookfileMixin := schema.BookFile{}.Mixin()
+	bookfile.Policy = privacy.NewPolicies(bookfileMixin[0], schema.BookFile{})
+	bookfile.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+			if err := bookfile.Policy.EvalMutation(ctx, m); err != nil {
+				return nil, err
+			}
+			return next.Mutate(ctx, m)
+		})
+	}
+	bookfileMixinFields1 := bookfileMixin[1].Fields()
+	_ = bookfileMixinFields1
+	bookfileFields := schema.BookFile{}.Fields()
+	_ = bookfileFields
+	// bookfileDescPath is the schema descriptor for path field.
+	bookfileDescPath := bookfileFields[0].Descriptor()
+	// bookfile.PathValidator is a validator for the "path" field. It is called by the builders before save.
+	bookfile.PathValidator = bookfileDescPath.Validators[0].(func(string) error)
+	// bookfileDescSize is the schema descriptor for size field.
+	bookfileDescSize := bookfileFields[1].Descriptor()
+	// bookfile.SizeValidator is a validator for the "size" field. It is called by the builders before save.
+	bookfile.SizeValidator = bookfileDescSize.Validators[0].(func(int64) error)
+	// bookfileDescID is the schema descriptor for id field.
+	bookfileDescID := bookfileMixinFields1[0].Descriptor()
+	// bookfile.DefaultID holds the default value on creation for the id field.
+	bookfile.DefaultID = bookfileDescID.Default.(func() ksuid.ID)
 	identifierMixin := schema.Identifier{}.Mixin()
 	identifier.Policy = privacy.NewPolicies(identifierMixin[0], schema.Identifier{})
 	identifier.Hooks[0] = func(next ent.Mutator) ent.Mutator {
@@ -299,18 +326,18 @@ func init() {
 	_ = userpermissionsMixinFields1
 	userpermissionsFields := schema.UserPermissions{}.Fields()
 	_ = userpermissionsFields
-	// userpermissionsDescCanEdit is the schema descriptor for CanEdit field.
-	userpermissionsDescCanEdit := userpermissionsFields[1].Descriptor()
-	// userpermissions.DefaultCanEdit holds the default value on creation for the CanEdit field.
-	userpermissions.DefaultCanEdit = userpermissionsDescCanEdit.Default.(bool)
 	// userpermissionsDescAdmin is the schema descriptor for Admin field.
-	userpermissionsDescAdmin := userpermissionsFields[2].Descriptor()
+	userpermissionsDescAdmin := userpermissionsFields[1].Descriptor()
 	// userpermissions.DefaultAdmin holds the default value on creation for the Admin field.
 	userpermissions.DefaultAdmin = userpermissionsDescAdmin.Default.(bool)
 	// userpermissionsDescCanCreatePublic is the schema descriptor for CanCreatePublic field.
-	userpermissionsDescCanCreatePublic := userpermissionsFields[3].Descriptor()
+	userpermissionsDescCanCreatePublic := userpermissionsFields[2].Descriptor()
 	// userpermissions.DefaultCanCreatePublic holds the default value on creation for the CanCreatePublic field.
 	userpermissions.DefaultCanCreatePublic = userpermissionsDescCanCreatePublic.Default.(bool)
+	// userpermissionsDescCanEdit is the schema descriptor for CanEdit field.
+	userpermissionsDescCanEdit := userpermissionsFields[3].Descriptor()
+	// userpermissions.DefaultCanEdit holds the default value on creation for the CanEdit field.
+	userpermissions.DefaultCanEdit = userpermissionsDescCanEdit.Default.(bool)
 	// userpermissionsDescID is the schema descriptor for id field.
 	userpermissionsDescID := userpermissionsMixinFields1[0].Descriptor()
 	// userpermissions.DefaultID holds the default value on creation for the id field.

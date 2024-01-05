@@ -14,6 +14,7 @@ import (
 
 	"lybbrio/internal/ent/author"
 	"lybbrio/internal/ent/book"
+	"lybbrio/internal/ent/bookfile"
 	"lybbrio/internal/ent/identifier"
 	"lybbrio/internal/ent/language"
 	"lybbrio/internal/ent/publisher"
@@ -39,6 +40,8 @@ type Client struct {
 	Author *AuthorClient
 	// Book is the client for interacting with the Book builders.
 	Book *BookClient
+	// BookFile is the client for interacting with the BookFile builders.
+	BookFile *BookFileClient
 	// Identifier is the client for interacting with the Identifier builders.
 	Identifier *IdentifierClient
 	// Language is the client for interacting with the Language builders.
@@ -70,6 +73,7 @@ func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
 	c.Author = NewAuthorClient(c.config)
 	c.Book = NewBookClient(c.config)
+	c.BookFile = NewBookFileClient(c.config)
 	c.Identifier = NewIdentifierClient(c.config)
 	c.Language = NewLanguageClient(c.config)
 	c.Publisher = NewPublisherClient(c.config)
@@ -173,6 +177,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		config:          cfg,
 		Author:          NewAuthorClient(cfg),
 		Book:            NewBookClient(cfg),
+		BookFile:        NewBookFileClient(cfg),
 		Identifier:      NewIdentifierClient(cfg),
 		Language:        NewLanguageClient(cfg),
 		Publisher:       NewPublisherClient(cfg),
@@ -203,6 +208,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		config:          cfg,
 		Author:          NewAuthorClient(cfg),
 		Book:            NewBookClient(cfg),
+		BookFile:        NewBookFileClient(cfg),
 		Identifier:      NewIdentifierClient(cfg),
 		Language:        NewLanguageClient(cfg),
 		Publisher:       NewPublisherClient(cfg),
@@ -241,8 +247,8 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
-		c.Author, c.Book, c.Identifier, c.Language, c.Publisher, c.Series, c.Shelf,
-		c.Tag, c.Task, c.User, c.UserPermissions,
+		c.Author, c.Book, c.BookFile, c.Identifier, c.Language, c.Publisher, c.Series,
+		c.Shelf, c.Tag, c.Task, c.User, c.UserPermissions,
 	} {
 		n.Use(hooks...)
 	}
@@ -252,8 +258,8 @@ func (c *Client) Use(hooks ...Hook) {
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
-		c.Author, c.Book, c.Identifier, c.Language, c.Publisher, c.Series, c.Shelf,
-		c.Tag, c.Task, c.User, c.UserPermissions,
+		c.Author, c.Book, c.BookFile, c.Identifier, c.Language, c.Publisher, c.Series,
+		c.Shelf, c.Tag, c.Task, c.User, c.UserPermissions,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -266,6 +272,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.Author.mutate(ctx, m)
 	case *BookMutation:
 		return c.Book.mutate(ctx, m)
+	case *BookFileMutation:
+		return c.BookFile.mutate(ctx, m)
 	case *IdentifierMutation:
 		return c.Identifier.mutate(ctx, m)
 	case *LanguageMutation:
@@ -682,6 +690,156 @@ func (c *BookClient) mutate(ctx context.Context, m *BookMutation) (Value, error)
 		return (&BookDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown Book mutation op: %q", m.Op())
+	}
+}
+
+// BookFileClient is a client for the BookFile schema.
+type BookFileClient struct {
+	config
+}
+
+// NewBookFileClient returns a client for the BookFile from the given config.
+func NewBookFileClient(c config) *BookFileClient {
+	return &BookFileClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `bookfile.Hooks(f(g(h())))`.
+func (c *BookFileClient) Use(hooks ...Hook) {
+	c.hooks.BookFile = append(c.hooks.BookFile, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `bookfile.Intercept(f(g(h())))`.
+func (c *BookFileClient) Intercept(interceptors ...Interceptor) {
+	c.inters.BookFile = append(c.inters.BookFile, interceptors...)
+}
+
+// Create returns a builder for creating a BookFile entity.
+func (c *BookFileClient) Create() *BookFileCreate {
+	mutation := newBookFileMutation(c.config, OpCreate)
+	return &BookFileCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of BookFile entities.
+func (c *BookFileClient) CreateBulk(builders ...*BookFileCreate) *BookFileCreateBulk {
+	return &BookFileCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *BookFileClient) MapCreateBulk(slice any, setFunc func(*BookFileCreate, int)) *BookFileCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &BookFileCreateBulk{err: fmt.Errorf("calling to BookFileClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*BookFileCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &BookFileCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for BookFile.
+func (c *BookFileClient) Update() *BookFileUpdate {
+	mutation := newBookFileMutation(c.config, OpUpdate)
+	return &BookFileUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *BookFileClient) UpdateOne(bf *BookFile) *BookFileUpdateOne {
+	mutation := newBookFileMutation(c.config, OpUpdateOne, withBookFile(bf))
+	return &BookFileUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *BookFileClient) UpdateOneID(id ksuid.ID) *BookFileUpdateOne {
+	mutation := newBookFileMutation(c.config, OpUpdateOne, withBookFileID(id))
+	return &BookFileUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for BookFile.
+func (c *BookFileClient) Delete() *BookFileDelete {
+	mutation := newBookFileMutation(c.config, OpDelete)
+	return &BookFileDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *BookFileClient) DeleteOne(bf *BookFile) *BookFileDeleteOne {
+	return c.DeleteOneID(bf.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *BookFileClient) DeleteOneID(id ksuid.ID) *BookFileDeleteOne {
+	builder := c.Delete().Where(bookfile.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &BookFileDeleteOne{builder}
+}
+
+// Query returns a query builder for BookFile.
+func (c *BookFileClient) Query() *BookFileQuery {
+	return &BookFileQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeBookFile},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a BookFile entity by its id.
+func (c *BookFileClient) Get(ctx context.Context, id ksuid.ID) (*BookFile, error) {
+	return c.Query().Where(bookfile.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *BookFileClient) GetX(ctx context.Context, id ksuid.ID) *BookFile {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryBook queries the book edge of a BookFile.
+func (c *BookFileClient) QueryBook(bf *BookFile) *BookQuery {
+	query := (&BookClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := bf.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(bookfile.Table, bookfile.FieldID, id),
+			sqlgraph.To(book.Table, book.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, bookfile.BookTable, bookfile.BookColumn),
+		)
+		fromV = sqlgraph.Neighbors(bf.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *BookFileClient) Hooks() []Hook {
+	hooks := c.hooks.BookFile
+	return append(hooks[:len(hooks):len(hooks)], bookfile.Hooks[:]...)
+}
+
+// Interceptors returns the client interceptors.
+func (c *BookFileClient) Interceptors() []Interceptor {
+	return c.inters.BookFile
+}
+
+func (c *BookFileClient) mutate(ctx context.Context, m *BookFileMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&BookFileCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&BookFileUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&BookFileUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&BookFileDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown BookFile mutation op: %q", m.Op())
 	}
 }
 
@@ -2070,11 +2228,11 @@ func (c *UserPermissionsClient) mutate(ctx context.Context, m *UserPermissionsMu
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		Author, Book, Identifier, Language, Publisher, Series, Shelf, Tag, Task, User,
-		UserPermissions []ent.Hook
+		Author, Book, BookFile, Identifier, Language, Publisher, Series, Shelf, Tag,
+		Task, User, UserPermissions []ent.Hook
 	}
 	inters struct {
-		Author, Book, Identifier, Language, Publisher, Series, Shelf, Tag, Task, User,
-		UserPermissions []ent.Interceptor
+		Author, Book, BookFile, Identifier, Language, Publisher, Series, Shelf, Tag,
+		Task, User, UserPermissions []ent.Interceptor
 	}
 )

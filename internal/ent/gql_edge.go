@@ -113,6 +113,14 @@ func (b *Book) Shelf(ctx context.Context) (result []*Shelf, err error) {
 	return result, err
 }
 
+func (bf *BookFile) Book(ctx context.Context) (*Book, error) {
+	result, err := bf.Edges.BookOrErr()
+	if IsNotLoaded(err) {
+		result, err = bf.QueryBook().Only(ctx)
+	}
+	return result, err
+}
+
 func (i *Identifier) Book(ctx context.Context) (*Book, error) {
 	result, err := i.Edges.BookOrErr()
 	if IsNotLoaded(err) {

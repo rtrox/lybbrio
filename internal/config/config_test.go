@@ -29,7 +29,7 @@ func Test_LoadConfig_Defaults(t *testing.T) {
 	require.Equal(defaultSettings["interface"], config.Interface)
 	require.Equal(defaultSettings["go-collector"], config.GoCollector)
 	require.Equal(defaultSettings["process-collector"], config.ProcessCollector)
-	require.Equal(defaultSettings["calibre-db-path"], config.CalibreDBPath)
+	require.Equal(defaultSettings["calibre-library-path"], config.CalibreLibraryPath)
 
 	db := defaultSettings["db"].(map[string]interface{})
 	require.Equal(db["driver"], config.DB.Driver)
@@ -67,7 +67,7 @@ func Test_LoadConfig_Flags(t *testing.T) {
 	flags.Set("process-collector", "false")
 	flags.Set("port", "7070")
 	flags.Set("interface", "192.0.2.1") // "TEST-NET" in RFC 5737
-	flags.Set("calibre-db-path", "/tmp/calibre.db")
+	flags.Set("calibre-library-path", "/tmp/")
 	flags.Set("db.driver", "postgres")
 	flags.Set("db.dsn", "postgres://user:pass@localhost:5432/dbname?sslmode=disable")
 	flags.Set("db.max-idle-conns", "20")
@@ -90,7 +90,7 @@ func Test_LoadConfig_Flags(t *testing.T) {
 	require.False(config.GoCollector)
 	require.False(config.ProcessCollector)
 	require.Equal(7070, config.Port)
-	require.Equal("/tmp/calibre.db", config.CalibreDBPath)
+	require.Equal("/tmp/", config.CalibreLibraryPath)
 	require.Equal("postgres", config.DB.Driver)
 	require.Equal("postgres://user:pass@localhost:5432/dbname?sslmode=disable", config.DB.DSN)
 	require.Equal(20, config.DB.MaxIdleConns)
@@ -116,7 +116,7 @@ func Test_LoadConfig_Env(t *testing.T) {
 	t.Setenv("PROCESS_COLLECTOR", "false")
 	t.Setenv("PORT", "7070")
 	t.Setenv("INTERFACE", "192.0.2.1") // "TEST-NET" in RFC 5737
-	t.Setenv("CALIBRE_DB_PATH", "/tmp/calibre.db")
+	t.Setenv("CALIBRE_LIBRARY_PATH", "/tmp/")
 	t.Setenv("DB__DRIVER", "postgres")
 	t.Setenv("DB__DSN", "postgres://user:pass@localhost:5432/dbname?sslmode=disable")
 	t.Setenv("DB__MAX_IDLE_CONNS", "20")
@@ -139,7 +139,7 @@ func Test_LoadConfig_Env(t *testing.T) {
 	require.False(config.GoCollector)
 	require.False(config.ProcessCollector)
 	require.Equal(7070, config.Port)
-	require.Equal("/tmp/calibre.db", config.CalibreDBPath)
+	require.Equal("/tmp/", config.CalibreLibraryPath)
 	require.Equal("postgres", config.DB.Driver)
 	require.Equal("postgres://user:pass@localhost:5432/dbname?sslmode=disable", config.DB.DSN)
 	require.Equal(20, config.DB.MaxIdleConns)
@@ -194,7 +194,7 @@ func Test_Validate(t *testing.T) {
 				Interface:               "192.0.2.1", // "TEST-NET" in RFC 5737
 				GoCollector:             false,
 				ProcessCollector:        false,
-				CalibreDBPath:           "/tmp/calibre.db",
+				CalibreLibraryPath:      "/tmp/",
 				DB:                      DatabaseConfig{Driver: "sqlite3", DSN: "file::memory:?cache=shared"},
 				Task:                    TaskConfig{Workers: 10, QueueLength: 100, Cadence: 5 * time.Second},
 				JWTSecret:               "asdf",
@@ -214,7 +214,7 @@ func Test_Validate(t *testing.T) {
 				Interface:               "192.0.2.1", // "TEST-NET" in RFC 5737
 				GoCollector:             false,
 				ProcessCollector:        false,
-				CalibreDBPath:           "/tmp/calibre.db",
+				CalibreLibraryPath:      "/tmp/",
 				DB:                      DatabaseConfig{Driver: "sqlite3", DSN: "file::memory:?cache=shared"},
 				Task:                    TaskConfig{Workers: 10, QueueLength: 100, Cadence: 5 * time.Second},
 				JWTSecret:               "asdf",
@@ -234,7 +234,7 @@ func Test_Validate(t *testing.T) {
 				Interface:               "192.0.2.1", // "TEST-NET" in RFC 5737
 				GoCollector:             false,
 				ProcessCollector:        false,
-				CalibreDBPath:           "/tmp/calibre.db",
+				CalibreLibraryPath:      "/tmp/",
 				DB:                      DatabaseConfig{Driver: "sqlite3", DSN: "file::memory:?cache=shared"},
 				Task:                    TaskConfig{Workers: 10, QueueLength: 100, Cadence: 5 * time.Second},
 				JWTSecret:               "asdf",
@@ -254,7 +254,7 @@ func Test_Validate(t *testing.T) {
 				Interface:               "192.0.2.1", // "TEST-NET" in RFC 5737
 				GoCollector:             false,
 				ProcessCollector:        false,
-				CalibreDBPath:           "/tmp/calibre.db",
+				CalibreLibraryPath:      "/tmp/",
 				DB:                      DatabaseConfig{Driver: "invalid", DSN: "file::memory:?cache=shared"},
 				Task:                    TaskConfig{Workers: 10, QueueLength: 100, Cadence: 5 * time.Second},
 				JWTSecret:               "asdf",
@@ -274,7 +274,7 @@ func Test_Validate(t *testing.T) {
 				Interface:               "192.0.2.1", // "TEST-NET" in RFC 5737
 				GoCollector:             false,
 				ProcessCollector:        false,
-				CalibreDBPath:           "/tmp/calibre.db",
+				CalibreLibraryPath:      "/tmp/",
 				DB:                      DatabaseConfig{Driver: "invalid", DSN: ""},
 				Task:                    TaskConfig{Workers: 10, QueueLength: 100, Cadence: 5 * time.Second},
 				JWTSecret:               "asdf",
@@ -294,7 +294,7 @@ func Test_Validate(t *testing.T) {
 				Interface:               "192.0.2.1", // "TEST-NET" in RFC 5737
 				GoCollector:             false,
 				ProcessCollector:        false,
-				CalibreDBPath:           "/tmp/calibre.db",
+				CalibreLibraryPath:      "/tmp/",
 				DB:                      DatabaseConfig{Driver: "invalid", DSN: ""},
 				Task:                    TaskConfig{Workers: -1, QueueLength: 100, Cadence: 5 * time.Second},
 				JWTSecret:               "asdf",

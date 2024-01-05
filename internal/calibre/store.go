@@ -2,6 +2,7 @@ package calibre
 
 import (
 	"context"
+	"path"
 
 	gormLogger "github.com/mpalmer/gorm-zerolog"
 	"github.com/rs/zerolog"
@@ -11,6 +12,8 @@ import (
 )
 
 type Calibre interface {
+	LibraryPath() string
+
 	GetAuthor(ctx context.Context, id int64) (*Author, error)
 	GetAuthors(ctx context.Context) ([]*Author, error)
 	GetAuthorBooks(ctx context.Context, id int64) ([]*Book, error)
@@ -40,16 +43,22 @@ type Calibre interface {
 }
 
 type CalibreSQLite struct {
-	db *gorm.DB
+	db          *gorm.DB
+	libraryPath string
 }
 
-func NewCalibreSQLite(dbPath string) (*CalibreSQLite, error) {
+func NewCalibreSQLite(libraryPath string) (*CalibreSQLite, error) {
+	dbPath := path.Join(libraryPath, "metadata.db")
 	db, err := gorm.Open(sqlite.Open(dbPath), &gorm.Config{})
 
 	if err != nil {
 		return nil, err
 	}
 	return &CalibreSQLite{db: db}, nil
+}
+
+func (c *CalibreSQLite) LibraryPath() string {
+	return c.libraryPath
 }
 
 func (c *CalibreSQLite) Close() error {

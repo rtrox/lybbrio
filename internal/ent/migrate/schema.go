@@ -84,6 +84,28 @@ var (
 			},
 		},
 	}
+	// BookFilesColumns holds the columns for the "book_files" table.
+	BookFilesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeString},
+		{Name: "path", Type: field.TypeString, Size: 2147483647},
+		{Name: "size", Type: field.TypeInt64},
+		{Name: "format", Type: field.TypeEnum, Enums: []string{"AZW3", "EPUB", "KEPUB", "PDF", "CBC", "CBR", "CB7", "CBZ", "CBT"}},
+		{Name: "book_file_book", Type: field.TypeString},
+	}
+	// BookFilesTable holds the schema information for the "book_files" table.
+	BookFilesTable = &schema.Table{
+		Name:       "book_files",
+		Columns:    BookFilesColumns,
+		PrimaryKey: []*schema.Column{BookFilesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "book_files_books_book",
+				Columns:    []*schema.Column{BookFilesColumns[4]},
+				RefColumns: []*schema.Column{BooksColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+	}
 	// IdentifiersColumns holds the columns for the "identifiers" table.
 	IdentifiersColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeString},
@@ -299,9 +321,9 @@ var (
 	// UserPermissionsColumns holds the columns for the "user_permissions" table.
 	UserPermissionsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeString},
-		{Name: "can_edit", Type: field.TypeBool, Default: false},
 		{Name: "admin", Type: field.TypeBool, Default: false},
 		{Name: "can_create_public", Type: field.TypeBool, Default: false},
+		{Name: "can_edit", Type: field.TypeBool, Default: false},
 		{Name: "user_id", Type: field.TypeString, Unique: true, Nullable: true},
 	}
 	// UserPermissionsTable holds the schema information for the "user_permissions" table.
@@ -472,6 +494,7 @@ var (
 	Tables = []*schema.Table{
 		AuthorsTable,
 		BooksTable,
+		BookFilesTable,
 		IdentifiersTable,
 		LanguagesTable,
 		PublishersTable,
@@ -491,6 +514,7 @@ var (
 )
 
 func init() {
+	BookFilesTable.ForeignKeys[0].RefTable = BooksTable
 	IdentifiersTable.ForeignKeys[0].RefTable = BooksTable
 	ShelvesTable.ForeignKeys[0].RefTable = UsersTable
 	TasksTable.ForeignKeys[0].RefTable = UsersTable

@@ -17,12 +17,12 @@ const (
 	FieldID = "id"
 	// FieldUserID holds the string denoting the user_id field in the database.
 	FieldUserID = "user_id"
-	// FieldCanEdit holds the string denoting the canedit field in the database.
-	FieldCanEdit = "can_edit"
 	// FieldAdmin holds the string denoting the admin field in the database.
 	FieldAdmin = "admin"
 	// FieldCanCreatePublic holds the string denoting the cancreatepublic field in the database.
 	FieldCanCreatePublic = "can_create_public"
+	// FieldCanEdit holds the string denoting the canedit field in the database.
+	FieldCanEdit = "can_edit"
 	// EdgeUser holds the string denoting the user edge name in mutations.
 	EdgeUser = "user"
 	// Table holds the table name of the userpermissions in the database.
@@ -40,9 +40,9 @@ const (
 var Columns = []string{
 	FieldID,
 	FieldUserID,
-	FieldCanEdit,
 	FieldAdmin,
 	FieldCanCreatePublic,
+	FieldCanEdit,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -63,12 +63,12 @@ func ValidColumn(column string) bool {
 var (
 	Hooks  [1]ent.Hook
 	Policy ent.Policy
-	// DefaultCanEdit holds the default value on creation for the "CanEdit" field.
-	DefaultCanEdit bool
 	// DefaultAdmin holds the default value on creation for the "Admin" field.
 	DefaultAdmin bool
 	// DefaultCanCreatePublic holds the default value on creation for the "CanCreatePublic" field.
 	DefaultCanCreatePublic bool
+	// DefaultCanEdit holds the default value on creation for the "CanEdit" field.
+	DefaultCanEdit bool
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() ksuid.ID
 )
@@ -86,11 +86,6 @@ func ByUserID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldUserID, opts...).ToFunc()
 }
 
-// ByCanEdit orders the results by the CanEdit field.
-func ByCanEdit(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldCanEdit, opts...).ToFunc()
-}
-
 // ByAdmin orders the results by the Admin field.
 func ByAdmin(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldAdmin, opts...).ToFunc()
@@ -99,6 +94,11 @@ func ByAdmin(opts ...sql.OrderTermOption) OrderOption {
 // ByCanCreatePublic orders the results by the CanCreatePublic field.
 func ByCanCreatePublic(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldCanCreatePublic, opts...).ToFunc()
+}
+
+// ByCanEdit orders the results by the CanEdit field.
+func ByCanEdit(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldCanEdit, opts...).ToFunc()
 }
 
 // ByUserField orders the results by user field.

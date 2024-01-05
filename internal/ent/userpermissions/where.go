@@ -61,11 +61,6 @@ func UserID(v ksuid.ID) predicate.UserPermissions {
 	return predicate.UserPermissions(sql.FieldEQ(FieldUserID, vc))
 }
 
-// CanEdit applies equality check predicate on the "CanEdit" field. It's identical to CanEditEQ.
-func CanEdit(v bool) predicate.UserPermissions {
-	return predicate.UserPermissions(sql.FieldEQ(FieldCanEdit, v))
-}
-
 // Admin applies equality check predicate on the "Admin" field. It's identical to AdminEQ.
 func Admin(v bool) predicate.UserPermissions {
 	return predicate.UserPermissions(sql.FieldEQ(FieldAdmin, v))
@@ -74,6 +69,11 @@ func Admin(v bool) predicate.UserPermissions {
 // CanCreatePublic applies equality check predicate on the "CanCreatePublic" field. It's identical to CanCreatePublicEQ.
 func CanCreatePublic(v bool) predicate.UserPermissions {
 	return predicate.UserPermissions(sql.FieldEQ(FieldCanCreatePublic, v))
+}
+
+// CanEdit applies equality check predicate on the "CanEdit" field. It's identical to CanEditEQ.
+func CanEdit(v bool) predicate.UserPermissions {
+	return predicate.UserPermissions(sql.FieldEQ(FieldCanEdit, v))
 }
 
 // UserIDEQ applies the EQ predicate on the "user_id" field.
@@ -170,16 +170,6 @@ func UserIDContainsFold(v ksuid.ID) predicate.UserPermissions {
 	return predicate.UserPermissions(sql.FieldContainsFold(FieldUserID, vc))
 }
 
-// CanEditEQ applies the EQ predicate on the "CanEdit" field.
-func CanEditEQ(v bool) predicate.UserPermissions {
-	return predicate.UserPermissions(sql.FieldEQ(FieldCanEdit, v))
-}
-
-// CanEditNEQ applies the NEQ predicate on the "CanEdit" field.
-func CanEditNEQ(v bool) predicate.UserPermissions {
-	return predicate.UserPermissions(sql.FieldNEQ(FieldCanEdit, v))
-}
-
 // AdminEQ applies the EQ predicate on the "Admin" field.
 func AdminEQ(v bool) predicate.UserPermissions {
 	return predicate.UserPermissions(sql.FieldEQ(FieldAdmin, v))
@@ -198,6 +188,16 @@ func CanCreatePublicEQ(v bool) predicate.UserPermissions {
 // CanCreatePublicNEQ applies the NEQ predicate on the "CanCreatePublic" field.
 func CanCreatePublicNEQ(v bool) predicate.UserPermissions {
 	return predicate.UserPermissions(sql.FieldNEQ(FieldCanCreatePublic, v))
+}
+
+// CanEditEQ applies the EQ predicate on the "CanEdit" field.
+func CanEditEQ(v bool) predicate.UserPermissions {
+	return predicate.UserPermissions(sql.FieldEQ(FieldCanEdit, v))
+}
+
+// CanEditNEQ applies the NEQ predicate on the "CanEdit" field.
+func CanEditNEQ(v bool) predicate.UserPermissions {
+	return predicate.UserPermissions(sql.FieldNEQ(FieldCanEdit, v))
 }
 
 // HasUser applies the HasEdge predicate on the "user" edge.
