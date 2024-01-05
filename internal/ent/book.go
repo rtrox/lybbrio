@@ -56,11 +56,13 @@ type BookEdges struct {
 	Language []*Language `json:"language,omitempty"`
 	// Shelf holds the value of the shelf edge.
 	Shelf []*Shelf `json:"shelf,omitempty"`
+	// Files holds the value of the files edge.
+	Files []*BookFile `json:"files,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [7]bool
+	loadedTypes [8]bool
 	// totalCount holds the count of the edges above.
-	totalCount [7]map[string]int
+	totalCount [8]map[string]int
 
 	namedAuthors     map[string][]*Author
 	namedPublisher   map[string][]*Publisher
@@ -69,6 +71,7 @@ type BookEdges struct {
 	namedTags        map[string][]*Tag
 	namedLanguage    map[string][]*Language
 	namedShelf       map[string][]*Shelf
+	namedFiles       map[string][]*BookFile
 }
 
 // AuthorsOrErr returns the Authors value or an error if the edge
@@ -132,6 +135,15 @@ func (e BookEdges) ShelfOrErr() ([]*Shelf, error) {
 		return e.Shelf, nil
 	}
 	return nil, &NotLoadedError{edge: "shelf"}
+}
+
+// FilesOrErr returns the Files value or an error if the edge
+// was not loaded in eager-loading.
+func (e BookEdges) FilesOrErr() ([]*BookFile, error) {
+	if e.loadedTypes[7] {
+		return e.Files, nil
+	}
+	return nil, &NotLoadedError{edge: "files"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -262,6 +274,11 @@ func (b *Book) QueryLanguage() *LanguageQuery {
 // QueryShelf queries the "shelf" edge of the Book entity.
 func (b *Book) QueryShelf() *ShelfQuery {
 	return NewBookClient(b.config).QueryShelf(b)
+}
+
+// QueryFiles queries the "files" edge of the Book entity.
+func (b *Book) QueryFiles() *BookFileQuery {
+	return NewBookClient(b.config).QueryFiles(b)
 }
 
 // Update returns a builder for updating this Book.
@@ -479,6 +496,30 @@ func (b *Book) appendNamedShelf(name string, edges ...*Shelf) {
 		b.Edges.namedShelf[name] = []*Shelf{}
 	} else {
 		b.Edges.namedShelf[name] = append(b.Edges.namedShelf[name], edges...)
+	}
+}
+
+// NamedFiles returns the Files named value or an error if the edge was not
+// loaded in eager-loading with this name.
+func (b *Book) NamedFiles(name string) ([]*BookFile, error) {
+	if b.Edges.namedFiles == nil {
+		return nil, &NotLoadedError{edge: name}
+	}
+	nodes, ok := b.Edges.namedFiles[name]
+	if !ok {
+		return nil, &NotLoadedError{edge: name}
+	}
+	return nodes, nil
+}
+
+func (b *Book) appendNamedFiles(name string, edges ...*BookFile) {
+	if b.Edges.namedFiles == nil {
+		b.Edges.namedFiles = make(map[string][]*BookFile)
+	}
+	if len(edges) == 0 {
+		b.Edges.namedFiles[name] = []*BookFile{}
+	} else {
+		b.Edges.namedFiles[name] = append(b.Edges.namedFiles[name], edges...)
 	}
 }
 

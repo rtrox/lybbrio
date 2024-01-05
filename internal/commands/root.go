@@ -148,7 +148,7 @@ func rootRun(_ *cobra.Command, _ []string) {
 
 	// Calibre
 	cal, error := calibre.NewCalibreSQLite(conf.CalibreLibraryPath)
-	cal = cal.WithLogger(&log.Logger).(*calibre.CalibreSQLite)
+	cal = cal.WithLogger(&log.Logger)
 
 	if error != nil {
 		log.Fatal().Err(error).Msg("Failed to initialize Calibre")

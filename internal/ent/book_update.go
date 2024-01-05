@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"lybbrio/internal/ent/author"
 	"lybbrio/internal/ent/book"
+	"lybbrio/internal/ent/bookfile"
 	"lybbrio/internal/ent/identifier"
 	"lybbrio/internal/ent/language"
 	"lybbrio/internal/ent/predicate"
@@ -297,6 +298,21 @@ func (bu *BookUpdate) AddShelf(s ...*Shelf) *BookUpdate {
 	return bu.AddShelfIDs(ids...)
 }
 
+// AddFileIDs adds the "files" edge to the BookFile entity by IDs.
+func (bu *BookUpdate) AddFileIDs(ids ...ksuid.ID) *BookUpdate {
+	bu.mutation.AddFileIDs(ids...)
+	return bu
+}
+
+// AddFiles adds the "files" edges to the BookFile entity.
+func (bu *BookUpdate) AddFiles(b ...*BookFile) *BookUpdate {
+	ids := make([]ksuid.ID, len(b))
+	for i := range b {
+		ids[i] = b[i].ID
+	}
+	return bu.AddFileIDs(ids...)
+}
+
 // Mutation returns the BookMutation object of the builder.
 func (bu *BookUpdate) Mutation() *BookMutation {
 	return bu.mutation
@@ -447,6 +463,27 @@ func (bu *BookUpdate) RemoveShelf(s ...*Shelf) *BookUpdate {
 		ids[i] = s[i].ID
 	}
 	return bu.RemoveShelfIDs(ids...)
+}
+
+// ClearFiles clears all "files" edges to the BookFile entity.
+func (bu *BookUpdate) ClearFiles() *BookUpdate {
+	bu.mutation.ClearFiles()
+	return bu
+}
+
+// RemoveFileIDs removes the "files" edge to BookFile entities by IDs.
+func (bu *BookUpdate) RemoveFileIDs(ids ...ksuid.ID) *BookUpdate {
+	bu.mutation.RemoveFileIDs(ids...)
+	return bu
+}
+
+// RemoveFiles removes "files" edges to BookFile entities.
+func (bu *BookUpdate) RemoveFiles(b ...*BookFile) *BookUpdate {
+	ids := make([]ksuid.ID, len(b))
+	for i := range b {
+		ids[i] = b[i].ID
+	}
+	return bu.RemoveFileIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -863,6 +900,51 @@ func (bu *BookUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if bu.mutation.FilesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   book.FilesTable,
+			Columns: []string{book.FilesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(bookfile.FieldID, field.TypeString),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := bu.mutation.RemovedFilesIDs(); len(nodes) > 0 && !bu.mutation.FilesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   book.FilesTable,
+			Columns: []string{book.FilesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(bookfile.FieldID, field.TypeString),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := bu.mutation.FilesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   book.FilesTable,
+			Columns: []string{book.FilesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(bookfile.FieldID, field.TypeString),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, bu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{book.Label}
@@ -1144,6 +1226,21 @@ func (buo *BookUpdateOne) AddShelf(s ...*Shelf) *BookUpdateOne {
 	return buo.AddShelfIDs(ids...)
 }
 
+// AddFileIDs adds the "files" edge to the BookFile entity by IDs.
+func (buo *BookUpdateOne) AddFileIDs(ids ...ksuid.ID) *BookUpdateOne {
+	buo.mutation.AddFileIDs(ids...)
+	return buo
+}
+
+// AddFiles adds the "files" edges to the BookFile entity.
+func (buo *BookUpdateOne) AddFiles(b ...*BookFile) *BookUpdateOne {
+	ids := make([]ksuid.ID, len(b))
+	for i := range b {
+		ids[i] = b[i].ID
+	}
+	return buo.AddFileIDs(ids...)
+}
+
 // Mutation returns the BookMutation object of the builder.
 func (buo *BookUpdateOne) Mutation() *BookMutation {
 	return buo.mutation
@@ -1294,6 +1391,27 @@ func (buo *BookUpdateOne) RemoveShelf(s ...*Shelf) *BookUpdateOne {
 		ids[i] = s[i].ID
 	}
 	return buo.RemoveShelfIDs(ids...)
+}
+
+// ClearFiles clears all "files" edges to the BookFile entity.
+func (buo *BookUpdateOne) ClearFiles() *BookUpdateOne {
+	buo.mutation.ClearFiles()
+	return buo
+}
+
+// RemoveFileIDs removes the "files" edge to BookFile entities by IDs.
+func (buo *BookUpdateOne) RemoveFileIDs(ids ...ksuid.ID) *BookUpdateOne {
+	buo.mutation.RemoveFileIDs(ids...)
+	return buo
+}
+
+// RemoveFiles removes "files" edges to BookFile entities.
+func (buo *BookUpdateOne) RemoveFiles(b ...*BookFile) *BookUpdateOne {
+	ids := make([]ksuid.ID, len(b))
+	for i := range b {
+		ids[i] = b[i].ID
+	}
+	return buo.RemoveFileIDs(ids...)
 }
 
 // Where appends a list predicates to the BookUpdate builder.
@@ -1733,6 +1851,51 @@ func (buo *BookUpdateOne) sqlSave(ctx context.Context) (_node *Book, err error) 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(shelf.FieldID, field.TypeString),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if buo.mutation.FilesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   book.FilesTable,
+			Columns: []string{book.FilesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(bookfile.FieldID, field.TypeString),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := buo.mutation.RemovedFilesIDs(); len(nodes) > 0 && !buo.mutation.FilesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   book.FilesTable,
+			Columns: []string{book.FilesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(bookfile.FieldID, field.TypeString),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := buo.mutation.FilesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   book.FilesTable,
+			Columns: []string{book.FilesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(bookfile.FieldID, field.TypeString),
 			},
 		}
 		for _, k := range nodes {

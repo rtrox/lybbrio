@@ -147,6 +147,7 @@ type Book implements Node {
   tags: [Tag!]
   language: [Language!]
   shelf: [Shelf!]
+  files: [BookFile!]
 }
 """A connection to a list of items."""
 type BookConnection {
@@ -166,6 +167,7 @@ type BookEdge {
 }
 type BookFile implements Node {
   id: ID!
+  name: String!
   path: String!
   """Size in bytes"""
   size: Int!
@@ -201,6 +203,20 @@ input BookFileWhereInput {
   idGTE: ID
   idLT: ID
   idLTE: ID
+  """name field predicates"""
+  name: String
+  nameNEQ: String
+  nameIn: [String!]
+  nameNotIn: [String!]
+  nameGT: String
+  nameGTE: String
+  nameLT: String
+  nameLTE: String
+  nameContains: String
+  nameHasPrefix: String
+  nameHasSuffix: String
+  nameEqualFold: String
+  nameContainsFold: String
   """path field predicates"""
   path: String
   pathNEQ: String
@@ -246,6 +262,7 @@ enum BookOrderField {
   NAME
   PUB_DATE
   ISBN
+  FILES_COUNT
 }
 """
 BookWhereInput is used for filtering Book objects.
@@ -392,6 +409,9 @@ input BookWhereInput {
   """shelf edge predicates"""
   hasShelf: Boolean
   hasShelfWith: [ShelfWhereInput!]
+  """files edge predicates"""
+  hasFiles: Boolean
+  hasFilesWith: [BookFileWhereInput!]
 }
 """
 CreateAuthorInput is used for create Author object.
@@ -424,6 +444,7 @@ input CreateBookInput {
   tagIDs: [ID!]
   languageIDs: [ID!]
   shelfIDs: [ID!]
+  fileIDs: [ID!]
 }
 """
 CreateIdentifierInput is used for create Identifier object.
@@ -1533,6 +1554,9 @@ input UpdateBookInput {
   addShelfIDs: [ID!]
   removeShelfIDs: [ID!]
   clearShelf: Boolean
+  addFileIDs: [ID!]
+  removeFileIDs: [ID!]
+  clearFiles: Boolean
 }
 """
 UpdateIdentifierInput is used for update Identifier object.

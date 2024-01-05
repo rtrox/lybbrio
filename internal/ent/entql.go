@@ -75,6 +75,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "BookFile",
 		Fields: map[string]*sqlgraph.FieldSpec{
+			bookfile.FieldName:   {Type: field.TypeString, Column: bookfile.FieldName},
 			bookfile.FieldPath:   {Type: field.TypeString, Column: bookfile.FieldPath},
 			bookfile.FieldSize:   {Type: field.TypeInt64, Column: bookfile.FieldSize},
 			bookfile.FieldFormat: {Type: field.TypeEnum, Column: bookfile.FieldFormat},
@@ -324,6 +325,18 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		"Book",
 		"Shelf",
+	)
+	graph.MustAddE(
+		"files",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   book.FilesTable,
+			Columns: []string{book.FilesColumn},
+			Bidi:    false,
+		},
+		"Book",
+		"BookFile",
 	)
 	graph.MustAddE(
 		"book",
@@ -730,6 +743,20 @@ func (f *BookFilter) WhereHasShelfWith(preds ...predicate.Shelf) {
 	})))
 }
 
+// WhereHasFiles applies a predicate to check if query has an edge files.
+func (f *BookFilter) WhereHasFiles() {
+	f.Where(entql.HasEdge("files"))
+}
+
+// WhereHasFilesWith applies a predicate to check if query has an edge files with a given conditions (other predicates).
+func (f *BookFilter) WhereHasFilesWith(preds ...predicate.BookFile) {
+	f.Where(entql.HasEdgeWith("files", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
 // addPredicate implements the predicateAdder interface.
 func (bfq *BookFileQuery) addPredicate(pred func(s *sql.Selector)) {
 	bfq.predicates = append(bfq.predicates, pred)
@@ -768,6 +795,11 @@ func (f *BookFileFilter) Where(p entql.P) {
 // WhereID applies the entql string predicate on the id field.
 func (f *BookFileFilter) WhereID(p entql.StringP) {
 	f.Where(p.Field(bookfile.FieldID))
+}
+
+// WhereName applies the entql string predicate on the name field.
+func (f *BookFileFilter) WhereName(p entql.StringP) {
+	f.Where(p.Field(bookfile.FieldName))
 }
 
 // WherePath applies the entql string predicate on the path field.

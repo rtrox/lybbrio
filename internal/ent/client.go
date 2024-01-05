@@ -667,6 +667,22 @@ func (c *BookClient) QueryShelf(b *Book) *ShelfQuery {
 	return query
 }
 
+// QueryFiles queries the files edge of a Book.
+func (c *BookClient) QueryFiles(b *Book) *BookFileQuery {
+	query := (&BookFileClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := b.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(book.Table, book.FieldID, id),
+			sqlgraph.To(bookfile.Table, bookfile.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, book.FilesTable, book.FilesColumn),
+		)
+		fromV = sqlgraph.Neighbors(b.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *BookClient) Hooks() []Hook {
 	hooks := c.hooks.Book

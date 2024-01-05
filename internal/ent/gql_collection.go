@@ -328,6 +328,18 @@ func (b *BookQuery) collectField(ctx context.Context, opCtx *graphql.OperationCo
 			b.WithNamedShelf(alias, func(wq *ShelfQuery) {
 				*wq = *query
 			})
+		case "files":
+			var (
+				alias = field.Alias
+				path  = append(path, alias)
+				query = (&BookFileClient{config: b.config}).Query()
+			)
+			if err := query.collectField(ctx, opCtx, field, path, satisfies...); err != nil {
+				return err
+			}
+			b.WithNamedFiles(alias, func(wq *BookFileQuery) {
+				*wq = *query
+			})
 		case "calibreID":
 			if _, ok := fieldSeen[book.FieldCalibreID]; !ok {
 				selectedFields = append(selectedFields, book.FieldCalibreID)
@@ -468,6 +480,11 @@ func (bf *BookFileQuery) collectField(ctx context.Context, opCtx *graphql.Operat
 				return err
 			}
 			bf.withBook = query
+		case "name":
+			if _, ok := fieldSeen[bookfile.FieldName]; !ok {
+				selectedFields = append(selectedFields, bookfile.FieldName)
+				fieldSeen[bookfile.FieldName] = struct{}{}
+			}
 		case "path":
 			if _, ok := fieldSeen[bookfile.FieldPath]; !ok {
 				selectedFields = append(selectedFields, bookfile.FieldPath)

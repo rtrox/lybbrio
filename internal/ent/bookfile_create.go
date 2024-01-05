@@ -24,6 +24,12 @@ type BookFileCreate struct {
 	conflict []sql.ConflictOption
 }
 
+// SetName sets the "name" field.
+func (bfc *BookFileCreate) SetName(s string) *BookFileCreate {
+	bfc.mutation.SetName(s)
+	return bfc
+}
+
 // SetPath sets the "path" field.
 func (bfc *BookFileCreate) SetPath(s string) *BookFileCreate {
 	bfc.mutation.SetPath(s)
@@ -116,6 +122,14 @@ func (bfc *BookFileCreate) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (bfc *BookFileCreate) check() error {
+	if _, ok := bfc.mutation.Name(); !ok {
+		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "BookFile.name"`)}
+	}
+	if v, ok := bfc.mutation.Name(); ok {
+		if err := bookfile.NameValidator(v); err != nil {
+			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "BookFile.name": %w`, err)}
+		}
+	}
 	if _, ok := bfc.mutation.Path(); !ok {
 		return &ValidationError{Name: "path", err: errors.New(`ent: missing required field "BookFile.path"`)}
 	}
@@ -179,6 +193,10 @@ func (bfc *BookFileCreate) createSpec() (*BookFile, *sqlgraph.CreateSpec) {
 		_node.ID = id
 		_spec.ID.Value = id
 	}
+	if value, ok := bfc.mutation.Name(); ok {
+		_spec.SetField(bookfile.FieldName, field.TypeString, value)
+		_node.Name = value
+	}
 	if value, ok := bfc.mutation.Path(); ok {
 		_spec.SetField(bookfile.FieldPath, field.TypeString, value)
 		_node.Path = value
@@ -215,7 +233,7 @@ func (bfc *BookFileCreate) createSpec() (*BookFile, *sqlgraph.CreateSpec) {
 // of the `INSERT` statement. For example:
 //
 //	client.BookFile.Create().
-//		SetPath(v).
+//		SetName(v).
 //		OnConflict(
 //			// Update the row with the new values
 //			// the was proposed for insertion.
@@ -224,7 +242,7 @@ func (bfc *BookFileCreate) createSpec() (*BookFile, *sqlgraph.CreateSpec) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.BookFileUpsert) {
-//			SetPath(v+v).
+//			SetName(v+v).
 //		}).
 //		Exec(ctx)
 func (bfc *BookFileCreate) OnConflict(opts ...sql.ConflictOption) *BookFileUpsertOne {
@@ -259,6 +277,18 @@ type (
 		*sql.UpdateSet
 	}
 )
+
+// SetName sets the "name" field.
+func (u *BookFileUpsert) SetName(v string) *BookFileUpsert {
+	u.Set(bookfile.FieldName, v)
+	return u
+}
+
+// UpdateName sets the "name" field to the value that was provided on create.
+func (u *BookFileUpsert) UpdateName() *BookFileUpsert {
+	u.SetExcluded(bookfile.FieldName)
+	return u
+}
 
 // SetPath sets the "path" field.
 func (u *BookFileUpsert) SetPath(v string) *BookFileUpsert {
@@ -348,6 +378,20 @@ func (u *BookFileUpsertOne) Update(set func(*BookFileUpsert)) *BookFileUpsertOne
 		set(&BookFileUpsert{UpdateSet: update})
 	}))
 	return u
+}
+
+// SetName sets the "name" field.
+func (u *BookFileUpsertOne) SetName(v string) *BookFileUpsertOne {
+	return u.Update(func(s *BookFileUpsert) {
+		s.SetName(v)
+	})
+}
+
+// UpdateName sets the "name" field to the value that was provided on create.
+func (u *BookFileUpsertOne) UpdateName() *BookFileUpsertOne {
+	return u.Update(func(s *BookFileUpsert) {
+		s.UpdateName()
+	})
 }
 
 // SetPath sets the "path" field.
@@ -535,7 +579,7 @@ func (bfcb *BookFileCreateBulk) ExecX(ctx context.Context) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.BookFileUpsert) {
-//			SetPath(v+v).
+//			SetName(v+v).
 //		}).
 //		Exec(ctx)
 func (bfcb *BookFileCreateBulk) OnConflict(opts ...sql.ConflictOption) *BookFileUpsertBulk {
@@ -612,6 +656,20 @@ func (u *BookFileUpsertBulk) Update(set func(*BookFileUpsert)) *BookFileUpsertBu
 		set(&BookFileUpsert{UpdateSet: update})
 	}))
 	return u
+}
+
+// SetName sets the "name" field.
+func (u *BookFileUpsertBulk) SetName(v string) *BookFileUpsertBulk {
+	return u.Update(func(s *BookFileUpsert) {
+		s.SetName(v)
+	})
+}
+
+// UpdateName sets the "name" field to the value that was provided on create.
+func (u *BookFileUpsertBulk) UpdateName() *BookFileUpsertBulk {
+	return u.Update(func(s *BookFileUpsert) {
+		s.UpdateName()
+	})
 }
 
 // SetPath sets the "path" field.

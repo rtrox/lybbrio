@@ -76,6 +76,7 @@ type ComplexityRoot struct {
 		Authors       func(childComplexity int) int
 		CalibreID     func(childComplexity int) int
 		Description   func(childComplexity int) int
+		Files         func(childComplexity int) int
 		ID            func(childComplexity int) int
 		Identifiers   func(childComplexity int) int
 		Isbn          func(childComplexity int) int
@@ -106,6 +107,7 @@ type ComplexityRoot struct {
 		Book   func(childComplexity int) int
 		Format func(childComplexity int) int
 		ID     func(childComplexity int) int
+		Name   func(childComplexity int) int
 		Path   func(childComplexity int) int
 		Size   func(childComplexity int) int
 	}
@@ -472,6 +474,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Book.Description(childComplexity), true
 
+	case "Book.files":
+		if e.complexity.Book.Files == nil {
+			break
+		}
+
+		return e.complexity.Book.Files(childComplexity), true
+
 	case "Book.id":
 		if e.complexity.Book.ID == nil {
 			break
@@ -618,6 +627,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.BookFile.ID(childComplexity), true
+
+	case "BookFile.name":
+		if e.complexity.BookFile.Name == nil {
+			break
+		}
+
+		return e.complexity.BookFile.Name(childComplexity), true
 
 	case "BookFile.path":
 		if e.complexity.BookFile.Path == nil {
@@ -1959,6 +1975,7 @@ type Book implements Node {
   tags: [Tag!]
   language: [Language!]
   shelf: [Shelf!]
+  files: [BookFile!]
 }
 """A connection to a list of items."""
 type BookConnection {
@@ -1978,6 +1995,7 @@ type BookEdge {
 }
 type BookFile implements Node {
   id: ID!
+  name: String!
   path: String!
   """Size in bytes"""
   size: Int!
@@ -2013,6 +2031,20 @@ input BookFileWhereInput {
   idGTE: ID
   idLT: ID
   idLTE: ID
+  """name field predicates"""
+  name: String
+  nameNEQ: String
+  nameIn: [String!]
+  nameNotIn: [String!]
+  nameGT: String
+  nameGTE: String
+  nameLT: String
+  nameLTE: String
+  nameContains: String
+  nameHasPrefix: String
+  nameHasSuffix: String
+  nameEqualFold: String
+  nameContainsFold: String
   """path field predicates"""
   path: String
   pathNEQ: String
@@ -2058,6 +2090,7 @@ enum BookOrderField {
   NAME
   PUB_DATE
   ISBN
+  FILES_COUNT
 }
 """
 BookWhereInput is used for filtering Book objects.
@@ -2204,6 +2237,9 @@ input BookWhereInput {
   """shelf edge predicates"""
   hasShelf: Boolean
   hasShelfWith: [ShelfWhereInput!]
+  """files edge predicates"""
+  hasFiles: Boolean
+  hasFilesWith: [BookFileWhereInput!]
 }
 """
 CreateAuthorInput is used for create Author object.
@@ -2236,6 +2272,7 @@ input CreateBookInput {
   tagIDs: [ID!]
   languageIDs: [ID!]
   shelfIDs: [ID!]
+  fileIDs: [ID!]
 }
 """
 CreateIdentifierInput is used for create Identifier object.
@@ -3345,6 +3382,9 @@ input UpdateBookInput {
   addShelfIDs: [ID!]
   removeShelfIDs: [ID!]
   clearShelf: Boolean
+  addFileIDs: [ID!]
+  removeFileIDs: [ID!]
+  clearFiles: Boolean
 }
 """
 UpdateIdentifierInput is used for update Identifier object.
@@ -6177,6 +6217,61 @@ func (ec *executionContext) fieldContext_Book_shelf(ctx context.Context, field g
 	return fc, nil
 }
 
+func (ec *executionContext) _Book_files(ctx context.Context, field graphql.CollectedField, obj *ent.Book) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Book_files(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Files(ctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*ent.BookFile)
+	fc.Result = res
+	return ec.marshalOBookFile2ᚕᚖlybbrioᚋinternalᚋentᚐBookFileᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Book_files(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Book",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_BookFile_id(ctx, field)
+			case "name":
+				return ec.fieldContext_BookFile_name(ctx, field)
+			case "path":
+				return ec.fieldContext_BookFile_path(ctx, field)
+			case "size":
+				return ec.fieldContext_BookFile_size(ctx, field)
+			case "format":
+				return ec.fieldContext_BookFile_format(ctx, field)
+			case "book":
+				return ec.fieldContext_BookFile_book(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type BookFile", field.Name)
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _BookConnection_edges(ctx context.Context, field graphql.CollectedField, obj *ent.BookConnection) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_BookConnection_edges(ctx, field)
 	if err != nil {
@@ -6390,6 +6485,8 @@ func (ec *executionContext) fieldContext_BookEdge_node(ctx context.Context, fiel
 				return ec.fieldContext_Book_language(ctx, field)
 			case "shelf":
 				return ec.fieldContext_Book_shelf(ctx, field)
+			case "files":
+				return ec.fieldContext_Book_files(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Book", field.Name)
 		},
@@ -6480,6 +6577,50 @@ func (ec *executionContext) fieldContext_BookFile_id(ctx context.Context, field 
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _BookFile_name(ctx context.Context, field graphql.CollectedField, obj *ent.BookFile) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_BookFile_name(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Name, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_BookFile_name(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "BookFile",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
 		},
 	}
 	return fc, nil
@@ -6688,6 +6829,8 @@ func (ec *executionContext) fieldContext_BookFile_book(ctx context.Context, fiel
 				return ec.fieldContext_Book_language(ctx, field)
 			case "shelf":
 				return ec.fieldContext_Book_shelf(ctx, field)
+			case "files":
+				return ec.fieldContext_Book_files(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Book", field.Name)
 		},
@@ -6939,6 +7082,8 @@ func (ec *executionContext) fieldContext_Identifier_book(ctx context.Context, fi
 				return ec.fieldContext_Book_language(ctx, field)
 			case "shelf":
 				return ec.fieldContext_Book_shelf(ctx, field)
+			case "files":
+				return ec.fieldContext_Book_files(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Book", field.Name)
 		},
@@ -7688,6 +7833,8 @@ func (ec *executionContext) fieldContext_Mutation_createBook(ctx context.Context
 				return ec.fieldContext_Book_language(ctx, field)
 			case "shelf":
 				return ec.fieldContext_Book_shelf(ctx, field)
+			case "files":
+				return ec.fieldContext_Book_files(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Book", field.Name)
 		},
@@ -7774,6 +7921,8 @@ func (ec *executionContext) fieldContext_Mutation_updateBook(ctx context.Context
 				return ec.fieldContext_Book_language(ctx, field)
 			case "shelf":
 				return ec.fieldContext_Book_shelf(ctx, field)
+			case "files":
+				return ec.fieldContext_Book_files(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Book", field.Name)
 		},
@@ -9768,6 +9917,8 @@ func (ec *executionContext) fieldContext_Query_bookFiles(ctx context.Context, fi
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_BookFile_id(ctx, field)
+			case "name":
+				return ec.fieldContext_BookFile_name(ctx, field)
 			case "path":
 				return ec.fieldContext_BookFile_path(ctx, field)
 			case "size":
@@ -10706,6 +10857,8 @@ func (ec *executionContext) fieldContext_Series_books(ctx context.Context, field
 				return ec.fieldContext_Book_language(ctx, field)
 			case "shelf":
 				return ec.fieldContext_Book_shelf(ctx, field)
+			case "files":
+				return ec.fieldContext_Book_files(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Book", field.Name)
 		},
@@ -15510,7 +15663,7 @@ func (ec *executionContext) unmarshalInputBookFileWhereInput(ctx context.Context
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "path", "pathNEQ", "pathIn", "pathNotIn", "pathGT", "pathGTE", "pathLT", "pathLTE", "pathContains", "pathHasPrefix", "pathHasSuffix", "pathEqualFold", "pathContainsFold", "size", "sizeNEQ", "sizeIn", "sizeNotIn", "sizeGT", "sizeGTE", "sizeLT", "sizeLTE", "format", "formatNEQ", "formatIn", "formatNotIn", "hasBook", "hasBookWith"}
+	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "name", "nameNEQ", "nameIn", "nameNotIn", "nameGT", "nameGTE", "nameLT", "nameLTE", "nameContains", "nameHasPrefix", "nameHasSuffix", "nameEqualFold", "nameContainsFold", "path", "pathNEQ", "pathIn", "pathNotIn", "pathGT", "pathGTE", "pathLT", "pathLTE", "pathContains", "pathHasPrefix", "pathHasSuffix", "pathEqualFold", "pathContainsFold", "size", "sizeNEQ", "sizeIn", "sizeNotIn", "sizeGT", "sizeGTE", "sizeLT", "sizeLTE", "format", "formatNEQ", "formatIn", "formatNotIn", "hasBook", "hasBookWith"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -15594,6 +15747,97 @@ func (ec *executionContext) unmarshalInputBookFileWhereInput(ctx context.Context
 				return it, err
 			}
 			it.IDLTE = data
+		case "name":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Name = data
+		case "nameNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("nameNEQ"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.NameNEQ = data
+		case "nameIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("nameIn"))
+			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.NameIn = data
+		case "nameNotIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("nameNotIn"))
+			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.NameNotIn = data
+		case "nameGT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("nameGT"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.NameGT = data
+		case "nameGTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("nameGTE"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.NameGTE = data
+		case "nameLT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("nameLT"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.NameLT = data
+		case "nameLTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("nameLTE"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.NameLTE = data
+		case "nameContains":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("nameContains"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.NameContains = data
+		case "nameHasPrefix":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("nameHasPrefix"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.NameHasPrefix = data
+		case "nameHasSuffix":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("nameHasSuffix"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.NameHasSuffix = data
+		case "nameEqualFold":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("nameEqualFold"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.NameEqualFold = data
+		case "nameContainsFold":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("nameContainsFold"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.NameContainsFold = data
 		case "path":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("path"))
 			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
@@ -15834,7 +16078,7 @@ func (ec *executionContext) unmarshalInputBookWhereInput(ctx context.Context, ob
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "calibreID", "calibreIDNEQ", "calibreIDIn", "calibreIDNotIn", "calibreIDGT", "calibreIDGTE", "calibreIDLT", "calibreIDLTE", "calibreIDIsNil", "calibreIDNotNil", "title", "titleNEQ", "titleIn", "titleNotIn", "titleGT", "titleGTE", "titleLT", "titleLTE", "titleContains", "titleHasPrefix", "titleHasSuffix", "titleEqualFold", "titleContainsFold", "sort", "sortNEQ", "sortIn", "sortNotIn", "sortGT", "sortGTE", "sortLT", "sortLTE", "sortContains", "sortHasPrefix", "sortHasSuffix", "sortEqualFold", "sortContainsFold", "publishedDate", "publishedDateNEQ", "publishedDateIn", "publishedDateNotIn", "publishedDateGT", "publishedDateGTE", "publishedDateLT", "publishedDateLTE", "publishedDateIsNil", "publishedDateNotNil", "path", "pathNEQ", "pathIn", "pathNotIn", "pathGT", "pathGTE", "pathLT", "pathLTE", "pathContains", "pathHasPrefix", "pathHasSuffix", "pathEqualFold", "pathContainsFold", "isbn", "isbnNEQ", "isbnIn", "isbnNotIn", "isbnGT", "isbnGTE", "isbnLT", "isbnLTE", "isbnContains", "isbnHasPrefix", "isbnHasSuffix", "isbnIsNil", "isbnNotNil", "isbnEqualFold", "isbnContainsFold", "description", "descriptionNEQ", "descriptionIn", "descriptionNotIn", "descriptionGT", "descriptionGTE", "descriptionLT", "descriptionLTE", "descriptionContains", "descriptionHasPrefix", "descriptionHasSuffix", "descriptionIsNil", "descriptionNotNil", "descriptionEqualFold", "descriptionContainsFold", "seriesIndex", "seriesIndexNEQ", "seriesIndexIn", "seriesIndexNotIn", "seriesIndexGT", "seriesIndexGTE", "seriesIndexLT", "seriesIndexLTE", "seriesIndexIsNil", "seriesIndexNotNil", "hasAuthors", "hasAuthorsWith", "hasPublisher", "hasPublisherWith", "hasSeries", "hasSeriesWith", "hasIdentifiers", "hasIdentifiersWith", "hasTags", "hasTagsWith", "hasLanguage", "hasLanguageWith", "hasShelf", "hasShelfWith"}
+	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "calibreID", "calibreIDNEQ", "calibreIDIn", "calibreIDNotIn", "calibreIDGT", "calibreIDGTE", "calibreIDLT", "calibreIDLTE", "calibreIDIsNil", "calibreIDNotNil", "title", "titleNEQ", "titleIn", "titleNotIn", "titleGT", "titleGTE", "titleLT", "titleLTE", "titleContains", "titleHasPrefix", "titleHasSuffix", "titleEqualFold", "titleContainsFold", "sort", "sortNEQ", "sortIn", "sortNotIn", "sortGT", "sortGTE", "sortLT", "sortLTE", "sortContains", "sortHasPrefix", "sortHasSuffix", "sortEqualFold", "sortContainsFold", "publishedDate", "publishedDateNEQ", "publishedDateIn", "publishedDateNotIn", "publishedDateGT", "publishedDateGTE", "publishedDateLT", "publishedDateLTE", "publishedDateIsNil", "publishedDateNotNil", "path", "pathNEQ", "pathIn", "pathNotIn", "pathGT", "pathGTE", "pathLT", "pathLTE", "pathContains", "pathHasPrefix", "pathHasSuffix", "pathEqualFold", "pathContainsFold", "isbn", "isbnNEQ", "isbnIn", "isbnNotIn", "isbnGT", "isbnGTE", "isbnLT", "isbnLTE", "isbnContains", "isbnHasPrefix", "isbnHasSuffix", "isbnIsNil", "isbnNotNil", "isbnEqualFold", "isbnContainsFold", "description", "descriptionNEQ", "descriptionIn", "descriptionNotIn", "descriptionGT", "descriptionGTE", "descriptionLT", "descriptionLTE", "descriptionContains", "descriptionHasPrefix", "descriptionHasSuffix", "descriptionIsNil", "descriptionNotNil", "descriptionEqualFold", "descriptionContainsFold", "seriesIndex", "seriesIndexNEQ", "seriesIndexIn", "seriesIndexNotIn", "seriesIndexGT", "seriesIndexGTE", "seriesIndexLT", "seriesIndexLTE", "seriesIndexIsNil", "seriesIndexNotNil", "hasAuthors", "hasAuthorsWith", "hasPublisher", "hasPublisherWith", "hasSeries", "hasSeriesWith", "hasIdentifiers", "hasIdentifiersWith", "hasTags", "hasTagsWith", "hasLanguage", "hasLanguageWith", "hasShelf", "hasShelfWith", "hasFiles", "hasFilesWith"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -16709,6 +16953,20 @@ func (ec *executionContext) unmarshalInputBookWhereInput(ctx context.Context, ob
 				return it, err
 			}
 			it.HasShelfWith = data
+		case "hasFiles":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasFiles"))
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HasFiles = data
+		case "hasFilesWith":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasFilesWith"))
+			data, err := ec.unmarshalOBookFileWhereInput2ᚕᚖlybbrioᚋinternalᚋentᚐBookFileWhereInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HasFilesWith = data
 		}
 	}
 
@@ -16777,7 +17035,7 @@ func (ec *executionContext) unmarshalInputCreateBookInput(ctx context.Context, o
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"calibreID", "title", "sort", "publishedDate", "path", "isbn", "description", "seriesIndex", "authorIDs", "publisherIDs", "seriesIDs", "identifierIDs", "tagIDs", "languageIDs", "shelfIDs"}
+	fieldsInOrder := [...]string{"calibreID", "title", "sort", "publishedDate", "path", "isbn", "description", "seriesIndex", "authorIDs", "publisherIDs", "seriesIDs", "identifierIDs", "tagIDs", "languageIDs", "shelfIDs", "fileIDs"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -16889,6 +17147,13 @@ func (ec *executionContext) unmarshalInputCreateBookInput(ctx context.Context, o
 				return it, err
 			}
 			it.ShelfIDs = data
+		case "fileIDs":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("fileIDs"))
+			data, err := ec.unmarshalOID2ᚕlybbrioᚋinternalᚋentᚋschemaᚋksuidᚐIDᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.FileIDs = data
 		}
 	}
 
@@ -20232,7 +20497,7 @@ func (ec *executionContext) unmarshalInputUpdateBookInput(ctx context.Context, o
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"calibreID", "clearCalibreID", "title", "sort", "publishedDate", "clearPublishedDate", "path", "isbn", "clearIsbn", "description", "clearDescription", "seriesIndex", "clearSeriesIndex", "addAuthorIDs", "removeAuthorIDs", "clearAuthors", "addPublisherIDs", "removePublisherIDs", "clearPublisher", "addSeriesIDs", "removeSeriesIDs", "clearSeries", "addIdentifierIDs", "removeIdentifierIDs", "clearIdentifiers", "addTagIDs", "removeTagIDs", "clearTags", "addLanguageIDs", "removeLanguageIDs", "clearLanguage", "addShelfIDs", "removeShelfIDs", "clearShelf"}
+	fieldsInOrder := [...]string{"calibreID", "clearCalibreID", "title", "sort", "publishedDate", "clearPublishedDate", "path", "isbn", "clearIsbn", "description", "clearDescription", "seriesIndex", "clearSeriesIndex", "addAuthorIDs", "removeAuthorIDs", "clearAuthors", "addPublisherIDs", "removePublisherIDs", "clearPublisher", "addSeriesIDs", "removeSeriesIDs", "clearSeries", "addIdentifierIDs", "removeIdentifierIDs", "clearIdentifiers", "addTagIDs", "removeTagIDs", "clearTags", "addLanguageIDs", "removeLanguageIDs", "clearLanguage", "addShelfIDs", "removeShelfIDs", "clearShelf", "addFileIDs", "removeFileIDs", "clearFiles"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -20477,6 +20742,27 @@ func (ec *executionContext) unmarshalInputUpdateBookInput(ctx context.Context, o
 				return it, err
 			}
 			it.ClearShelf = data
+		case "addFileIDs":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("addFileIDs"))
+			data, err := ec.unmarshalOID2ᚕlybbrioᚋinternalᚋentᚋschemaᚋksuidᚐIDᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.AddFileIDs = data
+		case "removeFileIDs":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("removeFileIDs"))
+			data, err := ec.unmarshalOID2ᚕlybbrioᚋinternalᚋentᚋschemaᚋksuidᚐIDᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.RemoveFileIDs = data
+		case "clearFiles":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clearFiles"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ClearFiles = data
 		}
 	}
 
@@ -22059,6 +22345,39 @@ func (ec *executionContext) _Book(ctx context.Context, sel ast.SelectionSet, obj
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "files":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Book_files(ctx, field, obj)
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -22182,6 +22501,11 @@ func (ec *executionContext) _BookFile(ctx context.Context, sel ast.SelectionSet,
 			out.Values[i] = graphql.MarshalString("BookFile")
 		case "id":
 			out.Values[i] = ec._BookFile_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "name":
+			out.Values[i] = ec._BookFile_name(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
 			}
@@ -25990,6 +26314,53 @@ func (ec *executionContext) marshalOBookEdge2ᚖlybbrioᚋinternalᚋentᚐBookE
 		return graphql.Null
 	}
 	return ec._BookEdge(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalOBookFile2ᚕᚖlybbrioᚋinternalᚋentᚐBookFileᚄ(ctx context.Context, sel ast.SelectionSet, v []*ent.BookFile) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNBookFile2ᚖlybbrioᚋinternalᚋentᚐBookFile(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
 }
 
 func (ec *executionContext) unmarshalOBookFileFormat2ᚕlybbrioᚋinternalᚋentᚋbookfileᚐFormatᚄ(ctx context.Context, v interface{}) ([]bookfile.Format, error) {

@@ -754,6 +754,9 @@ type BookMutation struct {
 	shelf              map[ksuid.ID]struct{}
 	removedshelf       map[ksuid.ID]struct{}
 	clearedshelf       bool
+	files              map[ksuid.ID]struct{}
+	removedfiles       map[ksuid.ID]struct{}
+	clearedfiles       bool
 	done               bool
 	oldValue           func(context.Context) (*Book, error)
 	predicates         []predicate.Book
@@ -1636,6 +1639,60 @@ func (m *BookMutation) ResetShelf() {
 	m.removedshelf = nil
 }
 
+// AddFileIDs adds the "files" edge to the BookFile entity by ids.
+func (m *BookMutation) AddFileIDs(ids ...ksuid.ID) {
+	if m.files == nil {
+		m.files = make(map[ksuid.ID]struct{})
+	}
+	for i := range ids {
+		m.files[ids[i]] = struct{}{}
+	}
+}
+
+// ClearFiles clears the "files" edge to the BookFile entity.
+func (m *BookMutation) ClearFiles() {
+	m.clearedfiles = true
+}
+
+// FilesCleared reports if the "files" edge to the BookFile entity was cleared.
+func (m *BookMutation) FilesCleared() bool {
+	return m.clearedfiles
+}
+
+// RemoveFileIDs removes the "files" edge to the BookFile entity by IDs.
+func (m *BookMutation) RemoveFileIDs(ids ...ksuid.ID) {
+	if m.removedfiles == nil {
+		m.removedfiles = make(map[ksuid.ID]struct{})
+	}
+	for i := range ids {
+		delete(m.files, ids[i])
+		m.removedfiles[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedFiles returns the removed IDs of the "files" edge to the BookFile entity.
+func (m *BookMutation) RemovedFilesIDs() (ids []ksuid.ID) {
+	for id := range m.removedfiles {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// FilesIDs returns the "files" edge IDs in the mutation.
+func (m *BookMutation) FilesIDs() (ids []ksuid.ID) {
+	for id := range m.files {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetFiles resets all changes to the "files" edge.
+func (m *BookMutation) ResetFiles() {
+	m.files = nil
+	m.clearedfiles = false
+	m.removedfiles = nil
+}
+
 // Where appends a list predicates to the BookMutation builder.
 func (m *BookMutation) Where(ps ...predicate.Book) {
 	m.predicates = append(m.predicates, ps...)
@@ -1948,7 +2005,7 @@ func (m *BookMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *BookMutation) AddedEdges() []string {
-	edges := make([]string, 0, 7)
+	edges := make([]string, 0, 8)
 	if m.authors != nil {
 		edges = append(edges, book.EdgeAuthors)
 	}
@@ -1969,6 +2026,9 @@ func (m *BookMutation) AddedEdges() []string {
 	}
 	if m.shelf != nil {
 		edges = append(edges, book.EdgeShelf)
+	}
+	if m.files != nil {
+		edges = append(edges, book.EdgeFiles)
 	}
 	return edges
 }
@@ -2019,13 +2079,19 @@ func (m *BookMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case book.EdgeFiles:
+		ids := make([]ent.Value, 0, len(m.files))
+		for id := range m.files {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *BookMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 7)
+	edges := make([]string, 0, 8)
 	if m.removedauthors != nil {
 		edges = append(edges, book.EdgeAuthors)
 	}
@@ -2046,6 +2112,9 @@ func (m *BookMutation) RemovedEdges() []string {
 	}
 	if m.removedshelf != nil {
 		edges = append(edges, book.EdgeShelf)
+	}
+	if m.removedfiles != nil {
+		edges = append(edges, book.EdgeFiles)
 	}
 	return edges
 }
@@ -2096,13 +2165,19 @@ func (m *BookMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case book.EdgeFiles:
+		ids := make([]ent.Value, 0, len(m.removedfiles))
+		for id := range m.removedfiles {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *BookMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 7)
+	edges := make([]string, 0, 8)
 	if m.clearedauthors {
 		edges = append(edges, book.EdgeAuthors)
 	}
@@ -2123,6 +2198,9 @@ func (m *BookMutation) ClearedEdges() []string {
 	}
 	if m.clearedshelf {
 		edges = append(edges, book.EdgeShelf)
+	}
+	if m.clearedfiles {
+		edges = append(edges, book.EdgeFiles)
 	}
 	return edges
 }
@@ -2145,6 +2223,8 @@ func (m *BookMutation) EdgeCleared(name string) bool {
 		return m.clearedlanguage
 	case book.EdgeShelf:
 		return m.clearedshelf
+	case book.EdgeFiles:
+		return m.clearedfiles
 	}
 	return false
 }
@@ -2182,6 +2262,9 @@ func (m *BookMutation) ResetEdge(name string) error {
 	case book.EdgeShelf:
 		m.ResetShelf()
 		return nil
+	case book.EdgeFiles:
+		m.ResetFiles()
+		return nil
 	}
 	return fmt.Errorf("unknown Book edge %s", name)
 }
@@ -2192,6 +2275,7 @@ type BookFileMutation struct {
 	op            Op
 	typ           string
 	id            *ksuid.ID
+	name          *string
 	_path         *string
 	size          *int64
 	addsize       *int64
@@ -2306,6 +2390,42 @@ func (m *BookFileMutation) IDs(ctx context.Context) ([]ksuid.ID, error) {
 	default:
 		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
 	}
+}
+
+// SetName sets the "name" field.
+func (m *BookFileMutation) SetName(s string) {
+	m.name = &s
+}
+
+// Name returns the value of the "name" field in the mutation.
+func (m *BookFileMutation) Name() (r string, exists bool) {
+	v := m.name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldName returns the old "name" field's value of the BookFile entity.
+// If the BookFile object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *BookFileMutation) OldName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldName: %w", err)
+	}
+	return oldValue.Name, nil
+}
+
+// ResetName resets all changes to the "name" field.
+func (m *BookFileMutation) ResetName() {
+	m.name = nil
 }
 
 // SetPath sets the "path" field.
@@ -2509,7 +2629,10 @@ func (m *BookFileMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *BookFileMutation) Fields() []string {
-	fields := make([]string, 0, 3)
+	fields := make([]string, 0, 4)
+	if m.name != nil {
+		fields = append(fields, bookfile.FieldName)
+	}
 	if m._path != nil {
 		fields = append(fields, bookfile.FieldPath)
 	}
@@ -2527,6 +2650,8 @@ func (m *BookFileMutation) Fields() []string {
 // schema.
 func (m *BookFileMutation) Field(name string) (ent.Value, bool) {
 	switch name {
+	case bookfile.FieldName:
+		return m.Name()
 	case bookfile.FieldPath:
 		return m.Path()
 	case bookfile.FieldSize:
@@ -2542,6 +2667,8 @@ func (m *BookFileMutation) Field(name string) (ent.Value, bool) {
 // database failed.
 func (m *BookFileMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
+	case bookfile.FieldName:
+		return m.OldName(ctx)
 	case bookfile.FieldPath:
 		return m.OldPath(ctx)
 	case bookfile.FieldSize:
@@ -2557,6 +2684,13 @@ func (m *BookFileMutation) OldField(ctx context.Context, name string) (ent.Value
 // type.
 func (m *BookFileMutation) SetField(name string, value ent.Value) error {
 	switch name {
+	case bookfile.FieldName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetName(v)
+		return nil
 	case bookfile.FieldPath:
 		v, ok := value.(string)
 		if !ok {
@@ -2642,6 +2776,9 @@ func (m *BookFileMutation) ClearField(name string) error {
 // It returns an error if the field is not defined in the schema.
 func (m *BookFileMutation) ResetField(name string) error {
 	switch name {
+	case bookfile.FieldName:
+		m.ResetName()
+		return nil
 	case bookfile.FieldPath:
 		m.ResetPath()
 		return nil

@@ -2,6 +2,7 @@ package tasks
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io/fs"
 	"lybbrio/internal/calibre"
@@ -12,6 +13,7 @@ import (
 	"lybbrio/internal/task"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 
 	"github.com/rs/zerolog/log"
@@ -20,6 +22,11 @@ import (
 type importOutputCtxKey string
 
 const importOutputKey importOutputCtxKey = "importOutput"
+
+var ignorableFilenames []string = []string{
+	"cover",
+	"metadata",
+}
 
 type importContext struct {
 	visitedAuthors    map[int64]ksuid.ID
@@ -445,9 +452,12 @@ func createOrAttachSeries(ctx context.Context, client *ent.Client, book *ent.Boo
 }
 
 func registerBookFiles(ctx context.Context, cal calibre.Calibre, client *ent.Client, book *ent.Book, calBook calibre.Book) error {
+	log := log.Ctx(ctx).With().Str("book", calBook.Title).Str("bookID", book.ID.String()).Logger()
+	path := calBook.FullPath(cal)
+	log.Info().Str("path", path).Msg("Registering book files")
 	files, err := os.ReadDir(calBook.FullPath(cal))
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to read book directory: %w", err)
 	}
 	for _, file := range files {
 		if file.IsDir() {
@@ -466,8 +476,15 @@ func registerBookFiles(ctx context.Context, cal calibre.Calibre, client *ent.Cli
 
 func registerBookFile(ctx context.Context, client *ent.Client, bookID ksuid.ID, path string, file fs.DirEntry) error {
 	ext := strings.ToLower(filepath.Ext(file.Name()))
-	filetype := filetype.FromExtension(ext)
+	nameWithoutExt := strings.TrimSuffix(file.Name(), ext)
+	if slices.Contains(ignorableFilenames, nameWithoutExt) {
+		return nil
+	}
 
+	filetype := filetype.FromExtension(ext)
+	if filetype == 0 {
+		return errors.New("unknown file type")
+	}
 	info, err := file.Info()
 	if err != nil {
 		log.Warn().Err(err).
@@ -477,6 +494,7 @@ func registerBookFile(ctx context.Context, client *ent.Client, bookID ksuid.ID, 
 	}
 	size := info.Size()
 	_, err = client.BookFile.Create().
+		SetName(file.Name()).
 		SetPath(path).
 		SetSize(size).
 		SetFormat(bookfile.Format(filetype.String())).

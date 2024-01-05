@@ -90,12 +90,16 @@ func init() {
 	_ = bookfileMixinFields1
 	bookfileFields := schema.BookFile{}.Fields()
 	_ = bookfileFields
+	// bookfileDescName is the schema descriptor for name field.
+	bookfileDescName := bookfileFields[0].Descriptor()
+	// bookfile.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	bookfile.NameValidator = bookfileDescName.Validators[0].(func(string) error)
 	// bookfileDescPath is the schema descriptor for path field.
-	bookfileDescPath := bookfileFields[0].Descriptor()
+	bookfileDescPath := bookfileFields[1].Descriptor()
 	// bookfile.PathValidator is a validator for the "path" field. It is called by the builders before save.
 	bookfile.PathValidator = bookfileDescPath.Validators[0].(func(string) error)
 	// bookfileDescSize is the schema descriptor for size field.
-	bookfileDescSize := bookfileFields[1].Descriptor()
+	bookfileDescSize := bookfileFields[2].Descriptor()
 	// bookfile.SizeValidator is a validator for the "size" field. It is called by the builders before save.
 	bookfile.SizeValidator = bookfileDescSize.Validators[0].(func(int64) error)
 	// bookfileDescID is the schema descriptor for id field.

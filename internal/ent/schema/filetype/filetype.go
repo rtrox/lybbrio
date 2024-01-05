@@ -5,7 +5,8 @@ import "strings"
 type FileType int
 
 const (
-	AZW3 FileType = iota + 1
+	Unknown FileType = iota
+	AZW3
 	EPUB
 	KEPUB
 	PDF
@@ -68,7 +69,8 @@ func FromString(s string) FileType {
 }
 
 func FromExtension(s string) FileType {
-	return FromString(strings.ToUpper(s))
+	s = strings.Replace(strings.ToUpper(s), ".", "", 1)
+	return FromString(s)
 }
 
 func All() []FileType {

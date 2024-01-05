@@ -87,6 +87,7 @@ var (
 	// BookFilesColumns holds the columns for the "book_files" table.
 	BookFilesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeString},
+		{Name: "name", Type: field.TypeString, Size: 2147483647},
 		{Name: "path", Type: field.TypeString, Size: 2147483647},
 		{Name: "size", Type: field.TypeInt64},
 		{Name: "format", Type: field.TypeEnum, Enums: []string{"AZW3", "EPUB", "KEPUB", "PDF", "CBC", "CBR", "CB7", "CBZ", "CBT"}},
@@ -100,7 +101,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "book_files_books_book",
-				Columns:    []*schema.Column{BookFilesColumns[4]},
+				Columns:    []*schema.Column{BookFilesColumns[5]},
 				RefColumns: []*schema.Column{BooksColumns[0]},
 				OnDelete:   schema.NoAction,
 			},

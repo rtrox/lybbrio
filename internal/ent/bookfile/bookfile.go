@@ -18,6 +18,8 @@ const (
 	Label = "book_file"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
+	// FieldName holds the string denoting the name field in the database.
+	FieldName = "name"
 	// FieldPath holds the string denoting the path field in the database.
 	FieldPath = "path"
 	// FieldSize holds the string denoting the size field in the database.
@@ -40,6 +42,7 @@ const (
 // Columns holds all SQL columns for bookfile fields.
 var Columns = []string{
 	FieldID,
+	FieldName,
 	FieldPath,
 	FieldSize,
 	FieldFormat,
@@ -74,6 +77,8 @@ func ValidColumn(column string) bool {
 var (
 	Hooks  [1]ent.Hook
 	Policy ent.Policy
+	// NameValidator is a validator for the "name" field. It is called by the builders before save.
+	NameValidator func(string) error
 	// PathValidator is a validator for the "path" field. It is called by the builders before save.
 	PathValidator func(string) error
 	// SizeValidator is a validator for the "size" field. It is called by the builders before save.
@@ -118,6 +123,11 @@ type OrderOption func(*sql.Selector)
 // ByID orders the results by the id field.
 func ByID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldID, opts...).ToFunc()
+}
+
+// ByName orders the results by the name field.
+func ByName(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldName, opts...).ToFunc()
 }
 
 // ByPath orders the results by the path field.

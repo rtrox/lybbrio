@@ -74,6 +74,11 @@ func (Book) Edges() []ent.Edge {
 			Ref("books"),
 		edge.From("shelf", Shelf.Type).
 			Ref("books"), // TODO: will need privacy on this edge.
+		edge.From("files", BookFile.Type).
+			Ref("book").
+			Annotations(
+				entgql.OrderField("FILES_COUNT"),
+			),
 	}
 }
 

@@ -302,12 +302,12 @@ func (bfq *BookFileQuery) WithBook(opts ...func(*BookQuery)) *BookFileQuery {
 // Example:
 //
 //	var v []struct {
-//		Path string `json:"path,omitempty"`
+//		Name string `json:"name,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.BookFile.Query().
-//		GroupBy(bookfile.FieldPath).
+//		GroupBy(bookfile.FieldName).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (bfq *BookFileQuery) GroupBy(field string, fields ...string) *BookFileGroupBy {
@@ -325,11 +325,11 @@ func (bfq *BookFileQuery) GroupBy(field string, fields ...string) *BookFileGroup
 // Example:
 //
 //	var v []struct {
-//		Path string `json:"path,omitempty"`
+//		Name string `json:"name,omitempty"`
 //	}
 //
 //	client.BookFile.Query().
-//		Select(bookfile.FieldPath).
+//		Select(bookfile.FieldName).
 //		Scan(ctx, &v)
 func (bfq *BookFileQuery) Select(fields ...string) *BookFileSelect {
 	bfq.ctx.Fields = append(bfq.ctx.Fields, fields...)

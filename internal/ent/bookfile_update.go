@@ -29,6 +29,20 @@ func (bfu *BookFileUpdate) Where(ps ...predicate.BookFile) *BookFileUpdate {
 	return bfu
 }
 
+// SetName sets the "name" field.
+func (bfu *BookFileUpdate) SetName(s string) *BookFileUpdate {
+	bfu.mutation.SetName(s)
+	return bfu
+}
+
+// SetNillableName sets the "name" field if the given value is not nil.
+func (bfu *BookFileUpdate) SetNillableName(s *string) *BookFileUpdate {
+	if s != nil {
+		bfu.SetName(*s)
+	}
+	return bfu
+}
+
 // SetPath sets the "path" field.
 func (bfu *BookFileUpdate) SetPath(s string) *BookFileUpdate {
 	bfu.mutation.SetPath(s)
@@ -129,6 +143,11 @@ func (bfu *BookFileUpdate) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (bfu *BookFileUpdate) check() error {
+	if v, ok := bfu.mutation.Name(); ok {
+		if err := bookfile.NameValidator(v); err != nil {
+			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "BookFile.name": %w`, err)}
+		}
+	}
 	if v, ok := bfu.mutation.Path(); ok {
 		if err := bookfile.PathValidator(v); err != nil {
 			return &ValidationError{Name: "path", err: fmt.Errorf(`ent: validator failed for field "BookFile.path": %w`, err)}
@@ -161,6 +180,9 @@ func (bfu *BookFileUpdate) sqlSave(ctx context.Context) (n int, err error) {
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := bfu.mutation.Name(); ok {
+		_spec.SetField(bookfile.FieldName, field.TypeString, value)
 	}
 	if value, ok := bfu.mutation.Path(); ok {
 		_spec.SetField(bookfile.FieldPath, field.TypeString, value)
@@ -221,6 +243,20 @@ type BookFileUpdateOne struct {
 	fields   []string
 	hooks    []Hook
 	mutation *BookFileMutation
+}
+
+// SetName sets the "name" field.
+func (bfuo *BookFileUpdateOne) SetName(s string) *BookFileUpdateOne {
+	bfuo.mutation.SetName(s)
+	return bfuo
+}
+
+// SetNillableName sets the "name" field if the given value is not nil.
+func (bfuo *BookFileUpdateOne) SetNillableName(s *string) *BookFileUpdateOne {
+	if s != nil {
+		bfuo.SetName(*s)
+	}
+	return bfuo
 }
 
 // SetPath sets the "path" field.
@@ -336,6 +372,11 @@ func (bfuo *BookFileUpdateOne) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (bfuo *BookFileUpdateOne) check() error {
+	if v, ok := bfuo.mutation.Name(); ok {
+		if err := bookfile.NameValidator(v); err != nil {
+			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "BookFile.name": %w`, err)}
+		}
+	}
 	if v, ok := bfuo.mutation.Path(); ok {
 		if err := bookfile.PathValidator(v); err != nil {
 			return &ValidationError{Name: "path", err: fmt.Errorf(`ent: validator failed for field "BookFile.path": %w`, err)}
@@ -385,6 +426,9 @@ func (bfuo *BookFileUpdateOne) sqlSave(ctx context.Context) (_node *BookFile, er
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := bfuo.mutation.Name(); ok {
+		_spec.SetField(bookfile.FieldName, field.TypeString, value)
 	}
 	if value, ok := bfuo.mutation.Path(); ok {
 		_spec.SetField(bookfile.FieldPath, field.TypeString, value)

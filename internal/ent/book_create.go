@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"lybbrio/internal/ent/author"
 	"lybbrio/internal/ent/book"
+	"lybbrio/internal/ent/bookfile"
 	"lybbrio/internal/ent/identifier"
 	"lybbrio/internal/ent/language"
 	"lybbrio/internal/ent/publisher"
@@ -236,6 +237,21 @@ func (bc *BookCreate) AddShelf(s ...*Shelf) *BookCreate {
 		ids[i] = s[i].ID
 	}
 	return bc.AddShelfIDs(ids...)
+}
+
+// AddFileIDs adds the "files" edge to the BookFile entity by IDs.
+func (bc *BookCreate) AddFileIDs(ids ...ksuid.ID) *BookCreate {
+	bc.mutation.AddFileIDs(ids...)
+	return bc
+}
+
+// AddFiles adds the "files" edges to the BookFile entity.
+func (bc *BookCreate) AddFiles(b ...*BookFile) *BookCreate {
+	ids := make([]ksuid.ID, len(b))
+	for i := range b {
+		ids[i] = b[i].ID
+	}
+	return bc.AddFileIDs(ids...)
 }
 
 // Mutation returns the BookMutation object of the builder.
@@ -479,6 +495,22 @@ func (bc *BookCreate) createSpec() (*Book, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(shelf.FieldID, field.TypeString),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := bc.mutation.FilesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   book.FilesTable,
+			Columns: []string{book.FilesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(bookfile.FieldID, field.TypeString),
 			},
 		}
 		for _, k := range nodes {

@@ -43,8 +43,8 @@ type Calibre interface {
 }
 
 type CalibreSQLite struct {
-	db          *gorm.DB
 	libraryPath string
+	db          *gorm.DB
 }
 
 func NewCalibreSQLite(libraryPath string) (*CalibreSQLite, error) {
@@ -54,9 +54,19 @@ func NewCalibreSQLite(libraryPath string) (*CalibreSQLite, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &CalibreSQLite{db: db}, nil
+	ret := &CalibreSQLite{
+		libraryPath: libraryPath,
+		db:          db,
+	}
+	return ret, nil
 }
 
+func (c *CalibreSQLite) Clone() *CalibreSQLite {
+	return &CalibreSQLite{
+		libraryPath: c.libraryPath,
+		db:          c.db.Session(&gorm.Session{}),
+	}
+}
 func (c *CalibreSQLite) LibraryPath() string {
 	return c.libraryPath
 }
@@ -69,14 +79,14 @@ func (c *CalibreSQLite) Close() error {
 	return db.Close()
 }
 
-func (c *CalibreSQLite) WithLogger(logger *zerolog.Logger) Calibre {
-	return &CalibreSQLite{
-		db: c.db.Session(
-			&gorm.Session{
-				Logger: gormLogger.Logger{},
-			},
-		),
-	}
+func (c *CalibreSQLite) WithLogger(logger *zerolog.Logger) *CalibreSQLite {
+	ret := c.Clone()
+	ret.db = ret.db.Session(
+		&gorm.Session{
+			Logger: gormLogger.Logger{},
+		},
+	)
+	return ret
 }
 
 func (c *CalibreSQLite) WithPagination(page, pageSize int) Calibre {

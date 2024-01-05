@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"lybbrio/internal/ent/author"
 	"lybbrio/internal/ent/book"
+	"lybbrio/internal/ent/bookfile"
 	"lybbrio/internal/ent/identifier"
 	"lybbrio/internal/ent/language"
 	"lybbrio/internal/ent/predicate"
@@ -38,6 +39,7 @@ type BookQuery struct {
 	withTags             *TagQuery
 	withLanguage         *LanguageQuery
 	withShelf            *ShelfQuery
+	withFiles            *BookFileQuery
 	modifiers            []func(*sql.Selector)
 	loadTotal            []func(context.Context, []*Book) error
 	withNamedAuthors     map[string]*AuthorQuery
@@ -47,6 +49,7 @@ type BookQuery struct {
 	withNamedTags        map[string]*TagQuery
 	withNamedLanguage    map[string]*LanguageQuery
 	withNamedShelf       map[string]*ShelfQuery
+	withNamedFiles       map[string]*BookFileQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -230,6 +233,28 @@ func (bq *BookQuery) QueryShelf() *ShelfQuery {
 			sqlgraph.From(book.Table, book.FieldID, selector),
 			sqlgraph.To(shelf.Table, shelf.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, true, book.ShelfTable, book.ShelfPrimaryKey...),
+		)
+		fromU = sqlgraph.SetNeighbors(bq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryFiles chains the current query on the "files" edge.
+func (bq *BookQuery) QueryFiles() *BookFileQuery {
+	query := (&BookFileClient{config: bq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := bq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := bq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(book.Table, book.FieldID, selector),
+			sqlgraph.To(bookfile.Table, bookfile.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, book.FilesTable, book.FilesColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(bq.driver.Dialect(), step)
 		return fromU, nil
@@ -436,6 +461,7 @@ func (bq *BookQuery) Clone() *BookQuery {
 		withTags:        bq.withTags.Clone(),
 		withLanguage:    bq.withLanguage.Clone(),
 		withShelf:       bq.withShelf.Clone(),
+		withFiles:       bq.withFiles.Clone(),
 		// clone intermediate query.
 		sql:  bq.sql.Clone(),
 		path: bq.path,
@@ -516,6 +542,17 @@ func (bq *BookQuery) WithShelf(opts ...func(*ShelfQuery)) *BookQuery {
 		opt(query)
 	}
 	bq.withShelf = query
+	return bq
+}
+
+// WithFiles tells the query-builder to eager-load the nodes that are connected to
+// the "files" edge. The optional arguments are used to configure the query builder of the edge.
+func (bq *BookQuery) WithFiles(opts ...func(*BookFileQuery)) *BookQuery {
+	query := (&BookFileClient{config: bq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	bq.withFiles = query
 	return bq
 }
 
@@ -603,7 +640,7 @@ func (bq *BookQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Book, e
 	var (
 		nodes       = []*Book{}
 		_spec       = bq.querySpec()
-		loadedTypes = [7]bool{
+		loadedTypes = [8]bool{
 			bq.withAuthors != nil,
 			bq.withPublisher != nil,
 			bq.withSeries != nil,
@@ -611,6 +648,7 @@ func (bq *BookQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Book, e
 			bq.withTags != nil,
 			bq.withLanguage != nil,
 			bq.withShelf != nil,
+			bq.withFiles != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -683,6 +721,13 @@ func (bq *BookQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Book, e
 			return nil, err
 		}
 	}
+	if query := bq.withFiles; query != nil {
+		if err := bq.loadFiles(ctx, query, nodes,
+			func(n *Book) { n.Edges.Files = []*BookFile{} },
+			func(n *Book, e *BookFile) { n.Edges.Files = append(n.Edges.Files, e) }); err != nil {
+			return nil, err
+		}
+	}
 	for name, query := range bq.withNamedAuthors {
 		if err := bq.loadAuthors(ctx, query, nodes,
 			func(n *Book) { n.appendNamedAuthors(name) },
@@ -729,6 +774,13 @@ func (bq *BookQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Book, e
 		if err := bq.loadShelf(ctx, query, nodes,
 			func(n *Book) { n.appendNamedShelf(name) },
 			func(n *Book, e *Shelf) { n.appendNamedShelf(name, e) }); err != nil {
+			return nil, err
+		}
+	}
+	for name, query := range bq.withNamedFiles {
+		if err := bq.loadFiles(ctx, query, nodes,
+			func(n *Book) { n.appendNamedFiles(name) },
+			func(n *Book, e *BookFile) { n.appendNamedFiles(name, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -1137,6 +1189,37 @@ func (bq *BookQuery) loadShelf(ctx context.Context, query *ShelfQuery, nodes []*
 	}
 	return nil
 }
+func (bq *BookQuery) loadFiles(ctx context.Context, query *BookFileQuery, nodes []*Book, init func(*Book), assign func(*Book, *BookFile)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[ksuid.ID]*Book)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.BookFile(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(book.FilesColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.book_file_book
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "book_file_book" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "book_file_book" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
 
 func (bq *BookQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := bq.querySpec()
@@ -1317,6 +1400,20 @@ func (bq *BookQuery) WithNamedShelf(name string, opts ...func(*ShelfQuery)) *Boo
 		bq.withNamedShelf = make(map[string]*ShelfQuery)
 	}
 	bq.withNamedShelf[name] = query
+	return bq
+}
+
+// WithNamedFiles tells the query-builder to eager-load the nodes that are connected to the "files"
+// edge with the given name. The optional arguments are used to configure the query builder of the edge.
+func (bq *BookQuery) WithNamedFiles(name string, opts ...func(*BookFileQuery)) *BookQuery {
+	query := (&BookFileClient{config: bq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	if bq.withNamedFiles == nil {
+		bq.withNamedFiles = make(map[string]*BookFileQuery)
+	}
+	bq.withNamedFiles[name] = query
 	return bq
 }
 

@@ -540,6 +540,10 @@ type BookWhereInput struct {
 	// "shelf" edge predicates.
 	HasShelf     *bool              `json:"hasShelf,omitempty"`
 	HasShelfWith []*ShelfWhereInput `json:"hasShelfWith,omitempty"`
+
+	// "files" edge predicates.
+	HasFiles     *bool                 `json:"hasFiles,omitempty"`
+	HasFilesWith []*BookFileWhereInput `json:"hasFilesWith,omitempty"`
 }
 
 // AddPredicates adds custom predicates to the where input to be used during the filtering phase.
@@ -1061,6 +1065,24 @@ func (i *BookWhereInput) P() (predicate.Book, error) {
 		}
 		predicates = append(predicates, book.HasShelfWith(with...))
 	}
+	if i.HasFiles != nil {
+		p := book.HasFiles()
+		if !*i.HasFiles {
+			p = book.Not(p)
+		}
+		predicates = append(predicates, p)
+	}
+	if len(i.HasFilesWith) > 0 {
+		with := make([]predicate.BookFile, 0, len(i.HasFilesWith))
+		for _, w := range i.HasFilesWith {
+			p, err := w.P()
+			if err != nil {
+				return nil, fmt.Errorf("%w: field 'HasFilesWith'", err)
+			}
+			with = append(with, p)
+		}
+		predicates = append(predicates, book.HasFilesWith(with...))
+	}
 	switch len(predicates) {
 	case 0:
 		return nil, ErrEmptyBookWhereInput
@@ -1087,6 +1109,21 @@ type BookFileWhereInput struct {
 	IDGTE   *ksuid.ID  `json:"idGTE,omitempty"`
 	IDLT    *ksuid.ID  `json:"idLT,omitempty"`
 	IDLTE   *ksuid.ID  `json:"idLTE,omitempty"`
+
+	// "name" field predicates.
+	Name             *string  `json:"name,omitempty"`
+	NameNEQ          *string  `json:"nameNEQ,omitempty"`
+	NameIn           []string `json:"nameIn,omitempty"`
+	NameNotIn        []string `json:"nameNotIn,omitempty"`
+	NameGT           *string  `json:"nameGT,omitempty"`
+	NameGTE          *string  `json:"nameGTE,omitempty"`
+	NameLT           *string  `json:"nameLT,omitempty"`
+	NameLTE          *string  `json:"nameLTE,omitempty"`
+	NameContains     *string  `json:"nameContains,omitempty"`
+	NameHasPrefix    *string  `json:"nameHasPrefix,omitempty"`
+	NameHasSuffix    *string  `json:"nameHasSuffix,omitempty"`
+	NameEqualFold    *string  `json:"nameEqualFold,omitempty"`
+	NameContainsFold *string  `json:"nameContainsFold,omitempty"`
 
 	// "path" field predicates.
 	Path             *string  `json:"path,omitempty"`
@@ -1218,6 +1255,45 @@ func (i *BookFileWhereInput) P() (predicate.BookFile, error) {
 	}
 	if i.IDLTE != nil {
 		predicates = append(predicates, bookfile.IDLTE(*i.IDLTE))
+	}
+	if i.Name != nil {
+		predicates = append(predicates, bookfile.NameEQ(*i.Name))
+	}
+	if i.NameNEQ != nil {
+		predicates = append(predicates, bookfile.NameNEQ(*i.NameNEQ))
+	}
+	if len(i.NameIn) > 0 {
+		predicates = append(predicates, bookfile.NameIn(i.NameIn...))
+	}
+	if len(i.NameNotIn) > 0 {
+		predicates = append(predicates, bookfile.NameNotIn(i.NameNotIn...))
+	}
+	if i.NameGT != nil {
+		predicates = append(predicates, bookfile.NameGT(*i.NameGT))
+	}
+	if i.NameGTE != nil {
+		predicates = append(predicates, bookfile.NameGTE(*i.NameGTE))
+	}
+	if i.NameLT != nil {
+		predicates = append(predicates, bookfile.NameLT(*i.NameLT))
+	}
+	if i.NameLTE != nil {
+		predicates = append(predicates, bookfile.NameLTE(*i.NameLTE))
+	}
+	if i.NameContains != nil {
+		predicates = append(predicates, bookfile.NameContains(*i.NameContains))
+	}
+	if i.NameHasPrefix != nil {
+		predicates = append(predicates, bookfile.NameHasPrefix(*i.NameHasPrefix))
+	}
+	if i.NameHasSuffix != nil {
+		predicates = append(predicates, bookfile.NameHasSuffix(*i.NameHasSuffix))
+	}
+	if i.NameEqualFold != nil {
+		predicates = append(predicates, bookfile.NameEqualFold(*i.NameEqualFold))
+	}
+	if i.NameContainsFold != nil {
+		predicates = append(predicates, bookfile.NameContainsFold(*i.NameContainsFold))
 	}
 	if i.Path != nil {
 		predicates = append(predicates, bookfile.PathEQ(*i.Path))

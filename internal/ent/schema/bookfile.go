@@ -32,6 +32,8 @@ func (BookFile) Mixin() []ent.Mixin {
 // Fields of the BookFile.
 func (BookFile) Fields() []ent.Field {
 	ret := []ent.Field{
+		field.Text("name").
+			NotEmpty(),
 		field.Text("path").
 			NotEmpty(),
 		field.Int64("size").

@@ -629,8 +629,12 @@ func (p *bookPager) applyOrder(query *BookQuery) *BookQuery {
 		if o.Field.column == DefaultBookOrder.Field.column {
 			defaultOrdered = true
 		}
-		if len(query.ctx.Fields) > 0 {
-			query.ctx.AppendFieldOnce(o.Field.column)
+		switch o.Field.column {
+		case BookOrderFieldFilesCount.column:
+		default:
+			if len(query.ctx.Fields) > 0 {
+				query.ctx.AppendFieldOnce(o.Field.column)
+			}
 		}
 	}
 	if !defaultOrdered {
@@ -644,9 +648,18 @@ func (p *bookPager) applyOrder(query *BookQuery) *BookQuery {
 }
 
 func (p *bookPager) orderExpr(query *BookQuery) sql.Querier {
-	if len(query.ctx.Fields) > 0 {
-		for _, o := range p.order {
-			query.ctx.AppendFieldOnce(o.Field.column)
+	for _, o := range p.order {
+		switch o.Field.column {
+		case BookOrderFieldFilesCount.column:
+			direction := o.Direction
+			if p.reverse {
+				direction = direction.Reverse()
+			}
+			query = query.Order(o.Field.toTerm(direction.OrderTermOption()))
+		default:
+			if len(query.ctx.Fields) > 0 {
+				query.ctx.AppendFieldOnce(o.Field.column)
+			}
 		}
 	}
 	return sql.ExprFunc(func(b *sql.Builder) {
@@ -773,6 +786,25 @@ var (
 			}
 		},
 	}
+	// BookOrderFieldFilesCount orders by FILES_COUNT.
+	BookOrderFieldFilesCount = &BookOrderField{
+		Value: func(b *Book) (ent.Value, error) {
+			return b.Value("files_count")
+		},
+		column: "files_count",
+		toTerm: func(opts ...sql.OrderTermOption) book.OrderOption {
+			return book.ByFilesCount(
+				append(opts, sql.OrderSelectAs("files_count"))...,
+			)
+		},
+		toCursor: func(b *Book) Cursor {
+			cv, _ := b.Value("files_count")
+			return Cursor{
+				ID:    b.ID,
+				Value: cv,
+			}
+		},
+	}
 )
 
 // String implement fmt.Stringer interface.
@@ -787,6 +819,8 @@ func (f BookOrderField) String() string {
 		str = "PUB_DATE"
 	case BookOrderFieldIsbn.column:
 		str = "ISBN"
+	case BookOrderFieldFilesCount.column:
+		str = "FILES_COUNT"
 	}
 	return str
 }
@@ -811,6 +845,8 @@ func (f *BookOrderField) UnmarshalGQL(v interface{}) error {
 		*f = *BookOrderFieldPublishedDate
 	case "ISBN":
 		*f = *BookOrderFieldIsbn
+	case "FILES_COUNT":
+		*f = *BookOrderFieldFilesCount
 	default:
 		return fmt.Errorf("%s is not a valid BookOrderField", str)
 	}

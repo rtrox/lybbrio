@@ -18,6 +18,8 @@ type BookFile struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID ksuid.ID `json:"id,omitempty"`
+	// Name holds the value of the "name" field.
+	Name string `json:"name,omitempty"`
 	// Path holds the value of the "path" field.
 	Path string `json:"path,omitempty"`
 	// Size in bytes
@@ -62,7 +64,7 @@ func (*BookFile) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case bookfile.FieldSize:
 			values[i] = new(sql.NullInt64)
-		case bookfile.FieldID, bookfile.FieldPath, bookfile.FieldFormat:
+		case bookfile.FieldID, bookfile.FieldName, bookfile.FieldPath, bookfile.FieldFormat:
 			values[i] = new(sql.NullString)
 		case bookfile.ForeignKeys[0]: // book_file_book
 			values[i] = new(sql.NullString)
@@ -86,6 +88,12 @@ func (bf *BookFile) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value.Valid {
 				bf.ID = ksuid.ID(value.String)
+			}
+		case bookfile.FieldName:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field name", values[i])
+			} else if value.Valid {
+				bf.Name = value.String
 			}
 		case bookfile.FieldPath:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -153,6 +161,9 @@ func (bf *BookFile) String() string {
 	var builder strings.Builder
 	builder.WriteString("BookFile(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", bf.ID))
+	builder.WriteString("name=")
+	builder.WriteString(bf.Name)
+	builder.WriteString(", ")
 	builder.WriteString("path=")
 	builder.WriteString(bf.Path)
 	builder.WriteString(", ")
