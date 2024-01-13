@@ -37,7 +37,8 @@ func (BookFile) Fields() []ent.Field {
 		field.Text("name").
 			NotEmpty(),
 		field.Text("path").
-			NotEmpty(),
+			NotEmpty().
+			Unique(),
 		field.Int64("size").
 			Positive().
 			Comment("Size in bytes"),
