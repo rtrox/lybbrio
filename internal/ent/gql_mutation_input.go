@@ -9,15 +9,23 @@ import (
 
 // CreateAuthorInput represents a mutation input for creating authors.
 type CreateAuthorInput struct {
-	CalibreID *int64
-	Name      string
-	Sort      string
-	Link      *string
-	BookIDs   []ksuid.ID
+	CreateTime *time.Time
+	UpdateTime *time.Time
+	CalibreID  *int64
+	Name       string
+	Sort       string
+	Link       *string
+	BookIDs    []ksuid.ID
 }
 
 // Mutate applies the CreateAuthorInput on the AuthorMutation builder.
 func (i *CreateAuthorInput) Mutate(m *AuthorMutation) {
+	if v := i.CreateTime; v != nil {
+		m.SetCreateTime(*v)
+	}
+	if v := i.UpdateTime; v != nil {
+		m.SetUpdateTime(*v)
+	}
 	if v := i.CalibreID; v != nil {
 		m.SetCalibreID(*v)
 	}
@@ -39,6 +47,7 @@ func (c *AuthorCreate) SetInput(i CreateAuthorInput) *AuthorCreate {
 
 // UpdateAuthorInput represents a mutation input for updating authors.
 type UpdateAuthorInput struct {
+	UpdateTime     *time.Time
 	ClearCalibreID bool
 	CalibreID      *int64
 	Name           *string
@@ -52,6 +61,9 @@ type UpdateAuthorInput struct {
 
 // Mutate applies the UpdateAuthorInput on the AuthorMutation builder.
 func (i *UpdateAuthorInput) Mutate(m *AuthorMutation) {
+	if v := i.UpdateTime; v != nil {
+		m.SetUpdateTime(*v)
+	}
 	if i.ClearCalibreID {
 		m.ClearCalibreID()
 	}
@@ -95,6 +107,8 @@ func (c *AuthorUpdateOne) SetInput(i UpdateAuthorInput) *AuthorUpdateOne {
 
 // CreateBookInput represents a mutation input for creating books.
 type CreateBookInput struct {
+	CreateTime    *time.Time
+	UpdateTime    *time.Time
 	CalibreID     *int64
 	Title         string
 	Sort          string
@@ -115,6 +129,12 @@ type CreateBookInput struct {
 
 // Mutate applies the CreateBookInput on the BookMutation builder.
 func (i *CreateBookInput) Mutate(m *BookMutation) {
+	if v := i.CreateTime; v != nil {
+		m.SetCreateTime(*v)
+	}
+	if v := i.UpdateTime; v != nil {
+		m.SetUpdateTime(*v)
+	}
 	if v := i.CalibreID; v != nil {
 		m.SetCalibreID(*v)
 	}
@@ -167,6 +187,7 @@ func (c *BookCreate) SetInput(i CreateBookInput) *BookCreate {
 
 // UpdateBookInput represents a mutation input for updating books.
 type UpdateBookInput struct {
+	UpdateTime          *time.Time
 	ClearCalibreID      bool
 	CalibreID           *int64
 	Title               *string
@@ -208,6 +229,9 @@ type UpdateBookInput struct {
 
 // Mutate applies the UpdateBookInput on the BookMutation builder.
 func (i *UpdateBookInput) Mutate(m *BookMutation) {
+	if v := i.UpdateTime; v != nil {
+		m.SetUpdateTime(*v)
+	}
 	if i.ClearCalibreID {
 		m.ClearCalibreID()
 	}
@@ -335,14 +359,22 @@ func (c *BookUpdateOne) SetInput(i UpdateBookInput) *BookUpdateOne {
 
 // CreateIdentifierInput represents a mutation input for creating identifiers.
 type CreateIdentifierInput struct {
-	CalibreID *int64
-	Type      string
-	Value     string
-	BookID    ksuid.ID
+	CreateTime *time.Time
+	UpdateTime *time.Time
+	CalibreID  *int64
+	Type       string
+	Value      string
+	BookID     ksuid.ID
 }
 
 // Mutate applies the CreateIdentifierInput on the IdentifierMutation builder.
 func (i *CreateIdentifierInput) Mutate(m *IdentifierMutation) {
+	if v := i.CreateTime; v != nil {
+		m.SetCreateTime(*v)
+	}
+	if v := i.UpdateTime; v != nil {
+		m.SetUpdateTime(*v)
+	}
 	if v := i.CalibreID; v != nil {
 		m.SetCalibreID(*v)
 	}
@@ -359,6 +391,7 @@ func (c *IdentifierCreate) SetInput(i CreateIdentifierInput) *IdentifierCreate {
 
 // UpdateIdentifierInput represents a mutation input for updating identifiers.
 type UpdateIdentifierInput struct {
+	UpdateTime     *time.Time
 	ClearCalibreID bool
 	CalibreID      *int64
 	Type           *string
@@ -368,6 +401,9 @@ type UpdateIdentifierInput struct {
 
 // Mutate applies the UpdateIdentifierInput on the IdentifierMutation builder.
 func (i *UpdateIdentifierInput) Mutate(m *IdentifierMutation) {
+	if v := i.UpdateTime; v != nil {
+		m.SetUpdateTime(*v)
+	}
 	if i.ClearCalibreID {
 		m.ClearCalibreID()
 	}
@@ -399,13 +435,21 @@ func (c *IdentifierUpdateOne) SetInput(i UpdateIdentifierInput) *IdentifierUpdat
 
 // CreateLanguageInput represents a mutation input for creating languages.
 type CreateLanguageInput struct {
-	CalibreID *int64
-	Code      string
-	BookIDs   []ksuid.ID
+	CreateTime *time.Time
+	UpdateTime *time.Time
+	CalibreID  *int64
+	Code       string
+	BookIDs    []ksuid.ID
 }
 
 // Mutate applies the CreateLanguageInput on the LanguageMutation builder.
 func (i *CreateLanguageInput) Mutate(m *LanguageMutation) {
+	if v := i.CreateTime; v != nil {
+		m.SetCreateTime(*v)
+	}
+	if v := i.UpdateTime; v != nil {
+		m.SetUpdateTime(*v)
+	}
 	if v := i.CalibreID; v != nil {
 		m.SetCalibreID(*v)
 	}
@@ -423,6 +467,7 @@ func (c *LanguageCreate) SetInput(i CreateLanguageInput) *LanguageCreate {
 
 // UpdateLanguageInput represents a mutation input for updating languages.
 type UpdateLanguageInput struct {
+	UpdateTime     *time.Time
 	ClearCalibreID bool
 	CalibreID      *int64
 	Code           *string
@@ -433,6 +478,9 @@ type UpdateLanguageInput struct {
 
 // Mutate applies the UpdateLanguageInput on the LanguageMutation builder.
 func (i *UpdateLanguageInput) Mutate(m *LanguageMutation) {
+	if v := i.UpdateTime; v != nil {
+		m.SetUpdateTime(*v)
+	}
 	if i.ClearCalibreID {
 		m.ClearCalibreID()
 	}
@@ -467,13 +515,21 @@ func (c *LanguageUpdateOne) SetInput(i UpdateLanguageInput) *LanguageUpdateOne {
 
 // CreatePublisherInput represents a mutation input for creating publishers.
 type CreatePublisherInput struct {
-	CalibreID *int64
-	Name      string
-	BookIDs   []ksuid.ID
+	CreateTime *time.Time
+	UpdateTime *time.Time
+	CalibreID  *int64
+	Name       string
+	BookIDs    []ksuid.ID
 }
 
 // Mutate applies the CreatePublisherInput on the PublisherMutation builder.
 func (i *CreatePublisherInput) Mutate(m *PublisherMutation) {
+	if v := i.CreateTime; v != nil {
+		m.SetCreateTime(*v)
+	}
+	if v := i.UpdateTime; v != nil {
+		m.SetUpdateTime(*v)
+	}
 	if v := i.CalibreID; v != nil {
 		m.SetCalibreID(*v)
 	}
@@ -491,6 +547,7 @@ func (c *PublisherCreate) SetInput(i CreatePublisherInput) *PublisherCreate {
 
 // UpdatePublisherInput represents a mutation input for updating publishers.
 type UpdatePublisherInput struct {
+	UpdateTime     *time.Time
 	ClearCalibreID bool
 	CalibreID      *int64
 	Name           *string
@@ -501,6 +558,9 @@ type UpdatePublisherInput struct {
 
 // Mutate applies the UpdatePublisherInput on the PublisherMutation builder.
 func (i *UpdatePublisherInput) Mutate(m *PublisherMutation) {
+	if v := i.UpdateTime; v != nil {
+		m.SetUpdateTime(*v)
+	}
 	if i.ClearCalibreID {
 		m.ClearCalibreID()
 	}
@@ -535,14 +595,22 @@ func (c *PublisherUpdateOne) SetInput(i UpdatePublisherInput) *PublisherUpdateOn
 
 // CreateSeriesInput represents a mutation input for creating seriesslice.
 type CreateSeriesInput struct {
-	CalibreID *int64
-	Name      string
-	Sort      string
-	BookIDs   []ksuid.ID
+	CreateTime *time.Time
+	UpdateTime *time.Time
+	CalibreID  *int64
+	Name       string
+	Sort       string
+	BookIDs    []ksuid.ID
 }
 
 // Mutate applies the CreateSeriesInput on the SeriesMutation builder.
 func (i *CreateSeriesInput) Mutate(m *SeriesMutation) {
+	if v := i.CreateTime; v != nil {
+		m.SetCreateTime(*v)
+	}
+	if v := i.UpdateTime; v != nil {
+		m.SetUpdateTime(*v)
+	}
 	if v := i.CalibreID; v != nil {
 		m.SetCalibreID(*v)
 	}
@@ -561,6 +629,7 @@ func (c *SeriesCreate) SetInput(i CreateSeriesInput) *SeriesCreate {
 
 // UpdateSeriesInput represents a mutation input for updating seriesslice.
 type UpdateSeriesInput struct {
+	UpdateTime     *time.Time
 	ClearCalibreID bool
 	CalibreID      *int64
 	Name           *string
@@ -572,6 +641,9 @@ type UpdateSeriesInput struct {
 
 // Mutate applies the UpdateSeriesInput on the SeriesMutation builder.
 func (i *UpdateSeriesInput) Mutate(m *SeriesMutation) {
+	if v := i.UpdateTime; v != nil {
+		m.SetUpdateTime(*v)
+	}
 	if i.ClearCalibreID {
 		m.ClearCalibreID()
 	}
@@ -609,6 +681,7 @@ func (c *SeriesUpdateOne) SetInput(i UpdateSeriesInput) *SeriesUpdateOne {
 
 // UpdateShelfInput represents a mutation input for updating shelves.
 type UpdateShelfInput struct {
+	UpdateTime       *time.Time
 	Public           *bool
 	Name             *string
 	ClearDescription bool
@@ -620,6 +693,9 @@ type UpdateShelfInput struct {
 
 // Mutate applies the UpdateShelfInput on the ShelfMutation builder.
 func (i *UpdateShelfInput) Mutate(m *ShelfMutation) {
+	if v := i.UpdateTime; v != nil {
+		m.SetUpdateTime(*v)
+	}
 	if v := i.Public; v != nil {
 		m.SetPublic(*v)
 	}
@@ -725,6 +801,7 @@ func (c *TagUpdateOne) SetInput(i UpdateTagInput) *TagUpdateOne {
 
 // UpdateUserInput represents a mutation input for updating users.
 type UpdateUserInput struct {
+	UpdateTime        *time.Time
 	Username          *string
 	ClearPasswordHash bool
 	PasswordHash      *string
@@ -736,6 +813,9 @@ type UpdateUserInput struct {
 
 // Mutate applies the UpdateUserInput on the UserMutation builder.
 func (i *UpdateUserInput) Mutate(m *UserMutation) {
+	if v := i.UpdateTime; v != nil {
+		m.SetUpdateTime(*v)
+	}
 	if v := i.Username; v != nil {
 		m.SetUsername(*v)
 	}
@@ -773,6 +853,8 @@ func (c *UserUpdateOne) SetInput(i UpdateUserInput) *UserUpdateOne {
 
 // CreateUserInput represents a mutation input for creating users.
 type CreateUserInput struct {
+	CreateTime        *time.Time
+	UpdateTime        *time.Time
 	Username          string
 	PasswordHash      *string
 	Email             string
@@ -782,6 +864,12 @@ type CreateUserInput struct {
 
 // Mutate applies the CreateUserInput on the UserMutation builder.
 func (i *CreateUserInput) Mutate(m *UserMutation) {
+	if v := i.CreateTime; v != nil {
+		m.SetCreateTime(*v)
+	}
+	if v := i.UpdateTime; v != nil {
+		m.SetUpdateTime(*v)
+	}
 	m.SetUsername(i.Username)
 	if v := i.PasswordHash; v != nil {
 		m.SetPasswordHash(*v)

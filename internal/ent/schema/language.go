@@ -9,6 +9,7 @@ import (
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/index"
+	"entgo.io/ent/schema/mixin"
 )
 
 // Language holds the schema definition for the Language entity.
@@ -27,6 +28,7 @@ func (Language) Annotations() []schema.Annotation {
 
 func (Language) Mixin() []ent.Mixin {
 	return []ent.Mixin{
+		mixin.Time{},
 		BaseMixin{},
 		CalibreMixin{},
 		ksuid.MixinWithPrefix("lng"),

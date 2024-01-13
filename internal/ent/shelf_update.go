@@ -10,6 +10,7 @@ import (
 	"lybbrio/internal/ent/predicate"
 	"lybbrio/internal/ent/schema/ksuid"
 	"lybbrio/internal/ent/shelf"
+	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -26,6 +27,12 @@ type ShelfUpdate struct {
 // Where appends a list predicates to the ShelfUpdate builder.
 func (su *ShelfUpdate) Where(ps ...predicate.Shelf) *ShelfUpdate {
 	su.mutation.Where(ps...)
+	return su
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (su *ShelfUpdate) SetUpdateTime(t time.Time) *ShelfUpdate {
+	su.mutation.SetUpdateTime(t)
 	return su
 }
 
@@ -120,6 +127,9 @@ func (su *ShelfUpdate) RemoveBooks(b ...*Book) *ShelfUpdate {
 
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (su *ShelfUpdate) Save(ctx context.Context) (int, error) {
+	if err := su.defaults(); err != nil {
+		return 0, err
+	}
 	return withHooks(ctx, su.sqlSave, su.mutation, su.hooks)
 }
 
@@ -143,6 +153,18 @@ func (su *ShelfUpdate) ExecX(ctx context.Context) {
 	if err := su.Exec(ctx); err != nil {
 		panic(err)
 	}
+}
+
+// defaults sets the default values of the builder before save.
+func (su *ShelfUpdate) defaults() error {
+	if _, ok := su.mutation.UpdateTime(); !ok {
+		if shelf.UpdateDefaultUpdateTime == nil {
+			return fmt.Errorf("ent: uninitialized shelf.UpdateDefaultUpdateTime (forgotten import ent/runtime?)")
+		}
+		v := shelf.UpdateDefaultUpdateTime()
+		su.mutation.SetUpdateTime(v)
+	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -169,6 +191,9 @@ func (su *ShelfUpdate) sqlSave(ctx context.Context) (n int, err error) {
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := su.mutation.UpdateTime(); ok {
+		_spec.SetField(shelf.FieldUpdateTime, field.TypeTime, value)
 	}
 	if value, ok := su.mutation.Public(); ok {
 		_spec.SetField(shelf.FieldPublic, field.TypeBool, value)
@@ -245,6 +270,12 @@ type ShelfUpdateOne struct {
 	fields   []string
 	hooks    []Hook
 	mutation *ShelfMutation
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (suo *ShelfUpdateOne) SetUpdateTime(t time.Time) *ShelfUpdateOne {
+	suo.mutation.SetUpdateTime(t)
+	return suo
 }
 
 // SetPublic sets the "public" field.
@@ -351,6 +382,9 @@ func (suo *ShelfUpdateOne) Select(field string, fields ...string) *ShelfUpdateOn
 
 // Save executes the query and returns the updated Shelf entity.
 func (suo *ShelfUpdateOne) Save(ctx context.Context) (*Shelf, error) {
+	if err := suo.defaults(); err != nil {
+		return nil, err
+	}
 	return withHooks(ctx, suo.sqlSave, suo.mutation, suo.hooks)
 }
 
@@ -374,6 +408,18 @@ func (suo *ShelfUpdateOne) ExecX(ctx context.Context) {
 	if err := suo.Exec(ctx); err != nil {
 		panic(err)
 	}
+}
+
+// defaults sets the default values of the builder before save.
+func (suo *ShelfUpdateOne) defaults() error {
+	if _, ok := suo.mutation.UpdateTime(); !ok {
+		if shelf.UpdateDefaultUpdateTime == nil {
+			return fmt.Errorf("ent: uninitialized shelf.UpdateDefaultUpdateTime (forgotten import ent/runtime?)")
+		}
+		v := shelf.UpdateDefaultUpdateTime()
+		suo.mutation.SetUpdateTime(v)
+	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -417,6 +463,9 @@ func (suo *ShelfUpdateOne) sqlSave(ctx context.Context) (_node *Shelf, err error
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := suo.mutation.UpdateTime(); ok {
+		_spec.SetField(shelf.FieldUpdateTime, field.TypeTime, value)
 	}
 	if value, ok := suo.mutation.Public(); ok {
 		_spec.SetField(shelf.FieldPublic, field.TypeBool, value)

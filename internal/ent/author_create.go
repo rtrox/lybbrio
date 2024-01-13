@@ -9,6 +9,7 @@ import (
 	"lybbrio/internal/ent/author"
 	"lybbrio/internal/ent/book"
 	"lybbrio/internal/ent/schema/ksuid"
+	"time"
 
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
@@ -22,6 +23,34 @@ type AuthorCreate struct {
 	mutation *AuthorMutation
 	hooks    []Hook
 	conflict []sql.ConflictOption
+}
+
+// SetCreateTime sets the "create_time" field.
+func (ac *AuthorCreate) SetCreateTime(t time.Time) *AuthorCreate {
+	ac.mutation.SetCreateTime(t)
+	return ac
+}
+
+// SetNillableCreateTime sets the "create_time" field if the given value is not nil.
+func (ac *AuthorCreate) SetNillableCreateTime(t *time.Time) *AuthorCreate {
+	if t != nil {
+		ac.SetCreateTime(*t)
+	}
+	return ac
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (ac *AuthorCreate) SetUpdateTime(t time.Time) *AuthorCreate {
+	ac.mutation.SetUpdateTime(t)
+	return ac
+}
+
+// SetNillableUpdateTime sets the "update_time" field if the given value is not nil.
+func (ac *AuthorCreate) SetNillableUpdateTime(t *time.Time) *AuthorCreate {
+	if t != nil {
+		ac.SetUpdateTime(*t)
+	}
+	return ac
 }
 
 // SetCalibreID sets the "calibre_id" field.
@@ -130,6 +159,20 @@ func (ac *AuthorCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (ac *AuthorCreate) defaults() error {
+	if _, ok := ac.mutation.CreateTime(); !ok {
+		if author.DefaultCreateTime == nil {
+			return fmt.Errorf("ent: uninitialized author.DefaultCreateTime (forgotten import ent/runtime?)")
+		}
+		v := author.DefaultCreateTime()
+		ac.mutation.SetCreateTime(v)
+	}
+	if _, ok := ac.mutation.UpdateTime(); !ok {
+		if author.DefaultUpdateTime == nil {
+			return fmt.Errorf("ent: uninitialized author.DefaultUpdateTime (forgotten import ent/runtime?)")
+		}
+		v := author.DefaultUpdateTime()
+		ac.mutation.SetUpdateTime(v)
+	}
 	if _, ok := ac.mutation.ID(); !ok {
 		if author.DefaultID == nil {
 			return fmt.Errorf("ent: uninitialized author.DefaultID (forgotten import ent/runtime?)")
@@ -142,6 +185,12 @@ func (ac *AuthorCreate) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (ac *AuthorCreate) check() error {
+	if _, ok := ac.mutation.CreateTime(); !ok {
+		return &ValidationError{Name: "create_time", err: errors.New(`ent: missing required field "Author.create_time"`)}
+	}
+	if _, ok := ac.mutation.UpdateTime(); !ok {
+		return &ValidationError{Name: "update_time", err: errors.New(`ent: missing required field "Author.update_time"`)}
+	}
 	if _, ok := ac.mutation.Name(); !ok {
 		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "Author.name"`)}
 	}
@@ -189,6 +238,14 @@ func (ac *AuthorCreate) createSpec() (*Author, *sqlgraph.CreateSpec) {
 		_node.ID = id
 		_spec.ID.Value = id
 	}
+	if value, ok := ac.mutation.CreateTime(); ok {
+		_spec.SetField(author.FieldCreateTime, field.TypeTime, value)
+		_node.CreateTime = value
+	}
+	if value, ok := ac.mutation.UpdateTime(); ok {
+		_spec.SetField(author.FieldUpdateTime, field.TypeTime, value)
+		_node.UpdateTime = value
+	}
 	if value, ok := ac.mutation.CalibreID(); ok {
 		_spec.SetField(author.FieldCalibreID, field.TypeInt64, value)
 		_node.CalibreID = value
@@ -228,7 +285,7 @@ func (ac *AuthorCreate) createSpec() (*Author, *sqlgraph.CreateSpec) {
 // of the `INSERT` statement. For example:
 //
 //	client.Author.Create().
-//		SetCalibreID(v).
+//		SetCreateTime(v).
 //		OnConflict(
 //			// Update the row with the new values
 //			// the was proposed for insertion.
@@ -237,7 +294,7 @@ func (ac *AuthorCreate) createSpec() (*Author, *sqlgraph.CreateSpec) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.AuthorUpsert) {
-//			SetCalibreID(v+v).
+//			SetCreateTime(v+v).
 //		}).
 //		Exec(ctx)
 func (ac *AuthorCreate) OnConflict(opts ...sql.ConflictOption) *AuthorUpsertOne {
@@ -272,6 +329,18 @@ type (
 		*sql.UpdateSet
 	}
 )
+
+// SetUpdateTime sets the "update_time" field.
+func (u *AuthorUpsert) SetUpdateTime(v time.Time) *AuthorUpsert {
+	u.Set(author.FieldUpdateTime, v)
+	return u
+}
+
+// UpdateUpdateTime sets the "update_time" field to the value that was provided on create.
+func (u *AuthorUpsert) UpdateUpdateTime() *AuthorUpsert {
+	u.SetExcluded(author.FieldUpdateTime)
+	return u
+}
 
 // SetCalibreID sets the "calibre_id" field.
 func (u *AuthorUpsert) SetCalibreID(v int64) *AuthorUpsert {
@@ -356,6 +425,9 @@ func (u *AuthorUpsertOne) UpdateNewValues() *AuthorUpsertOne {
 		if _, exists := u.create.mutation.ID(); exists {
 			s.SetIgnore(author.FieldID)
 		}
+		if _, exists := u.create.mutation.CreateTime(); exists {
+			s.SetIgnore(author.FieldCreateTime)
+		}
 	}))
 	return u
 }
@@ -385,6 +457,20 @@ func (u *AuthorUpsertOne) Update(set func(*AuthorUpsert)) *AuthorUpsertOne {
 		set(&AuthorUpsert{UpdateSet: update})
 	}))
 	return u
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (u *AuthorUpsertOne) SetUpdateTime(v time.Time) *AuthorUpsertOne {
+	return u.Update(func(s *AuthorUpsert) {
+		s.SetUpdateTime(v)
+	})
+}
+
+// UpdateUpdateTime sets the "update_time" field to the value that was provided on create.
+func (u *AuthorUpsertOne) UpdateUpdateTime() *AuthorUpsertOne {
+	return u.Update(func(s *AuthorUpsert) {
+		s.UpdateUpdateTime()
+	})
 }
 
 // SetCalibreID sets the "calibre_id" field.
@@ -600,7 +686,7 @@ func (acb *AuthorCreateBulk) ExecX(ctx context.Context) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.AuthorUpsert) {
-//			SetCalibreID(v+v).
+//			SetCreateTime(v+v).
 //		}).
 //		Exec(ctx)
 func (acb *AuthorCreateBulk) OnConflict(opts ...sql.ConflictOption) *AuthorUpsertBulk {
@@ -647,6 +733,9 @@ func (u *AuthorUpsertBulk) UpdateNewValues() *AuthorUpsertBulk {
 			if _, exists := b.mutation.ID(); exists {
 				s.SetIgnore(author.FieldID)
 			}
+			if _, exists := b.mutation.CreateTime(); exists {
+				s.SetIgnore(author.FieldCreateTime)
+			}
 		}
 	}))
 	return u
@@ -677,6 +766,20 @@ func (u *AuthorUpsertBulk) Update(set func(*AuthorUpsert)) *AuthorUpsertBulk {
 		set(&AuthorUpsert{UpdateSet: update})
 	}))
 	return u
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (u *AuthorUpsertBulk) SetUpdateTime(v time.Time) *AuthorUpsertBulk {
+	return u.Update(func(s *AuthorUpsert) {
+		s.SetUpdateTime(v)
+	})
+}
+
+// UpdateUpdateTime sets the "update_time" field to the value that was provided on create.
+func (u *AuthorUpsertBulk) UpdateUpdateTime() *AuthorUpsertBulk {
+	return u.Update(func(s *AuthorUpsert) {
+		s.UpdateUpdateTime()
+	})
 }
 
 // SetCalibreID sets the "calibre_id" field.

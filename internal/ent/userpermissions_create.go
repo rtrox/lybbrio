@@ -9,6 +9,7 @@ import (
 	"lybbrio/internal/ent/schema/ksuid"
 	"lybbrio/internal/ent/user"
 	"lybbrio/internal/ent/userpermissions"
+	"time"
 
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
@@ -22,6 +23,34 @@ type UserPermissionsCreate struct {
 	mutation *UserPermissionsMutation
 	hooks    []Hook
 	conflict []sql.ConflictOption
+}
+
+// SetCreateTime sets the "create_time" field.
+func (upc *UserPermissionsCreate) SetCreateTime(t time.Time) *UserPermissionsCreate {
+	upc.mutation.SetCreateTime(t)
+	return upc
+}
+
+// SetNillableCreateTime sets the "create_time" field if the given value is not nil.
+func (upc *UserPermissionsCreate) SetNillableCreateTime(t *time.Time) *UserPermissionsCreate {
+	if t != nil {
+		upc.SetCreateTime(*t)
+	}
+	return upc
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (upc *UserPermissionsCreate) SetUpdateTime(t time.Time) *UserPermissionsCreate {
+	upc.mutation.SetUpdateTime(t)
+	return upc
+}
+
+// SetNillableUpdateTime sets the "update_time" field if the given value is not nil.
+func (upc *UserPermissionsCreate) SetNillableUpdateTime(t *time.Time) *UserPermissionsCreate {
+	if t != nil {
+		upc.SetUpdateTime(*t)
+	}
+	return upc
 }
 
 // SetUserID sets the "user_id" field.
@@ -136,6 +165,20 @@ func (upc *UserPermissionsCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (upc *UserPermissionsCreate) defaults() error {
+	if _, ok := upc.mutation.CreateTime(); !ok {
+		if userpermissions.DefaultCreateTime == nil {
+			return fmt.Errorf("ent: uninitialized userpermissions.DefaultCreateTime (forgotten import ent/runtime?)")
+		}
+		v := userpermissions.DefaultCreateTime()
+		upc.mutation.SetCreateTime(v)
+	}
+	if _, ok := upc.mutation.UpdateTime(); !ok {
+		if userpermissions.DefaultUpdateTime == nil {
+			return fmt.Errorf("ent: uninitialized userpermissions.DefaultUpdateTime (forgotten import ent/runtime?)")
+		}
+		v := userpermissions.DefaultUpdateTime()
+		upc.mutation.SetUpdateTime(v)
+	}
 	if _, ok := upc.mutation.Admin(); !ok {
 		v := userpermissions.DefaultAdmin
 		upc.mutation.SetAdmin(v)
@@ -160,6 +203,12 @@ func (upc *UserPermissionsCreate) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (upc *UserPermissionsCreate) check() error {
+	if _, ok := upc.mutation.CreateTime(); !ok {
+		return &ValidationError{Name: "create_time", err: errors.New(`ent: missing required field "UserPermissions.create_time"`)}
+	}
+	if _, ok := upc.mutation.UpdateTime(); !ok {
+		return &ValidationError{Name: "update_time", err: errors.New(`ent: missing required field "UserPermissions.update_time"`)}
+	}
 	if _, ok := upc.mutation.Admin(); !ok {
 		return &ValidationError{Name: "Admin", err: errors.New(`ent: missing required field "UserPermissions.Admin"`)}
 	}
@@ -205,6 +254,14 @@ func (upc *UserPermissionsCreate) createSpec() (*UserPermissions, *sqlgraph.Crea
 		_node.ID = id
 		_spec.ID.Value = id
 	}
+	if value, ok := upc.mutation.CreateTime(); ok {
+		_spec.SetField(userpermissions.FieldCreateTime, field.TypeTime, value)
+		_node.CreateTime = value
+	}
+	if value, ok := upc.mutation.UpdateTime(); ok {
+		_spec.SetField(userpermissions.FieldUpdateTime, field.TypeTime, value)
+		_node.UpdateTime = value
+	}
 	if value, ok := upc.mutation.Admin(); ok {
 		_spec.SetField(userpermissions.FieldAdmin, field.TypeBool, value)
 		_node.Admin = value
@@ -241,7 +298,7 @@ func (upc *UserPermissionsCreate) createSpec() (*UserPermissions, *sqlgraph.Crea
 // of the `INSERT` statement. For example:
 //
 //	client.UserPermissions.Create().
-//		SetUserID(v).
+//		SetCreateTime(v).
 //		OnConflict(
 //			// Update the row with the new values
 //			// the was proposed for insertion.
@@ -250,7 +307,7 @@ func (upc *UserPermissionsCreate) createSpec() (*UserPermissions, *sqlgraph.Crea
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.UserPermissionsUpsert) {
-//			SetUserID(v+v).
+//			SetCreateTime(v+v).
 //		}).
 //		Exec(ctx)
 func (upc *UserPermissionsCreate) OnConflict(opts ...sql.ConflictOption) *UserPermissionsUpsertOne {
@@ -285,6 +342,18 @@ type (
 		*sql.UpdateSet
 	}
 )
+
+// SetUpdateTime sets the "update_time" field.
+func (u *UserPermissionsUpsert) SetUpdateTime(v time.Time) *UserPermissionsUpsert {
+	u.Set(userpermissions.FieldUpdateTime, v)
+	return u
+}
+
+// UpdateUpdateTime sets the "update_time" field to the value that was provided on create.
+func (u *UserPermissionsUpsert) UpdateUpdateTime() *UserPermissionsUpsert {
+	u.SetExcluded(userpermissions.FieldUpdateTime)
+	return u
+}
 
 // SetUserID sets the "user_id" field.
 func (u *UserPermissionsUpsert) SetUserID(v ksuid.ID) *UserPermissionsUpsert {
@@ -357,6 +426,9 @@ func (u *UserPermissionsUpsertOne) UpdateNewValues() *UserPermissionsUpsertOne {
 		if _, exists := u.create.mutation.ID(); exists {
 			s.SetIgnore(userpermissions.FieldID)
 		}
+		if _, exists := u.create.mutation.CreateTime(); exists {
+			s.SetIgnore(userpermissions.FieldCreateTime)
+		}
 	}))
 	return u
 }
@@ -386,6 +458,20 @@ func (u *UserPermissionsUpsertOne) Update(set func(*UserPermissionsUpsert)) *Use
 		set(&UserPermissionsUpsert{UpdateSet: update})
 	}))
 	return u
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (u *UserPermissionsUpsertOne) SetUpdateTime(v time.Time) *UserPermissionsUpsertOne {
+	return u.Update(func(s *UserPermissionsUpsert) {
+		s.SetUpdateTime(v)
+	})
+}
+
+// UpdateUpdateTime sets the "update_time" field to the value that was provided on create.
+func (u *UserPermissionsUpsertOne) UpdateUpdateTime() *UserPermissionsUpsertOne {
+	return u.Update(func(s *UserPermissionsUpsert) {
+		s.UpdateUpdateTime()
+	})
 }
 
 // SetUserID sets the "user_id" field.
@@ -587,7 +673,7 @@ func (upcb *UserPermissionsCreateBulk) ExecX(ctx context.Context) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.UserPermissionsUpsert) {
-//			SetUserID(v+v).
+//			SetCreateTime(v+v).
 //		}).
 //		Exec(ctx)
 func (upcb *UserPermissionsCreateBulk) OnConflict(opts ...sql.ConflictOption) *UserPermissionsUpsertBulk {
@@ -634,6 +720,9 @@ func (u *UserPermissionsUpsertBulk) UpdateNewValues() *UserPermissionsUpsertBulk
 			if _, exists := b.mutation.ID(); exists {
 				s.SetIgnore(userpermissions.FieldID)
 			}
+			if _, exists := b.mutation.CreateTime(); exists {
+				s.SetIgnore(userpermissions.FieldCreateTime)
+			}
 		}
 	}))
 	return u
@@ -664,6 +753,20 @@ func (u *UserPermissionsUpsertBulk) Update(set func(*UserPermissionsUpsert)) *Us
 		set(&UserPermissionsUpsert{UpdateSet: update})
 	}))
 	return u
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (u *UserPermissionsUpsertBulk) SetUpdateTime(v time.Time) *UserPermissionsUpsertBulk {
+	return u.Update(func(s *UserPermissionsUpsert) {
+		s.SetUpdateTime(v)
+	})
+}
+
+// UpdateUpdateTime sets the "update_time" field to the value that was provided on create.
+func (u *UserPermissionsUpsertBulk) UpdateUpdateTime() *UserPermissionsUpsertBulk {
+	return u.Update(func(s *UserPermissionsUpsert) {
+		s.UpdateUpdateTime()
+	})
 }
 
 // SetUserID sets the "user_id" field.

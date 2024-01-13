@@ -8,6 +8,7 @@ import (
 	"lybbrio/internal/ent/bookfile"
 	"lybbrio/internal/ent/schema/ksuid"
 	"strings"
+	"time"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
@@ -18,6 +19,10 @@ type BookFile struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID ksuid.ID `json:"id,omitempty"`
+	// CreateTime holds the value of the "create_time" field.
+	CreateTime time.Time `json:"create_time,omitempty"`
+	// UpdateTime holds the value of the "update_time" field.
+	UpdateTime time.Time `json:"update_time,omitempty"`
 	// Name holds the value of the "name" field.
 	Name string `json:"name,omitempty"`
 	// Path holds the value of the "path" field.
@@ -66,6 +71,8 @@ func (*BookFile) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullInt64)
 		case bookfile.FieldID, bookfile.FieldName, bookfile.FieldPath, bookfile.FieldFormat:
 			values[i] = new(sql.NullString)
+		case bookfile.FieldCreateTime, bookfile.FieldUpdateTime:
+			values[i] = new(sql.NullTime)
 		case bookfile.ForeignKeys[0]: // book_file_book
 			values[i] = new(sql.NullString)
 		default:
@@ -88,6 +95,18 @@ func (bf *BookFile) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value.Valid {
 				bf.ID = ksuid.ID(value.String)
+			}
+		case bookfile.FieldCreateTime:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field create_time", values[i])
+			} else if value.Valid {
+				bf.CreateTime = value.Time
+			}
+		case bookfile.FieldUpdateTime:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field update_time", values[i])
+			} else if value.Valid {
+				bf.UpdateTime = value.Time
 			}
 		case bookfile.FieldName:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -161,6 +180,12 @@ func (bf *BookFile) String() string {
 	var builder strings.Builder
 	builder.WriteString("BookFile(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", bf.ID))
+	builder.WriteString("create_time=")
+	builder.WriteString(bf.CreateTime.Format(time.ANSIC))
+	builder.WriteString(", ")
+	builder.WriteString("update_time=")
+	builder.WriteString(bf.UpdateTime.Format(time.ANSIC))
+	builder.WriteString(", ")
 	builder.WriteString("name=")
 	builder.WriteString(bf.Name)
 	builder.WriteString(", ")

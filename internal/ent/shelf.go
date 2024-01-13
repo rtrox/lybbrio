@@ -8,6 +8,7 @@ import (
 	"lybbrio/internal/ent/shelf"
 	"lybbrio/internal/ent/user"
 	"strings"
+	"time"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
@@ -18,6 +19,10 @@ type Shelf struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID ksuid.ID `json:"id,omitempty"`
+	// CreateTime holds the value of the "create_time" field.
+	CreateTime time.Time `json:"create_time,omitempty"`
+	// UpdateTime holds the value of the "update_time" field.
+	UpdateTime time.Time `json:"update_time,omitempty"`
 	// Public holds the value of the "public" field.
 	Public bool `json:"public,omitempty"`
 	// UserID holds the value of the "user_id" field.
@@ -78,6 +83,8 @@ func (*Shelf) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullBool)
 		case shelf.FieldID, shelf.FieldUserID, shelf.FieldName, shelf.FieldDescription:
 			values[i] = new(sql.NullString)
+		case shelf.FieldCreateTime, shelf.FieldUpdateTime:
+			values[i] = new(sql.NullTime)
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -98,6 +105,18 @@ func (s *Shelf) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value.Valid {
 				s.ID = ksuid.ID(value.String)
+			}
+		case shelf.FieldCreateTime:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field create_time", values[i])
+			} else if value.Valid {
+				s.CreateTime = value.Time
+			}
+		case shelf.FieldUpdateTime:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field update_time", values[i])
+			} else if value.Valid {
+				s.UpdateTime = value.Time
 			}
 		case shelf.FieldPublic:
 			if value, ok := values[i].(*sql.NullBool); !ok {
@@ -169,6 +188,12 @@ func (s *Shelf) String() string {
 	var builder strings.Builder
 	builder.WriteString("Shelf(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", s.ID))
+	builder.WriteString("create_time=")
+	builder.WriteString(s.CreateTime.Format(time.ANSIC))
+	builder.WriteString(", ")
+	builder.WriteString("update_time=")
+	builder.WriteString(s.UpdateTime.Format(time.ANSIC))
+	builder.WriteString(", ")
 	builder.WriteString("public=")
 	builder.WriteString(fmt.Sprintf("%v", s.Public))
 	builder.WriteString(", ")

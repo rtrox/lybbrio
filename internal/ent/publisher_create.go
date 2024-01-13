@@ -9,6 +9,7 @@ import (
 	"lybbrio/internal/ent/book"
 	"lybbrio/internal/ent/publisher"
 	"lybbrio/internal/ent/schema/ksuid"
+	"time"
 
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
@@ -22,6 +23,34 @@ type PublisherCreate struct {
 	mutation *PublisherMutation
 	hooks    []Hook
 	conflict []sql.ConflictOption
+}
+
+// SetCreateTime sets the "create_time" field.
+func (pc *PublisherCreate) SetCreateTime(t time.Time) *PublisherCreate {
+	pc.mutation.SetCreateTime(t)
+	return pc
+}
+
+// SetNillableCreateTime sets the "create_time" field if the given value is not nil.
+func (pc *PublisherCreate) SetNillableCreateTime(t *time.Time) *PublisherCreate {
+	if t != nil {
+		pc.SetCreateTime(*t)
+	}
+	return pc
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (pc *PublisherCreate) SetUpdateTime(t time.Time) *PublisherCreate {
+	pc.mutation.SetUpdateTime(t)
+	return pc
+}
+
+// SetNillableUpdateTime sets the "update_time" field if the given value is not nil.
+func (pc *PublisherCreate) SetNillableUpdateTime(t *time.Time) *PublisherCreate {
+	if t != nil {
+		pc.SetUpdateTime(*t)
+	}
+	return pc
 }
 
 // SetCalibreID sets the "calibre_id" field.
@@ -110,6 +139,20 @@ func (pc *PublisherCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (pc *PublisherCreate) defaults() error {
+	if _, ok := pc.mutation.CreateTime(); !ok {
+		if publisher.DefaultCreateTime == nil {
+			return fmt.Errorf("ent: uninitialized publisher.DefaultCreateTime (forgotten import ent/runtime?)")
+		}
+		v := publisher.DefaultCreateTime()
+		pc.mutation.SetCreateTime(v)
+	}
+	if _, ok := pc.mutation.UpdateTime(); !ok {
+		if publisher.DefaultUpdateTime == nil {
+			return fmt.Errorf("ent: uninitialized publisher.DefaultUpdateTime (forgotten import ent/runtime?)")
+		}
+		v := publisher.DefaultUpdateTime()
+		pc.mutation.SetUpdateTime(v)
+	}
 	if _, ok := pc.mutation.ID(); !ok {
 		if publisher.DefaultID == nil {
 			return fmt.Errorf("ent: uninitialized publisher.DefaultID (forgotten import ent/runtime?)")
@@ -122,6 +165,12 @@ func (pc *PublisherCreate) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (pc *PublisherCreate) check() error {
+	if _, ok := pc.mutation.CreateTime(); !ok {
+		return &ValidationError{Name: "create_time", err: errors.New(`ent: missing required field "Publisher.create_time"`)}
+	}
+	if _, ok := pc.mutation.UpdateTime(); !ok {
+		return &ValidationError{Name: "update_time", err: errors.New(`ent: missing required field "Publisher.update_time"`)}
+	}
 	if _, ok := pc.mutation.Name(); !ok {
 		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "Publisher.name"`)}
 	}
@@ -166,6 +215,14 @@ func (pc *PublisherCreate) createSpec() (*Publisher, *sqlgraph.CreateSpec) {
 		_node.ID = id
 		_spec.ID.Value = id
 	}
+	if value, ok := pc.mutation.CreateTime(); ok {
+		_spec.SetField(publisher.FieldCreateTime, field.TypeTime, value)
+		_node.CreateTime = value
+	}
+	if value, ok := pc.mutation.UpdateTime(); ok {
+		_spec.SetField(publisher.FieldUpdateTime, field.TypeTime, value)
+		_node.UpdateTime = value
+	}
 	if value, ok := pc.mutation.CalibreID(); ok {
 		_spec.SetField(publisher.FieldCalibreID, field.TypeInt64, value)
 		_node.CalibreID = value
@@ -197,7 +254,7 @@ func (pc *PublisherCreate) createSpec() (*Publisher, *sqlgraph.CreateSpec) {
 // of the `INSERT` statement. For example:
 //
 //	client.Publisher.Create().
-//		SetCalibreID(v).
+//		SetCreateTime(v).
 //		OnConflict(
 //			// Update the row with the new values
 //			// the was proposed for insertion.
@@ -206,7 +263,7 @@ func (pc *PublisherCreate) createSpec() (*Publisher, *sqlgraph.CreateSpec) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.PublisherUpsert) {
-//			SetCalibreID(v+v).
+//			SetCreateTime(v+v).
 //		}).
 //		Exec(ctx)
 func (pc *PublisherCreate) OnConflict(opts ...sql.ConflictOption) *PublisherUpsertOne {
@@ -241,6 +298,18 @@ type (
 		*sql.UpdateSet
 	}
 )
+
+// SetUpdateTime sets the "update_time" field.
+func (u *PublisherUpsert) SetUpdateTime(v time.Time) *PublisherUpsert {
+	u.Set(publisher.FieldUpdateTime, v)
+	return u
+}
+
+// UpdateUpdateTime sets the "update_time" field to the value that was provided on create.
+func (u *PublisherUpsert) UpdateUpdateTime() *PublisherUpsert {
+	u.SetExcluded(publisher.FieldUpdateTime)
+	return u
+}
 
 // SetCalibreID sets the "calibre_id" field.
 func (u *PublisherUpsert) SetCalibreID(v int64) *PublisherUpsert {
@@ -295,6 +364,9 @@ func (u *PublisherUpsertOne) UpdateNewValues() *PublisherUpsertOne {
 		if _, exists := u.create.mutation.ID(); exists {
 			s.SetIgnore(publisher.FieldID)
 		}
+		if _, exists := u.create.mutation.CreateTime(); exists {
+			s.SetIgnore(publisher.FieldCreateTime)
+		}
 	}))
 	return u
 }
@@ -324,6 +396,20 @@ func (u *PublisherUpsertOne) Update(set func(*PublisherUpsert)) *PublisherUpsert
 		set(&PublisherUpsert{UpdateSet: update})
 	}))
 	return u
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (u *PublisherUpsertOne) SetUpdateTime(v time.Time) *PublisherUpsertOne {
+	return u.Update(func(s *PublisherUpsert) {
+		s.SetUpdateTime(v)
+	})
+}
+
+// UpdateUpdateTime sets the "update_time" field to the value that was provided on create.
+func (u *PublisherUpsertOne) UpdateUpdateTime() *PublisherUpsertOne {
+	return u.Update(func(s *PublisherUpsert) {
+		s.UpdateUpdateTime()
+	})
 }
 
 // SetCalibreID sets the "calibre_id" field.
@@ -504,7 +590,7 @@ func (pcb *PublisherCreateBulk) ExecX(ctx context.Context) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.PublisherUpsert) {
-//			SetCalibreID(v+v).
+//			SetCreateTime(v+v).
 //		}).
 //		Exec(ctx)
 func (pcb *PublisherCreateBulk) OnConflict(opts ...sql.ConflictOption) *PublisherUpsertBulk {
@@ -551,6 +637,9 @@ func (u *PublisherUpsertBulk) UpdateNewValues() *PublisherUpsertBulk {
 			if _, exists := b.mutation.ID(); exists {
 				s.SetIgnore(publisher.FieldID)
 			}
+			if _, exists := b.mutation.CreateTime(); exists {
+				s.SetIgnore(publisher.FieldCreateTime)
+			}
 		}
 	}))
 	return u
@@ -581,6 +670,20 @@ func (u *PublisherUpsertBulk) Update(set func(*PublisherUpsert)) *PublisherUpser
 		set(&PublisherUpsert{UpdateSet: update})
 	}))
 	return u
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (u *PublisherUpsertBulk) SetUpdateTime(v time.Time) *PublisherUpsertBulk {
+	return u.Update(func(s *PublisherUpsert) {
+		s.SetUpdateTime(v)
+	})
+}
+
+// UpdateUpdateTime sets the "update_time" field to the value that was provided on create.
+func (u *PublisherUpsertBulk) UpdateUpdateTime() *PublisherUpsertBulk {
+	return u.Update(func(s *PublisherUpsert) {
+		s.UpdateUpdateTime()
+	})
 }
 
 // SetCalibreID sets the "calibre_id" field.

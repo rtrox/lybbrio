@@ -29,7 +29,7 @@ import (
 // to their package variables.
 func init() {
 	authorMixin := schema.Author{}.Mixin()
-	author.Policy = privacy.NewPolicies(authorMixin[0], schema.Author{})
+	author.Policy = privacy.NewPolicies(authorMixin[1], schema.Author{})
 	author.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 			if err := author.Policy.EvalMutation(ctx, m); err != nil {
@@ -38,20 +38,32 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
-	authorMixinFields2 := authorMixin[2].Fields()
-	_ = authorMixinFields2
+	authorMixinFields0 := authorMixin[0].Fields()
+	_ = authorMixinFields0
+	authorMixinFields3 := authorMixin[3].Fields()
+	_ = authorMixinFields3
 	authorFields := schema.Author{}.Fields()
 	_ = authorFields
+	// authorDescCreateTime is the schema descriptor for create_time field.
+	authorDescCreateTime := authorMixinFields0[0].Descriptor()
+	// author.DefaultCreateTime holds the default value on creation for the create_time field.
+	author.DefaultCreateTime = authorDescCreateTime.Default.(func() time.Time)
+	// authorDescUpdateTime is the schema descriptor for update_time field.
+	authorDescUpdateTime := authorMixinFields0[1].Descriptor()
+	// author.DefaultUpdateTime holds the default value on creation for the update_time field.
+	author.DefaultUpdateTime = authorDescUpdateTime.Default.(func() time.Time)
+	// author.UpdateDefaultUpdateTime holds the default value on update for the update_time field.
+	author.UpdateDefaultUpdateTime = authorDescUpdateTime.UpdateDefault.(func() time.Time)
 	// authorDescName is the schema descriptor for name field.
 	authorDescName := authorFields[0].Descriptor()
 	// author.NameValidator is a validator for the "name" field. It is called by the builders before save.
 	author.NameValidator = authorDescName.Validators[0].(func(string) error)
 	// authorDescID is the schema descriptor for id field.
-	authorDescID := authorMixinFields2[0].Descriptor()
+	authorDescID := authorMixinFields3[0].Descriptor()
 	// author.DefaultID holds the default value on creation for the id field.
 	author.DefaultID = authorDescID.Default.(func() ksuid.ID)
 	bookMixin := schema.Book{}.Mixin()
-	book.Policy = privacy.NewPolicies(bookMixin[0], schema.Book{})
+	book.Policy = privacy.NewPolicies(bookMixin[1], schema.Book{})
 	book.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 			if err := book.Policy.EvalMutation(ctx, m); err != nil {
@@ -60,10 +72,22 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
-	bookMixinFields2 := bookMixin[2].Fields()
-	_ = bookMixinFields2
+	bookMixinFields0 := bookMixin[0].Fields()
+	_ = bookMixinFields0
+	bookMixinFields3 := bookMixin[3].Fields()
+	_ = bookMixinFields3
 	bookFields := schema.Book{}.Fields()
 	_ = bookFields
+	// bookDescCreateTime is the schema descriptor for create_time field.
+	bookDescCreateTime := bookMixinFields0[0].Descriptor()
+	// book.DefaultCreateTime holds the default value on creation for the create_time field.
+	book.DefaultCreateTime = bookDescCreateTime.Default.(func() time.Time)
+	// bookDescUpdateTime is the schema descriptor for update_time field.
+	bookDescUpdateTime := bookMixinFields0[1].Descriptor()
+	// book.DefaultUpdateTime holds the default value on creation for the update_time field.
+	book.DefaultUpdateTime = bookDescUpdateTime.Default.(func() time.Time)
+	// book.UpdateDefaultUpdateTime holds the default value on update for the update_time field.
+	book.UpdateDefaultUpdateTime = bookDescUpdateTime.UpdateDefault.(func() time.Time)
 	// bookDescTitle is the schema descriptor for title field.
 	bookDescTitle := bookFields[0].Descriptor()
 	// book.TitleValidator is a validator for the "title" field. It is called by the builders before save.
@@ -73,11 +97,11 @@ func init() {
 	// book.PathValidator is a validator for the "path" field. It is called by the builders before save.
 	book.PathValidator = bookDescPath.Validators[0].(func(string) error)
 	// bookDescID is the schema descriptor for id field.
-	bookDescID := bookMixinFields2[0].Descriptor()
+	bookDescID := bookMixinFields3[0].Descriptor()
 	// book.DefaultID holds the default value on creation for the id field.
 	book.DefaultID = bookDescID.Default.(func() ksuid.ID)
 	bookfileMixin := schema.BookFile{}.Mixin()
-	bookfile.Policy = privacy.NewPolicies(bookfileMixin[0], schema.BookFile{})
+	bookfile.Policy = privacy.NewPolicies(bookfileMixin[1], schema.BookFile{})
 	bookfile.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 			if err := bookfile.Policy.EvalMutation(ctx, m); err != nil {
@@ -86,10 +110,22 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
-	bookfileMixinFields1 := bookfileMixin[1].Fields()
-	_ = bookfileMixinFields1
+	bookfileMixinFields0 := bookfileMixin[0].Fields()
+	_ = bookfileMixinFields0
+	bookfileMixinFields2 := bookfileMixin[2].Fields()
+	_ = bookfileMixinFields2
 	bookfileFields := schema.BookFile{}.Fields()
 	_ = bookfileFields
+	// bookfileDescCreateTime is the schema descriptor for create_time field.
+	bookfileDescCreateTime := bookfileMixinFields0[0].Descriptor()
+	// bookfile.DefaultCreateTime holds the default value on creation for the create_time field.
+	bookfile.DefaultCreateTime = bookfileDescCreateTime.Default.(func() time.Time)
+	// bookfileDescUpdateTime is the schema descriptor for update_time field.
+	bookfileDescUpdateTime := bookfileMixinFields0[1].Descriptor()
+	// bookfile.DefaultUpdateTime holds the default value on creation for the update_time field.
+	bookfile.DefaultUpdateTime = bookfileDescUpdateTime.Default.(func() time.Time)
+	// bookfile.UpdateDefaultUpdateTime holds the default value on update for the update_time field.
+	bookfile.UpdateDefaultUpdateTime = bookfileDescUpdateTime.UpdateDefault.(func() time.Time)
 	// bookfileDescName is the schema descriptor for name field.
 	bookfileDescName := bookfileFields[0].Descriptor()
 	// bookfile.NameValidator is a validator for the "name" field. It is called by the builders before save.
@@ -103,11 +139,11 @@ func init() {
 	// bookfile.SizeValidator is a validator for the "size" field. It is called by the builders before save.
 	bookfile.SizeValidator = bookfileDescSize.Validators[0].(func(int64) error)
 	// bookfileDescID is the schema descriptor for id field.
-	bookfileDescID := bookfileMixinFields1[0].Descriptor()
+	bookfileDescID := bookfileMixinFields2[0].Descriptor()
 	// bookfile.DefaultID holds the default value on creation for the id field.
 	bookfile.DefaultID = bookfileDescID.Default.(func() ksuid.ID)
 	identifierMixin := schema.Identifier{}.Mixin()
-	identifier.Policy = privacy.NewPolicies(identifierMixin[0], schema.Identifier{})
+	identifier.Policy = privacy.NewPolicies(identifierMixin[1], schema.Identifier{})
 	identifier.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 			if err := identifier.Policy.EvalMutation(ctx, m); err != nil {
@@ -116,10 +152,22 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
-	identifierMixinFields2 := identifierMixin[2].Fields()
-	_ = identifierMixinFields2
+	identifierMixinFields0 := identifierMixin[0].Fields()
+	_ = identifierMixinFields0
+	identifierMixinFields3 := identifierMixin[3].Fields()
+	_ = identifierMixinFields3
 	identifierFields := schema.Identifier{}.Fields()
 	_ = identifierFields
+	// identifierDescCreateTime is the schema descriptor for create_time field.
+	identifierDescCreateTime := identifierMixinFields0[0].Descriptor()
+	// identifier.DefaultCreateTime holds the default value on creation for the create_time field.
+	identifier.DefaultCreateTime = identifierDescCreateTime.Default.(func() time.Time)
+	// identifierDescUpdateTime is the schema descriptor for update_time field.
+	identifierDescUpdateTime := identifierMixinFields0[1].Descriptor()
+	// identifier.DefaultUpdateTime holds the default value on creation for the update_time field.
+	identifier.DefaultUpdateTime = identifierDescUpdateTime.Default.(func() time.Time)
+	// identifier.UpdateDefaultUpdateTime holds the default value on update for the update_time field.
+	identifier.UpdateDefaultUpdateTime = identifierDescUpdateTime.UpdateDefault.(func() time.Time)
 	// identifierDescType is the schema descriptor for type field.
 	identifierDescType := identifierFields[0].Descriptor()
 	// identifier.TypeValidator is a validator for the "type" field. It is called by the builders before save.
@@ -129,11 +177,11 @@ func init() {
 	// identifier.ValueValidator is a validator for the "value" field. It is called by the builders before save.
 	identifier.ValueValidator = identifierDescValue.Validators[0].(func(string) error)
 	// identifierDescID is the schema descriptor for id field.
-	identifierDescID := identifierMixinFields2[0].Descriptor()
+	identifierDescID := identifierMixinFields3[0].Descriptor()
 	// identifier.DefaultID holds the default value on creation for the id field.
 	identifier.DefaultID = identifierDescID.Default.(func() ksuid.ID)
 	languageMixin := schema.Language{}.Mixin()
-	language.Policy = privacy.NewPolicies(languageMixin[0], schema.Language{})
+	language.Policy = privacy.NewPolicies(languageMixin[1], schema.Language{})
 	language.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 			if err := language.Policy.EvalMutation(ctx, m); err != nil {
@@ -142,20 +190,32 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
-	languageMixinFields2 := languageMixin[2].Fields()
-	_ = languageMixinFields2
+	languageMixinFields0 := languageMixin[0].Fields()
+	_ = languageMixinFields0
+	languageMixinFields3 := languageMixin[3].Fields()
+	_ = languageMixinFields3
 	languageFields := schema.Language{}.Fields()
 	_ = languageFields
+	// languageDescCreateTime is the schema descriptor for create_time field.
+	languageDescCreateTime := languageMixinFields0[0].Descriptor()
+	// language.DefaultCreateTime holds the default value on creation for the create_time field.
+	language.DefaultCreateTime = languageDescCreateTime.Default.(func() time.Time)
+	// languageDescUpdateTime is the schema descriptor for update_time field.
+	languageDescUpdateTime := languageMixinFields0[1].Descriptor()
+	// language.DefaultUpdateTime holds the default value on creation for the update_time field.
+	language.DefaultUpdateTime = languageDescUpdateTime.Default.(func() time.Time)
+	// language.UpdateDefaultUpdateTime holds the default value on update for the update_time field.
+	language.UpdateDefaultUpdateTime = languageDescUpdateTime.UpdateDefault.(func() time.Time)
 	// languageDescCode is the schema descriptor for code field.
 	languageDescCode := languageFields[0].Descriptor()
 	// language.CodeValidator is a validator for the "code" field. It is called by the builders before save.
 	language.CodeValidator = languageDescCode.Validators[0].(func(string) error)
 	// languageDescID is the schema descriptor for id field.
-	languageDescID := languageMixinFields2[0].Descriptor()
+	languageDescID := languageMixinFields3[0].Descriptor()
 	// language.DefaultID holds the default value on creation for the id field.
 	language.DefaultID = languageDescID.Default.(func() ksuid.ID)
 	publisherMixin := schema.Publisher{}.Mixin()
-	publisher.Policy = privacy.NewPolicies(publisherMixin[0], schema.Publisher{})
+	publisher.Policy = privacy.NewPolicies(publisherMixin[1], schema.Publisher{})
 	publisher.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 			if err := publisher.Policy.EvalMutation(ctx, m); err != nil {
@@ -164,20 +224,32 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
-	publisherMixinFields2 := publisherMixin[2].Fields()
-	_ = publisherMixinFields2
+	publisherMixinFields0 := publisherMixin[0].Fields()
+	_ = publisherMixinFields0
+	publisherMixinFields3 := publisherMixin[3].Fields()
+	_ = publisherMixinFields3
 	publisherFields := schema.Publisher{}.Fields()
 	_ = publisherFields
+	// publisherDescCreateTime is the schema descriptor for create_time field.
+	publisherDescCreateTime := publisherMixinFields0[0].Descriptor()
+	// publisher.DefaultCreateTime holds the default value on creation for the create_time field.
+	publisher.DefaultCreateTime = publisherDescCreateTime.Default.(func() time.Time)
+	// publisherDescUpdateTime is the schema descriptor for update_time field.
+	publisherDescUpdateTime := publisherMixinFields0[1].Descriptor()
+	// publisher.DefaultUpdateTime holds the default value on creation for the update_time field.
+	publisher.DefaultUpdateTime = publisherDescUpdateTime.Default.(func() time.Time)
+	// publisher.UpdateDefaultUpdateTime holds the default value on update for the update_time field.
+	publisher.UpdateDefaultUpdateTime = publisherDescUpdateTime.UpdateDefault.(func() time.Time)
 	// publisherDescName is the schema descriptor for name field.
 	publisherDescName := publisherFields[0].Descriptor()
 	// publisher.NameValidator is a validator for the "name" field. It is called by the builders before save.
 	publisher.NameValidator = publisherDescName.Validators[0].(func(string) error)
 	// publisherDescID is the schema descriptor for id field.
-	publisherDescID := publisherMixinFields2[0].Descriptor()
+	publisherDescID := publisherMixinFields3[0].Descriptor()
 	// publisher.DefaultID holds the default value on creation for the id field.
 	publisher.DefaultID = publisherDescID.Default.(func() ksuid.ID)
 	seriesMixin := schema.Series{}.Mixin()
-	series.Policy = privacy.NewPolicies(seriesMixin[0], schema.Series{})
+	series.Policy = privacy.NewPolicies(seriesMixin[1], schema.Series{})
 	series.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 			if err := series.Policy.EvalMutation(ctx, m); err != nil {
@@ -186,10 +258,22 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
-	seriesMixinFields2 := seriesMixin[2].Fields()
-	_ = seriesMixinFields2
+	seriesMixinFields0 := seriesMixin[0].Fields()
+	_ = seriesMixinFields0
+	seriesMixinFields3 := seriesMixin[3].Fields()
+	_ = seriesMixinFields3
 	seriesFields := schema.Series{}.Fields()
 	_ = seriesFields
+	// seriesDescCreateTime is the schema descriptor for create_time field.
+	seriesDescCreateTime := seriesMixinFields0[0].Descriptor()
+	// series.DefaultCreateTime holds the default value on creation for the create_time field.
+	series.DefaultCreateTime = seriesDescCreateTime.Default.(func() time.Time)
+	// seriesDescUpdateTime is the schema descriptor for update_time field.
+	seriesDescUpdateTime := seriesMixinFields0[1].Descriptor()
+	// series.DefaultUpdateTime holds the default value on creation for the update_time field.
+	series.DefaultUpdateTime = seriesDescUpdateTime.Default.(func() time.Time)
+	// series.UpdateDefaultUpdateTime holds the default value on update for the update_time field.
+	series.UpdateDefaultUpdateTime = seriesDescUpdateTime.UpdateDefault.(func() time.Time)
 	// seriesDescName is the schema descriptor for name field.
 	seriesDescName := seriesFields[0].Descriptor()
 	// series.NameValidator is a validator for the "name" field. It is called by the builders before save.
@@ -199,11 +283,11 @@ func init() {
 	// series.SortValidator is a validator for the "sort" field. It is called by the builders before save.
 	series.SortValidator = seriesDescSort.Validators[0].(func(string) error)
 	// seriesDescID is the schema descriptor for id field.
-	seriesDescID := seriesMixinFields2[0].Descriptor()
+	seriesDescID := seriesMixinFields3[0].Descriptor()
 	// series.DefaultID holds the default value on creation for the id field.
 	series.DefaultID = seriesDescID.Default.(func() ksuid.ID)
 	shelfMixin := schema.Shelf{}.Mixin()
-	shelf.Policy = privacy.NewPolicies(shelfMixin[0], shelfMixin[1], schema.Shelf{})
+	shelf.Policy = privacy.NewPolicies(shelfMixin[1], shelfMixin[2], schema.Shelf{})
 	shelf.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 			if err := shelf.Policy.EvalMutation(ctx, m); err != nil {
@@ -212,14 +296,26 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
-	shelfMixinFields1 := shelfMixin[1].Fields()
-	_ = shelfMixinFields1
+	shelfMixinFields0 := shelfMixin[0].Fields()
+	_ = shelfMixinFields0
 	shelfMixinFields2 := shelfMixin[2].Fields()
 	_ = shelfMixinFields2
+	shelfMixinFields3 := shelfMixin[3].Fields()
+	_ = shelfMixinFields3
 	shelfFields := schema.Shelf{}.Fields()
 	_ = shelfFields
+	// shelfDescCreateTime is the schema descriptor for create_time field.
+	shelfDescCreateTime := shelfMixinFields0[0].Descriptor()
+	// shelf.DefaultCreateTime holds the default value on creation for the create_time field.
+	shelf.DefaultCreateTime = shelfDescCreateTime.Default.(func() time.Time)
+	// shelfDescUpdateTime is the schema descriptor for update_time field.
+	shelfDescUpdateTime := shelfMixinFields0[1].Descriptor()
+	// shelf.DefaultUpdateTime holds the default value on creation for the update_time field.
+	shelf.DefaultUpdateTime = shelfDescUpdateTime.Default.(func() time.Time)
+	// shelf.UpdateDefaultUpdateTime holds the default value on update for the update_time field.
+	shelf.UpdateDefaultUpdateTime = shelfDescUpdateTime.UpdateDefault.(func() time.Time)
 	// shelfDescPublic is the schema descriptor for public field.
-	shelfDescPublic := shelfMixinFields1[0].Descriptor()
+	shelfDescPublic := shelfMixinFields2[0].Descriptor()
 	// shelf.DefaultPublic holds the default value on creation for the public field.
 	shelf.DefaultPublic = shelfDescPublic.Default.(bool)
 	// shelfDescName is the schema descriptor for name field.
@@ -227,7 +323,7 @@ func init() {
 	// shelf.NameValidator is a validator for the "name" field. It is called by the builders before save.
 	shelf.NameValidator = shelfDescName.Validators[0].(func(string) error)
 	// shelfDescID is the schema descriptor for id field.
-	shelfDescID := shelfMixinFields2[0].Descriptor()
+	shelfDescID := shelfMixinFields3[0].Descriptor()
 	// shelf.DefaultID holds the default value on creation for the id field.
 	shelf.DefaultID = shelfDescID.Default.(func() ksuid.ID)
 	tagMixin := schema.Tag{}.Mixin()
@@ -291,7 +387,7 @@ func init() {
 	// task.DefaultID holds the default value on creation for the id field.
 	task.DefaultID = taskDescID.Default.(func() ksuid.ID)
 	userMixin := schema.User{}.Mixin()
-	user.Policy = privacy.NewPolicies(userMixin[0], schema.User{})
+	user.Policy = privacy.NewPolicies(userMixin[1], schema.User{})
 	user.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 			if err := user.Policy.EvalMutation(ctx, m); err != nil {
@@ -300,10 +396,22 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
-	userMixinFields1 := userMixin[1].Fields()
-	_ = userMixinFields1
+	userMixinFields0 := userMixin[0].Fields()
+	_ = userMixinFields0
+	userMixinFields2 := userMixin[2].Fields()
+	_ = userMixinFields2
 	userFields := schema.User{}.Fields()
 	_ = userFields
+	// userDescCreateTime is the schema descriptor for create_time field.
+	userDescCreateTime := userMixinFields0[0].Descriptor()
+	// user.DefaultCreateTime holds the default value on creation for the create_time field.
+	user.DefaultCreateTime = userDescCreateTime.Default.(func() time.Time)
+	// userDescUpdateTime is the schema descriptor for update_time field.
+	userDescUpdateTime := userMixinFields0[1].Descriptor()
+	// user.DefaultUpdateTime holds the default value on creation for the update_time field.
+	user.DefaultUpdateTime = userDescUpdateTime.Default.(func() time.Time)
+	// user.UpdateDefaultUpdateTime holds the default value on update for the update_time field.
+	user.UpdateDefaultUpdateTime = userDescUpdateTime.UpdateDefault.(func() time.Time)
 	// userDescUsername is the schema descriptor for username field.
 	userDescUsername := userFields[0].Descriptor()
 	// user.UsernameValidator is a validator for the "username" field. It is called by the builders before save.
@@ -313,11 +421,11 @@ func init() {
 	// user.EmailValidator is a validator for the "email" field. It is called by the builders before save.
 	user.EmailValidator = userDescEmail.Validators[0].(func(string) error)
 	// userDescID is the schema descriptor for id field.
-	userDescID := userMixinFields1[0].Descriptor()
+	userDescID := userMixinFields2[0].Descriptor()
 	// user.DefaultID holds the default value on creation for the id field.
 	user.DefaultID = userDescID.Default.(func() ksuid.ID)
 	userpermissionsMixin := schema.UserPermissions{}.Mixin()
-	userpermissions.Policy = privacy.NewPolicies(userpermissionsMixin[0], schema.UserPermissions{})
+	userpermissions.Policy = privacy.NewPolicies(userpermissionsMixin[1], schema.UserPermissions{})
 	userpermissions.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 			if err := userpermissions.Policy.EvalMutation(ctx, m); err != nil {
@@ -326,10 +434,22 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
-	userpermissionsMixinFields1 := userpermissionsMixin[1].Fields()
-	_ = userpermissionsMixinFields1
+	userpermissionsMixinFields0 := userpermissionsMixin[0].Fields()
+	_ = userpermissionsMixinFields0
+	userpermissionsMixinFields2 := userpermissionsMixin[2].Fields()
+	_ = userpermissionsMixinFields2
 	userpermissionsFields := schema.UserPermissions{}.Fields()
 	_ = userpermissionsFields
+	// userpermissionsDescCreateTime is the schema descriptor for create_time field.
+	userpermissionsDescCreateTime := userpermissionsMixinFields0[0].Descriptor()
+	// userpermissions.DefaultCreateTime holds the default value on creation for the create_time field.
+	userpermissions.DefaultCreateTime = userpermissionsDescCreateTime.Default.(func() time.Time)
+	// userpermissionsDescUpdateTime is the schema descriptor for update_time field.
+	userpermissionsDescUpdateTime := userpermissionsMixinFields0[1].Descriptor()
+	// userpermissions.DefaultUpdateTime holds the default value on creation for the update_time field.
+	userpermissions.DefaultUpdateTime = userpermissionsDescUpdateTime.Default.(func() time.Time)
+	// userpermissions.UpdateDefaultUpdateTime holds the default value on update for the update_time field.
+	userpermissions.UpdateDefaultUpdateTime = userpermissionsDescUpdateTime.UpdateDefault.(func() time.Time)
 	// userpermissionsDescAdmin is the schema descriptor for Admin field.
 	userpermissionsDescAdmin := userpermissionsFields[1].Descriptor()
 	// userpermissions.DefaultAdmin holds the default value on creation for the Admin field.
@@ -343,7 +463,7 @@ func init() {
 	// userpermissions.DefaultCanEdit holds the default value on creation for the CanEdit field.
 	userpermissions.DefaultCanEdit = userpermissionsDescCanEdit.Default.(bool)
 	// userpermissionsDescID is the schema descriptor for id field.
-	userpermissionsDescID := userpermissionsMixinFields1[0].Descriptor()
+	userpermissionsDescID := userpermissionsMixinFields2[0].Descriptor()
 	// userpermissions.DefaultID holds the default value on creation for the id field.
 	userpermissions.DefaultID = userpermissionsDescID.Default.(func() ksuid.ID)
 }

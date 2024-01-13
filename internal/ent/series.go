@@ -7,6 +7,7 @@ import (
 	"lybbrio/internal/ent/schema/ksuid"
 	"lybbrio/internal/ent/series"
 	"strings"
+	"time"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
@@ -17,6 +18,10 @@ type Series struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID ksuid.ID `json:"id,omitempty"`
+	// CreateTime holds the value of the "create_time" field.
+	CreateTime time.Time `json:"create_time,omitempty"`
+	// UpdateTime holds the value of the "update_time" field.
+	UpdateTime time.Time `json:"update_time,omitempty"`
 	// CalibreID holds the value of the "calibre_id" field.
 	CalibreID int64 `json:"calibre_id,omitempty"`
 	// Name holds the value of the "name" field.
@@ -60,6 +65,8 @@ func (*Series) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullInt64)
 		case series.FieldID, series.FieldName, series.FieldSort:
 			values[i] = new(sql.NullString)
+		case series.FieldCreateTime, series.FieldUpdateTime:
+			values[i] = new(sql.NullTime)
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -80,6 +87,18 @@ func (s *Series) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value.Valid {
 				s.ID = ksuid.ID(value.String)
+			}
+		case series.FieldCreateTime:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field create_time", values[i])
+			} else if value.Valid {
+				s.CreateTime = value.Time
+			}
+		case series.FieldUpdateTime:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field update_time", values[i])
+			} else if value.Valid {
+				s.UpdateTime = value.Time
 			}
 		case series.FieldCalibreID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
@@ -140,6 +159,12 @@ func (s *Series) String() string {
 	var builder strings.Builder
 	builder.WriteString("Series(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", s.ID))
+	builder.WriteString("create_time=")
+	builder.WriteString(s.CreateTime.Format(time.ANSIC))
+	builder.WriteString(", ")
+	builder.WriteString("update_time=")
+	builder.WriteString(s.UpdateTime.Format(time.ANSIC))
+	builder.WriteString(", ")
 	builder.WriteString("calibre_id=")
 	builder.WriteString(fmt.Sprintf("%v", s.CalibreID))
 	builder.WriteString(", ")

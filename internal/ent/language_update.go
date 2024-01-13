@@ -10,6 +10,7 @@ import (
 	"lybbrio/internal/ent/language"
 	"lybbrio/internal/ent/predicate"
 	"lybbrio/internal/ent/schema/ksuid"
+	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -26,6 +27,12 @@ type LanguageUpdate struct {
 // Where appends a list predicates to the LanguageUpdate builder.
 func (lu *LanguageUpdate) Where(ps ...predicate.Language) *LanguageUpdate {
 	lu.mutation.Where(ps...)
+	return lu
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (lu *LanguageUpdate) SetUpdateTime(t time.Time) *LanguageUpdate {
+	lu.mutation.SetUpdateTime(t)
 	return lu
 }
 
@@ -113,6 +120,9 @@ func (lu *LanguageUpdate) RemoveBooks(b ...*Book) *LanguageUpdate {
 
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (lu *LanguageUpdate) Save(ctx context.Context) (int, error) {
+	if err := lu.defaults(); err != nil {
+		return 0, err
+	}
 	return withHooks(ctx, lu.sqlSave, lu.mutation, lu.hooks)
 }
 
@@ -138,6 +148,18 @@ func (lu *LanguageUpdate) ExecX(ctx context.Context) {
 	}
 }
 
+// defaults sets the default values of the builder before save.
+func (lu *LanguageUpdate) defaults() error {
+	if _, ok := lu.mutation.UpdateTime(); !ok {
+		if language.UpdateDefaultUpdateTime == nil {
+			return fmt.Errorf("ent: uninitialized language.UpdateDefaultUpdateTime (forgotten import ent/runtime?)")
+		}
+		v := language.UpdateDefaultUpdateTime()
+		lu.mutation.SetUpdateTime(v)
+	}
+	return nil
+}
+
 // check runs all checks and user-defined validators on the builder.
 func (lu *LanguageUpdate) check() error {
 	if v, ok := lu.mutation.Code(); ok {
@@ -159,6 +181,9 @@ func (lu *LanguageUpdate) sqlSave(ctx context.Context) (n int, err error) {
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := lu.mutation.UpdateTime(); ok {
+		_spec.SetField(language.FieldUpdateTime, field.TypeTime, value)
 	}
 	if value, ok := lu.mutation.CalibreID(); ok {
 		_spec.SetField(language.FieldCalibreID, field.TypeInt64, value)
@@ -235,6 +260,12 @@ type LanguageUpdateOne struct {
 	fields   []string
 	hooks    []Hook
 	mutation *LanguageMutation
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (luo *LanguageUpdateOne) SetUpdateTime(t time.Time) *LanguageUpdateOne {
+	luo.mutation.SetUpdateTime(t)
+	return luo
 }
 
 // SetCalibreID sets the "calibre_id" field.
@@ -334,6 +365,9 @@ func (luo *LanguageUpdateOne) Select(field string, fields ...string) *LanguageUp
 
 // Save executes the query and returns the updated Language entity.
 func (luo *LanguageUpdateOne) Save(ctx context.Context) (*Language, error) {
+	if err := luo.defaults(); err != nil {
+		return nil, err
+	}
 	return withHooks(ctx, luo.sqlSave, luo.mutation, luo.hooks)
 }
 
@@ -357,6 +391,18 @@ func (luo *LanguageUpdateOne) ExecX(ctx context.Context) {
 	if err := luo.Exec(ctx); err != nil {
 		panic(err)
 	}
+}
+
+// defaults sets the default values of the builder before save.
+func (luo *LanguageUpdateOne) defaults() error {
+	if _, ok := luo.mutation.UpdateTime(); !ok {
+		if language.UpdateDefaultUpdateTime == nil {
+			return fmt.Errorf("ent: uninitialized language.UpdateDefaultUpdateTime (forgotten import ent/runtime?)")
+		}
+		v := language.UpdateDefaultUpdateTime()
+		luo.mutation.SetUpdateTime(v)
+	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -397,6 +443,9 @@ func (luo *LanguageUpdateOne) sqlSave(ctx context.Context) (_node *Language, err
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := luo.mutation.UpdateTime(); ok {
+		_spec.SetField(language.FieldUpdateTime, field.TypeTime, value)
 	}
 	if value, ok := luo.mutation.CalibreID(); ok {
 		_spec.SetField(language.FieldCalibreID, field.TypeInt64, value)

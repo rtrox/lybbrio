@@ -9,6 +9,7 @@ import (
 	"lybbrio/internal/ent/book"
 	"lybbrio/internal/ent/bookfile"
 	"lybbrio/internal/ent/schema/ksuid"
+	"time"
 
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
@@ -22,6 +23,34 @@ type BookFileCreate struct {
 	mutation *BookFileMutation
 	hooks    []Hook
 	conflict []sql.ConflictOption
+}
+
+// SetCreateTime sets the "create_time" field.
+func (bfc *BookFileCreate) SetCreateTime(t time.Time) *BookFileCreate {
+	bfc.mutation.SetCreateTime(t)
+	return bfc
+}
+
+// SetNillableCreateTime sets the "create_time" field if the given value is not nil.
+func (bfc *BookFileCreate) SetNillableCreateTime(t *time.Time) *BookFileCreate {
+	if t != nil {
+		bfc.SetCreateTime(*t)
+	}
+	return bfc
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (bfc *BookFileCreate) SetUpdateTime(t time.Time) *BookFileCreate {
+	bfc.mutation.SetUpdateTime(t)
+	return bfc
+}
+
+// SetNillableUpdateTime sets the "update_time" field if the given value is not nil.
+func (bfc *BookFileCreate) SetNillableUpdateTime(t *time.Time) *BookFileCreate {
+	if t != nil {
+		bfc.SetUpdateTime(*t)
+	}
+	return bfc
 }
 
 // SetName sets the "name" field.
@@ -110,6 +139,20 @@ func (bfc *BookFileCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (bfc *BookFileCreate) defaults() error {
+	if _, ok := bfc.mutation.CreateTime(); !ok {
+		if bookfile.DefaultCreateTime == nil {
+			return fmt.Errorf("ent: uninitialized bookfile.DefaultCreateTime (forgotten import ent/runtime?)")
+		}
+		v := bookfile.DefaultCreateTime()
+		bfc.mutation.SetCreateTime(v)
+	}
+	if _, ok := bfc.mutation.UpdateTime(); !ok {
+		if bookfile.DefaultUpdateTime == nil {
+			return fmt.Errorf("ent: uninitialized bookfile.DefaultUpdateTime (forgotten import ent/runtime?)")
+		}
+		v := bookfile.DefaultUpdateTime()
+		bfc.mutation.SetUpdateTime(v)
+	}
 	if _, ok := bfc.mutation.ID(); !ok {
 		if bookfile.DefaultID == nil {
 			return fmt.Errorf("ent: uninitialized bookfile.DefaultID (forgotten import ent/runtime?)")
@@ -122,6 +165,12 @@ func (bfc *BookFileCreate) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (bfc *BookFileCreate) check() error {
+	if _, ok := bfc.mutation.CreateTime(); !ok {
+		return &ValidationError{Name: "create_time", err: errors.New(`ent: missing required field "BookFile.create_time"`)}
+	}
+	if _, ok := bfc.mutation.UpdateTime(); !ok {
+		return &ValidationError{Name: "update_time", err: errors.New(`ent: missing required field "BookFile.update_time"`)}
+	}
 	if _, ok := bfc.mutation.Name(); !ok {
 		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "BookFile.name"`)}
 	}
@@ -193,6 +242,14 @@ func (bfc *BookFileCreate) createSpec() (*BookFile, *sqlgraph.CreateSpec) {
 		_node.ID = id
 		_spec.ID.Value = id
 	}
+	if value, ok := bfc.mutation.CreateTime(); ok {
+		_spec.SetField(bookfile.FieldCreateTime, field.TypeTime, value)
+		_node.CreateTime = value
+	}
+	if value, ok := bfc.mutation.UpdateTime(); ok {
+		_spec.SetField(bookfile.FieldUpdateTime, field.TypeTime, value)
+		_node.UpdateTime = value
+	}
 	if value, ok := bfc.mutation.Name(); ok {
 		_spec.SetField(bookfile.FieldName, field.TypeString, value)
 		_node.Name = value
@@ -233,7 +290,7 @@ func (bfc *BookFileCreate) createSpec() (*BookFile, *sqlgraph.CreateSpec) {
 // of the `INSERT` statement. For example:
 //
 //	client.BookFile.Create().
-//		SetName(v).
+//		SetCreateTime(v).
 //		OnConflict(
 //			// Update the row with the new values
 //			// the was proposed for insertion.
@@ -242,7 +299,7 @@ func (bfc *BookFileCreate) createSpec() (*BookFile, *sqlgraph.CreateSpec) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.BookFileUpsert) {
-//			SetName(v+v).
+//			SetCreateTime(v+v).
 //		}).
 //		Exec(ctx)
 func (bfc *BookFileCreate) OnConflict(opts ...sql.ConflictOption) *BookFileUpsertOne {
@@ -277,6 +334,18 @@ type (
 		*sql.UpdateSet
 	}
 )
+
+// SetUpdateTime sets the "update_time" field.
+func (u *BookFileUpsert) SetUpdateTime(v time.Time) *BookFileUpsert {
+	u.Set(bookfile.FieldUpdateTime, v)
+	return u
+}
+
+// UpdateUpdateTime sets the "update_time" field to the value that was provided on create.
+func (u *BookFileUpsert) UpdateUpdateTime() *BookFileUpsert {
+	u.SetExcluded(bookfile.FieldUpdateTime)
+	return u
+}
 
 // SetName sets the "name" field.
 func (u *BookFileUpsert) SetName(v string) *BookFileUpsert {
@@ -349,6 +418,9 @@ func (u *BookFileUpsertOne) UpdateNewValues() *BookFileUpsertOne {
 		if _, exists := u.create.mutation.ID(); exists {
 			s.SetIgnore(bookfile.FieldID)
 		}
+		if _, exists := u.create.mutation.CreateTime(); exists {
+			s.SetIgnore(bookfile.FieldCreateTime)
+		}
 	}))
 	return u
 }
@@ -378,6 +450,20 @@ func (u *BookFileUpsertOne) Update(set func(*BookFileUpsert)) *BookFileUpsertOne
 		set(&BookFileUpsert{UpdateSet: update})
 	}))
 	return u
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (u *BookFileUpsertOne) SetUpdateTime(v time.Time) *BookFileUpsertOne {
+	return u.Update(func(s *BookFileUpsert) {
+		s.SetUpdateTime(v)
+	})
+}
+
+// UpdateUpdateTime sets the "update_time" field to the value that was provided on create.
+func (u *BookFileUpsertOne) UpdateUpdateTime() *BookFileUpsertOne {
+	return u.Update(func(s *BookFileUpsert) {
+		s.UpdateUpdateTime()
+	})
 }
 
 // SetName sets the "name" field.
@@ -579,7 +665,7 @@ func (bfcb *BookFileCreateBulk) ExecX(ctx context.Context) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.BookFileUpsert) {
-//			SetName(v+v).
+//			SetCreateTime(v+v).
 //		}).
 //		Exec(ctx)
 func (bfcb *BookFileCreateBulk) OnConflict(opts ...sql.ConflictOption) *BookFileUpsertBulk {
@@ -626,6 +712,9 @@ func (u *BookFileUpsertBulk) UpdateNewValues() *BookFileUpsertBulk {
 			if _, exists := b.mutation.ID(); exists {
 				s.SetIgnore(bookfile.FieldID)
 			}
+			if _, exists := b.mutation.CreateTime(); exists {
+				s.SetIgnore(bookfile.FieldCreateTime)
+			}
 		}
 	}))
 	return u
@@ -656,6 +745,20 @@ func (u *BookFileUpsertBulk) Update(set func(*BookFileUpsert)) *BookFileUpsertBu
 		set(&BookFileUpsert{UpdateSet: update})
 	}))
 	return u
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (u *BookFileUpsertBulk) SetUpdateTime(v time.Time) *BookFileUpsertBulk {
+	return u.Update(func(s *BookFileUpsert) {
+		s.SetUpdateTime(v)
+	})
+}
+
+// UpdateUpdateTime sets the "update_time" field to the value that was provided on create.
+func (u *BookFileUpsertBulk) UpdateUpdateTime() *BookFileUpsertBulk {
+	return u.Update(func(s *BookFileUpsert) {
+		s.UpdateUpdateTime()
+	})
 }
 
 // SetName sets the "name" field.

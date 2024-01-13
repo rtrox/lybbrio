@@ -8,6 +8,7 @@ import (
 	"lybbrio/internal/ent/user"
 	"lybbrio/internal/ent/userpermissions"
 	"strings"
+	"time"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
@@ -18,6 +19,10 @@ type UserPermissions struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID ksuid.ID `json:"id,omitempty"`
+	// CreateTime holds the value of the "create_time" field.
+	CreateTime time.Time `json:"create_time,omitempty"`
+	// UpdateTime holds the value of the "update_time" field.
+	UpdateTime time.Time `json:"update_time,omitempty"`
 	// UserID holds the value of the "user_id" field.
 	UserID ksuid.ID `json:"user_id,omitempty"`
 	// Admin holds the value of the "Admin" field.
@@ -65,6 +70,8 @@ func (*UserPermissions) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullBool)
 		case userpermissions.FieldID, userpermissions.FieldUserID:
 			values[i] = new(sql.NullString)
+		case userpermissions.FieldCreateTime, userpermissions.FieldUpdateTime:
+			values[i] = new(sql.NullTime)
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -85,6 +92,18 @@ func (up *UserPermissions) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value.Valid {
 				up.ID = ksuid.ID(value.String)
+			}
+		case userpermissions.FieldCreateTime:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field create_time", values[i])
+			} else if value.Valid {
+				up.CreateTime = value.Time
+			}
+		case userpermissions.FieldUpdateTime:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field update_time", values[i])
+			} else if value.Valid {
+				up.UpdateTime = value.Time
 			}
 		case userpermissions.FieldUserID:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -151,6 +170,12 @@ func (up *UserPermissions) String() string {
 	var builder strings.Builder
 	builder.WriteString("UserPermissions(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", up.ID))
+	builder.WriteString("create_time=")
+	builder.WriteString(up.CreateTime.Format(time.ANSIC))
+	builder.WriteString(", ")
+	builder.WriteString("update_time=")
+	builder.WriteString(up.UpdateTime.Format(time.ANSIC))
+	builder.WriteString(", ")
 	builder.WriteString("user_id=")
 	builder.WriteString(fmt.Sprintf("%v", up.UserID))
 	builder.WriteString(", ")

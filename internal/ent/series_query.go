@@ -303,12 +303,12 @@ func (sq *SeriesQuery) WithBooks(opts ...func(*BookQuery)) *SeriesQuery {
 // Example:
 //
 //	var v []struct {
-//		CalibreID int64 `json:"calibre_id,omitempty"`
+//		CreateTime time.Time `json:"create_time,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.Series.Query().
-//		GroupBy(series.FieldCalibreID).
+//		GroupBy(series.FieldCreateTime).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (sq *SeriesQuery) GroupBy(field string, fields ...string) *SeriesGroupBy {
@@ -326,11 +326,11 @@ func (sq *SeriesQuery) GroupBy(field string, fields ...string) *SeriesGroupBy {
 // Example:
 //
 //	var v []struct {
-//		CalibreID int64 `json:"calibre_id,omitempty"`
+//		CreateTime time.Time `json:"create_time,omitempty"`
 //	}
 //
 //	client.Series.Query().
-//		Select(series.FieldCalibreID).
+//		Select(series.FieldCreateTime).
 //		Scan(ctx, &v)
 func (sq *SeriesQuery) Select(fields ...string) *SeriesSelect {
 	sq.ctx.Fields = append(sq.ctx.Fields, fields...)

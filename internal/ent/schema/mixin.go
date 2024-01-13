@@ -33,12 +33,6 @@ func (BaseMixin) Policy() ent.Policy {
 	}
 }
 
-func (BaseMixin) Mixin() []ent.Mixin {
-	return []ent.Mixin{
-		mixin.Time{},
-	}
-}
-
 type UserScopedMixin struct {
 	mixin.Schema
 }

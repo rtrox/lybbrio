@@ -10,6 +10,7 @@ import (
 	"lybbrio/internal/ent/identifier"
 	"lybbrio/internal/ent/predicate"
 	"lybbrio/internal/ent/schema/ksuid"
+	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -26,6 +27,12 @@ type IdentifierUpdate struct {
 // Where appends a list predicates to the IdentifierUpdate builder.
 func (iu *IdentifierUpdate) Where(ps ...predicate.Identifier) *IdentifierUpdate {
 	iu.mutation.Where(ps...)
+	return iu
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (iu *IdentifierUpdate) SetUpdateTime(t time.Time) *IdentifierUpdate {
+	iu.mutation.SetUpdateTime(t)
 	return iu
 }
 
@@ -108,6 +115,9 @@ func (iu *IdentifierUpdate) ClearBook() *IdentifierUpdate {
 
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (iu *IdentifierUpdate) Save(ctx context.Context) (int, error) {
+	if err := iu.defaults(); err != nil {
+		return 0, err
+	}
 	return withHooks(ctx, iu.sqlSave, iu.mutation, iu.hooks)
 }
 
@@ -131,6 +141,18 @@ func (iu *IdentifierUpdate) ExecX(ctx context.Context) {
 	if err := iu.Exec(ctx); err != nil {
 		panic(err)
 	}
+}
+
+// defaults sets the default values of the builder before save.
+func (iu *IdentifierUpdate) defaults() error {
+	if _, ok := iu.mutation.UpdateTime(); !ok {
+		if identifier.UpdateDefaultUpdateTime == nil {
+			return fmt.Errorf("ent: uninitialized identifier.UpdateDefaultUpdateTime (forgotten import ent/runtime?)")
+		}
+		v := identifier.UpdateDefaultUpdateTime()
+		iu.mutation.SetUpdateTime(v)
+	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -162,6 +184,9 @@ func (iu *IdentifierUpdate) sqlSave(ctx context.Context) (n int, err error) {
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := iu.mutation.UpdateTime(); ok {
+		_spec.SetField(identifier.FieldUpdateTime, field.TypeTime, value)
 	}
 	if value, ok := iu.mutation.CalibreID(); ok {
 		_spec.SetField(identifier.FieldCalibreID, field.TypeInt64, value)
@@ -225,6 +250,12 @@ type IdentifierUpdateOne struct {
 	fields   []string
 	hooks    []Hook
 	mutation *IdentifierMutation
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (iuo *IdentifierUpdateOne) SetUpdateTime(t time.Time) *IdentifierUpdateOne {
+	iuo.mutation.SetUpdateTime(t)
+	return iuo
 }
 
 // SetCalibreID sets the "calibre_id" field.
@@ -319,6 +350,9 @@ func (iuo *IdentifierUpdateOne) Select(field string, fields ...string) *Identifi
 
 // Save executes the query and returns the updated Identifier entity.
 func (iuo *IdentifierUpdateOne) Save(ctx context.Context) (*Identifier, error) {
+	if err := iuo.defaults(); err != nil {
+		return nil, err
+	}
 	return withHooks(ctx, iuo.sqlSave, iuo.mutation, iuo.hooks)
 }
 
@@ -342,6 +376,18 @@ func (iuo *IdentifierUpdateOne) ExecX(ctx context.Context) {
 	if err := iuo.Exec(ctx); err != nil {
 		panic(err)
 	}
+}
+
+// defaults sets the default values of the builder before save.
+func (iuo *IdentifierUpdateOne) defaults() error {
+	if _, ok := iuo.mutation.UpdateTime(); !ok {
+		if identifier.UpdateDefaultUpdateTime == nil {
+			return fmt.Errorf("ent: uninitialized identifier.UpdateDefaultUpdateTime (forgotten import ent/runtime?)")
+		}
+		v := identifier.UpdateDefaultUpdateTime()
+		iuo.mutation.SetUpdateTime(v)
+	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -390,6 +436,9 @@ func (iuo *IdentifierUpdateOne) sqlSave(ctx context.Context) (_node *Identifier,
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := iuo.mutation.UpdateTime(); ok {
+		_spec.SetField(identifier.FieldUpdateTime, field.TypeTime, value)
 	}
 	if value, ok := iuo.mutation.CalibreID(); ok {
 		_spec.SetField(identifier.FieldCalibreID, field.TypeInt64, value)

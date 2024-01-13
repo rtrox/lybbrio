@@ -10,6 +10,7 @@ import (
 	"lybbrio/internal/ent/book"
 	"lybbrio/internal/ent/predicate"
 	"lybbrio/internal/ent/schema/ksuid"
+	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -26,6 +27,12 @@ type AuthorUpdate struct {
 // Where appends a list predicates to the AuthorUpdate builder.
 func (au *AuthorUpdate) Where(ps ...predicate.Author) *AuthorUpdate {
 	au.mutation.Where(ps...)
+	return au
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (au *AuthorUpdate) SetUpdateTime(t time.Time) *AuthorUpdate {
+	au.mutation.SetUpdateTime(t)
 	return au
 }
 
@@ -147,6 +154,9 @@ func (au *AuthorUpdate) RemoveBooks(b ...*Book) *AuthorUpdate {
 
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (au *AuthorUpdate) Save(ctx context.Context) (int, error) {
+	if err := au.defaults(); err != nil {
+		return 0, err
+	}
 	return withHooks(ctx, au.sqlSave, au.mutation, au.hooks)
 }
 
@@ -172,6 +182,18 @@ func (au *AuthorUpdate) ExecX(ctx context.Context) {
 	}
 }
 
+// defaults sets the default values of the builder before save.
+func (au *AuthorUpdate) defaults() error {
+	if _, ok := au.mutation.UpdateTime(); !ok {
+		if author.UpdateDefaultUpdateTime == nil {
+			return fmt.Errorf("ent: uninitialized author.UpdateDefaultUpdateTime (forgotten import ent/runtime?)")
+		}
+		v := author.UpdateDefaultUpdateTime()
+		au.mutation.SetUpdateTime(v)
+	}
+	return nil
+}
+
 // check runs all checks and user-defined validators on the builder.
 func (au *AuthorUpdate) check() error {
 	if v, ok := au.mutation.Name(); ok {
@@ -193,6 +215,9 @@ func (au *AuthorUpdate) sqlSave(ctx context.Context) (n int, err error) {
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := au.mutation.UpdateTime(); ok {
+		_spec.SetField(author.FieldUpdateTime, field.TypeTime, value)
 	}
 	if value, ok := au.mutation.CalibreID(); ok {
 		_spec.SetField(author.FieldCalibreID, field.TypeInt64, value)
@@ -278,6 +303,12 @@ type AuthorUpdateOne struct {
 	fields   []string
 	hooks    []Hook
 	mutation *AuthorMutation
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (auo *AuthorUpdateOne) SetUpdateTime(t time.Time) *AuthorUpdateOne {
+	auo.mutation.SetUpdateTime(t)
+	return auo
 }
 
 // SetCalibreID sets the "calibre_id" field.
@@ -411,6 +442,9 @@ func (auo *AuthorUpdateOne) Select(field string, fields ...string) *AuthorUpdate
 
 // Save executes the query and returns the updated Author entity.
 func (auo *AuthorUpdateOne) Save(ctx context.Context) (*Author, error) {
+	if err := auo.defaults(); err != nil {
+		return nil, err
+	}
 	return withHooks(ctx, auo.sqlSave, auo.mutation, auo.hooks)
 }
 
@@ -434,6 +468,18 @@ func (auo *AuthorUpdateOne) ExecX(ctx context.Context) {
 	if err := auo.Exec(ctx); err != nil {
 		panic(err)
 	}
+}
+
+// defaults sets the default values of the builder before save.
+func (auo *AuthorUpdateOne) defaults() error {
+	if _, ok := auo.mutation.UpdateTime(); !ok {
+		if author.UpdateDefaultUpdateTime == nil {
+			return fmt.Errorf("ent: uninitialized author.UpdateDefaultUpdateTime (forgotten import ent/runtime?)")
+		}
+		v := author.UpdateDefaultUpdateTime()
+		auo.mutation.SetUpdateTime(v)
+	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -474,6 +520,9 @@ func (auo *AuthorUpdateOne) sqlSave(ctx context.Context) (_node *Author, err err
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := auo.mutation.UpdateTime(); ok {
+		_spec.SetField(author.FieldUpdateTime, field.TypeTime, value)
 	}
 	if value, ok := auo.mutation.CalibreID(); ok {
 		_spec.SetField(author.FieldCalibreID, field.TypeInt64, value)

@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/index"
+	"entgo.io/ent/schema/mixin"
 )
 
 // User holds the schema definition for the User entity.
@@ -29,6 +30,7 @@ func (User) Annotations() []schema.Annotation {
 
 func (User) Mixin() []ent.Mixin {
 	return []ent.Mixin{
+		mixin.Time{},
 		BaseMixin{},
 		ksuid.MixinWithPrefix("usr"),
 	}

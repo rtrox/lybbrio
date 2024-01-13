@@ -9,6 +9,7 @@ import (
 	"entgo.io/ent/schema"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
+	"entgo.io/ent/schema/mixin"
 )
 
 // BookFile holds the schema definition for the BookFile entity.
@@ -24,6 +25,7 @@ func (BookFile) Annotations() []schema.Annotation {
 
 func (BookFile) Mixin() []ent.Mixin {
 	return []ent.Mixin{
+		mixin.Time{},
 		BaseMixin{},
 		ksuid.MixinWithPrefix("fil"),
 	}

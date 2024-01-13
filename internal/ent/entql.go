@@ -37,10 +37,12 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "Author",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			author.FieldCalibreID: {Type: field.TypeInt64, Column: author.FieldCalibreID},
-			author.FieldName:      {Type: field.TypeString, Column: author.FieldName},
-			author.FieldSort:      {Type: field.TypeString, Column: author.FieldSort},
-			author.FieldLink:      {Type: field.TypeString, Column: author.FieldLink},
+			author.FieldCreateTime: {Type: field.TypeTime, Column: author.FieldCreateTime},
+			author.FieldUpdateTime: {Type: field.TypeTime, Column: author.FieldUpdateTime},
+			author.FieldCalibreID:  {Type: field.TypeInt64, Column: author.FieldCalibreID},
+			author.FieldName:       {Type: field.TypeString, Column: author.FieldName},
+			author.FieldSort:       {Type: field.TypeString, Column: author.FieldSort},
+			author.FieldLink:       {Type: field.TypeString, Column: author.FieldLink},
 		},
 	}
 	graph.Nodes[1] = &sqlgraph.Node{
@@ -54,6 +56,8 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "Book",
 		Fields: map[string]*sqlgraph.FieldSpec{
+			book.FieldCreateTime:    {Type: field.TypeTime, Column: book.FieldCreateTime},
+			book.FieldUpdateTime:    {Type: field.TypeTime, Column: book.FieldUpdateTime},
 			book.FieldCalibreID:     {Type: field.TypeInt64, Column: book.FieldCalibreID},
 			book.FieldTitle:         {Type: field.TypeString, Column: book.FieldTitle},
 			book.FieldSort:          {Type: field.TypeString, Column: book.FieldSort},
@@ -75,10 +79,12 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "BookFile",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			bookfile.FieldName:   {Type: field.TypeString, Column: bookfile.FieldName},
-			bookfile.FieldPath:   {Type: field.TypeString, Column: bookfile.FieldPath},
-			bookfile.FieldSize:   {Type: field.TypeInt64, Column: bookfile.FieldSize},
-			bookfile.FieldFormat: {Type: field.TypeEnum, Column: bookfile.FieldFormat},
+			bookfile.FieldCreateTime: {Type: field.TypeTime, Column: bookfile.FieldCreateTime},
+			bookfile.FieldUpdateTime: {Type: field.TypeTime, Column: bookfile.FieldUpdateTime},
+			bookfile.FieldName:       {Type: field.TypeString, Column: bookfile.FieldName},
+			bookfile.FieldPath:       {Type: field.TypeString, Column: bookfile.FieldPath},
+			bookfile.FieldSize:       {Type: field.TypeInt64, Column: bookfile.FieldSize},
+			bookfile.FieldFormat:     {Type: field.TypeEnum, Column: bookfile.FieldFormat},
 		},
 	}
 	graph.Nodes[3] = &sqlgraph.Node{
@@ -92,9 +98,11 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "Identifier",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			identifier.FieldCalibreID: {Type: field.TypeInt64, Column: identifier.FieldCalibreID},
-			identifier.FieldType:      {Type: field.TypeString, Column: identifier.FieldType},
-			identifier.FieldValue:     {Type: field.TypeString, Column: identifier.FieldValue},
+			identifier.FieldCreateTime: {Type: field.TypeTime, Column: identifier.FieldCreateTime},
+			identifier.FieldUpdateTime: {Type: field.TypeTime, Column: identifier.FieldUpdateTime},
+			identifier.FieldCalibreID:  {Type: field.TypeInt64, Column: identifier.FieldCalibreID},
+			identifier.FieldType:       {Type: field.TypeString, Column: identifier.FieldType},
+			identifier.FieldValue:      {Type: field.TypeString, Column: identifier.FieldValue},
 		},
 	}
 	graph.Nodes[4] = &sqlgraph.Node{
@@ -108,8 +116,10 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "Language",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			language.FieldCalibreID: {Type: field.TypeInt64, Column: language.FieldCalibreID},
-			language.FieldCode:      {Type: field.TypeString, Column: language.FieldCode},
+			language.FieldCreateTime: {Type: field.TypeTime, Column: language.FieldCreateTime},
+			language.FieldUpdateTime: {Type: field.TypeTime, Column: language.FieldUpdateTime},
+			language.FieldCalibreID:  {Type: field.TypeInt64, Column: language.FieldCalibreID},
+			language.FieldCode:       {Type: field.TypeString, Column: language.FieldCode},
 		},
 	}
 	graph.Nodes[5] = &sqlgraph.Node{
@@ -123,8 +133,10 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "Publisher",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			publisher.FieldCalibreID: {Type: field.TypeInt64, Column: publisher.FieldCalibreID},
-			publisher.FieldName:      {Type: field.TypeString, Column: publisher.FieldName},
+			publisher.FieldCreateTime: {Type: field.TypeTime, Column: publisher.FieldCreateTime},
+			publisher.FieldUpdateTime: {Type: field.TypeTime, Column: publisher.FieldUpdateTime},
+			publisher.FieldCalibreID:  {Type: field.TypeInt64, Column: publisher.FieldCalibreID},
+			publisher.FieldName:       {Type: field.TypeString, Column: publisher.FieldName},
 		},
 	}
 	graph.Nodes[6] = &sqlgraph.Node{
@@ -138,9 +150,11 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "Series",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			series.FieldCalibreID: {Type: field.TypeInt64, Column: series.FieldCalibreID},
-			series.FieldName:      {Type: field.TypeString, Column: series.FieldName},
-			series.FieldSort:      {Type: field.TypeString, Column: series.FieldSort},
+			series.FieldCreateTime: {Type: field.TypeTime, Column: series.FieldCreateTime},
+			series.FieldUpdateTime: {Type: field.TypeTime, Column: series.FieldUpdateTime},
+			series.FieldCalibreID:  {Type: field.TypeInt64, Column: series.FieldCalibreID},
+			series.FieldName:       {Type: field.TypeString, Column: series.FieldName},
+			series.FieldSort:       {Type: field.TypeString, Column: series.FieldSort},
 		},
 	}
 	graph.Nodes[7] = &sqlgraph.Node{
@@ -154,6 +168,8 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "Shelf",
 		Fields: map[string]*sqlgraph.FieldSpec{
+			shelf.FieldCreateTime:  {Type: field.TypeTime, Column: shelf.FieldCreateTime},
+			shelf.FieldUpdateTime:  {Type: field.TypeTime, Column: shelf.FieldUpdateTime},
 			shelf.FieldPublic:      {Type: field.TypeBool, Column: shelf.FieldPublic},
 			shelf.FieldUserID:      {Type: field.TypeString, Column: shelf.FieldUserID},
 			shelf.FieldName:        {Type: field.TypeString, Column: shelf.FieldName},
@@ -208,6 +224,8 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "User",
 		Fields: map[string]*sqlgraph.FieldSpec{
+			user.FieldCreateTime:   {Type: field.TypeTime, Column: user.FieldCreateTime},
+			user.FieldUpdateTime:   {Type: field.TypeTime, Column: user.FieldUpdateTime},
 			user.FieldUsername:     {Type: field.TypeString, Column: user.FieldUsername},
 			user.FieldPasswordHash: {Type: field.TypeString, Column: user.FieldPasswordHash},
 			user.FieldEmail:        {Type: field.TypeString, Column: user.FieldEmail},
@@ -224,6 +242,8 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "UserPermissions",
 		Fields: map[string]*sqlgraph.FieldSpec{
+			userpermissions.FieldCreateTime:      {Type: field.TypeTime, Column: userpermissions.FieldCreateTime},
+			userpermissions.FieldUpdateTime:      {Type: field.TypeTime, Column: userpermissions.FieldUpdateTime},
 			userpermissions.FieldUserID:          {Type: field.TypeString, Column: userpermissions.FieldUserID},
 			userpermissions.FieldAdmin:           {Type: field.TypeBool, Column: userpermissions.FieldAdmin},
 			userpermissions.FieldCanCreatePublic: {Type: field.TypeBool, Column: userpermissions.FieldCanCreatePublic},
@@ -531,6 +551,16 @@ func (f *AuthorFilter) WhereID(p entql.StringP) {
 	f.Where(p.Field(author.FieldID))
 }
 
+// WhereCreateTime applies the entql time.Time predicate on the create_time field.
+func (f *AuthorFilter) WhereCreateTime(p entql.TimeP) {
+	f.Where(p.Field(author.FieldCreateTime))
+}
+
+// WhereUpdateTime applies the entql time.Time predicate on the update_time field.
+func (f *AuthorFilter) WhereUpdateTime(p entql.TimeP) {
+	f.Where(p.Field(author.FieldUpdateTime))
+}
+
 // WhereCalibreID applies the entql int64 predicate on the calibre_id field.
 func (f *AuthorFilter) WhereCalibreID(p entql.Int64P) {
 	f.Where(p.Field(author.FieldCalibreID))
@@ -603,6 +633,16 @@ func (f *BookFilter) Where(p entql.P) {
 // WhereID applies the entql string predicate on the id field.
 func (f *BookFilter) WhereID(p entql.StringP) {
 	f.Where(p.Field(book.FieldID))
+}
+
+// WhereCreateTime applies the entql time.Time predicate on the create_time field.
+func (f *BookFilter) WhereCreateTime(p entql.TimeP) {
+	f.Where(p.Field(book.FieldCreateTime))
+}
+
+// WhereUpdateTime applies the entql time.Time predicate on the update_time field.
+func (f *BookFilter) WhereUpdateTime(p entql.TimeP) {
+	f.Where(p.Field(book.FieldUpdateTime))
 }
 
 // WhereCalibreID applies the entql int64 predicate on the calibre_id field.
@@ -797,6 +837,16 @@ func (f *BookFileFilter) WhereID(p entql.StringP) {
 	f.Where(p.Field(bookfile.FieldID))
 }
 
+// WhereCreateTime applies the entql time.Time predicate on the create_time field.
+func (f *BookFileFilter) WhereCreateTime(p entql.TimeP) {
+	f.Where(p.Field(bookfile.FieldCreateTime))
+}
+
+// WhereUpdateTime applies the entql time.Time predicate on the update_time field.
+func (f *BookFileFilter) WhereUpdateTime(p entql.TimeP) {
+	f.Where(p.Field(bookfile.FieldUpdateTime))
+}
+
 // WhereName applies the entql string predicate on the name field.
 func (f *BookFileFilter) WhereName(p entql.StringP) {
 	f.Where(p.Field(bookfile.FieldName))
@@ -871,6 +921,16 @@ func (f *IdentifierFilter) WhereID(p entql.StringP) {
 	f.Where(p.Field(identifier.FieldID))
 }
 
+// WhereCreateTime applies the entql time.Time predicate on the create_time field.
+func (f *IdentifierFilter) WhereCreateTime(p entql.TimeP) {
+	f.Where(p.Field(identifier.FieldCreateTime))
+}
+
+// WhereUpdateTime applies the entql time.Time predicate on the update_time field.
+func (f *IdentifierFilter) WhereUpdateTime(p entql.TimeP) {
+	f.Where(p.Field(identifier.FieldUpdateTime))
+}
+
 // WhereCalibreID applies the entql int64 predicate on the calibre_id field.
 func (f *IdentifierFilter) WhereCalibreID(p entql.Int64P) {
 	f.Where(p.Field(identifier.FieldCalibreID))
@@ -940,6 +1000,16 @@ func (f *LanguageFilter) WhereID(p entql.StringP) {
 	f.Where(p.Field(language.FieldID))
 }
 
+// WhereCreateTime applies the entql time.Time predicate on the create_time field.
+func (f *LanguageFilter) WhereCreateTime(p entql.TimeP) {
+	f.Where(p.Field(language.FieldCreateTime))
+}
+
+// WhereUpdateTime applies the entql time.Time predicate on the update_time field.
+func (f *LanguageFilter) WhereUpdateTime(p entql.TimeP) {
+	f.Where(p.Field(language.FieldUpdateTime))
+}
+
 // WhereCalibreID applies the entql int64 predicate on the calibre_id field.
 func (f *LanguageFilter) WhereCalibreID(p entql.Int64P) {
 	f.Where(p.Field(language.FieldCalibreID))
@@ -1004,6 +1074,16 @@ func (f *PublisherFilter) WhereID(p entql.StringP) {
 	f.Where(p.Field(publisher.FieldID))
 }
 
+// WhereCreateTime applies the entql time.Time predicate on the create_time field.
+func (f *PublisherFilter) WhereCreateTime(p entql.TimeP) {
+	f.Where(p.Field(publisher.FieldCreateTime))
+}
+
+// WhereUpdateTime applies the entql time.Time predicate on the update_time field.
+func (f *PublisherFilter) WhereUpdateTime(p entql.TimeP) {
+	f.Where(p.Field(publisher.FieldUpdateTime))
+}
+
 // WhereCalibreID applies the entql int64 predicate on the calibre_id field.
 func (f *PublisherFilter) WhereCalibreID(p entql.Int64P) {
 	f.Where(p.Field(publisher.FieldCalibreID))
@@ -1066,6 +1146,16 @@ func (f *SeriesFilter) Where(p entql.P) {
 // WhereID applies the entql string predicate on the id field.
 func (f *SeriesFilter) WhereID(p entql.StringP) {
 	f.Where(p.Field(series.FieldID))
+}
+
+// WhereCreateTime applies the entql time.Time predicate on the create_time field.
+func (f *SeriesFilter) WhereCreateTime(p entql.TimeP) {
+	f.Where(p.Field(series.FieldCreateTime))
+}
+
+// WhereUpdateTime applies the entql time.Time predicate on the update_time field.
+func (f *SeriesFilter) WhereUpdateTime(p entql.TimeP) {
+	f.Where(p.Field(series.FieldUpdateTime))
 }
 
 // WhereCalibreID applies the entql int64 predicate on the calibre_id field.
@@ -1135,6 +1225,16 @@ func (f *ShelfFilter) Where(p entql.P) {
 // WhereID applies the entql string predicate on the id field.
 func (f *ShelfFilter) WhereID(p entql.StringP) {
 	f.Where(p.Field(shelf.FieldID))
+}
+
+// WhereCreateTime applies the entql time.Time predicate on the create_time field.
+func (f *ShelfFilter) WhereCreateTime(p entql.TimeP) {
+	f.Where(p.Field(shelf.FieldCreateTime))
+}
+
+// WhereUpdateTime applies the entql time.Time predicate on the update_time field.
+func (f *ShelfFilter) WhereUpdateTime(p entql.TimeP) {
+	f.Where(p.Field(shelf.FieldUpdateTime))
 }
 
 // WherePublic applies the entql bool predicate on the public field.
@@ -1388,6 +1488,16 @@ func (f *UserFilter) WhereID(p entql.StringP) {
 	f.Where(p.Field(user.FieldID))
 }
 
+// WhereCreateTime applies the entql time.Time predicate on the create_time field.
+func (f *UserFilter) WhereCreateTime(p entql.TimeP) {
+	f.Where(p.Field(user.FieldCreateTime))
+}
+
+// WhereUpdateTime applies the entql time.Time predicate on the update_time field.
+func (f *UserFilter) WhereUpdateTime(p entql.TimeP) {
+	f.Where(p.Field(user.FieldUpdateTime))
+}
+
 // WhereUsername applies the entql string predicate on the username field.
 func (f *UserFilter) WhereUsername(p entql.StringP) {
 	f.Where(p.Field(user.FieldUsername))
@@ -1469,6 +1579,16 @@ func (f *UserPermissionsFilter) Where(p entql.P) {
 // WhereID applies the entql string predicate on the id field.
 func (f *UserPermissionsFilter) WhereID(p entql.StringP) {
 	f.Where(p.Field(userpermissions.FieldID))
+}
+
+// WhereCreateTime applies the entql time.Time predicate on the create_time field.
+func (f *UserPermissionsFilter) WhereCreateTime(p entql.TimeP) {
+	f.Where(p.Field(userpermissions.FieldCreateTime))
+}
+
+// WhereUpdateTime applies the entql time.Time predicate on the update_time field.
+func (f *UserPermissionsFilter) WhereUpdateTime(p entql.TimeP) {
+	f.Where(p.Field(userpermissions.FieldUpdateTime))
 }
 
 // WhereUserID applies the entql string predicate on the user_id field.

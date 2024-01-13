@@ -37,6 +37,12 @@ func (bu *BookUpdate) Where(ps ...predicate.Book) *BookUpdate {
 	return bu
 }
 
+// SetUpdateTime sets the "update_time" field.
+func (bu *BookUpdate) SetUpdateTime(t time.Time) *BookUpdate {
+	bu.mutation.SetUpdateTime(t)
+	return bu
+}
+
 // SetCalibreID sets the "calibre_id" field.
 func (bu *BookUpdate) SetCalibreID(i int64) *BookUpdate {
 	bu.mutation.ResetCalibreID()
@@ -488,6 +494,9 @@ func (bu *BookUpdate) RemoveFiles(b ...*BookFile) *BookUpdate {
 
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (bu *BookUpdate) Save(ctx context.Context) (int, error) {
+	if err := bu.defaults(); err != nil {
+		return 0, err
+	}
 	return withHooks(ctx, bu.sqlSave, bu.mutation, bu.hooks)
 }
 
@@ -511,6 +520,18 @@ func (bu *BookUpdate) ExecX(ctx context.Context) {
 	if err := bu.Exec(ctx); err != nil {
 		panic(err)
 	}
+}
+
+// defaults sets the default values of the builder before save.
+func (bu *BookUpdate) defaults() error {
+	if _, ok := bu.mutation.UpdateTime(); !ok {
+		if book.UpdateDefaultUpdateTime == nil {
+			return fmt.Errorf("ent: uninitialized book.UpdateDefaultUpdateTime (forgotten import ent/runtime?)")
+		}
+		v := book.UpdateDefaultUpdateTime()
+		bu.mutation.SetUpdateTime(v)
+	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -539,6 +560,9 @@ func (bu *BookUpdate) sqlSave(ctx context.Context) (n int, err error) {
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := bu.mutation.UpdateTime(); ok {
+		_spec.SetField(book.FieldUpdateTime, field.TypeTime, value)
 	}
 	if value, ok := bu.mutation.CalibreID(); ok {
 		_spec.SetField(book.FieldCalibreID, field.TypeInt64, value)
@@ -963,6 +987,12 @@ type BookUpdateOne struct {
 	fields   []string
 	hooks    []Hook
 	mutation *BookMutation
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (buo *BookUpdateOne) SetUpdateTime(t time.Time) *BookUpdateOne {
+	buo.mutation.SetUpdateTime(t)
+	return buo
 }
 
 // SetCalibreID sets the "calibre_id" field.
@@ -1429,6 +1459,9 @@ func (buo *BookUpdateOne) Select(field string, fields ...string) *BookUpdateOne 
 
 // Save executes the query and returns the updated Book entity.
 func (buo *BookUpdateOne) Save(ctx context.Context) (*Book, error) {
+	if err := buo.defaults(); err != nil {
+		return nil, err
+	}
 	return withHooks(ctx, buo.sqlSave, buo.mutation, buo.hooks)
 }
 
@@ -1452,6 +1485,18 @@ func (buo *BookUpdateOne) ExecX(ctx context.Context) {
 	if err := buo.Exec(ctx); err != nil {
 		panic(err)
 	}
+}
+
+// defaults sets the default values of the builder before save.
+func (buo *BookUpdateOne) defaults() error {
+	if _, ok := buo.mutation.UpdateTime(); !ok {
+		if book.UpdateDefaultUpdateTime == nil {
+			return fmt.Errorf("ent: uninitialized book.UpdateDefaultUpdateTime (forgotten import ent/runtime?)")
+		}
+		v := book.UpdateDefaultUpdateTime()
+		buo.mutation.SetUpdateTime(v)
+	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -1497,6 +1542,9 @@ func (buo *BookUpdateOne) sqlSave(ctx context.Context) (_node *Book, err error) 
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := buo.mutation.UpdateTime(); ok {
+		_spec.SetField(book.FieldUpdateTime, field.TypeTime, value)
 	}
 	if value, ok := buo.mutation.CalibreID(); ok {
 		_spec.SetField(book.FieldCalibreID, field.TypeInt64, value)

@@ -9,6 +9,7 @@ import (
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/index"
+	"entgo.io/ent/schema/mixin"
 )
 
 // Identifier holds the schema definition for the Identifier entity.
@@ -27,6 +28,7 @@ func (Identifier) Annotations() []schema.Annotation {
 
 func (Identifier) Mixin() []ent.Mixin {
 	return []ent.Mixin{
+		mixin.Time{},
 		BaseMixin{},
 		CalibreMixin{},
 		ksuid.MixinWithPrefix("idn"),

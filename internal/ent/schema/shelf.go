@@ -10,6 +10,7 @@ import (
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/index"
+	"entgo.io/ent/schema/mixin"
 )
 
 // Shelf holds the schema definition for the Shelf entity.
@@ -28,6 +29,7 @@ func (Shelf) Annotations() []schema.Annotation {
 
 func (Shelf) Mixin() []ent.Mixin {
 	return []ent.Mixin{
+		mixin.Time{},
 		BaseMixin{},
 		PublicableUserScopedMixin{},
 		ksuid.MixinWithPrefix("shf"),

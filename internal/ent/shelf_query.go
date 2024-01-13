@@ -339,12 +339,12 @@ func (sq *ShelfQuery) WithBooks(opts ...func(*BookQuery)) *ShelfQuery {
 // Example:
 //
 //	var v []struct {
-//		Public bool `json:"public,omitempty"`
+//		CreateTime time.Time `json:"create_time,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.Shelf.Query().
-//		GroupBy(shelf.FieldPublic).
+//		GroupBy(shelf.FieldCreateTime).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (sq *ShelfQuery) GroupBy(field string, fields ...string) *ShelfGroupBy {
@@ -362,11 +362,11 @@ func (sq *ShelfQuery) GroupBy(field string, fields ...string) *ShelfGroupBy {
 // Example:
 //
 //	var v []struct {
-//		Public bool `json:"public,omitempty"`
+//		CreateTime time.Time `json:"create_time,omitempty"`
 //	}
 //
 //	client.Shelf.Query().
-//		Select(shelf.FieldPublic).
+//		Select(shelf.FieldCreateTime).
 //		Scan(ctx, &v)
 func (sq *ShelfQuery) Select(fields ...string) *ShelfSelect {
 	sq.ctx.Fields = append(sq.ctx.Fields, fields...)

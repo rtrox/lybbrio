@@ -10,6 +10,7 @@ import (
 	"lybbrio/internal/ent/bookfile"
 	"lybbrio/internal/ent/predicate"
 	"lybbrio/internal/ent/schema/ksuid"
+	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -26,6 +27,12 @@ type BookFileUpdate struct {
 // Where appends a list predicates to the BookFileUpdate builder.
 func (bfu *BookFileUpdate) Where(ps ...predicate.BookFile) *BookFileUpdate {
 	bfu.mutation.Where(ps...)
+	return bfu
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (bfu *BookFileUpdate) SetUpdateTime(t time.Time) *BookFileUpdate {
+	bfu.mutation.SetUpdateTime(t)
 	return bfu
 }
 
@@ -116,6 +123,9 @@ func (bfu *BookFileUpdate) ClearBook() *BookFileUpdate {
 
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (bfu *BookFileUpdate) Save(ctx context.Context) (int, error) {
+	if err := bfu.defaults(); err != nil {
+		return 0, err
+	}
 	return withHooks(ctx, bfu.sqlSave, bfu.mutation, bfu.hooks)
 }
 
@@ -139,6 +149,18 @@ func (bfu *BookFileUpdate) ExecX(ctx context.Context) {
 	if err := bfu.Exec(ctx); err != nil {
 		panic(err)
 	}
+}
+
+// defaults sets the default values of the builder before save.
+func (bfu *BookFileUpdate) defaults() error {
+	if _, ok := bfu.mutation.UpdateTime(); !ok {
+		if bookfile.UpdateDefaultUpdateTime == nil {
+			return fmt.Errorf("ent: uninitialized bookfile.UpdateDefaultUpdateTime (forgotten import ent/runtime?)")
+		}
+		v := bookfile.UpdateDefaultUpdateTime()
+		bfu.mutation.SetUpdateTime(v)
+	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -180,6 +202,9 @@ func (bfu *BookFileUpdate) sqlSave(ctx context.Context) (n int, err error) {
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := bfu.mutation.UpdateTime(); ok {
+		_spec.SetField(bookfile.FieldUpdateTime, field.TypeTime, value)
 	}
 	if value, ok := bfu.mutation.Name(); ok {
 		_spec.SetField(bookfile.FieldName, field.TypeString, value)
@@ -243,6 +268,12 @@ type BookFileUpdateOne struct {
 	fields   []string
 	hooks    []Hook
 	mutation *BookFileMutation
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (bfuo *BookFileUpdateOne) SetUpdateTime(t time.Time) *BookFileUpdateOne {
+	bfuo.mutation.SetUpdateTime(t)
+	return bfuo
 }
 
 // SetName sets the "name" field.
@@ -345,6 +376,9 @@ func (bfuo *BookFileUpdateOne) Select(field string, fields ...string) *BookFileU
 
 // Save executes the query and returns the updated BookFile entity.
 func (bfuo *BookFileUpdateOne) Save(ctx context.Context) (*BookFile, error) {
+	if err := bfuo.defaults(); err != nil {
+		return nil, err
+	}
 	return withHooks(ctx, bfuo.sqlSave, bfuo.mutation, bfuo.hooks)
 }
 
@@ -368,6 +402,18 @@ func (bfuo *BookFileUpdateOne) ExecX(ctx context.Context) {
 	if err := bfuo.Exec(ctx); err != nil {
 		panic(err)
 	}
+}
+
+// defaults sets the default values of the builder before save.
+func (bfuo *BookFileUpdateOne) defaults() error {
+	if _, ok := bfuo.mutation.UpdateTime(); !ok {
+		if bookfile.UpdateDefaultUpdateTime == nil {
+			return fmt.Errorf("ent: uninitialized bookfile.UpdateDefaultUpdateTime (forgotten import ent/runtime?)")
+		}
+		v := bookfile.UpdateDefaultUpdateTime()
+		bfuo.mutation.SetUpdateTime(v)
+	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -426,6 +472,9 @@ func (bfuo *BookFileUpdateOne) sqlSave(ctx context.Context) (_node *BookFile, er
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := bfuo.mutation.UpdateTime(); ok {
+		_spec.SetField(bookfile.FieldUpdateTime, field.TypeTime, value)
 	}
 	if value, ok := bfuo.mutation.Name(); ok {
 		_spec.SetField(bookfile.FieldName, field.TypeString, value)

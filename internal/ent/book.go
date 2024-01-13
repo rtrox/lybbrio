@@ -18,6 +18,10 @@ type Book struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID ksuid.ID `json:"id,omitempty"`
+	// CreateTime holds the value of the "create_time" field.
+	CreateTime time.Time `json:"create_time,omitempty"`
+	// UpdateTime holds the value of the "update_time" field.
+	UpdateTime time.Time `json:"update_time,omitempty"`
 	// CalibreID holds the value of the "calibre_id" field.
 	CalibreID int64 `json:"calibre_id,omitempty"`
 	// Title holds the value of the "title" field.
@@ -157,7 +161,7 @@ func (*Book) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullInt64)
 		case book.FieldID, book.FieldTitle, book.FieldSort, book.FieldPath, book.FieldIsbn, book.FieldDescription:
 			values[i] = new(sql.NullString)
-		case book.FieldPublishedDate:
+		case book.FieldCreateTime, book.FieldUpdateTime, book.FieldPublishedDate:
 			values[i] = new(sql.NullTime)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -179,6 +183,18 @@ func (b *Book) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value.Valid {
 				b.ID = ksuid.ID(value.String)
+			}
+		case book.FieldCreateTime:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field create_time", values[i])
+			} else if value.Valid {
+				b.CreateTime = value.Time
+			}
+		case book.FieldUpdateTime:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field update_time", values[i])
+			} else if value.Valid {
+				b.UpdateTime = value.Time
 			}
 		case book.FieldCalibreID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
@@ -304,6 +320,12 @@ func (b *Book) String() string {
 	var builder strings.Builder
 	builder.WriteString("Book(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", b.ID))
+	builder.WriteString("create_time=")
+	builder.WriteString(b.CreateTime.Format(time.ANSIC))
+	builder.WriteString(", ")
+	builder.WriteString("update_time=")
+	builder.WriteString(b.UpdateTime.Format(time.ANSIC))
+	builder.WriteString(", ")
 	builder.WriteString("calibre_id=")
 	builder.WriteString(fmt.Sprintf("%v", b.CalibreID))
 	builder.WriteString(", ")

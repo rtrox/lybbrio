@@ -10,7 +10,7 @@ import (
 	"lybbrio/internal/ent/bookfile"
 	"lybbrio/internal/ent/schema/filetype"
 	"lybbrio/internal/ent/schema/ksuid"
-	"lybbrio/internal/task"
+	"lybbrio/internal/scheduler"
 	"os"
 	"path/filepath"
 	"slices"
@@ -119,8 +119,8 @@ func importContextTo(ctx context.Context, output *importContext) context.Context
 	return context.WithValue(ctx, importOutputKey, output)
 }
 
-func ImportTask(cal calibre.Calibre, client *ent.Client) task.TaskFunc {
-	return func(ctx context.Context, task *ent.Task, cb task.ProgressCallback) (string, error) {
+func ImportTask(cal calibre.Calibre, client *ent.Client) scheduler.TaskFunc {
+	return func(ctx context.Context, task *ent.Task, cb scheduler.ProgressCallback) (string, error) {
 		log := log.Ctx(ctx)
 		log.Info().Interface("task", task.ID.String()).Msg("ImportTask")
 
@@ -136,7 +136,7 @@ func ImportTask(cal calibre.Calibre, client *ent.Client) task.TaskFunc {
 	}
 }
 
-func ImportBooks(cal calibre.Calibre, client *ent.Client, ctx context.Context, cb task.ProgressCallback) error {
+func ImportBooks(cal calibre.Calibre, client *ent.Client, ctx context.Context, cb scheduler.ProgressCallback) error {
 	books, err := cal.GetBooks(ctx)
 	if err != nil {
 		return err
