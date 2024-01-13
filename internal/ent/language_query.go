@@ -303,12 +303,12 @@ func (lq *LanguageQuery) WithBooks(opts ...func(*BookQuery)) *LanguageQuery {
 // Example:
 //
 //	var v []struct {
-//		CalibreID int64 `json:"calibre_id,omitempty"`
+//		CreateTime time.Time `json:"create_time,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.Language.Query().
-//		GroupBy(language.FieldCalibreID).
+//		GroupBy(language.FieldCreateTime).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (lq *LanguageQuery) GroupBy(field string, fields ...string) *LanguageGroupBy {
@@ -326,11 +326,11 @@ func (lq *LanguageQuery) GroupBy(field string, fields ...string) *LanguageGroupB
 // Example:
 //
 //	var v []struct {
-//		CalibreID int64 `json:"calibre_id,omitempty"`
+//		CreateTime time.Time `json:"create_time,omitempty"`
 //	}
 //
 //	client.Language.Query().
-//		Select(language.FieldCalibreID).
+//		Select(language.FieldCreateTime).
 //		Scan(ctx, &v)
 func (lq *LanguageQuery) Select(fields ...string) *LanguageSelect {
 	lq.ctx.Fields = append(lq.ctx.Fields, fields...)

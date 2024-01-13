@@ -5,6 +5,7 @@ package ent
 import (
 	"lybbrio/internal/ent/author"
 	"lybbrio/internal/ent/book"
+	"lybbrio/internal/ent/bookfile"
 	"lybbrio/internal/ent/identifier"
 	"lybbrio/internal/ent/language"
 	"lybbrio/internal/ent/predicate"
@@ -24,7 +25,7 @@ import (
 
 // schemaGraph holds a representation of ent/schema at runtime.
 var schemaGraph = func() *sqlgraph.Schema {
-	graph := &sqlgraph.Schema{Nodes: make([]*sqlgraph.Node, 11)}
+	graph := &sqlgraph.Schema{Nodes: make([]*sqlgraph.Node, 12)}
 	graph.Nodes[0] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   author.Table,
@@ -36,10 +37,12 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "Author",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			author.FieldCalibreID: {Type: field.TypeInt64, Column: author.FieldCalibreID},
-			author.FieldName:      {Type: field.TypeString, Column: author.FieldName},
-			author.FieldSort:      {Type: field.TypeString, Column: author.FieldSort},
-			author.FieldLink:      {Type: field.TypeString, Column: author.FieldLink},
+			author.FieldCreateTime: {Type: field.TypeTime, Column: author.FieldCreateTime},
+			author.FieldUpdateTime: {Type: field.TypeTime, Column: author.FieldUpdateTime},
+			author.FieldCalibreID:  {Type: field.TypeInt64, Column: author.FieldCalibreID},
+			author.FieldName:       {Type: field.TypeString, Column: author.FieldName},
+			author.FieldSort:       {Type: field.TypeString, Column: author.FieldSort},
+			author.FieldLink:       {Type: field.TypeString, Column: author.FieldLink},
 		},
 	}
 	graph.Nodes[1] = &sqlgraph.Node{
@@ -53,6 +56,8 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "Book",
 		Fields: map[string]*sqlgraph.FieldSpec{
+			book.FieldCreateTime:    {Type: field.TypeTime, Column: book.FieldCreateTime},
+			book.FieldUpdateTime:    {Type: field.TypeTime, Column: book.FieldUpdateTime},
 			book.FieldCalibreID:     {Type: field.TypeInt64, Column: book.FieldCalibreID},
 			book.FieldTitle:         {Type: field.TypeString, Column: book.FieldTitle},
 			book.FieldSort:          {Type: field.TypeString, Column: book.FieldSort},
@@ -65,6 +70,25 @@ var schemaGraph = func() *sqlgraph.Schema {
 	}
 	graph.Nodes[2] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
+			Table:   bookfile.Table,
+			Columns: bookfile.Columns,
+			ID: &sqlgraph.FieldSpec{
+				Type:   field.TypeString,
+				Column: bookfile.FieldID,
+			},
+		},
+		Type: "BookFile",
+		Fields: map[string]*sqlgraph.FieldSpec{
+			bookfile.FieldCreateTime: {Type: field.TypeTime, Column: bookfile.FieldCreateTime},
+			bookfile.FieldUpdateTime: {Type: field.TypeTime, Column: bookfile.FieldUpdateTime},
+			bookfile.FieldName:       {Type: field.TypeString, Column: bookfile.FieldName},
+			bookfile.FieldPath:       {Type: field.TypeString, Column: bookfile.FieldPath},
+			bookfile.FieldSize:       {Type: field.TypeInt64, Column: bookfile.FieldSize},
+			bookfile.FieldFormat:     {Type: field.TypeEnum, Column: bookfile.FieldFormat},
+		},
+	}
+	graph.Nodes[3] = &sqlgraph.Node{
+		NodeSpec: sqlgraph.NodeSpec{
 			Table:   identifier.Table,
 			Columns: identifier.Columns,
 			ID: &sqlgraph.FieldSpec{
@@ -74,12 +98,14 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "Identifier",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			identifier.FieldCalibreID: {Type: field.TypeInt64, Column: identifier.FieldCalibreID},
-			identifier.FieldType:      {Type: field.TypeString, Column: identifier.FieldType},
-			identifier.FieldValue:     {Type: field.TypeString, Column: identifier.FieldValue},
+			identifier.FieldCreateTime: {Type: field.TypeTime, Column: identifier.FieldCreateTime},
+			identifier.FieldUpdateTime: {Type: field.TypeTime, Column: identifier.FieldUpdateTime},
+			identifier.FieldCalibreID:  {Type: field.TypeInt64, Column: identifier.FieldCalibreID},
+			identifier.FieldType:       {Type: field.TypeString, Column: identifier.FieldType},
+			identifier.FieldValue:      {Type: field.TypeString, Column: identifier.FieldValue},
 		},
 	}
-	graph.Nodes[3] = &sqlgraph.Node{
+	graph.Nodes[4] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   language.Table,
 			Columns: language.Columns,
@@ -90,11 +116,13 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "Language",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			language.FieldCalibreID: {Type: field.TypeInt64, Column: language.FieldCalibreID},
-			language.FieldCode:      {Type: field.TypeString, Column: language.FieldCode},
+			language.FieldCreateTime: {Type: field.TypeTime, Column: language.FieldCreateTime},
+			language.FieldUpdateTime: {Type: field.TypeTime, Column: language.FieldUpdateTime},
+			language.FieldCalibreID:  {Type: field.TypeInt64, Column: language.FieldCalibreID},
+			language.FieldCode:       {Type: field.TypeString, Column: language.FieldCode},
 		},
 	}
-	graph.Nodes[4] = &sqlgraph.Node{
+	graph.Nodes[5] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   publisher.Table,
 			Columns: publisher.Columns,
@@ -105,11 +133,13 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "Publisher",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			publisher.FieldCalibreID: {Type: field.TypeInt64, Column: publisher.FieldCalibreID},
-			publisher.FieldName:      {Type: field.TypeString, Column: publisher.FieldName},
+			publisher.FieldCreateTime: {Type: field.TypeTime, Column: publisher.FieldCreateTime},
+			publisher.FieldUpdateTime: {Type: field.TypeTime, Column: publisher.FieldUpdateTime},
+			publisher.FieldCalibreID:  {Type: field.TypeInt64, Column: publisher.FieldCalibreID},
+			publisher.FieldName:       {Type: field.TypeString, Column: publisher.FieldName},
 		},
 	}
-	graph.Nodes[5] = &sqlgraph.Node{
+	graph.Nodes[6] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   series.Table,
 			Columns: series.Columns,
@@ -120,12 +150,14 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "Series",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			series.FieldCalibreID: {Type: field.TypeInt64, Column: series.FieldCalibreID},
-			series.FieldName:      {Type: field.TypeString, Column: series.FieldName},
-			series.FieldSort:      {Type: field.TypeString, Column: series.FieldSort},
+			series.FieldCreateTime: {Type: field.TypeTime, Column: series.FieldCreateTime},
+			series.FieldUpdateTime: {Type: field.TypeTime, Column: series.FieldUpdateTime},
+			series.FieldCalibreID:  {Type: field.TypeInt64, Column: series.FieldCalibreID},
+			series.FieldName:       {Type: field.TypeString, Column: series.FieldName},
+			series.FieldSort:       {Type: field.TypeString, Column: series.FieldSort},
 		},
 	}
-	graph.Nodes[6] = &sqlgraph.Node{
+	graph.Nodes[7] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   shelf.Table,
 			Columns: shelf.Columns,
@@ -136,13 +168,15 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "Shelf",
 		Fields: map[string]*sqlgraph.FieldSpec{
+			shelf.FieldCreateTime:  {Type: field.TypeTime, Column: shelf.FieldCreateTime},
+			shelf.FieldUpdateTime:  {Type: field.TypeTime, Column: shelf.FieldUpdateTime},
 			shelf.FieldPublic:      {Type: field.TypeBool, Column: shelf.FieldPublic},
 			shelf.FieldUserID:      {Type: field.TypeString, Column: shelf.FieldUserID},
 			shelf.FieldName:        {Type: field.TypeString, Column: shelf.FieldName},
 			shelf.FieldDescription: {Type: field.TypeString, Column: shelf.FieldDescription},
 		},
 	}
-	graph.Nodes[7] = &sqlgraph.Node{
+	graph.Nodes[8] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   tag.Table,
 			Columns: tag.Columns,
@@ -157,7 +191,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			tag.FieldName:      {Type: field.TypeString, Column: tag.FieldName},
 		},
 	}
-	graph.Nodes[8] = &sqlgraph.Node{
+	graph.Nodes[9] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   task.Table,
 			Columns: task.Columns,
@@ -179,7 +213,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			task.FieldIsSystemTask: {Type: field.TypeBool, Column: task.FieldIsSystemTask},
 		},
 	}
-	graph.Nodes[9] = &sqlgraph.Node{
+	graph.Nodes[10] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   user.Table,
 			Columns: user.Columns,
@@ -190,12 +224,14 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "User",
 		Fields: map[string]*sqlgraph.FieldSpec{
+			user.FieldCreateTime:   {Type: field.TypeTime, Column: user.FieldCreateTime},
+			user.FieldUpdateTime:   {Type: field.TypeTime, Column: user.FieldUpdateTime},
 			user.FieldUsername:     {Type: field.TypeString, Column: user.FieldUsername},
 			user.FieldPasswordHash: {Type: field.TypeString, Column: user.FieldPasswordHash},
 			user.FieldEmail:        {Type: field.TypeString, Column: user.FieldEmail},
 		},
 	}
-	graph.Nodes[10] = &sqlgraph.Node{
+	graph.Nodes[11] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   userpermissions.Table,
 			Columns: userpermissions.Columns,
@@ -206,10 +242,12 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "UserPermissions",
 		Fields: map[string]*sqlgraph.FieldSpec{
+			userpermissions.FieldCreateTime:      {Type: field.TypeTime, Column: userpermissions.FieldCreateTime},
+			userpermissions.FieldUpdateTime:      {Type: field.TypeTime, Column: userpermissions.FieldUpdateTime},
 			userpermissions.FieldUserID:          {Type: field.TypeString, Column: userpermissions.FieldUserID},
-			userpermissions.FieldCanEdit:         {Type: field.TypeBool, Column: userpermissions.FieldCanEdit},
 			userpermissions.FieldAdmin:           {Type: field.TypeBool, Column: userpermissions.FieldAdmin},
 			userpermissions.FieldCanCreatePublic: {Type: field.TypeBool, Column: userpermissions.FieldCanCreatePublic},
+			userpermissions.FieldCanEdit:         {Type: field.TypeBool, Column: userpermissions.FieldCanEdit},
 		},
 	}
 	graph.MustAddE(
@@ -307,6 +345,30 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		"Book",
 		"Shelf",
+	)
+	graph.MustAddE(
+		"files",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   book.FilesTable,
+			Columns: []string{book.FilesColumn},
+			Bidi:    false,
+		},
+		"Book",
+		"BookFile",
+	)
+	graph.MustAddE(
+		"book",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   bookfile.BookTable,
+			Columns: []string{bookfile.BookColumn},
+			Bidi:    false,
+		},
+		"BookFile",
+		"Book",
 	)
 	graph.MustAddE(
 		"book",
@@ -489,6 +551,16 @@ func (f *AuthorFilter) WhereID(p entql.StringP) {
 	f.Where(p.Field(author.FieldID))
 }
 
+// WhereCreateTime applies the entql time.Time predicate on the create_time field.
+func (f *AuthorFilter) WhereCreateTime(p entql.TimeP) {
+	f.Where(p.Field(author.FieldCreateTime))
+}
+
+// WhereUpdateTime applies the entql time.Time predicate on the update_time field.
+func (f *AuthorFilter) WhereUpdateTime(p entql.TimeP) {
+	f.Where(p.Field(author.FieldUpdateTime))
+}
+
 // WhereCalibreID applies the entql int64 predicate on the calibre_id field.
 func (f *AuthorFilter) WhereCalibreID(p entql.Int64P) {
 	f.Where(p.Field(author.FieldCalibreID))
@@ -561,6 +633,16 @@ func (f *BookFilter) Where(p entql.P) {
 // WhereID applies the entql string predicate on the id field.
 func (f *BookFilter) WhereID(p entql.StringP) {
 	f.Where(p.Field(book.FieldID))
+}
+
+// WhereCreateTime applies the entql time.Time predicate on the create_time field.
+func (f *BookFilter) WhereCreateTime(p entql.TimeP) {
+	f.Where(p.Field(book.FieldCreateTime))
+}
+
+// WhereUpdateTime applies the entql time.Time predicate on the update_time field.
+func (f *BookFilter) WhereUpdateTime(p entql.TimeP) {
+	f.Where(p.Field(book.FieldUpdateTime))
 }
 
 // WhereCalibreID applies the entql int64 predicate on the calibre_id field.
@@ -701,6 +783,104 @@ func (f *BookFilter) WhereHasShelfWith(preds ...predicate.Shelf) {
 	})))
 }
 
+// WhereHasFiles applies a predicate to check if query has an edge files.
+func (f *BookFilter) WhereHasFiles() {
+	f.Where(entql.HasEdge("files"))
+}
+
+// WhereHasFilesWith applies a predicate to check if query has an edge files with a given conditions (other predicates).
+func (f *BookFilter) WhereHasFilesWith(preds ...predicate.BookFile) {
+	f.Where(entql.HasEdgeWith("files", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// addPredicate implements the predicateAdder interface.
+func (bfq *BookFileQuery) addPredicate(pred func(s *sql.Selector)) {
+	bfq.predicates = append(bfq.predicates, pred)
+}
+
+// Filter returns a Filter implementation to apply filters on the BookFileQuery builder.
+func (bfq *BookFileQuery) Filter() *BookFileFilter {
+	return &BookFileFilter{config: bfq.config, predicateAdder: bfq}
+}
+
+// addPredicate implements the predicateAdder interface.
+func (m *BookFileMutation) addPredicate(pred func(s *sql.Selector)) {
+	m.predicates = append(m.predicates, pred)
+}
+
+// Filter returns an entql.Where implementation to apply filters on the BookFileMutation builder.
+func (m *BookFileMutation) Filter() *BookFileFilter {
+	return &BookFileFilter{config: m.config, predicateAdder: m}
+}
+
+// BookFileFilter provides a generic filtering capability at runtime for BookFileQuery.
+type BookFileFilter struct {
+	predicateAdder
+	config
+}
+
+// Where applies the entql predicate on the query filter.
+func (f *BookFileFilter) Where(p entql.P) {
+	f.addPredicate(func(s *sql.Selector) {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[2].Type, p, s); err != nil {
+			s.AddError(err)
+		}
+	})
+}
+
+// WhereID applies the entql string predicate on the id field.
+func (f *BookFileFilter) WhereID(p entql.StringP) {
+	f.Where(p.Field(bookfile.FieldID))
+}
+
+// WhereCreateTime applies the entql time.Time predicate on the create_time field.
+func (f *BookFileFilter) WhereCreateTime(p entql.TimeP) {
+	f.Where(p.Field(bookfile.FieldCreateTime))
+}
+
+// WhereUpdateTime applies the entql time.Time predicate on the update_time field.
+func (f *BookFileFilter) WhereUpdateTime(p entql.TimeP) {
+	f.Where(p.Field(bookfile.FieldUpdateTime))
+}
+
+// WhereName applies the entql string predicate on the name field.
+func (f *BookFileFilter) WhereName(p entql.StringP) {
+	f.Where(p.Field(bookfile.FieldName))
+}
+
+// WherePath applies the entql string predicate on the path field.
+func (f *BookFileFilter) WherePath(p entql.StringP) {
+	f.Where(p.Field(bookfile.FieldPath))
+}
+
+// WhereSize applies the entql int64 predicate on the size field.
+func (f *BookFileFilter) WhereSize(p entql.Int64P) {
+	f.Where(p.Field(bookfile.FieldSize))
+}
+
+// WhereFormat applies the entql string predicate on the format field.
+func (f *BookFileFilter) WhereFormat(p entql.StringP) {
+	f.Where(p.Field(bookfile.FieldFormat))
+}
+
+// WhereHasBook applies a predicate to check if query has an edge book.
+func (f *BookFileFilter) WhereHasBook() {
+	f.Where(entql.HasEdge("book"))
+}
+
+// WhereHasBookWith applies a predicate to check if query has an edge book with a given conditions (other predicates).
+func (f *BookFileFilter) WhereHasBookWith(preds ...predicate.Book) {
+	f.Where(entql.HasEdgeWith("book", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
 // addPredicate implements the predicateAdder interface.
 func (iq *IdentifierQuery) addPredicate(pred func(s *sql.Selector)) {
 	iq.predicates = append(iq.predicates, pred)
@@ -730,7 +910,7 @@ type IdentifierFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *IdentifierFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[2].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[3].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -739,6 +919,16 @@ func (f *IdentifierFilter) Where(p entql.P) {
 // WhereID applies the entql string predicate on the id field.
 func (f *IdentifierFilter) WhereID(p entql.StringP) {
 	f.Where(p.Field(identifier.FieldID))
+}
+
+// WhereCreateTime applies the entql time.Time predicate on the create_time field.
+func (f *IdentifierFilter) WhereCreateTime(p entql.TimeP) {
+	f.Where(p.Field(identifier.FieldCreateTime))
+}
+
+// WhereUpdateTime applies the entql time.Time predicate on the update_time field.
+func (f *IdentifierFilter) WhereUpdateTime(p entql.TimeP) {
+	f.Where(p.Field(identifier.FieldUpdateTime))
 }
 
 // WhereCalibreID applies the entql int64 predicate on the calibre_id field.
@@ -799,7 +989,7 @@ type LanguageFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *LanguageFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[3].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[4].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -808,6 +998,16 @@ func (f *LanguageFilter) Where(p entql.P) {
 // WhereID applies the entql string predicate on the id field.
 func (f *LanguageFilter) WhereID(p entql.StringP) {
 	f.Where(p.Field(language.FieldID))
+}
+
+// WhereCreateTime applies the entql time.Time predicate on the create_time field.
+func (f *LanguageFilter) WhereCreateTime(p entql.TimeP) {
+	f.Where(p.Field(language.FieldCreateTime))
+}
+
+// WhereUpdateTime applies the entql time.Time predicate on the update_time field.
+func (f *LanguageFilter) WhereUpdateTime(p entql.TimeP) {
+	f.Where(p.Field(language.FieldUpdateTime))
 }
 
 // WhereCalibreID applies the entql int64 predicate on the calibre_id field.
@@ -863,7 +1063,7 @@ type PublisherFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *PublisherFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[4].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[5].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -872,6 +1072,16 @@ func (f *PublisherFilter) Where(p entql.P) {
 // WhereID applies the entql string predicate on the id field.
 func (f *PublisherFilter) WhereID(p entql.StringP) {
 	f.Where(p.Field(publisher.FieldID))
+}
+
+// WhereCreateTime applies the entql time.Time predicate on the create_time field.
+func (f *PublisherFilter) WhereCreateTime(p entql.TimeP) {
+	f.Where(p.Field(publisher.FieldCreateTime))
+}
+
+// WhereUpdateTime applies the entql time.Time predicate on the update_time field.
+func (f *PublisherFilter) WhereUpdateTime(p entql.TimeP) {
+	f.Where(p.Field(publisher.FieldUpdateTime))
 }
 
 // WhereCalibreID applies the entql int64 predicate on the calibre_id field.
@@ -927,7 +1137,7 @@ type SeriesFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *SeriesFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[5].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[6].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -936,6 +1146,16 @@ func (f *SeriesFilter) Where(p entql.P) {
 // WhereID applies the entql string predicate on the id field.
 func (f *SeriesFilter) WhereID(p entql.StringP) {
 	f.Where(p.Field(series.FieldID))
+}
+
+// WhereCreateTime applies the entql time.Time predicate on the create_time field.
+func (f *SeriesFilter) WhereCreateTime(p entql.TimeP) {
+	f.Where(p.Field(series.FieldCreateTime))
+}
+
+// WhereUpdateTime applies the entql time.Time predicate on the update_time field.
+func (f *SeriesFilter) WhereUpdateTime(p entql.TimeP) {
+	f.Where(p.Field(series.FieldUpdateTime))
 }
 
 // WhereCalibreID applies the entql int64 predicate on the calibre_id field.
@@ -996,7 +1216,7 @@ type ShelfFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *ShelfFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[6].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[7].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -1005,6 +1225,16 @@ func (f *ShelfFilter) Where(p entql.P) {
 // WhereID applies the entql string predicate on the id field.
 func (f *ShelfFilter) WhereID(p entql.StringP) {
 	f.Where(p.Field(shelf.FieldID))
+}
+
+// WhereCreateTime applies the entql time.Time predicate on the create_time field.
+func (f *ShelfFilter) WhereCreateTime(p entql.TimeP) {
+	f.Where(p.Field(shelf.FieldCreateTime))
+}
+
+// WhereUpdateTime applies the entql time.Time predicate on the update_time field.
+func (f *ShelfFilter) WhereUpdateTime(p entql.TimeP) {
+	f.Where(p.Field(shelf.FieldUpdateTime))
 }
 
 // WherePublic applies the entql bool predicate on the public field.
@@ -1084,7 +1314,7 @@ type TagFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *TagFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[7].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[8].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -1148,7 +1378,7 @@ type TaskFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *TaskFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[8].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[9].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -1247,7 +1477,7 @@ type UserFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *UserFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[9].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[10].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -1256,6 +1486,16 @@ func (f *UserFilter) Where(p entql.P) {
 // WhereID applies the entql string predicate on the id field.
 func (f *UserFilter) WhereID(p entql.StringP) {
 	f.Where(p.Field(user.FieldID))
+}
+
+// WhereCreateTime applies the entql time.Time predicate on the create_time field.
+func (f *UserFilter) WhereCreateTime(p entql.TimeP) {
+	f.Where(p.Field(user.FieldCreateTime))
+}
+
+// WhereUpdateTime applies the entql time.Time predicate on the update_time field.
+func (f *UserFilter) WhereUpdateTime(p entql.TimeP) {
+	f.Where(p.Field(user.FieldUpdateTime))
 }
 
 // WhereUsername applies the entql string predicate on the username field.
@@ -1330,7 +1570,7 @@ type UserPermissionsFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *UserPermissionsFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[10].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[11].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -1341,14 +1581,19 @@ func (f *UserPermissionsFilter) WhereID(p entql.StringP) {
 	f.Where(p.Field(userpermissions.FieldID))
 }
 
+// WhereCreateTime applies the entql time.Time predicate on the create_time field.
+func (f *UserPermissionsFilter) WhereCreateTime(p entql.TimeP) {
+	f.Where(p.Field(userpermissions.FieldCreateTime))
+}
+
+// WhereUpdateTime applies the entql time.Time predicate on the update_time field.
+func (f *UserPermissionsFilter) WhereUpdateTime(p entql.TimeP) {
+	f.Where(p.Field(userpermissions.FieldUpdateTime))
+}
+
 // WhereUserID applies the entql string predicate on the user_id field.
 func (f *UserPermissionsFilter) WhereUserID(p entql.StringP) {
 	f.Where(p.Field(userpermissions.FieldUserID))
-}
-
-// WhereCanEdit applies the entql bool predicate on the CanEdit field.
-func (f *UserPermissionsFilter) WhereCanEdit(p entql.BoolP) {
-	f.Where(p.Field(userpermissions.FieldCanEdit))
 }
 
 // WhereAdmin applies the entql bool predicate on the Admin field.
@@ -1359,6 +1604,11 @@ func (f *UserPermissionsFilter) WhereAdmin(p entql.BoolP) {
 // WhereCanCreatePublic applies the entql bool predicate on the CanCreatePublic field.
 func (f *UserPermissionsFilter) WhereCanCreatePublic(p entql.BoolP) {
 	f.Where(p.Field(userpermissions.FieldCanCreatePublic))
+}
+
+// WhereCanEdit applies the entql bool predicate on the CanEdit field.
+func (f *UserPermissionsFilter) WhereCanEdit(p entql.BoolP) {
+	f.Where(p.Field(userpermissions.FieldCanEdit))
 }
 
 // WhereHasUser applies a predicate to check if query has an edge user.

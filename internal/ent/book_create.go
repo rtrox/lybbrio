@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"lybbrio/internal/ent/author"
 	"lybbrio/internal/ent/book"
+	"lybbrio/internal/ent/bookfile"
 	"lybbrio/internal/ent/identifier"
 	"lybbrio/internal/ent/language"
 	"lybbrio/internal/ent/publisher"
@@ -29,6 +30,34 @@ type BookCreate struct {
 	mutation *BookMutation
 	hooks    []Hook
 	conflict []sql.ConflictOption
+}
+
+// SetCreateTime sets the "create_time" field.
+func (bc *BookCreate) SetCreateTime(t time.Time) *BookCreate {
+	bc.mutation.SetCreateTime(t)
+	return bc
+}
+
+// SetNillableCreateTime sets the "create_time" field if the given value is not nil.
+func (bc *BookCreate) SetNillableCreateTime(t *time.Time) *BookCreate {
+	if t != nil {
+		bc.SetCreateTime(*t)
+	}
+	return bc
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (bc *BookCreate) SetUpdateTime(t time.Time) *BookCreate {
+	bc.mutation.SetUpdateTime(t)
+	return bc
+}
+
+// SetNillableUpdateTime sets the "update_time" field if the given value is not nil.
+func (bc *BookCreate) SetNillableUpdateTime(t *time.Time) *BookCreate {
+	if t != nil {
+		bc.SetUpdateTime(*t)
+	}
+	return bc
 }
 
 // SetCalibreID sets the "calibre_id" field.
@@ -238,6 +267,21 @@ func (bc *BookCreate) AddShelf(s ...*Shelf) *BookCreate {
 	return bc.AddShelfIDs(ids...)
 }
 
+// AddFileIDs adds the "files" edge to the BookFile entity by IDs.
+func (bc *BookCreate) AddFileIDs(ids ...ksuid.ID) *BookCreate {
+	bc.mutation.AddFileIDs(ids...)
+	return bc
+}
+
+// AddFiles adds the "files" edges to the BookFile entity.
+func (bc *BookCreate) AddFiles(b ...*BookFile) *BookCreate {
+	ids := make([]ksuid.ID, len(b))
+	for i := range b {
+		ids[i] = b[i].ID
+	}
+	return bc.AddFileIDs(ids...)
+}
+
 // Mutation returns the BookMutation object of the builder.
 func (bc *BookCreate) Mutation() *BookMutation {
 	return bc.mutation
@@ -275,6 +319,20 @@ func (bc *BookCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (bc *BookCreate) defaults() error {
+	if _, ok := bc.mutation.CreateTime(); !ok {
+		if book.DefaultCreateTime == nil {
+			return fmt.Errorf("ent: uninitialized book.DefaultCreateTime (forgotten import ent/runtime?)")
+		}
+		v := book.DefaultCreateTime()
+		bc.mutation.SetCreateTime(v)
+	}
+	if _, ok := bc.mutation.UpdateTime(); !ok {
+		if book.DefaultUpdateTime == nil {
+			return fmt.Errorf("ent: uninitialized book.DefaultUpdateTime (forgotten import ent/runtime?)")
+		}
+		v := book.DefaultUpdateTime()
+		bc.mutation.SetUpdateTime(v)
+	}
 	if _, ok := bc.mutation.ID(); !ok {
 		if book.DefaultID == nil {
 			return fmt.Errorf("ent: uninitialized book.DefaultID (forgotten import ent/runtime?)")
@@ -287,6 +345,12 @@ func (bc *BookCreate) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (bc *BookCreate) check() error {
+	if _, ok := bc.mutation.CreateTime(); !ok {
+		return &ValidationError{Name: "create_time", err: errors.New(`ent: missing required field "Book.create_time"`)}
+	}
+	if _, ok := bc.mutation.UpdateTime(); !ok {
+		return &ValidationError{Name: "update_time", err: errors.New(`ent: missing required field "Book.update_time"`)}
+	}
 	if _, ok := bc.mutation.Title(); !ok {
 		return &ValidationError{Name: "title", err: errors.New(`ent: missing required field "Book.title"`)}
 	}
@@ -341,6 +405,14 @@ func (bc *BookCreate) createSpec() (*Book, *sqlgraph.CreateSpec) {
 	if id, ok := bc.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = id
+	}
+	if value, ok := bc.mutation.CreateTime(); ok {
+		_spec.SetField(book.FieldCreateTime, field.TypeTime, value)
+		_node.CreateTime = value
+	}
+	if value, ok := bc.mutation.UpdateTime(); ok {
+		_spec.SetField(book.FieldUpdateTime, field.TypeTime, value)
+		_node.UpdateTime = value
 	}
 	if value, ok := bc.mutation.CalibreID(); ok {
 		_spec.SetField(book.FieldCalibreID, field.TypeInt64, value)
@@ -486,6 +558,22 @@ func (bc *BookCreate) createSpec() (*Book, *sqlgraph.CreateSpec) {
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
+	if nodes := bc.mutation.FilesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   book.FilesTable,
+			Columns: []string{book.FilesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(bookfile.FieldID, field.TypeString),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
 	return _node, _spec
 }
 
@@ -493,7 +581,7 @@ func (bc *BookCreate) createSpec() (*Book, *sqlgraph.CreateSpec) {
 // of the `INSERT` statement. For example:
 //
 //	client.Book.Create().
-//		SetCalibreID(v).
+//		SetCreateTime(v).
 //		OnConflict(
 //			// Update the row with the new values
 //			// the was proposed for insertion.
@@ -502,7 +590,7 @@ func (bc *BookCreate) createSpec() (*Book, *sqlgraph.CreateSpec) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.BookUpsert) {
-//			SetCalibreID(v+v).
+//			SetCreateTime(v+v).
 //		}).
 //		Exec(ctx)
 func (bc *BookCreate) OnConflict(opts ...sql.ConflictOption) *BookUpsertOne {
@@ -537,6 +625,18 @@ type (
 		*sql.UpdateSet
 	}
 )
+
+// SetUpdateTime sets the "update_time" field.
+func (u *BookUpsert) SetUpdateTime(v time.Time) *BookUpsert {
+	u.Set(book.FieldUpdateTime, v)
+	return u
+}
+
+// UpdateUpdateTime sets the "update_time" field to the value that was provided on create.
+func (u *BookUpsert) UpdateUpdateTime() *BookUpsert {
+	u.SetExcluded(book.FieldUpdateTime)
+	return u
+}
 
 // SetCalibreID sets the "calibre_id" field.
 func (u *BookUpsert) SetCalibreID(v int64) *BookUpsert {
@@ -693,6 +793,9 @@ func (u *BookUpsertOne) UpdateNewValues() *BookUpsertOne {
 		if _, exists := u.create.mutation.ID(); exists {
 			s.SetIgnore(book.FieldID)
 		}
+		if _, exists := u.create.mutation.CreateTime(); exists {
+			s.SetIgnore(book.FieldCreateTime)
+		}
 	}))
 	return u
 }
@@ -722,6 +825,20 @@ func (u *BookUpsertOne) Update(set func(*BookUpsert)) *BookUpsertOne {
 		set(&BookUpsert{UpdateSet: update})
 	}))
 	return u
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (u *BookUpsertOne) SetUpdateTime(v time.Time) *BookUpsertOne {
+	return u.Update(func(s *BookUpsert) {
+		s.SetUpdateTime(v)
+	})
+}
+
+// UpdateUpdateTime sets the "update_time" field to the value that was provided on create.
+func (u *BookUpsertOne) UpdateUpdateTime() *BookUpsertOne {
+	return u.Update(func(s *BookUpsert) {
+		s.UpdateUpdateTime()
+	})
 }
 
 // SetCalibreID sets the "calibre_id" field.
@@ -1021,7 +1138,7 @@ func (bcb *BookCreateBulk) ExecX(ctx context.Context) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.BookUpsert) {
-//			SetCalibreID(v+v).
+//			SetCreateTime(v+v).
 //		}).
 //		Exec(ctx)
 func (bcb *BookCreateBulk) OnConflict(opts ...sql.ConflictOption) *BookUpsertBulk {
@@ -1068,6 +1185,9 @@ func (u *BookUpsertBulk) UpdateNewValues() *BookUpsertBulk {
 			if _, exists := b.mutation.ID(); exists {
 				s.SetIgnore(book.FieldID)
 			}
+			if _, exists := b.mutation.CreateTime(); exists {
+				s.SetIgnore(book.FieldCreateTime)
+			}
 		}
 	}))
 	return u
@@ -1098,6 +1218,20 @@ func (u *BookUpsertBulk) Update(set func(*BookUpsert)) *BookUpsertBulk {
 		set(&BookUpsert{UpdateSet: update})
 	}))
 	return u
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (u *BookUpsertBulk) SetUpdateTime(v time.Time) *BookUpsertBulk {
+	return u.Update(func(s *BookUpsert) {
+		s.SetUpdateTime(v)
+	})
+}
+
+// UpdateUpdateTime sets the "update_time" field to the value that was provided on create.
+func (u *BookUpsertBulk) UpdateUpdateTime() *BookUpsertBulk {
+	return u.Update(func(s *BookUpsert) {
+		s.UpdateUpdateTime()
+	})
 }
 
 // SetCalibreID sets the "calibre_id" field.

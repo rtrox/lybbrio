@@ -9,6 +9,7 @@ import (
 	"lybbrio/internal/ent/book"
 	"lybbrio/internal/ent/language"
 	"lybbrio/internal/ent/schema/ksuid"
+	"time"
 
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
@@ -22,6 +23,34 @@ type LanguageCreate struct {
 	mutation *LanguageMutation
 	hooks    []Hook
 	conflict []sql.ConflictOption
+}
+
+// SetCreateTime sets the "create_time" field.
+func (lc *LanguageCreate) SetCreateTime(t time.Time) *LanguageCreate {
+	lc.mutation.SetCreateTime(t)
+	return lc
+}
+
+// SetNillableCreateTime sets the "create_time" field if the given value is not nil.
+func (lc *LanguageCreate) SetNillableCreateTime(t *time.Time) *LanguageCreate {
+	if t != nil {
+		lc.SetCreateTime(*t)
+	}
+	return lc
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (lc *LanguageCreate) SetUpdateTime(t time.Time) *LanguageCreate {
+	lc.mutation.SetUpdateTime(t)
+	return lc
+}
+
+// SetNillableUpdateTime sets the "update_time" field if the given value is not nil.
+func (lc *LanguageCreate) SetNillableUpdateTime(t *time.Time) *LanguageCreate {
+	if t != nil {
+		lc.SetUpdateTime(*t)
+	}
+	return lc
 }
 
 // SetCalibreID sets the "calibre_id" field.
@@ -110,6 +139,20 @@ func (lc *LanguageCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (lc *LanguageCreate) defaults() error {
+	if _, ok := lc.mutation.CreateTime(); !ok {
+		if language.DefaultCreateTime == nil {
+			return fmt.Errorf("ent: uninitialized language.DefaultCreateTime (forgotten import ent/runtime?)")
+		}
+		v := language.DefaultCreateTime()
+		lc.mutation.SetCreateTime(v)
+	}
+	if _, ok := lc.mutation.UpdateTime(); !ok {
+		if language.DefaultUpdateTime == nil {
+			return fmt.Errorf("ent: uninitialized language.DefaultUpdateTime (forgotten import ent/runtime?)")
+		}
+		v := language.DefaultUpdateTime()
+		lc.mutation.SetUpdateTime(v)
+	}
 	if _, ok := lc.mutation.ID(); !ok {
 		if language.DefaultID == nil {
 			return fmt.Errorf("ent: uninitialized language.DefaultID (forgotten import ent/runtime?)")
@@ -122,6 +165,12 @@ func (lc *LanguageCreate) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (lc *LanguageCreate) check() error {
+	if _, ok := lc.mutation.CreateTime(); !ok {
+		return &ValidationError{Name: "create_time", err: errors.New(`ent: missing required field "Language.create_time"`)}
+	}
+	if _, ok := lc.mutation.UpdateTime(); !ok {
+		return &ValidationError{Name: "update_time", err: errors.New(`ent: missing required field "Language.update_time"`)}
+	}
 	if _, ok := lc.mutation.Code(); !ok {
 		return &ValidationError{Name: "code", err: errors.New(`ent: missing required field "Language.code"`)}
 	}
@@ -166,6 +215,14 @@ func (lc *LanguageCreate) createSpec() (*Language, *sqlgraph.CreateSpec) {
 		_node.ID = id
 		_spec.ID.Value = id
 	}
+	if value, ok := lc.mutation.CreateTime(); ok {
+		_spec.SetField(language.FieldCreateTime, field.TypeTime, value)
+		_node.CreateTime = value
+	}
+	if value, ok := lc.mutation.UpdateTime(); ok {
+		_spec.SetField(language.FieldUpdateTime, field.TypeTime, value)
+		_node.UpdateTime = value
+	}
 	if value, ok := lc.mutation.CalibreID(); ok {
 		_spec.SetField(language.FieldCalibreID, field.TypeInt64, value)
 		_node.CalibreID = value
@@ -197,7 +254,7 @@ func (lc *LanguageCreate) createSpec() (*Language, *sqlgraph.CreateSpec) {
 // of the `INSERT` statement. For example:
 //
 //	client.Language.Create().
-//		SetCalibreID(v).
+//		SetCreateTime(v).
 //		OnConflict(
 //			// Update the row with the new values
 //			// the was proposed for insertion.
@@ -206,7 +263,7 @@ func (lc *LanguageCreate) createSpec() (*Language, *sqlgraph.CreateSpec) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.LanguageUpsert) {
-//			SetCalibreID(v+v).
+//			SetCreateTime(v+v).
 //		}).
 //		Exec(ctx)
 func (lc *LanguageCreate) OnConflict(opts ...sql.ConflictOption) *LanguageUpsertOne {
@@ -241,6 +298,18 @@ type (
 		*sql.UpdateSet
 	}
 )
+
+// SetUpdateTime sets the "update_time" field.
+func (u *LanguageUpsert) SetUpdateTime(v time.Time) *LanguageUpsert {
+	u.Set(language.FieldUpdateTime, v)
+	return u
+}
+
+// UpdateUpdateTime sets the "update_time" field to the value that was provided on create.
+func (u *LanguageUpsert) UpdateUpdateTime() *LanguageUpsert {
+	u.SetExcluded(language.FieldUpdateTime)
+	return u
+}
 
 // SetCalibreID sets the "calibre_id" field.
 func (u *LanguageUpsert) SetCalibreID(v int64) *LanguageUpsert {
@@ -295,6 +364,9 @@ func (u *LanguageUpsertOne) UpdateNewValues() *LanguageUpsertOne {
 		if _, exists := u.create.mutation.ID(); exists {
 			s.SetIgnore(language.FieldID)
 		}
+		if _, exists := u.create.mutation.CreateTime(); exists {
+			s.SetIgnore(language.FieldCreateTime)
+		}
 	}))
 	return u
 }
@@ -324,6 +396,20 @@ func (u *LanguageUpsertOne) Update(set func(*LanguageUpsert)) *LanguageUpsertOne
 		set(&LanguageUpsert{UpdateSet: update})
 	}))
 	return u
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (u *LanguageUpsertOne) SetUpdateTime(v time.Time) *LanguageUpsertOne {
+	return u.Update(func(s *LanguageUpsert) {
+		s.SetUpdateTime(v)
+	})
+}
+
+// UpdateUpdateTime sets the "update_time" field to the value that was provided on create.
+func (u *LanguageUpsertOne) UpdateUpdateTime() *LanguageUpsertOne {
+	return u.Update(func(s *LanguageUpsert) {
+		s.UpdateUpdateTime()
+	})
 }
 
 // SetCalibreID sets the "calibre_id" field.
@@ -504,7 +590,7 @@ func (lcb *LanguageCreateBulk) ExecX(ctx context.Context) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.LanguageUpsert) {
-//			SetCalibreID(v+v).
+//			SetCreateTime(v+v).
 //		}).
 //		Exec(ctx)
 func (lcb *LanguageCreateBulk) OnConflict(opts ...sql.ConflictOption) *LanguageUpsertBulk {
@@ -551,6 +637,9 @@ func (u *LanguageUpsertBulk) UpdateNewValues() *LanguageUpsertBulk {
 			if _, exists := b.mutation.ID(); exists {
 				s.SetIgnore(language.FieldID)
 			}
+			if _, exists := b.mutation.CreateTime(); exists {
+				s.SetIgnore(language.FieldCreateTime)
+			}
 		}
 	}))
 	return u
@@ -581,6 +670,20 @@ func (u *LanguageUpsertBulk) Update(set func(*LanguageUpsert)) *LanguageUpsertBu
 		set(&LanguageUpsert{UpdateSet: update})
 	}))
 	return u
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (u *LanguageUpsertBulk) SetUpdateTime(v time.Time) *LanguageUpsertBulk {
+	return u.Update(func(s *LanguageUpsert) {
+		s.SetUpdateTime(v)
+	})
+}
+
+// UpdateUpdateTime sets the "update_time" field to the value that was provided on create.
+func (u *LanguageUpsertBulk) UpdateUpdateTime() *LanguageUpsertBulk {
+	return u.Update(func(s *LanguageUpsert) {
+		s.UpdateUpdateTime()
+	})
 }
 
 // SetCalibreID sets the "calibre_id" field.

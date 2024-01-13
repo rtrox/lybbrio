@@ -10,6 +10,7 @@ import (
 	"lybbrio/internal/ent/schema/ksuid"
 	"lybbrio/internal/ent/shelf"
 	"lybbrio/internal/ent/user"
+	"time"
 
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
@@ -23,6 +24,34 @@ type ShelfCreate struct {
 	mutation *ShelfMutation
 	hooks    []Hook
 	conflict []sql.ConflictOption
+}
+
+// SetCreateTime sets the "create_time" field.
+func (sc *ShelfCreate) SetCreateTime(t time.Time) *ShelfCreate {
+	sc.mutation.SetCreateTime(t)
+	return sc
+}
+
+// SetNillableCreateTime sets the "create_time" field if the given value is not nil.
+func (sc *ShelfCreate) SetNillableCreateTime(t *time.Time) *ShelfCreate {
+	if t != nil {
+		sc.SetCreateTime(*t)
+	}
+	return sc
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (sc *ShelfCreate) SetUpdateTime(t time.Time) *ShelfCreate {
+	sc.mutation.SetUpdateTime(t)
+	return sc
+}
+
+// SetNillableUpdateTime sets the "update_time" field if the given value is not nil.
+func (sc *ShelfCreate) SetNillableUpdateTime(t *time.Time) *ShelfCreate {
+	if t != nil {
+		sc.SetUpdateTime(*t)
+	}
+	return sc
 }
 
 // SetPublic sets the "public" field.
@@ -136,6 +165,20 @@ func (sc *ShelfCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (sc *ShelfCreate) defaults() error {
+	if _, ok := sc.mutation.CreateTime(); !ok {
+		if shelf.DefaultCreateTime == nil {
+			return fmt.Errorf("ent: uninitialized shelf.DefaultCreateTime (forgotten import ent/runtime?)")
+		}
+		v := shelf.DefaultCreateTime()
+		sc.mutation.SetCreateTime(v)
+	}
+	if _, ok := sc.mutation.UpdateTime(); !ok {
+		if shelf.DefaultUpdateTime == nil {
+			return fmt.Errorf("ent: uninitialized shelf.DefaultUpdateTime (forgotten import ent/runtime?)")
+		}
+		v := shelf.DefaultUpdateTime()
+		sc.mutation.SetUpdateTime(v)
+	}
 	if _, ok := sc.mutation.Public(); !ok {
 		v := shelf.DefaultPublic
 		sc.mutation.SetPublic(v)
@@ -152,6 +195,12 @@ func (sc *ShelfCreate) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (sc *ShelfCreate) check() error {
+	if _, ok := sc.mutation.CreateTime(); !ok {
+		return &ValidationError{Name: "create_time", err: errors.New(`ent: missing required field "Shelf.create_time"`)}
+	}
+	if _, ok := sc.mutation.UpdateTime(); !ok {
+		return &ValidationError{Name: "update_time", err: errors.New(`ent: missing required field "Shelf.update_time"`)}
+	}
 	if _, ok := sc.mutation.Public(); !ok {
 		return &ValidationError{Name: "public", err: errors.New(`ent: missing required field "Shelf.public"`)}
 	}
@@ -205,6 +254,14 @@ func (sc *ShelfCreate) createSpec() (*Shelf, *sqlgraph.CreateSpec) {
 		_node.ID = id
 		_spec.ID.Value = id
 	}
+	if value, ok := sc.mutation.CreateTime(); ok {
+		_spec.SetField(shelf.FieldCreateTime, field.TypeTime, value)
+		_node.CreateTime = value
+	}
+	if value, ok := sc.mutation.UpdateTime(); ok {
+		_spec.SetField(shelf.FieldUpdateTime, field.TypeTime, value)
+		_node.UpdateTime = value
+	}
 	if value, ok := sc.mutation.Public(); ok {
 		_spec.SetField(shelf.FieldPublic, field.TypeBool, value)
 		_node.Public = value
@@ -257,7 +314,7 @@ func (sc *ShelfCreate) createSpec() (*Shelf, *sqlgraph.CreateSpec) {
 // of the `INSERT` statement. For example:
 //
 //	client.Shelf.Create().
-//		SetPublic(v).
+//		SetCreateTime(v).
 //		OnConflict(
 //			// Update the row with the new values
 //			// the was proposed for insertion.
@@ -266,7 +323,7 @@ func (sc *ShelfCreate) createSpec() (*Shelf, *sqlgraph.CreateSpec) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.ShelfUpsert) {
-//			SetPublic(v+v).
+//			SetCreateTime(v+v).
 //		}).
 //		Exec(ctx)
 func (sc *ShelfCreate) OnConflict(opts ...sql.ConflictOption) *ShelfUpsertOne {
@@ -301,6 +358,18 @@ type (
 		*sql.UpdateSet
 	}
 )
+
+// SetUpdateTime sets the "update_time" field.
+func (u *ShelfUpsert) SetUpdateTime(v time.Time) *ShelfUpsert {
+	u.Set(shelf.FieldUpdateTime, v)
+	return u
+}
+
+// UpdateUpdateTime sets the "update_time" field to the value that was provided on create.
+func (u *ShelfUpsert) UpdateUpdateTime() *ShelfUpsert {
+	u.SetExcluded(shelf.FieldUpdateTime)
+	return u
+}
 
 // SetPublic sets the "public" field.
 func (u *ShelfUpsert) SetPublic(v bool) *ShelfUpsert {
@@ -361,6 +430,9 @@ func (u *ShelfUpsertOne) UpdateNewValues() *ShelfUpsertOne {
 		if _, exists := u.create.mutation.ID(); exists {
 			s.SetIgnore(shelf.FieldID)
 		}
+		if _, exists := u.create.mutation.CreateTime(); exists {
+			s.SetIgnore(shelf.FieldCreateTime)
+		}
 		if _, exists := u.create.mutation.UserID(); exists {
 			s.SetIgnore(shelf.FieldUserID)
 		}
@@ -393,6 +465,20 @@ func (u *ShelfUpsertOne) Update(set func(*ShelfUpsert)) *ShelfUpsertOne {
 		set(&ShelfUpsert{UpdateSet: update})
 	}))
 	return u
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (u *ShelfUpsertOne) SetUpdateTime(v time.Time) *ShelfUpsertOne {
+	return u.Update(func(s *ShelfUpsert) {
+		s.SetUpdateTime(v)
+	})
+}
+
+// UpdateUpdateTime sets the "update_time" field to the value that was provided on create.
+func (u *ShelfUpsertOne) UpdateUpdateTime() *ShelfUpsertOne {
+	return u.Update(func(s *ShelfUpsert) {
+		s.UpdateUpdateTime()
+	})
 }
 
 // SetPublic sets the "public" field.
@@ -580,7 +666,7 @@ func (scb *ShelfCreateBulk) ExecX(ctx context.Context) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.ShelfUpsert) {
-//			SetPublic(v+v).
+//			SetCreateTime(v+v).
 //		}).
 //		Exec(ctx)
 func (scb *ShelfCreateBulk) OnConflict(opts ...sql.ConflictOption) *ShelfUpsertBulk {
@@ -627,6 +713,9 @@ func (u *ShelfUpsertBulk) UpdateNewValues() *ShelfUpsertBulk {
 			if _, exists := b.mutation.ID(); exists {
 				s.SetIgnore(shelf.FieldID)
 			}
+			if _, exists := b.mutation.CreateTime(); exists {
+				s.SetIgnore(shelf.FieldCreateTime)
+			}
 			if _, exists := b.mutation.UserID(); exists {
 				s.SetIgnore(shelf.FieldUserID)
 			}
@@ -660,6 +749,20 @@ func (u *ShelfUpsertBulk) Update(set func(*ShelfUpsert)) *ShelfUpsertBulk {
 		set(&ShelfUpsert{UpdateSet: update})
 	}))
 	return u
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (u *ShelfUpsertBulk) SetUpdateTime(v time.Time) *ShelfUpsertBulk {
+	return u.Update(func(s *ShelfUpsert) {
+		s.SetUpdateTime(v)
+	})
+}
+
+// UpdateUpdateTime sets the "update_time" field to the value that was provided on create.
+func (u *ShelfUpsertBulk) UpdateUpdateTime() *ShelfUpsertBulk {
+	return u.Update(func(s *ShelfUpsert) {
+		s.UpdateUpdateTime()
+	})
 }
 
 // SetPublic sets the "public" field.

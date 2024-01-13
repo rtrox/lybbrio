@@ -4,6 +4,7 @@ package book
 
 import (
 	"lybbrio/internal/ent/schema/ksuid"
+	"time"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
@@ -15,6 +16,10 @@ const (
 	Label = "book"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
+	// FieldCreateTime holds the string denoting the create_time field in the database.
+	FieldCreateTime = "create_time"
+	// FieldUpdateTime holds the string denoting the update_time field in the database.
+	FieldUpdateTime = "update_time"
 	// FieldCalibreID holds the string denoting the calibre_id field in the database.
 	FieldCalibreID = "calibre_id"
 	// FieldTitle holds the string denoting the title field in the database.
@@ -45,6 +50,8 @@ const (
 	EdgeLanguage = "language"
 	// EdgeShelf holds the string denoting the shelf edge name in mutations.
 	EdgeShelf = "shelf"
+	// EdgeFiles holds the string denoting the files edge name in mutations.
+	EdgeFiles = "files"
 	// Table holds the table name of the book in the database.
 	Table = "books"
 	// AuthorsTable is the table that holds the authors relation/edge. The primary key declared below.
@@ -84,11 +91,20 @@ const (
 	// ShelfInverseTable is the table name for the Shelf entity.
 	// It exists in this package in order to avoid circular dependency with the "shelf" package.
 	ShelfInverseTable = "shelves"
+	// FilesTable is the table that holds the files relation/edge.
+	FilesTable = "book_files"
+	// FilesInverseTable is the table name for the BookFile entity.
+	// It exists in this package in order to avoid circular dependency with the "bookfile" package.
+	FilesInverseTable = "book_files"
+	// FilesColumn is the table column denoting the files relation/edge.
+	FilesColumn = "book_file_book"
 )
 
 // Columns holds all SQL columns for book fields.
 var Columns = []string{
 	FieldID,
+	FieldCreateTime,
+	FieldUpdateTime,
 	FieldCalibreID,
 	FieldTitle,
 	FieldSort,
@@ -138,6 +154,12 @@ func ValidColumn(column string) bool {
 var (
 	Hooks  [1]ent.Hook
 	Policy ent.Policy
+	// DefaultCreateTime holds the default value on creation for the "create_time" field.
+	DefaultCreateTime func() time.Time
+	// DefaultUpdateTime holds the default value on creation for the "update_time" field.
+	DefaultUpdateTime func() time.Time
+	// UpdateDefaultUpdateTime holds the default value on update for the "update_time" field.
+	UpdateDefaultUpdateTime func() time.Time
 	// TitleValidator is a validator for the "title" field. It is called by the builders before save.
 	TitleValidator func(string) error
 	// PathValidator is a validator for the "path" field. It is called by the builders before save.
@@ -152,6 +174,16 @@ type OrderOption func(*sql.Selector)
 // ByID orders the results by the id field.
 func ByID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldID, opts...).ToFunc()
+}
+
+// ByCreateTime orders the results by the create_time field.
+func ByCreateTime(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldCreateTime, opts...).ToFunc()
+}
+
+// ByUpdateTime orders the results by the update_time field.
+func ByUpdateTime(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldUpdateTime, opts...).ToFunc()
 }
 
 // ByCalibreID orders the results by the calibre_id field.
@@ -291,6 +323,20 @@ func ByShelf(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newShelfStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByFilesCount orders the results by files count.
+func ByFilesCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newFilesStep(), opts...)
+	}
+}
+
+// ByFiles orders the results by files terms.
+func ByFiles(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newFilesStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newAuthorsStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -338,5 +384,12 @@ func newShelfStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(ShelfInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2M, true, ShelfTable, ShelfPrimaryKey...),
+	)
+}
+func newFilesStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(FilesInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, true, FilesTable, FilesColumn),
 	)
 }

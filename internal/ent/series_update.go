@@ -10,6 +10,7 @@ import (
 	"lybbrio/internal/ent/predicate"
 	"lybbrio/internal/ent/schema/ksuid"
 	"lybbrio/internal/ent/series"
+	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -26,6 +27,12 @@ type SeriesUpdate struct {
 // Where appends a list predicates to the SeriesUpdate builder.
 func (su *SeriesUpdate) Where(ps ...predicate.Series) *SeriesUpdate {
 	su.mutation.Where(ps...)
+	return su
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (su *SeriesUpdate) SetUpdateTime(t time.Time) *SeriesUpdate {
+	su.mutation.SetUpdateTime(t)
 	return su
 }
 
@@ -127,6 +134,9 @@ func (su *SeriesUpdate) RemoveBooks(b ...*Book) *SeriesUpdate {
 
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (su *SeriesUpdate) Save(ctx context.Context) (int, error) {
+	if err := su.defaults(); err != nil {
+		return 0, err
+	}
 	return withHooks(ctx, su.sqlSave, su.mutation, su.hooks)
 }
 
@@ -150,6 +160,18 @@ func (su *SeriesUpdate) ExecX(ctx context.Context) {
 	if err := su.Exec(ctx); err != nil {
 		panic(err)
 	}
+}
+
+// defaults sets the default values of the builder before save.
+func (su *SeriesUpdate) defaults() error {
+	if _, ok := su.mutation.UpdateTime(); !ok {
+		if series.UpdateDefaultUpdateTime == nil {
+			return fmt.Errorf("ent: uninitialized series.UpdateDefaultUpdateTime (forgotten import ent/runtime?)")
+		}
+		v := series.UpdateDefaultUpdateTime()
+		su.mutation.SetUpdateTime(v)
+	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -178,6 +200,9 @@ func (su *SeriesUpdate) sqlSave(ctx context.Context) (n int, err error) {
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := su.mutation.UpdateTime(); ok {
+		_spec.SetField(series.FieldUpdateTime, field.TypeTime, value)
 	}
 	if value, ok := su.mutation.CalibreID(); ok {
 		_spec.SetField(series.FieldCalibreID, field.TypeInt64, value)
@@ -257,6 +282,12 @@ type SeriesUpdateOne struct {
 	fields   []string
 	hooks    []Hook
 	mutation *SeriesMutation
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (suo *SeriesUpdateOne) SetUpdateTime(t time.Time) *SeriesUpdateOne {
+	suo.mutation.SetUpdateTime(t)
+	return suo
 }
 
 // SetCalibreID sets the "calibre_id" field.
@@ -370,6 +401,9 @@ func (suo *SeriesUpdateOne) Select(field string, fields ...string) *SeriesUpdate
 
 // Save executes the query and returns the updated Series entity.
 func (suo *SeriesUpdateOne) Save(ctx context.Context) (*Series, error) {
+	if err := suo.defaults(); err != nil {
+		return nil, err
+	}
 	return withHooks(ctx, suo.sqlSave, suo.mutation, suo.hooks)
 }
 
@@ -393,6 +427,18 @@ func (suo *SeriesUpdateOne) ExecX(ctx context.Context) {
 	if err := suo.Exec(ctx); err != nil {
 		panic(err)
 	}
+}
+
+// defaults sets the default values of the builder before save.
+func (suo *SeriesUpdateOne) defaults() error {
+	if _, ok := suo.mutation.UpdateTime(); !ok {
+		if series.UpdateDefaultUpdateTime == nil {
+			return fmt.Errorf("ent: uninitialized series.UpdateDefaultUpdateTime (forgotten import ent/runtime?)")
+		}
+		v := series.UpdateDefaultUpdateTime()
+		suo.mutation.SetUpdateTime(v)
+	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -438,6 +484,9 @@ func (suo *SeriesUpdateOne) sqlSave(ctx context.Context) (_node *Series, err err
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := suo.mutation.UpdateTime(); ok {
+		_spec.SetField(series.FieldUpdateTime, field.TypeTime, value)
 	}
 	if value, ok := suo.mutation.CalibreID(); ok {
 		_spec.SetField(series.FieldCalibreID, field.TypeInt64, value)

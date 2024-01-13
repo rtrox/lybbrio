@@ -303,12 +303,12 @@ func (pq *PublisherQuery) WithBooks(opts ...func(*BookQuery)) *PublisherQuery {
 // Example:
 //
 //	var v []struct {
-//		CalibreID int64 `json:"calibre_id,omitempty"`
+//		CreateTime time.Time `json:"create_time,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.Publisher.Query().
-//		GroupBy(publisher.FieldCalibreID).
+//		GroupBy(publisher.FieldCreateTime).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (pq *PublisherQuery) GroupBy(field string, fields ...string) *PublisherGroupBy {
@@ -326,11 +326,11 @@ func (pq *PublisherQuery) GroupBy(field string, fields ...string) *PublisherGrou
 // Example:
 //
 //	var v []struct {
-//		CalibreID int64 `json:"calibre_id,omitempty"`
+//		CreateTime time.Time `json:"create_time,omitempty"`
 //	}
 //
 //	client.Publisher.Query().
-//		Select(publisher.FieldCalibreID).
+//		Select(publisher.FieldCreateTime).
 //		Scan(ctx, &v)
 func (pq *PublisherQuery) Select(fields ...string) *PublisherSelect {
 	pq.ctx.Fields = append(pq.ctx.Fields, fields...)

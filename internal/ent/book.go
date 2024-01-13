@@ -18,6 +18,10 @@ type Book struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID ksuid.ID `json:"id,omitempty"`
+	// CreateTime holds the value of the "create_time" field.
+	CreateTime time.Time `json:"create_time,omitempty"`
+	// UpdateTime holds the value of the "update_time" field.
+	UpdateTime time.Time `json:"update_time,omitempty"`
 	// CalibreID holds the value of the "calibre_id" field.
 	CalibreID int64 `json:"calibre_id,omitempty"`
 	// Title holds the value of the "title" field.
@@ -56,11 +60,13 @@ type BookEdges struct {
 	Language []*Language `json:"language,omitempty"`
 	// Shelf holds the value of the shelf edge.
 	Shelf []*Shelf `json:"shelf,omitempty"`
+	// Files holds the value of the files edge.
+	Files []*BookFile `json:"files,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [7]bool
+	loadedTypes [8]bool
 	// totalCount holds the count of the edges above.
-	totalCount [7]map[string]int
+	totalCount [8]map[string]int
 
 	namedAuthors     map[string][]*Author
 	namedPublisher   map[string][]*Publisher
@@ -69,6 +75,7 @@ type BookEdges struct {
 	namedTags        map[string][]*Tag
 	namedLanguage    map[string][]*Language
 	namedShelf       map[string][]*Shelf
+	namedFiles       map[string][]*BookFile
 }
 
 // AuthorsOrErr returns the Authors value or an error if the edge
@@ -134,6 +141,15 @@ func (e BookEdges) ShelfOrErr() ([]*Shelf, error) {
 	return nil, &NotLoadedError{edge: "shelf"}
 }
 
+// FilesOrErr returns the Files value or an error if the edge
+// was not loaded in eager-loading.
+func (e BookEdges) FilesOrErr() ([]*BookFile, error) {
+	if e.loadedTypes[7] {
+		return e.Files, nil
+	}
+	return nil, &NotLoadedError{edge: "files"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*Book) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
@@ -145,7 +161,7 @@ func (*Book) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullInt64)
 		case book.FieldID, book.FieldTitle, book.FieldSort, book.FieldPath, book.FieldIsbn, book.FieldDescription:
 			values[i] = new(sql.NullString)
-		case book.FieldPublishedDate:
+		case book.FieldCreateTime, book.FieldUpdateTime, book.FieldPublishedDate:
 			values[i] = new(sql.NullTime)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -167,6 +183,18 @@ func (b *Book) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value.Valid {
 				b.ID = ksuid.ID(value.String)
+			}
+		case book.FieldCreateTime:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field create_time", values[i])
+			} else if value.Valid {
+				b.CreateTime = value.Time
+			}
+		case book.FieldUpdateTime:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field update_time", values[i])
+			} else if value.Valid {
+				b.UpdateTime = value.Time
 			}
 		case book.FieldCalibreID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
@@ -264,6 +292,11 @@ func (b *Book) QueryShelf() *ShelfQuery {
 	return NewBookClient(b.config).QueryShelf(b)
 }
 
+// QueryFiles queries the "files" edge of the Book entity.
+func (b *Book) QueryFiles() *BookFileQuery {
+	return NewBookClient(b.config).QueryFiles(b)
+}
+
 // Update returns a builder for updating this Book.
 // Note that you need to call Book.Unwrap() before calling this method if this Book
 // was returned from a transaction, and the transaction was committed or rolled back.
@@ -287,6 +320,12 @@ func (b *Book) String() string {
 	var builder strings.Builder
 	builder.WriteString("Book(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", b.ID))
+	builder.WriteString("create_time=")
+	builder.WriteString(b.CreateTime.Format(time.ANSIC))
+	builder.WriteString(", ")
+	builder.WriteString("update_time=")
+	builder.WriteString(b.UpdateTime.Format(time.ANSIC))
+	builder.WriteString(", ")
 	builder.WriteString("calibre_id=")
 	builder.WriteString(fmt.Sprintf("%v", b.CalibreID))
 	builder.WriteString(", ")
@@ -479,6 +518,30 @@ func (b *Book) appendNamedShelf(name string, edges ...*Shelf) {
 		b.Edges.namedShelf[name] = []*Shelf{}
 	} else {
 		b.Edges.namedShelf[name] = append(b.Edges.namedShelf[name], edges...)
+	}
+}
+
+// NamedFiles returns the Files named value or an error if the edge was not
+// loaded in eager-loading with this name.
+func (b *Book) NamedFiles(name string) ([]*BookFile, error) {
+	if b.Edges.namedFiles == nil {
+		return nil, &NotLoadedError{edge: name}
+	}
+	nodes, ok := b.Edges.namedFiles[name]
+	if !ok {
+		return nil, &NotLoadedError{edge: name}
+	}
+	return nodes, nil
+}
+
+func (b *Book) appendNamedFiles(name string, edges ...*BookFile) {
+	if b.Edges.namedFiles == nil {
+		b.Edges.namedFiles = make(map[string][]*BookFile)
+	}
+	if len(edges) == 0 {
+		b.Edges.namedFiles[name] = []*BookFile{}
+	} else {
+		b.Edges.namedFiles[name] = append(b.Edges.namedFiles[name], edges...)
 	}
 }
 

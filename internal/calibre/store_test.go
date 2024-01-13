@@ -8,6 +8,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+const TestDB = "test_fixtures/models_only"
+
 func TestGetAuthor(t *testing.T) {
 	tests := []struct {
 		name     string
@@ -44,7 +46,7 @@ func TestGetAuthor(t *testing.T) {
 			t.Parallel()
 			require := require.New(t)
 
-			db, err := NewCalibreSQLite("test_fixtures/metadata.db")
+			db, err := NewCalibreSQLite(TestDB)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -63,7 +65,7 @@ func TestGetAuthors(t *testing.T) {
 	t.Parallel()
 	require := require.New(t)
 
-	db, err := NewCalibreSQLite("test_fixtures/metadata.db")
+	db, err := NewCalibreSQLite(TestDB)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -106,7 +108,7 @@ func TestGetAuthorBooks(t *testing.T) {
 			t.Parallel()
 			require := require.New(t)
 
-			db, err := NewCalibreSQLite("test_fixtures/metadata.db")
+			db, err := NewCalibreSQLite(TestDB)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -161,7 +163,7 @@ func TestGetAuthorSeries(t *testing.T) {
 			t.Parallel()
 			require := require.New(t)
 
-			db, err := NewCalibreSQLite("test_fixtures/metadata.db")
+			db, err := NewCalibreSQLite(TestDB)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -309,7 +311,7 @@ func TestGetBook(t *testing.T) {
 			t.Parallel()
 			require := require.New(t)
 
-			db, err := NewCalibreSQLite("test_fixtures/metadata.db")
+			db, err := NewCalibreSQLite(TestDB)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -357,7 +359,7 @@ func TestGetBookByIdentifier(t *testing.T) {
 			t.Parallel()
 			require := require.New(t)
 
-			db, err := NewCalibreSQLite("test_fixtures/metadata.db")
+			db, err := NewCalibreSQLite(TestDB)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -377,7 +379,7 @@ func TestGetBooks(t *testing.T) {
 	t.Parallel()
 	require := require.New(t)
 
-	db, err := NewCalibreSQLite("test_fixtures/metadata.db")
+	db, err := NewCalibreSQLite(TestDB)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -435,7 +437,7 @@ func TestGetBooks_WithPagination(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 			require := require.New(t)
-			db, err := NewCalibreSQLite("test_fixtures/metadata.db")
+			db, err := NewCalibreSQLite(TestDB)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -492,7 +494,7 @@ func TestGetTag(t *testing.T) {
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			db, err := NewCalibreSQLite("test_fixtures/metadata.db")
+			db, err := NewCalibreSQLite(TestDB)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -511,7 +513,7 @@ func TestGetTags(t *testing.T) {
 	t.Parallel()
 	require := require.New(t)
 
-	db, err := NewCalibreSQLite("test_fixtures/metadata.db")
+	db, err := NewCalibreSQLite(TestDB)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -554,7 +556,7 @@ func TestGetTagBooks(t *testing.T) {
 			t.Parallel()
 			require := require.New(t)
 
-			db, err := NewCalibreSQLite("test_fixtures/metadata.db")
+			db, err := NewCalibreSQLite(TestDB)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -610,7 +612,7 @@ func TestGetPublisher(t *testing.T) {
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			db, err := NewCalibreSQLite("test_fixtures/metadata.db")
+			db, err := NewCalibreSQLite(TestDB)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -629,7 +631,7 @@ func TestGetPublishers(t *testing.T) {
 	t.Parallel()
 	require := require.New(t)
 
-	db, err := NewCalibreSQLite("test_fixtures/metadata.db")
+	db, err := NewCalibreSQLite(TestDB)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -677,7 +679,7 @@ func TestGetPublisherBooks(t *testing.T) {
 			t.Parallel()
 			require := require.New(t)
 
-			db, err := NewCalibreSQLite("test_fixtures/metadata.db")
+			db, err := NewCalibreSQLite(TestDB)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -740,7 +742,7 @@ func TestGetLanguage(t *testing.T) {
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			db, err := NewCalibreSQLite("test_fixtures/metadata.db")
+			db, err := NewCalibreSQLite(TestDB)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -759,7 +761,7 @@ func TestGetLanguages(t *testing.T) {
 	t.Parallel()
 	require := require.New(t)
 
-	db, err := NewCalibreSQLite("test_fixtures/metadata.db")
+	db, err := NewCalibreSQLite(TestDB)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -792,7 +794,7 @@ func TestGetLanguageBooks(t *testing.T) {
 			t.Parallel()
 			require := require.New(t)
 
-			db, err := NewCalibreSQLite("test_fixtures/metadata.db")
+			db, err := NewCalibreSQLite(TestDB)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -837,7 +839,7 @@ func TestGetSeries(t *testing.T) {
 			t.Parallel()
 			require := require.New(t)
 
-			db, err := NewCalibreSQLite("test_fixtures/metadata.db")
+			db, err := NewCalibreSQLite(TestDB)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -856,7 +858,7 @@ func TestGetSeriesList(t *testing.T) {
 	t.Parallel()
 	require := require.New(t)
 
-	db, err := NewCalibreSQLite("test_fixtures/metadata.db")
+	db, err := NewCalibreSQLite(TestDB)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -895,7 +897,7 @@ func TestGetSeriesBooks(t *testing.T) {
 			t.Parallel()
 			require := require.New(t)
 
-			db, err := NewCalibreSQLite("test_fixtures/metadata.db")
+			db, err := NewCalibreSQLite(TestDB)
 			if err != nil {
 				t.Fatal(err)
 			}

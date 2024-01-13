@@ -11,6 +11,8 @@ var (
 	// AuthorsColumns holds the columns for the "authors" table.
 	AuthorsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeString},
+		{Name: "create_time", Type: field.TypeTime},
+		{Name: "update_time", Type: field.TypeTime},
 		{Name: "calibre_id", Type: field.TypeInt64, Unique: true, Nullable: true},
 		{Name: "name", Type: field.TypeString, Unique: true},
 		{Name: "sort", Type: field.TypeString},
@@ -25,23 +27,25 @@ var (
 			{
 				Name:    "author_calibre_id",
 				Unique:  true,
-				Columns: []*schema.Column{AuthorsColumns[1]},
+				Columns: []*schema.Column{AuthorsColumns[3]},
 			},
 			{
 				Name:    "author_name",
 				Unique:  true,
-				Columns: []*schema.Column{AuthorsColumns[2]},
+				Columns: []*schema.Column{AuthorsColumns[4]},
 			},
 			{
 				Name:    "author_sort",
 				Unique:  true,
-				Columns: []*schema.Column{AuthorsColumns[3]},
+				Columns: []*schema.Column{AuthorsColumns[5]},
 			},
 		},
 	}
 	// BooksColumns holds the columns for the "books" table.
 	BooksColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeString},
+		{Name: "create_time", Type: field.TypeTime},
+		{Name: "update_time", Type: field.TypeTime},
 		{Name: "calibre_id", Type: field.TypeInt64, Unique: true, Nullable: true},
 		{Name: "title", Type: field.TypeString, Size: 2147483647},
 		{Name: "sort", Type: field.TypeString, Size: 2147483647},
@@ -60,33 +64,60 @@ var (
 			{
 				Name:    "book_calibre_id",
 				Unique:  true,
-				Columns: []*schema.Column{BooksColumns[1]},
+				Columns: []*schema.Column{BooksColumns[3]},
 			},
 			{
 				Name:    "book_title",
 				Unique:  false,
-				Columns: []*schema.Column{BooksColumns[2]},
+				Columns: []*schema.Column{BooksColumns[4]},
 			},
 			{
 				Name:    "book_sort",
 				Unique:  false,
-				Columns: []*schema.Column{BooksColumns[3]},
+				Columns: []*schema.Column{BooksColumns[5]},
 			},
 			{
 				Name:    "book_published_date",
 				Unique:  false,
-				Columns: []*schema.Column{BooksColumns[4]},
+				Columns: []*schema.Column{BooksColumns[6]},
 			},
 			{
 				Name:    "book_isbn",
 				Unique:  false,
-				Columns: []*schema.Column{BooksColumns[6]},
+				Columns: []*schema.Column{BooksColumns[8]},
+			},
+		},
+	}
+	// BookFilesColumns holds the columns for the "book_files" table.
+	BookFilesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeString},
+		{Name: "create_time", Type: field.TypeTime},
+		{Name: "update_time", Type: field.TypeTime},
+		{Name: "name", Type: field.TypeString, Size: 2147483647},
+		{Name: "path", Type: field.TypeString, Size: 2147483647},
+		{Name: "size", Type: field.TypeInt64},
+		{Name: "format", Type: field.TypeEnum, Enums: []string{"AZW3", "EPUB", "KEPUB", "PDF", "CBC", "CBR", "CB7", "CBZ", "CBT"}},
+		{Name: "book_file_book", Type: field.TypeString},
+	}
+	// BookFilesTable holds the schema information for the "book_files" table.
+	BookFilesTable = &schema.Table{
+		Name:       "book_files",
+		Columns:    BookFilesColumns,
+		PrimaryKey: []*schema.Column{BookFilesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "book_files_books_book",
+				Columns:    []*schema.Column{BookFilesColumns[7]},
+				RefColumns: []*schema.Column{BooksColumns[0]},
+				OnDelete:   schema.NoAction,
 			},
 		},
 	}
 	// IdentifiersColumns holds the columns for the "identifiers" table.
 	IdentifiersColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeString},
+		{Name: "create_time", Type: field.TypeTime},
+		{Name: "update_time", Type: field.TypeTime},
 		{Name: "calibre_id", Type: field.TypeInt64, Unique: true, Nullable: true},
 		{Name: "type", Type: field.TypeString},
 		{Name: "value", Type: field.TypeString},
@@ -100,7 +131,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "identifiers_books_book",
-				Columns:    []*schema.Column{IdentifiersColumns[4]},
+				Columns:    []*schema.Column{IdentifiersColumns[6]},
 				RefColumns: []*schema.Column{BooksColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -109,18 +140,20 @@ var (
 			{
 				Name:    "identifier_calibre_id",
 				Unique:  true,
-				Columns: []*schema.Column{IdentifiersColumns[1]},
+				Columns: []*schema.Column{IdentifiersColumns[3]},
 			},
 			{
 				Name:    "identifier_type_value",
 				Unique:  false,
-				Columns: []*schema.Column{IdentifiersColumns[2], IdentifiersColumns[3]},
+				Columns: []*schema.Column{IdentifiersColumns[4], IdentifiersColumns[5]},
 			},
 		},
 	}
 	// LanguagesColumns holds the columns for the "languages" table.
 	LanguagesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeString},
+		{Name: "create_time", Type: field.TypeTime},
+		{Name: "update_time", Type: field.TypeTime},
 		{Name: "calibre_id", Type: field.TypeInt64, Unique: true, Nullable: true},
 		{Name: "code", Type: field.TypeString},
 	}
@@ -133,18 +166,20 @@ var (
 			{
 				Name:    "language_calibre_id",
 				Unique:  true,
-				Columns: []*schema.Column{LanguagesColumns[1]},
+				Columns: []*schema.Column{LanguagesColumns[3]},
 			},
 			{
 				Name:    "language_code",
 				Unique:  false,
-				Columns: []*schema.Column{LanguagesColumns[2]},
+				Columns: []*schema.Column{LanguagesColumns[4]},
 			},
 		},
 	}
 	// PublishersColumns holds the columns for the "publishers" table.
 	PublishersColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeString},
+		{Name: "create_time", Type: field.TypeTime},
+		{Name: "update_time", Type: field.TypeTime},
 		{Name: "calibre_id", Type: field.TypeInt64, Unique: true, Nullable: true},
 		{Name: "name", Type: field.TypeString},
 	}
@@ -157,18 +192,20 @@ var (
 			{
 				Name:    "publisher_calibre_id",
 				Unique:  true,
-				Columns: []*schema.Column{PublishersColumns[1]},
+				Columns: []*schema.Column{PublishersColumns[3]},
 			},
 			{
 				Name:    "publisher_name",
 				Unique:  false,
-				Columns: []*schema.Column{PublishersColumns[2]},
+				Columns: []*schema.Column{PublishersColumns[4]},
 			},
 		},
 	}
 	// SeriesColumns holds the columns for the "series" table.
 	SeriesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeString},
+		{Name: "create_time", Type: field.TypeTime},
+		{Name: "update_time", Type: field.TypeTime},
 		{Name: "calibre_id", Type: field.TypeInt64, Unique: true, Nullable: true},
 		{Name: "name", Type: field.TypeString},
 		{Name: "sort", Type: field.TypeString},
@@ -182,18 +219,20 @@ var (
 			{
 				Name:    "series_calibre_id",
 				Unique:  true,
-				Columns: []*schema.Column{SeriesColumns[1]},
+				Columns: []*schema.Column{SeriesColumns[3]},
 			},
 			{
 				Name:    "series_name",
 				Unique:  false,
-				Columns: []*schema.Column{SeriesColumns[2]},
+				Columns: []*schema.Column{SeriesColumns[4]},
 			},
 		},
 	}
 	// ShelvesColumns holds the columns for the "shelves" table.
 	ShelvesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeString},
+		{Name: "create_time", Type: field.TypeTime},
+		{Name: "update_time", Type: field.TypeTime},
 		{Name: "public", Type: field.TypeBool, Default: false},
 		{Name: "name", Type: field.TypeString},
 		{Name: "description", Type: field.TypeString, Nullable: true},
@@ -207,7 +246,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "shelves_users_user",
-				Columns:    []*schema.Column{ShelvesColumns[4]},
+				Columns:    []*schema.Column{ShelvesColumns[6]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -216,7 +255,7 @@ var (
 			{
 				Name:    "shelf_name",
 				Unique:  false,
-				Columns: []*schema.Column{ShelvesColumns[2]},
+				Columns: []*schema.Column{ShelvesColumns[4]},
 			},
 		},
 	}
@@ -274,6 +313,8 @@ var (
 	// UsersColumns holds the columns for the "users" table.
 	UsersColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeString},
+		{Name: "create_time", Type: field.TypeTime},
+		{Name: "update_time", Type: field.TypeTime},
 		{Name: "username", Type: field.TypeString, Unique: true},
 		{Name: "password_hash", Type: field.TypeString, Nullable: true},
 		{Name: "email", Type: field.TypeString, Unique: true},
@@ -287,21 +328,23 @@ var (
 			{
 				Name:    "user_username",
 				Unique:  false,
-				Columns: []*schema.Column{UsersColumns[1]},
+				Columns: []*schema.Column{UsersColumns[3]},
 			},
 			{
 				Name:    "user_password_hash",
 				Unique:  false,
-				Columns: []*schema.Column{UsersColumns[2]},
+				Columns: []*schema.Column{UsersColumns[4]},
 			},
 		},
 	}
 	// UserPermissionsColumns holds the columns for the "user_permissions" table.
 	UserPermissionsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeString},
-		{Name: "can_edit", Type: field.TypeBool, Default: false},
+		{Name: "create_time", Type: field.TypeTime},
+		{Name: "update_time", Type: field.TypeTime},
 		{Name: "admin", Type: field.TypeBool, Default: false},
 		{Name: "can_create_public", Type: field.TypeBool, Default: false},
+		{Name: "can_edit", Type: field.TypeBool, Default: false},
 		{Name: "user_id", Type: field.TypeString, Unique: true, Nullable: true},
 	}
 	// UserPermissionsTable holds the schema information for the "user_permissions" table.
@@ -312,7 +355,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "user_permissions_users_user_permissions",
-				Columns:    []*schema.Column{UserPermissionsColumns[4]},
+				Columns:    []*schema.Column{UserPermissionsColumns[6]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -472,6 +515,7 @@ var (
 	Tables = []*schema.Table{
 		AuthorsTable,
 		BooksTable,
+		BookFilesTable,
 		IdentifiersTable,
 		LanguagesTable,
 		PublishersTable,
@@ -491,6 +535,7 @@ var (
 )
 
 func init() {
+	BookFilesTable.ForeignKeys[0].RefTable = BooksTable
 	IdentifiersTable.ForeignKeys[0].RefTable = BooksTable
 	ShelvesTable.ForeignKeys[0].RefTable = UsersTable
 	TasksTable.ForeignKeys[0].RefTable = UsersTable

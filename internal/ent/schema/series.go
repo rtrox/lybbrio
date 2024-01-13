@@ -9,6 +9,7 @@ import (
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/index"
+	"entgo.io/ent/schema/mixin"
 )
 
 // Series holds the schema definition for the Series entity.
@@ -27,6 +28,7 @@ func (Series) Annotations() []schema.Annotation {
 
 func (Series) Mixin() []ent.Mixin {
 	return []ent.Mixin{
+		mixin.Time{},
 		BaseMixin{},
 		CalibreMixin{},
 		ksuid.MixinWithPrefix("srs"),

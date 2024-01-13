@@ -9,6 +9,7 @@ import (
 	"lybbrio/internal/ent/book"
 	"lybbrio/internal/ent/schema/ksuid"
 	"lybbrio/internal/ent/series"
+	"time"
 
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
@@ -22,6 +23,34 @@ type SeriesCreate struct {
 	mutation *SeriesMutation
 	hooks    []Hook
 	conflict []sql.ConflictOption
+}
+
+// SetCreateTime sets the "create_time" field.
+func (sc *SeriesCreate) SetCreateTime(t time.Time) *SeriesCreate {
+	sc.mutation.SetCreateTime(t)
+	return sc
+}
+
+// SetNillableCreateTime sets the "create_time" field if the given value is not nil.
+func (sc *SeriesCreate) SetNillableCreateTime(t *time.Time) *SeriesCreate {
+	if t != nil {
+		sc.SetCreateTime(*t)
+	}
+	return sc
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (sc *SeriesCreate) SetUpdateTime(t time.Time) *SeriesCreate {
+	sc.mutation.SetUpdateTime(t)
+	return sc
+}
+
+// SetNillableUpdateTime sets the "update_time" field if the given value is not nil.
+func (sc *SeriesCreate) SetNillableUpdateTime(t *time.Time) *SeriesCreate {
+	if t != nil {
+		sc.SetUpdateTime(*t)
+	}
+	return sc
 }
 
 // SetCalibreID sets the "calibre_id" field.
@@ -116,6 +145,20 @@ func (sc *SeriesCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (sc *SeriesCreate) defaults() error {
+	if _, ok := sc.mutation.CreateTime(); !ok {
+		if series.DefaultCreateTime == nil {
+			return fmt.Errorf("ent: uninitialized series.DefaultCreateTime (forgotten import ent/runtime?)")
+		}
+		v := series.DefaultCreateTime()
+		sc.mutation.SetCreateTime(v)
+	}
+	if _, ok := sc.mutation.UpdateTime(); !ok {
+		if series.DefaultUpdateTime == nil {
+			return fmt.Errorf("ent: uninitialized series.DefaultUpdateTime (forgotten import ent/runtime?)")
+		}
+		v := series.DefaultUpdateTime()
+		sc.mutation.SetUpdateTime(v)
+	}
 	if _, ok := sc.mutation.ID(); !ok {
 		if series.DefaultID == nil {
 			return fmt.Errorf("ent: uninitialized series.DefaultID (forgotten import ent/runtime?)")
@@ -128,6 +171,12 @@ func (sc *SeriesCreate) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (sc *SeriesCreate) check() error {
+	if _, ok := sc.mutation.CreateTime(); !ok {
+		return &ValidationError{Name: "create_time", err: errors.New(`ent: missing required field "Series.create_time"`)}
+	}
+	if _, ok := sc.mutation.UpdateTime(); !ok {
+		return &ValidationError{Name: "update_time", err: errors.New(`ent: missing required field "Series.update_time"`)}
+	}
 	if _, ok := sc.mutation.Name(); !ok {
 		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "Series.name"`)}
 	}
@@ -180,6 +229,14 @@ func (sc *SeriesCreate) createSpec() (*Series, *sqlgraph.CreateSpec) {
 		_node.ID = id
 		_spec.ID.Value = id
 	}
+	if value, ok := sc.mutation.CreateTime(); ok {
+		_spec.SetField(series.FieldCreateTime, field.TypeTime, value)
+		_node.CreateTime = value
+	}
+	if value, ok := sc.mutation.UpdateTime(); ok {
+		_spec.SetField(series.FieldUpdateTime, field.TypeTime, value)
+		_node.UpdateTime = value
+	}
 	if value, ok := sc.mutation.CalibreID(); ok {
 		_spec.SetField(series.FieldCalibreID, field.TypeInt64, value)
 		_node.CalibreID = value
@@ -215,7 +272,7 @@ func (sc *SeriesCreate) createSpec() (*Series, *sqlgraph.CreateSpec) {
 // of the `INSERT` statement. For example:
 //
 //	client.Series.Create().
-//		SetCalibreID(v).
+//		SetCreateTime(v).
 //		OnConflict(
 //			// Update the row with the new values
 //			// the was proposed for insertion.
@@ -224,7 +281,7 @@ func (sc *SeriesCreate) createSpec() (*Series, *sqlgraph.CreateSpec) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.SeriesUpsert) {
-//			SetCalibreID(v+v).
+//			SetCreateTime(v+v).
 //		}).
 //		Exec(ctx)
 func (sc *SeriesCreate) OnConflict(opts ...sql.ConflictOption) *SeriesUpsertOne {
@@ -259,6 +316,18 @@ type (
 		*sql.UpdateSet
 	}
 )
+
+// SetUpdateTime sets the "update_time" field.
+func (u *SeriesUpsert) SetUpdateTime(v time.Time) *SeriesUpsert {
+	u.Set(series.FieldUpdateTime, v)
+	return u
+}
+
+// UpdateUpdateTime sets the "update_time" field to the value that was provided on create.
+func (u *SeriesUpsert) UpdateUpdateTime() *SeriesUpsert {
+	u.SetExcluded(series.FieldUpdateTime)
+	return u
+}
 
 // SetCalibreID sets the "calibre_id" field.
 func (u *SeriesUpsert) SetCalibreID(v int64) *SeriesUpsert {
@@ -325,6 +394,9 @@ func (u *SeriesUpsertOne) UpdateNewValues() *SeriesUpsertOne {
 		if _, exists := u.create.mutation.ID(); exists {
 			s.SetIgnore(series.FieldID)
 		}
+		if _, exists := u.create.mutation.CreateTime(); exists {
+			s.SetIgnore(series.FieldCreateTime)
+		}
 	}))
 	return u
 }
@@ -354,6 +426,20 @@ func (u *SeriesUpsertOne) Update(set func(*SeriesUpsert)) *SeriesUpsertOne {
 		set(&SeriesUpsert{UpdateSet: update})
 	}))
 	return u
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (u *SeriesUpsertOne) SetUpdateTime(v time.Time) *SeriesUpsertOne {
+	return u.Update(func(s *SeriesUpsert) {
+		s.SetUpdateTime(v)
+	})
+}
+
+// UpdateUpdateTime sets the "update_time" field to the value that was provided on create.
+func (u *SeriesUpsertOne) UpdateUpdateTime() *SeriesUpsertOne {
+	return u.Update(func(s *SeriesUpsert) {
+		s.UpdateUpdateTime()
+	})
 }
 
 // SetCalibreID sets the "calibre_id" field.
@@ -548,7 +634,7 @@ func (scb *SeriesCreateBulk) ExecX(ctx context.Context) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.SeriesUpsert) {
-//			SetCalibreID(v+v).
+//			SetCreateTime(v+v).
 //		}).
 //		Exec(ctx)
 func (scb *SeriesCreateBulk) OnConflict(opts ...sql.ConflictOption) *SeriesUpsertBulk {
@@ -595,6 +681,9 @@ func (u *SeriesUpsertBulk) UpdateNewValues() *SeriesUpsertBulk {
 			if _, exists := b.mutation.ID(); exists {
 				s.SetIgnore(series.FieldID)
 			}
+			if _, exists := b.mutation.CreateTime(); exists {
+				s.SetIgnore(series.FieldCreateTime)
+			}
 		}
 	}))
 	return u
@@ -625,6 +714,20 @@ func (u *SeriesUpsertBulk) Update(set func(*SeriesUpsert)) *SeriesUpsertBulk {
 		set(&SeriesUpsert{UpdateSet: update})
 	}))
 	return u
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (u *SeriesUpsertBulk) SetUpdateTime(v time.Time) *SeriesUpsertBulk {
+	return u.Update(func(s *SeriesUpsert) {
+		s.SetUpdateTime(v)
+	})
+}
+
+// UpdateUpdateTime sets the "update_time" field to the value that was provided on create.
+func (u *SeriesUpsertBulk) UpdateUpdateTime() *SeriesUpsertBulk {
+	return u.Update(func(s *SeriesUpsert) {
+		s.UpdateUpdateTime()
+	})
 }
 
 // SetCalibreID sets the "calibre_id" field.

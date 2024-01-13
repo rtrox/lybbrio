@@ -113,6 +113,26 @@ func (b *Book) Shelf(ctx context.Context) (result []*Shelf, err error) {
 	return result, err
 }
 
+func (b *Book) Files(ctx context.Context) (result []*BookFile, err error) {
+	if fc := graphql.GetFieldContext(ctx); fc != nil && fc.Field.Alias != "" {
+		result, err = b.NamedFiles(graphql.GetFieldContext(ctx).Field.Alias)
+	} else {
+		result, err = b.Edges.FilesOrErr()
+	}
+	if IsNotLoaded(err) {
+		result, err = b.QueryFiles().All(ctx)
+	}
+	return result, err
+}
+
+func (bf *BookFile) Book(ctx context.Context) (*Book, error) {
+	result, err := bf.Edges.BookOrErr()
+	if IsNotLoaded(err) {
+		result, err = bf.QueryBook().Only(ctx)
+	}
+	return result, err
+}
+
 func (i *Identifier) Book(ctx context.Context) (*Book, error) {
 	result, err := i.Edges.BookOrErr()
 	if IsNotLoaded(err) {

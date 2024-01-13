@@ -6,6 +6,7 @@ package graph
 
 import (
 	"context"
+	"fmt"
 	"lybbrio/internal/ent"
 	"lybbrio/internal/ent/schema/ksuid"
 	"lybbrio/internal/graph/generated"
@@ -39,6 +40,11 @@ func (r *queryResolver) Books(ctx context.Context, after *entgql.Cursor[ksuid.ID
 			ent.WithBookOrder(orderBy),
 			ent.WithBookFilter(where.Filter),
 		)
+}
+
+// BookFiles is the resolver for the bookFiles field.
+func (r *queryResolver) BookFiles(ctx context.Context) ([]*ent.BookFile, error) {
+	panic(fmt.Errorf("not implemented: BookFiles - bookFiles"))
 }
 
 // Identifiers is the resolver for the identifiers field.

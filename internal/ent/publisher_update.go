@@ -10,6 +10,7 @@ import (
 	"lybbrio/internal/ent/predicate"
 	"lybbrio/internal/ent/publisher"
 	"lybbrio/internal/ent/schema/ksuid"
+	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -26,6 +27,12 @@ type PublisherUpdate struct {
 // Where appends a list predicates to the PublisherUpdate builder.
 func (pu *PublisherUpdate) Where(ps ...predicate.Publisher) *PublisherUpdate {
 	pu.mutation.Where(ps...)
+	return pu
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (pu *PublisherUpdate) SetUpdateTime(t time.Time) *PublisherUpdate {
+	pu.mutation.SetUpdateTime(t)
 	return pu
 }
 
@@ -113,6 +120,9 @@ func (pu *PublisherUpdate) RemoveBooks(b ...*Book) *PublisherUpdate {
 
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (pu *PublisherUpdate) Save(ctx context.Context) (int, error) {
+	if err := pu.defaults(); err != nil {
+		return 0, err
+	}
 	return withHooks(ctx, pu.sqlSave, pu.mutation, pu.hooks)
 }
 
@@ -138,6 +148,18 @@ func (pu *PublisherUpdate) ExecX(ctx context.Context) {
 	}
 }
 
+// defaults sets the default values of the builder before save.
+func (pu *PublisherUpdate) defaults() error {
+	if _, ok := pu.mutation.UpdateTime(); !ok {
+		if publisher.UpdateDefaultUpdateTime == nil {
+			return fmt.Errorf("ent: uninitialized publisher.UpdateDefaultUpdateTime (forgotten import ent/runtime?)")
+		}
+		v := publisher.UpdateDefaultUpdateTime()
+		pu.mutation.SetUpdateTime(v)
+	}
+	return nil
+}
+
 // check runs all checks and user-defined validators on the builder.
 func (pu *PublisherUpdate) check() error {
 	if v, ok := pu.mutation.Name(); ok {
@@ -159,6 +181,9 @@ func (pu *PublisherUpdate) sqlSave(ctx context.Context) (n int, err error) {
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := pu.mutation.UpdateTime(); ok {
+		_spec.SetField(publisher.FieldUpdateTime, field.TypeTime, value)
 	}
 	if value, ok := pu.mutation.CalibreID(); ok {
 		_spec.SetField(publisher.FieldCalibreID, field.TypeInt64, value)
@@ -235,6 +260,12 @@ type PublisherUpdateOne struct {
 	fields   []string
 	hooks    []Hook
 	mutation *PublisherMutation
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (puo *PublisherUpdateOne) SetUpdateTime(t time.Time) *PublisherUpdateOne {
+	puo.mutation.SetUpdateTime(t)
+	return puo
 }
 
 // SetCalibreID sets the "calibre_id" field.
@@ -334,6 +365,9 @@ func (puo *PublisherUpdateOne) Select(field string, fields ...string) *Publisher
 
 // Save executes the query and returns the updated Publisher entity.
 func (puo *PublisherUpdateOne) Save(ctx context.Context) (*Publisher, error) {
+	if err := puo.defaults(); err != nil {
+		return nil, err
+	}
 	return withHooks(ctx, puo.sqlSave, puo.mutation, puo.hooks)
 }
 
@@ -357,6 +391,18 @@ func (puo *PublisherUpdateOne) ExecX(ctx context.Context) {
 	if err := puo.Exec(ctx); err != nil {
 		panic(err)
 	}
+}
+
+// defaults sets the default values of the builder before save.
+func (puo *PublisherUpdateOne) defaults() error {
+	if _, ok := puo.mutation.UpdateTime(); !ok {
+		if publisher.UpdateDefaultUpdateTime == nil {
+			return fmt.Errorf("ent: uninitialized publisher.UpdateDefaultUpdateTime (forgotten import ent/runtime?)")
+		}
+		v := publisher.UpdateDefaultUpdateTime()
+		puo.mutation.SetUpdateTime(v)
+	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -397,6 +443,9 @@ func (puo *PublisherUpdateOne) sqlSave(ctx context.Context) (_node *Publisher, e
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := puo.mutation.UpdateTime(); ok {
+		_spec.SetField(publisher.FieldUpdateTime, field.TypeTime, value)
 	}
 	if value, ok := puo.mutation.CalibreID(); ok {
 		_spec.SetField(publisher.FieldCalibreID, field.TypeInt64, value)

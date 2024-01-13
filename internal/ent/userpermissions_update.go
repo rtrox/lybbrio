@@ -10,6 +10,7 @@ import (
 	"lybbrio/internal/ent/schema/ksuid"
 	"lybbrio/internal/ent/user"
 	"lybbrio/internal/ent/userpermissions"
+	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -26,6 +27,12 @@ type UserPermissionsUpdate struct {
 // Where appends a list predicates to the UserPermissionsUpdate builder.
 func (upu *UserPermissionsUpdate) Where(ps ...predicate.UserPermissions) *UserPermissionsUpdate {
 	upu.mutation.Where(ps...)
+	return upu
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (upu *UserPermissionsUpdate) SetUpdateTime(t time.Time) *UserPermissionsUpdate {
+	upu.mutation.SetUpdateTime(t)
 	return upu
 }
 
@@ -46,20 +53,6 @@ func (upu *UserPermissionsUpdate) SetNillableUserID(k *ksuid.ID) *UserPermission
 // ClearUserID clears the value of the "user_id" field.
 func (upu *UserPermissionsUpdate) ClearUserID() *UserPermissionsUpdate {
 	upu.mutation.ClearUserID()
-	return upu
-}
-
-// SetCanEdit sets the "CanEdit" field.
-func (upu *UserPermissionsUpdate) SetCanEdit(b bool) *UserPermissionsUpdate {
-	upu.mutation.SetCanEdit(b)
-	return upu
-}
-
-// SetNillableCanEdit sets the "CanEdit" field if the given value is not nil.
-func (upu *UserPermissionsUpdate) SetNillableCanEdit(b *bool) *UserPermissionsUpdate {
-	if b != nil {
-		upu.SetCanEdit(*b)
-	}
 	return upu
 }
 
@@ -91,6 +84,20 @@ func (upu *UserPermissionsUpdate) SetNillableCanCreatePublic(b *bool) *UserPermi
 	return upu
 }
 
+// SetCanEdit sets the "CanEdit" field.
+func (upu *UserPermissionsUpdate) SetCanEdit(b bool) *UserPermissionsUpdate {
+	upu.mutation.SetCanEdit(b)
+	return upu
+}
+
+// SetNillableCanEdit sets the "CanEdit" field if the given value is not nil.
+func (upu *UserPermissionsUpdate) SetNillableCanEdit(b *bool) *UserPermissionsUpdate {
+	if b != nil {
+		upu.SetCanEdit(*b)
+	}
+	return upu
+}
+
 // SetUser sets the "user" edge to the User entity.
 func (upu *UserPermissionsUpdate) SetUser(u *User) *UserPermissionsUpdate {
 	return upu.SetUserID(u.ID)
@@ -109,6 +116,9 @@ func (upu *UserPermissionsUpdate) ClearUser() *UserPermissionsUpdate {
 
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (upu *UserPermissionsUpdate) Save(ctx context.Context) (int, error) {
+	if err := upu.defaults(); err != nil {
+		return 0, err
+	}
 	return withHooks(ctx, upu.sqlSave, upu.mutation, upu.hooks)
 }
 
@@ -134,6 +144,18 @@ func (upu *UserPermissionsUpdate) ExecX(ctx context.Context) {
 	}
 }
 
+// defaults sets the default values of the builder before save.
+func (upu *UserPermissionsUpdate) defaults() error {
+	if _, ok := upu.mutation.UpdateTime(); !ok {
+		if userpermissions.UpdateDefaultUpdateTime == nil {
+			return fmt.Errorf("ent: uninitialized userpermissions.UpdateDefaultUpdateTime (forgotten import ent/runtime?)")
+		}
+		v := userpermissions.UpdateDefaultUpdateTime()
+		upu.mutation.SetUpdateTime(v)
+	}
+	return nil
+}
+
 func (upu *UserPermissionsUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	_spec := sqlgraph.NewUpdateSpec(userpermissions.Table, userpermissions.Columns, sqlgraph.NewFieldSpec(userpermissions.FieldID, field.TypeString))
 	if ps := upu.mutation.predicates; len(ps) > 0 {
@@ -143,14 +165,17 @@ func (upu *UserPermissionsUpdate) sqlSave(ctx context.Context) (n int, err error
 			}
 		}
 	}
-	if value, ok := upu.mutation.CanEdit(); ok {
-		_spec.SetField(userpermissions.FieldCanEdit, field.TypeBool, value)
+	if value, ok := upu.mutation.UpdateTime(); ok {
+		_spec.SetField(userpermissions.FieldUpdateTime, field.TypeTime, value)
 	}
 	if value, ok := upu.mutation.Admin(); ok {
 		_spec.SetField(userpermissions.FieldAdmin, field.TypeBool, value)
 	}
 	if value, ok := upu.mutation.CanCreatePublic(); ok {
 		_spec.SetField(userpermissions.FieldCanCreatePublic, field.TypeBool, value)
+	}
+	if value, ok := upu.mutation.CanEdit(); ok {
+		_spec.SetField(userpermissions.FieldCanEdit, field.TypeBool, value)
 	}
 	if upu.mutation.UserCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -201,6 +226,12 @@ type UserPermissionsUpdateOne struct {
 	mutation *UserPermissionsMutation
 }
 
+// SetUpdateTime sets the "update_time" field.
+func (upuo *UserPermissionsUpdateOne) SetUpdateTime(t time.Time) *UserPermissionsUpdateOne {
+	upuo.mutation.SetUpdateTime(t)
+	return upuo
+}
+
 // SetUserID sets the "user_id" field.
 func (upuo *UserPermissionsUpdateOne) SetUserID(k ksuid.ID) *UserPermissionsUpdateOne {
 	upuo.mutation.SetUserID(k)
@@ -218,20 +249,6 @@ func (upuo *UserPermissionsUpdateOne) SetNillableUserID(k *ksuid.ID) *UserPermis
 // ClearUserID clears the value of the "user_id" field.
 func (upuo *UserPermissionsUpdateOne) ClearUserID() *UserPermissionsUpdateOne {
 	upuo.mutation.ClearUserID()
-	return upuo
-}
-
-// SetCanEdit sets the "CanEdit" field.
-func (upuo *UserPermissionsUpdateOne) SetCanEdit(b bool) *UserPermissionsUpdateOne {
-	upuo.mutation.SetCanEdit(b)
-	return upuo
-}
-
-// SetNillableCanEdit sets the "CanEdit" field if the given value is not nil.
-func (upuo *UserPermissionsUpdateOne) SetNillableCanEdit(b *bool) *UserPermissionsUpdateOne {
-	if b != nil {
-		upuo.SetCanEdit(*b)
-	}
 	return upuo
 }
 
@@ -259,6 +276,20 @@ func (upuo *UserPermissionsUpdateOne) SetCanCreatePublic(b bool) *UserPermission
 func (upuo *UserPermissionsUpdateOne) SetNillableCanCreatePublic(b *bool) *UserPermissionsUpdateOne {
 	if b != nil {
 		upuo.SetCanCreatePublic(*b)
+	}
+	return upuo
+}
+
+// SetCanEdit sets the "CanEdit" field.
+func (upuo *UserPermissionsUpdateOne) SetCanEdit(b bool) *UserPermissionsUpdateOne {
+	upuo.mutation.SetCanEdit(b)
+	return upuo
+}
+
+// SetNillableCanEdit sets the "CanEdit" field if the given value is not nil.
+func (upuo *UserPermissionsUpdateOne) SetNillableCanEdit(b *bool) *UserPermissionsUpdateOne {
+	if b != nil {
+		upuo.SetCanEdit(*b)
 	}
 	return upuo
 }
@@ -294,6 +325,9 @@ func (upuo *UserPermissionsUpdateOne) Select(field string, fields ...string) *Us
 
 // Save executes the query and returns the updated UserPermissions entity.
 func (upuo *UserPermissionsUpdateOne) Save(ctx context.Context) (*UserPermissions, error) {
+	if err := upuo.defaults(); err != nil {
+		return nil, err
+	}
 	return withHooks(ctx, upuo.sqlSave, upuo.mutation, upuo.hooks)
 }
 
@@ -317,6 +351,18 @@ func (upuo *UserPermissionsUpdateOne) ExecX(ctx context.Context) {
 	if err := upuo.Exec(ctx); err != nil {
 		panic(err)
 	}
+}
+
+// defaults sets the default values of the builder before save.
+func (upuo *UserPermissionsUpdateOne) defaults() error {
+	if _, ok := upuo.mutation.UpdateTime(); !ok {
+		if userpermissions.UpdateDefaultUpdateTime == nil {
+			return fmt.Errorf("ent: uninitialized userpermissions.UpdateDefaultUpdateTime (forgotten import ent/runtime?)")
+		}
+		v := userpermissions.UpdateDefaultUpdateTime()
+		upuo.mutation.SetUpdateTime(v)
+	}
+	return nil
 }
 
 func (upuo *UserPermissionsUpdateOne) sqlSave(ctx context.Context) (_node *UserPermissions, err error) {
@@ -345,14 +391,17 @@ func (upuo *UserPermissionsUpdateOne) sqlSave(ctx context.Context) (_node *UserP
 			}
 		}
 	}
-	if value, ok := upuo.mutation.CanEdit(); ok {
-		_spec.SetField(userpermissions.FieldCanEdit, field.TypeBool, value)
+	if value, ok := upuo.mutation.UpdateTime(); ok {
+		_spec.SetField(userpermissions.FieldUpdateTime, field.TypeTime, value)
 	}
 	if value, ok := upuo.mutation.Admin(); ok {
 		_spec.SetField(userpermissions.FieldAdmin, field.TypeBool, value)
 	}
 	if value, ok := upuo.mutation.CanCreatePublic(); ok {
 		_spec.SetField(userpermissions.FieldCanCreatePublic, field.TypeBool, value)
+	}
+	if value, ok := upuo.mutation.CanEdit(); ok {
+		_spec.SetField(userpermissions.FieldCanEdit, field.TypeBool, value)
 	}
 	if upuo.mutation.UserCleared() {
 		edge := &sqlgraph.EdgeSpec{

@@ -301,12 +301,12 @@ func (upq *UserPermissionsQuery) WithUser(opts ...func(*UserQuery)) *UserPermiss
 // Example:
 //
 //	var v []struct {
-//		UserID ksuid.ID `json:"user_id,omitempty"`
+//		CreateTime time.Time `json:"create_time,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.UserPermissions.Query().
-//		GroupBy(userpermissions.FieldUserID).
+//		GroupBy(userpermissions.FieldCreateTime).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (upq *UserPermissionsQuery) GroupBy(field string, fields ...string) *UserPermissionsGroupBy {
@@ -324,11 +324,11 @@ func (upq *UserPermissionsQuery) GroupBy(field string, fields ...string) *UserPe
 // Example:
 //
 //	var v []struct {
-//		UserID ksuid.ID `json:"user_id,omitempty"`
+//		CreateTime time.Time `json:"create_time,omitempty"`
 //	}
 //
 //	client.UserPermissions.Query().
-//		Select(userpermissions.FieldUserID).
+//		Select(userpermissions.FieldCreateTime).
 //		Scan(ctx, &v)
 func (upq *UserPermissionsQuery) Select(fields ...string) *UserPermissionsSelect {
 	upq.ctx.Fields = append(upq.ctx.Fields, fields...)

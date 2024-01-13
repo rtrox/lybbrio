@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"lybbrio/internal/ent/author"
 	"lybbrio/internal/ent/book"
+	"lybbrio/internal/ent/bookfile"
 	"lybbrio/internal/ent/identifier"
 	"lybbrio/internal/ent/language"
 	"lybbrio/internal/ent/publisher"
@@ -133,6 +134,16 @@ func (a *AuthorQuery) collectField(ctx context.Context, opCtx *graphql.Operation
 			a.WithNamedBooks(alias, func(wq *BookQuery) {
 				*wq = *query
 			})
+		case "createTime":
+			if _, ok := fieldSeen[author.FieldCreateTime]; !ok {
+				selectedFields = append(selectedFields, author.FieldCreateTime)
+				fieldSeen[author.FieldCreateTime] = struct{}{}
+			}
+		case "updateTime":
+			if _, ok := fieldSeen[author.FieldUpdateTime]; !ok {
+				selectedFields = append(selectedFields, author.FieldUpdateTime)
+				fieldSeen[author.FieldUpdateTime] = struct{}{}
+			}
 		case "calibreID":
 			if _, ok := fieldSeen[author.FieldCalibreID]; !ok {
 				selectedFields = append(selectedFields, author.FieldCalibreID)
@@ -327,6 +338,28 @@ func (b *BookQuery) collectField(ctx context.Context, opCtx *graphql.OperationCo
 			b.WithNamedShelf(alias, func(wq *ShelfQuery) {
 				*wq = *query
 			})
+		case "files":
+			var (
+				alias = field.Alias
+				path  = append(path, alias)
+				query = (&BookFileClient{config: b.config}).Query()
+			)
+			if err := query.collectField(ctx, opCtx, field, path, satisfies...); err != nil {
+				return err
+			}
+			b.WithNamedFiles(alias, func(wq *BookFileQuery) {
+				*wq = *query
+			})
+		case "createTime":
+			if _, ok := fieldSeen[book.FieldCreateTime]; !ok {
+				selectedFields = append(selectedFields, book.FieldCreateTime)
+				fieldSeen[book.FieldCreateTime] = struct{}{}
+			}
+		case "updateTime":
+			if _, ok := fieldSeen[book.FieldUpdateTime]; !ok {
+				selectedFields = append(selectedFields, book.FieldUpdateTime)
+				fieldSeen[book.FieldUpdateTime] = struct{}{}
+			}
 		case "calibreID":
 			if _, ok := fieldSeen[book.FieldCalibreID]; !ok {
 				selectedFields = append(selectedFields, book.FieldCalibreID)
@@ -437,6 +470,108 @@ func newBookPaginateArgs(rv map[string]any) *bookPaginateArgs {
 }
 
 // CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
+func (bf *BookFileQuery) CollectFields(ctx context.Context, satisfies ...string) (*BookFileQuery, error) {
+	fc := graphql.GetFieldContext(ctx)
+	if fc == nil {
+		return bf, nil
+	}
+	if err := bf.collectField(ctx, graphql.GetOperationContext(ctx), fc.Field, nil, satisfies...); err != nil {
+		return nil, err
+	}
+	return bf, nil
+}
+
+func (bf *BookFileQuery) collectField(ctx context.Context, opCtx *graphql.OperationContext, collected graphql.CollectedField, path []string, satisfies ...string) error {
+	path = append([]string(nil), path...)
+	var (
+		unknownSeen    bool
+		fieldSeen      = make(map[string]struct{}, len(bookfile.Columns))
+		selectedFields = []string{bookfile.FieldID}
+	)
+	for _, field := range graphql.CollectFields(opCtx, collected.Selections, satisfies) {
+		switch field.Name {
+		case "book":
+			var (
+				alias = field.Alias
+				path  = append(path, alias)
+				query = (&BookClient{config: bf.config}).Query()
+			)
+			if err := query.collectField(ctx, opCtx, field, path, satisfies...); err != nil {
+				return err
+			}
+			bf.withBook = query
+		case "createTime":
+			if _, ok := fieldSeen[bookfile.FieldCreateTime]; !ok {
+				selectedFields = append(selectedFields, bookfile.FieldCreateTime)
+				fieldSeen[bookfile.FieldCreateTime] = struct{}{}
+			}
+		case "updateTime":
+			if _, ok := fieldSeen[bookfile.FieldUpdateTime]; !ok {
+				selectedFields = append(selectedFields, bookfile.FieldUpdateTime)
+				fieldSeen[bookfile.FieldUpdateTime] = struct{}{}
+			}
+		case "name":
+			if _, ok := fieldSeen[bookfile.FieldName]; !ok {
+				selectedFields = append(selectedFields, bookfile.FieldName)
+				fieldSeen[bookfile.FieldName] = struct{}{}
+			}
+		case "path":
+			if _, ok := fieldSeen[bookfile.FieldPath]; !ok {
+				selectedFields = append(selectedFields, bookfile.FieldPath)
+				fieldSeen[bookfile.FieldPath] = struct{}{}
+			}
+		case "size":
+			if _, ok := fieldSeen[bookfile.FieldSize]; !ok {
+				selectedFields = append(selectedFields, bookfile.FieldSize)
+				fieldSeen[bookfile.FieldSize] = struct{}{}
+			}
+		case "format":
+			if _, ok := fieldSeen[bookfile.FieldFormat]; !ok {
+				selectedFields = append(selectedFields, bookfile.FieldFormat)
+				fieldSeen[bookfile.FieldFormat] = struct{}{}
+			}
+		case "id":
+		case "__typename":
+		default:
+			unknownSeen = true
+		}
+	}
+	if !unknownSeen {
+		bf.Select(selectedFields...)
+	}
+	return nil
+}
+
+type bookfilePaginateArgs struct {
+	first, last   *int
+	after, before *Cursor
+	opts          []BookFilePaginateOption
+}
+
+func newBookFilePaginateArgs(rv map[string]any) *bookfilePaginateArgs {
+	args := &bookfilePaginateArgs{}
+	if rv == nil {
+		return args
+	}
+	if v := rv[firstField]; v != nil {
+		args.first = v.(*int)
+	}
+	if v := rv[lastField]; v != nil {
+		args.last = v.(*int)
+	}
+	if v := rv[afterField]; v != nil {
+		args.after = v.(*Cursor)
+	}
+	if v := rv[beforeField]; v != nil {
+		args.before = v.(*Cursor)
+	}
+	if v, ok := rv[whereField].(*BookFileWhereInput); ok {
+		args.opts = append(args.opts, WithBookFileFilter(v.Filter))
+	}
+	return args
+}
+
+// CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
 func (i *IdentifierQuery) CollectFields(ctx context.Context, satisfies ...string) (*IdentifierQuery, error) {
 	fc := graphql.GetFieldContext(ctx)
 	if fc == nil {
@@ -467,6 +602,16 @@ func (i *IdentifierQuery) collectField(ctx context.Context, opCtx *graphql.Opera
 				return err
 			}
 			i.withBook = query
+		case "createTime":
+			if _, ok := fieldSeen[identifier.FieldCreateTime]; !ok {
+				selectedFields = append(selectedFields, identifier.FieldCreateTime)
+				fieldSeen[identifier.FieldCreateTime] = struct{}{}
+			}
+		case "updateTime":
+			if _, ok := fieldSeen[identifier.FieldUpdateTime]; !ok {
+				selectedFields = append(selectedFields, identifier.FieldUpdateTime)
+				fieldSeen[identifier.FieldUpdateTime] = struct{}{}
+			}
 		case "calibreID":
 			if _, ok := fieldSeen[identifier.FieldCalibreID]; !ok {
 				selectedFields = append(selectedFields, identifier.FieldCalibreID)
@@ -660,6 +805,16 @@ func (l *LanguageQuery) collectField(ctx context.Context, opCtx *graphql.Operati
 			l.WithNamedBooks(alias, func(wq *BookQuery) {
 				*wq = *query
 			})
+		case "createTime":
+			if _, ok := fieldSeen[language.FieldCreateTime]; !ok {
+				selectedFields = append(selectedFields, language.FieldCreateTime)
+				fieldSeen[language.FieldCreateTime] = struct{}{}
+			}
+		case "updateTime":
+			if _, ok := fieldSeen[language.FieldUpdateTime]; !ok {
+				selectedFields = append(selectedFields, language.FieldUpdateTime)
+				fieldSeen[language.FieldUpdateTime] = struct{}{}
+			}
 		case "calibreID":
 			if _, ok := fieldSeen[language.FieldCalibreID]; !ok {
 				selectedFields = append(selectedFields, language.FieldCalibreID)
@@ -848,6 +1003,16 @@ func (pu *PublisherQuery) collectField(ctx context.Context, opCtx *graphql.Opera
 			pu.WithNamedBooks(alias, func(wq *BookQuery) {
 				*wq = *query
 			})
+		case "createTime":
+			if _, ok := fieldSeen[publisher.FieldCreateTime]; !ok {
+				selectedFields = append(selectedFields, publisher.FieldCreateTime)
+				fieldSeen[publisher.FieldCreateTime] = struct{}{}
+			}
+		case "updateTime":
+			if _, ok := fieldSeen[publisher.FieldUpdateTime]; !ok {
+				selectedFields = append(selectedFields, publisher.FieldUpdateTime)
+				fieldSeen[publisher.FieldUpdateTime] = struct{}{}
+			}
 		case "calibreID":
 			if _, ok := fieldSeen[publisher.FieldCalibreID]; !ok {
 				selectedFields = append(selectedFields, publisher.FieldCalibreID)
@@ -960,6 +1125,16 @@ func (s *SeriesQuery) collectField(ctx context.Context, opCtx *graphql.Operation
 			s.WithNamedBooks(alias, func(wq *BookQuery) {
 				*wq = *query
 			})
+		case "createTime":
+			if _, ok := fieldSeen[series.FieldCreateTime]; !ok {
+				selectedFields = append(selectedFields, series.FieldCreateTime)
+				fieldSeen[series.FieldCreateTime] = struct{}{}
+			}
+		case "updateTime":
+			if _, ok := fieldSeen[series.FieldUpdateTime]; !ok {
+				selectedFields = append(selectedFields, series.FieldUpdateTime)
+				fieldSeen[series.FieldUpdateTime] = struct{}{}
+			}
 		case "calibreID":
 			if _, ok := fieldSeen[series.FieldCalibreID]; !ok {
 				selectedFields = append(selectedFields, series.FieldCalibreID)
@@ -1167,6 +1342,16 @@ func (s *ShelfQuery) collectField(ctx context.Context, opCtx *graphql.OperationC
 			s.WithNamedBooks(alias, func(wq *BookQuery) {
 				*wq = *query
 			})
+		case "createTime":
+			if _, ok := fieldSeen[shelf.FieldCreateTime]; !ok {
+				selectedFields = append(selectedFields, shelf.FieldCreateTime)
+				fieldSeen[shelf.FieldCreateTime] = struct{}{}
+			}
+		case "updateTime":
+			if _, ok := fieldSeen[shelf.FieldUpdateTime]; !ok {
+				selectedFields = append(selectedFields, shelf.FieldUpdateTime)
+				fieldSeen[shelf.FieldUpdateTime] = struct{}{}
+			}
 		case "public":
 			if _, ok := fieldSeen[shelf.FieldPublic]; !ok {
 				selectedFields = append(selectedFields, shelf.FieldPublic)
@@ -1636,6 +1821,16 @@ func (u *UserQuery) collectField(ctx context.Context, opCtx *graphql.OperationCo
 				return err
 			}
 			u.withUserPermissions = query
+		case "createTime":
+			if _, ok := fieldSeen[user.FieldCreateTime]; !ok {
+				selectedFields = append(selectedFields, user.FieldCreateTime)
+				fieldSeen[user.FieldCreateTime] = struct{}{}
+			}
+		case "updateTime":
+			if _, ok := fieldSeen[user.FieldUpdateTime]; !ok {
+				selectedFields = append(selectedFields, user.FieldUpdateTime)
+				fieldSeen[user.FieldUpdateTime] = struct{}{}
+			}
 		case "username":
 			if _, ok := fieldSeen[user.FieldUsername]; !ok {
 				selectedFields = append(selectedFields, user.FieldUsername)
@@ -1744,15 +1939,20 @@ func (up *UserPermissionsQuery) collectField(ctx context.Context, opCtx *graphql
 				selectedFields = append(selectedFields, userpermissions.FieldUserID)
 				fieldSeen[userpermissions.FieldUserID] = struct{}{}
 			}
+		case "createTime":
+			if _, ok := fieldSeen[userpermissions.FieldCreateTime]; !ok {
+				selectedFields = append(selectedFields, userpermissions.FieldCreateTime)
+				fieldSeen[userpermissions.FieldCreateTime] = struct{}{}
+			}
+		case "updateTime":
+			if _, ok := fieldSeen[userpermissions.FieldUpdateTime]; !ok {
+				selectedFields = append(selectedFields, userpermissions.FieldUpdateTime)
+				fieldSeen[userpermissions.FieldUpdateTime] = struct{}{}
+			}
 		case "userID":
 			if _, ok := fieldSeen[userpermissions.FieldUserID]; !ok {
 				selectedFields = append(selectedFields, userpermissions.FieldUserID)
 				fieldSeen[userpermissions.FieldUserID] = struct{}{}
-			}
-		case "canedit":
-			if _, ok := fieldSeen[userpermissions.FieldCanEdit]; !ok {
-				selectedFields = append(selectedFields, userpermissions.FieldCanEdit)
-				fieldSeen[userpermissions.FieldCanEdit] = struct{}{}
 			}
 		case "admin":
 			if _, ok := fieldSeen[userpermissions.FieldAdmin]; !ok {
@@ -1763,6 +1963,11 @@ func (up *UserPermissionsQuery) collectField(ctx context.Context, opCtx *graphql
 			if _, ok := fieldSeen[userpermissions.FieldCanCreatePublic]; !ok {
 				selectedFields = append(selectedFields, userpermissions.FieldCanCreatePublic)
 				fieldSeen[userpermissions.FieldCanCreatePublic] = struct{}{}
+			}
+		case "canedit":
+			if _, ok := fieldSeen[userpermissions.FieldCanEdit]; !ok {
+				selectedFields = append(selectedFields, userpermissions.FieldCanEdit)
+				fieldSeen[userpermissions.FieldCanEdit] = struct{}{}
 			}
 		case "id":
 		case "__typename":

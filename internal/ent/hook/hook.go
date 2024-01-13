@@ -32,6 +32,18 @@ func (f BookFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error)
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.BookMutation", m)
 }
 
+// The BookFileFunc type is an adapter to allow the use of ordinary
+// function as BookFile mutator.
+type BookFileFunc func(context.Context, *ent.BookFileMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f BookFileFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.BookFileMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.BookFileMutation", m)
+}
+
 // The IdentifierFunc type is an adapter to allow the use of ordinary
 // function as Identifier mutator.
 type IdentifierFunc func(context.Context, *ent.IdentifierMutation) (ent.Value, error)

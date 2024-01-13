@@ -9,6 +9,7 @@ import (
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/index"
+	"entgo.io/ent/schema/mixin"
 )
 
 // Book holds the schema definition for the Book entity.
@@ -27,6 +28,7 @@ func (Book) Annotations() []schema.Annotation {
 
 func (Book) Mixin() []ent.Mixin {
 	return []ent.Mixin{
+		mixin.Time{},
 		BaseMixin{},
 		CalibreMixin{},
 		ksuid.MixinWithPrefix("bok"),
@@ -74,6 +76,11 @@ func (Book) Edges() []ent.Edge {
 			Ref("books"),
 		edge.From("shelf", Shelf.Type).
 			Ref("books"), // TODO: will need privacy on this edge.
+		edge.From("files", BookFile.Type).
+			Ref("book").
+			Annotations(
+				entgql.OrderField("FILES_COUNT"),
+			),
 	}
 }
 

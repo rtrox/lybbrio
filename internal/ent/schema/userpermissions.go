@@ -9,6 +9,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
+	"entgo.io/ent/schema/mixin"
 )
 
 // UserPermissions holds the schema definition for the UserPermissions entity.
@@ -18,6 +19,7 @@ type UserPermissions struct {
 
 func (UserPermissions) Mixin() []ent.Mixin {
 	return []ent.Mixin{
+		mixin.Time{},
 		BaseMixin{},
 		ksuid.MixinWithPrefix("prm"),
 	}

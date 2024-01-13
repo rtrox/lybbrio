@@ -9,6 +9,7 @@ import (
 	"lybbrio/internal/ent/book"
 	"lybbrio/internal/ent/identifier"
 	"lybbrio/internal/ent/schema/ksuid"
+	"time"
 
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
@@ -22,6 +23,34 @@ type IdentifierCreate struct {
 	mutation *IdentifierMutation
 	hooks    []Hook
 	conflict []sql.ConflictOption
+}
+
+// SetCreateTime sets the "create_time" field.
+func (ic *IdentifierCreate) SetCreateTime(t time.Time) *IdentifierCreate {
+	ic.mutation.SetCreateTime(t)
+	return ic
+}
+
+// SetNillableCreateTime sets the "create_time" field if the given value is not nil.
+func (ic *IdentifierCreate) SetNillableCreateTime(t *time.Time) *IdentifierCreate {
+	if t != nil {
+		ic.SetCreateTime(*t)
+	}
+	return ic
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (ic *IdentifierCreate) SetUpdateTime(t time.Time) *IdentifierCreate {
+	ic.mutation.SetUpdateTime(t)
+	return ic
+}
+
+// SetNillableUpdateTime sets the "update_time" field if the given value is not nil.
+func (ic *IdentifierCreate) SetNillableUpdateTime(t *time.Time) *IdentifierCreate {
+	if t != nil {
+		ic.SetUpdateTime(*t)
+	}
+	return ic
 }
 
 // SetCalibreID sets the "calibre_id" field.
@@ -112,6 +141,20 @@ func (ic *IdentifierCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (ic *IdentifierCreate) defaults() error {
+	if _, ok := ic.mutation.CreateTime(); !ok {
+		if identifier.DefaultCreateTime == nil {
+			return fmt.Errorf("ent: uninitialized identifier.DefaultCreateTime (forgotten import ent/runtime?)")
+		}
+		v := identifier.DefaultCreateTime()
+		ic.mutation.SetCreateTime(v)
+	}
+	if _, ok := ic.mutation.UpdateTime(); !ok {
+		if identifier.DefaultUpdateTime == nil {
+			return fmt.Errorf("ent: uninitialized identifier.DefaultUpdateTime (forgotten import ent/runtime?)")
+		}
+		v := identifier.DefaultUpdateTime()
+		ic.mutation.SetUpdateTime(v)
+	}
 	if _, ok := ic.mutation.ID(); !ok {
 		if identifier.DefaultID == nil {
 			return fmt.Errorf("ent: uninitialized identifier.DefaultID (forgotten import ent/runtime?)")
@@ -124,6 +167,12 @@ func (ic *IdentifierCreate) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (ic *IdentifierCreate) check() error {
+	if _, ok := ic.mutation.CreateTime(); !ok {
+		return &ValidationError{Name: "create_time", err: errors.New(`ent: missing required field "Identifier.create_time"`)}
+	}
+	if _, ok := ic.mutation.UpdateTime(); !ok {
+		return &ValidationError{Name: "update_time", err: errors.New(`ent: missing required field "Identifier.update_time"`)}
+	}
 	if _, ok := ic.mutation.GetType(); !ok {
 		return &ValidationError{Name: "type", err: errors.New(`ent: missing required field "Identifier.type"`)}
 	}
@@ -179,6 +228,14 @@ func (ic *IdentifierCreate) createSpec() (*Identifier, *sqlgraph.CreateSpec) {
 		_node.ID = id
 		_spec.ID.Value = id
 	}
+	if value, ok := ic.mutation.CreateTime(); ok {
+		_spec.SetField(identifier.FieldCreateTime, field.TypeTime, value)
+		_node.CreateTime = value
+	}
+	if value, ok := ic.mutation.UpdateTime(); ok {
+		_spec.SetField(identifier.FieldUpdateTime, field.TypeTime, value)
+		_node.UpdateTime = value
+	}
 	if value, ok := ic.mutation.CalibreID(); ok {
 		_spec.SetField(identifier.FieldCalibreID, field.TypeInt64, value)
 		_node.CalibreID = value
@@ -215,7 +272,7 @@ func (ic *IdentifierCreate) createSpec() (*Identifier, *sqlgraph.CreateSpec) {
 // of the `INSERT` statement. For example:
 //
 //	client.Identifier.Create().
-//		SetCalibreID(v).
+//		SetCreateTime(v).
 //		OnConflict(
 //			// Update the row with the new values
 //			// the was proposed for insertion.
@@ -224,7 +281,7 @@ func (ic *IdentifierCreate) createSpec() (*Identifier, *sqlgraph.CreateSpec) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.IdentifierUpsert) {
-//			SetCalibreID(v+v).
+//			SetCreateTime(v+v).
 //		}).
 //		Exec(ctx)
 func (ic *IdentifierCreate) OnConflict(opts ...sql.ConflictOption) *IdentifierUpsertOne {
@@ -259,6 +316,18 @@ type (
 		*sql.UpdateSet
 	}
 )
+
+// SetUpdateTime sets the "update_time" field.
+func (u *IdentifierUpsert) SetUpdateTime(v time.Time) *IdentifierUpsert {
+	u.Set(identifier.FieldUpdateTime, v)
+	return u
+}
+
+// UpdateUpdateTime sets the "update_time" field to the value that was provided on create.
+func (u *IdentifierUpsert) UpdateUpdateTime() *IdentifierUpsert {
+	u.SetExcluded(identifier.FieldUpdateTime)
+	return u
+}
 
 // SetCalibreID sets the "calibre_id" field.
 func (u *IdentifierUpsert) SetCalibreID(v int64) *IdentifierUpsert {
@@ -325,6 +394,9 @@ func (u *IdentifierUpsertOne) UpdateNewValues() *IdentifierUpsertOne {
 		if _, exists := u.create.mutation.ID(); exists {
 			s.SetIgnore(identifier.FieldID)
 		}
+		if _, exists := u.create.mutation.CreateTime(); exists {
+			s.SetIgnore(identifier.FieldCreateTime)
+		}
 	}))
 	return u
 }
@@ -354,6 +426,20 @@ func (u *IdentifierUpsertOne) Update(set func(*IdentifierUpsert)) *IdentifierUps
 		set(&IdentifierUpsert{UpdateSet: update})
 	}))
 	return u
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (u *IdentifierUpsertOne) SetUpdateTime(v time.Time) *IdentifierUpsertOne {
+	return u.Update(func(s *IdentifierUpsert) {
+		s.SetUpdateTime(v)
+	})
+}
+
+// UpdateUpdateTime sets the "update_time" field to the value that was provided on create.
+func (u *IdentifierUpsertOne) UpdateUpdateTime() *IdentifierUpsertOne {
+	return u.Update(func(s *IdentifierUpsert) {
+		s.UpdateUpdateTime()
+	})
 }
 
 // SetCalibreID sets the "calibre_id" field.
@@ -548,7 +634,7 @@ func (icb *IdentifierCreateBulk) ExecX(ctx context.Context) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.IdentifierUpsert) {
-//			SetCalibreID(v+v).
+//			SetCreateTime(v+v).
 //		}).
 //		Exec(ctx)
 func (icb *IdentifierCreateBulk) OnConflict(opts ...sql.ConflictOption) *IdentifierUpsertBulk {
@@ -595,6 +681,9 @@ func (u *IdentifierUpsertBulk) UpdateNewValues() *IdentifierUpsertBulk {
 			if _, exists := b.mutation.ID(); exists {
 				s.SetIgnore(identifier.FieldID)
 			}
+			if _, exists := b.mutation.CreateTime(); exists {
+				s.SetIgnore(identifier.FieldCreateTime)
+			}
 		}
 	}))
 	return u
@@ -625,6 +714,20 @@ func (u *IdentifierUpsertBulk) Update(set func(*IdentifierUpsert)) *IdentifierUp
 		set(&IdentifierUpsert{UpdateSet: update})
 	}))
 	return u
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (u *IdentifierUpsertBulk) SetUpdateTime(v time.Time) *IdentifierUpsertBulk {
+	return u.Update(func(s *IdentifierUpsert) {
+		s.SetUpdateTime(v)
+	})
+}
+
+// UpdateUpdateTime sets the "update_time" field to the value that was provided on create.
+func (u *IdentifierUpsertBulk) UpdateUpdateTime() *IdentifierUpsertBulk {
+	return u.Update(func(s *IdentifierUpsert) {
+		s.UpdateUpdateTime()
+	})
 }
 
 // SetCalibreID sets the "calibre_id" field.

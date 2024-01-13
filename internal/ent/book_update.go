@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"lybbrio/internal/ent/author"
 	"lybbrio/internal/ent/book"
+	"lybbrio/internal/ent/bookfile"
 	"lybbrio/internal/ent/identifier"
 	"lybbrio/internal/ent/language"
 	"lybbrio/internal/ent/predicate"
@@ -33,6 +34,12 @@ type BookUpdate struct {
 // Where appends a list predicates to the BookUpdate builder.
 func (bu *BookUpdate) Where(ps ...predicate.Book) *BookUpdate {
 	bu.mutation.Where(ps...)
+	return bu
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (bu *BookUpdate) SetUpdateTime(t time.Time) *BookUpdate {
+	bu.mutation.SetUpdateTime(t)
 	return bu
 }
 
@@ -297,6 +304,21 @@ func (bu *BookUpdate) AddShelf(s ...*Shelf) *BookUpdate {
 	return bu.AddShelfIDs(ids...)
 }
 
+// AddFileIDs adds the "files" edge to the BookFile entity by IDs.
+func (bu *BookUpdate) AddFileIDs(ids ...ksuid.ID) *BookUpdate {
+	bu.mutation.AddFileIDs(ids...)
+	return bu
+}
+
+// AddFiles adds the "files" edges to the BookFile entity.
+func (bu *BookUpdate) AddFiles(b ...*BookFile) *BookUpdate {
+	ids := make([]ksuid.ID, len(b))
+	for i := range b {
+		ids[i] = b[i].ID
+	}
+	return bu.AddFileIDs(ids...)
+}
+
 // Mutation returns the BookMutation object of the builder.
 func (bu *BookUpdate) Mutation() *BookMutation {
 	return bu.mutation
@@ -449,8 +471,32 @@ func (bu *BookUpdate) RemoveShelf(s ...*Shelf) *BookUpdate {
 	return bu.RemoveShelfIDs(ids...)
 }
 
+// ClearFiles clears all "files" edges to the BookFile entity.
+func (bu *BookUpdate) ClearFiles() *BookUpdate {
+	bu.mutation.ClearFiles()
+	return bu
+}
+
+// RemoveFileIDs removes the "files" edge to BookFile entities by IDs.
+func (bu *BookUpdate) RemoveFileIDs(ids ...ksuid.ID) *BookUpdate {
+	bu.mutation.RemoveFileIDs(ids...)
+	return bu
+}
+
+// RemoveFiles removes "files" edges to BookFile entities.
+func (bu *BookUpdate) RemoveFiles(b ...*BookFile) *BookUpdate {
+	ids := make([]ksuid.ID, len(b))
+	for i := range b {
+		ids[i] = b[i].ID
+	}
+	return bu.RemoveFileIDs(ids...)
+}
+
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (bu *BookUpdate) Save(ctx context.Context) (int, error) {
+	if err := bu.defaults(); err != nil {
+		return 0, err
+	}
 	return withHooks(ctx, bu.sqlSave, bu.mutation, bu.hooks)
 }
 
@@ -474,6 +520,18 @@ func (bu *BookUpdate) ExecX(ctx context.Context) {
 	if err := bu.Exec(ctx); err != nil {
 		panic(err)
 	}
+}
+
+// defaults sets the default values of the builder before save.
+func (bu *BookUpdate) defaults() error {
+	if _, ok := bu.mutation.UpdateTime(); !ok {
+		if book.UpdateDefaultUpdateTime == nil {
+			return fmt.Errorf("ent: uninitialized book.UpdateDefaultUpdateTime (forgotten import ent/runtime?)")
+		}
+		v := book.UpdateDefaultUpdateTime()
+		bu.mutation.SetUpdateTime(v)
+	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -502,6 +560,9 @@ func (bu *BookUpdate) sqlSave(ctx context.Context) (n int, err error) {
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := bu.mutation.UpdateTime(); ok {
+		_spec.SetField(book.FieldUpdateTime, field.TypeTime, value)
 	}
 	if value, ok := bu.mutation.CalibreID(); ok {
 		_spec.SetField(book.FieldCalibreID, field.TypeInt64, value)
@@ -863,6 +924,51 @@ func (bu *BookUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if bu.mutation.FilesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   book.FilesTable,
+			Columns: []string{book.FilesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(bookfile.FieldID, field.TypeString),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := bu.mutation.RemovedFilesIDs(); len(nodes) > 0 && !bu.mutation.FilesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   book.FilesTable,
+			Columns: []string{book.FilesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(bookfile.FieldID, field.TypeString),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := bu.mutation.FilesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   book.FilesTable,
+			Columns: []string{book.FilesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(bookfile.FieldID, field.TypeString),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, bu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{book.Label}
@@ -881,6 +987,12 @@ type BookUpdateOne struct {
 	fields   []string
 	hooks    []Hook
 	mutation *BookMutation
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (buo *BookUpdateOne) SetUpdateTime(t time.Time) *BookUpdateOne {
+	buo.mutation.SetUpdateTime(t)
+	return buo
 }
 
 // SetCalibreID sets the "calibre_id" field.
@@ -1144,6 +1256,21 @@ func (buo *BookUpdateOne) AddShelf(s ...*Shelf) *BookUpdateOne {
 	return buo.AddShelfIDs(ids...)
 }
 
+// AddFileIDs adds the "files" edge to the BookFile entity by IDs.
+func (buo *BookUpdateOne) AddFileIDs(ids ...ksuid.ID) *BookUpdateOne {
+	buo.mutation.AddFileIDs(ids...)
+	return buo
+}
+
+// AddFiles adds the "files" edges to the BookFile entity.
+func (buo *BookUpdateOne) AddFiles(b ...*BookFile) *BookUpdateOne {
+	ids := make([]ksuid.ID, len(b))
+	for i := range b {
+		ids[i] = b[i].ID
+	}
+	return buo.AddFileIDs(ids...)
+}
+
 // Mutation returns the BookMutation object of the builder.
 func (buo *BookUpdateOne) Mutation() *BookMutation {
 	return buo.mutation
@@ -1296,6 +1423,27 @@ func (buo *BookUpdateOne) RemoveShelf(s ...*Shelf) *BookUpdateOne {
 	return buo.RemoveShelfIDs(ids...)
 }
 
+// ClearFiles clears all "files" edges to the BookFile entity.
+func (buo *BookUpdateOne) ClearFiles() *BookUpdateOne {
+	buo.mutation.ClearFiles()
+	return buo
+}
+
+// RemoveFileIDs removes the "files" edge to BookFile entities by IDs.
+func (buo *BookUpdateOne) RemoveFileIDs(ids ...ksuid.ID) *BookUpdateOne {
+	buo.mutation.RemoveFileIDs(ids...)
+	return buo
+}
+
+// RemoveFiles removes "files" edges to BookFile entities.
+func (buo *BookUpdateOne) RemoveFiles(b ...*BookFile) *BookUpdateOne {
+	ids := make([]ksuid.ID, len(b))
+	for i := range b {
+		ids[i] = b[i].ID
+	}
+	return buo.RemoveFileIDs(ids...)
+}
+
 // Where appends a list predicates to the BookUpdate builder.
 func (buo *BookUpdateOne) Where(ps ...predicate.Book) *BookUpdateOne {
 	buo.mutation.Where(ps...)
@@ -1311,6 +1459,9 @@ func (buo *BookUpdateOne) Select(field string, fields ...string) *BookUpdateOne 
 
 // Save executes the query and returns the updated Book entity.
 func (buo *BookUpdateOne) Save(ctx context.Context) (*Book, error) {
+	if err := buo.defaults(); err != nil {
+		return nil, err
+	}
 	return withHooks(ctx, buo.sqlSave, buo.mutation, buo.hooks)
 }
 
@@ -1334,6 +1485,18 @@ func (buo *BookUpdateOne) ExecX(ctx context.Context) {
 	if err := buo.Exec(ctx); err != nil {
 		panic(err)
 	}
+}
+
+// defaults sets the default values of the builder before save.
+func (buo *BookUpdateOne) defaults() error {
+	if _, ok := buo.mutation.UpdateTime(); !ok {
+		if book.UpdateDefaultUpdateTime == nil {
+			return fmt.Errorf("ent: uninitialized book.UpdateDefaultUpdateTime (forgotten import ent/runtime?)")
+		}
+		v := book.UpdateDefaultUpdateTime()
+		buo.mutation.SetUpdateTime(v)
+	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -1379,6 +1542,9 @@ func (buo *BookUpdateOne) sqlSave(ctx context.Context) (_node *Book, err error) 
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := buo.mutation.UpdateTime(); ok {
+		_spec.SetField(book.FieldUpdateTime, field.TypeTime, value)
 	}
 	if value, ok := buo.mutation.CalibreID(); ok {
 		_spec.SetField(book.FieldCalibreID, field.TypeInt64, value)
@@ -1733,6 +1899,51 @@ func (buo *BookUpdateOne) sqlSave(ctx context.Context) (_node *Book, err error) 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(shelf.FieldID, field.TypeString),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if buo.mutation.FilesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   book.FilesTable,
+			Columns: []string{book.FilesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(bookfile.FieldID, field.TypeString),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := buo.mutation.RemovedFilesIDs(); len(nodes) > 0 && !buo.mutation.FilesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   book.FilesTable,
+			Columns: []string{book.FilesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(bookfile.FieldID, field.TypeString),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := buo.mutation.FilesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   book.FilesTable,
+			Columns: []string{book.FilesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(bookfile.FieldID, field.TypeString),
 			},
 		}
 		for _, k := range nodes {

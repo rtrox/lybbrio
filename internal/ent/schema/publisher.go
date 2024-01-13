@@ -9,6 +9,7 @@ import (
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/index"
+	"entgo.io/ent/schema/mixin"
 )
 
 // Publisher holds the schema definition for the Publisher entity.
@@ -27,6 +28,7 @@ func (Publisher) Annotations() []schema.Annotation {
 
 func (Publisher) Mixin() []ent.Mixin {
 	return []ent.Mixin{
+		mixin.Time{},
 		BaseMixin{},
 		CalibreMixin{},
 		ksuid.MixinWithPrefix("pub"),

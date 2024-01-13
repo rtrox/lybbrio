@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"lybbrio"
 	"lybbrio/internal/ent"
+	"lybbrio/internal/ent/bookfile"
 	"lybbrio/internal/ent/schema/ksuid"
 	"lybbrio/internal/ent/schema/task_enums"
 	"strconv"
@@ -52,12 +53,14 @@ type DirectiveRoot struct {
 
 type ComplexityRoot struct {
 	Author struct {
-		Books     func(childComplexity int, after *entgql.Cursor[ksuid.ID], first *int, before *entgql.Cursor[ksuid.ID], last *int, orderBy []*ent.BookOrder, where *ent.BookWhereInput) int
-		CalibreID func(childComplexity int) int
-		ID        func(childComplexity int) int
-		Link      func(childComplexity int) int
-		Name      func(childComplexity int) int
-		Sort      func(childComplexity int) int
+		Books      func(childComplexity int, after *entgql.Cursor[ksuid.ID], first *int, before *entgql.Cursor[ksuid.ID], last *int, orderBy []*ent.BookOrder, where *ent.BookWhereInput) int
+		CalibreID  func(childComplexity int) int
+		CreateTime func(childComplexity int) int
+		ID         func(childComplexity int) int
+		Link       func(childComplexity int) int
+		Name       func(childComplexity int) int
+		Sort       func(childComplexity int) int
+		UpdateTime func(childComplexity int) int
 	}
 
 	AuthorConnection struct {
@@ -74,7 +77,9 @@ type ComplexityRoot struct {
 	Book struct {
 		Authors       func(childComplexity int) int
 		CalibreID     func(childComplexity int) int
+		CreateTime    func(childComplexity int) int
 		Description   func(childComplexity int) int
+		Files         func(childComplexity int) int
 		ID            func(childComplexity int) int
 		Identifiers   func(childComplexity int) int
 		Isbn          func(childComplexity int) int
@@ -88,6 +93,7 @@ type ComplexityRoot struct {
 		Sort          func(childComplexity int) int
 		Tags          func(childComplexity int) int
 		Title         func(childComplexity int) int
+		UpdateTime    func(childComplexity int) int
 	}
 
 	BookConnection struct {
@@ -101,12 +107,25 @@ type ComplexityRoot struct {
 		Node   func(childComplexity int) int
 	}
 
+	BookFile struct {
+		Book       func(childComplexity int) int
+		CreateTime func(childComplexity int) int
+		Format     func(childComplexity int) int
+		ID         func(childComplexity int) int
+		Name       func(childComplexity int) int
+		Path       func(childComplexity int) int
+		Size       func(childComplexity int) int
+		UpdateTime func(childComplexity int) int
+	}
+
 	Identifier struct {
-		Book      func(childComplexity int) int
-		CalibreID func(childComplexity int) int
-		ID        func(childComplexity int) int
-		Type      func(childComplexity int) int
-		Value     func(childComplexity int) int
+		Book       func(childComplexity int) int
+		CalibreID  func(childComplexity int) int
+		CreateTime func(childComplexity int) int
+		ID         func(childComplexity int) int
+		Type       func(childComplexity int) int
+		UpdateTime func(childComplexity int) int
+		Value      func(childComplexity int) int
 	}
 
 	IdentifierConnection struct {
@@ -121,10 +140,12 @@ type ComplexityRoot struct {
 	}
 
 	Language struct {
-		Books     func(childComplexity int, after *entgql.Cursor[ksuid.ID], first *int, before *entgql.Cursor[ksuid.ID], last *int, orderBy []*ent.BookOrder, where *ent.BookWhereInput) int
-		CalibreID func(childComplexity int) int
-		Code      func(childComplexity int) int
-		ID        func(childComplexity int) int
+		Books      func(childComplexity int, after *entgql.Cursor[ksuid.ID], first *int, before *entgql.Cursor[ksuid.ID], last *int, orderBy []*ent.BookOrder, where *ent.BookWhereInput) int
+		CalibreID  func(childComplexity int) int
+		Code       func(childComplexity int) int
+		CreateTime func(childComplexity int) int
+		ID         func(childComplexity int) int
+		UpdateTime func(childComplexity int) int
 	}
 
 	LanguageConnection struct {
@@ -168,10 +189,12 @@ type ComplexityRoot struct {
 	}
 
 	Publisher struct {
-		Books     func(childComplexity int, after *entgql.Cursor[ksuid.ID], first *int, before *entgql.Cursor[ksuid.ID], last *int, orderBy []*ent.BookOrder, where *ent.BookWhereInput) int
-		CalibreID func(childComplexity int) int
-		ID        func(childComplexity int) int
-		Name      func(childComplexity int) int
+		Books      func(childComplexity int, after *entgql.Cursor[ksuid.ID], first *int, before *entgql.Cursor[ksuid.ID], last *int, orderBy []*ent.BookOrder, where *ent.BookWhereInput) int
+		CalibreID  func(childComplexity int) int
+		CreateTime func(childComplexity int) int
+		ID         func(childComplexity int) int
+		Name       func(childComplexity int) int
+		UpdateTime func(childComplexity int) int
 	}
 
 	PublisherConnection struct {
@@ -187,6 +210,7 @@ type ComplexityRoot struct {
 
 	Query struct {
 		Authors     func(childComplexity int, after *entgql.Cursor[ksuid.ID], first *int, before *entgql.Cursor[ksuid.ID], last *int, orderBy []*ent.AuthorOrder, where *ent.AuthorWhereInput) int
+		BookFiles   func(childComplexity int) int
 		Books       func(childComplexity int, after *entgql.Cursor[ksuid.ID], first *int, before *entgql.Cursor[ksuid.ID], last *int, orderBy []*ent.BookOrder, where *ent.BookWhereInput) int
 		Identifiers func(childComplexity int, after *entgql.Cursor[ksuid.ID], first *int, before *entgql.Cursor[ksuid.ID], last *int, orderBy []*ent.IdentifierOrder, where *ent.IdentifierWhereInput) int
 		Languages   func(childComplexity int, after *entgql.Cursor[ksuid.ID], first *int, before *entgql.Cursor[ksuid.ID], last *int, orderBy []*ent.LanguageOrder, where *ent.LanguageWhereInput) int
@@ -202,11 +226,13 @@ type ComplexityRoot struct {
 	}
 
 	Series struct {
-		Books     func(childComplexity int) int
-		CalibreID func(childComplexity int) int
-		ID        func(childComplexity int) int
-		Name      func(childComplexity int) int
-		Sort      func(childComplexity int) int
+		Books      func(childComplexity int) int
+		CalibreID  func(childComplexity int) int
+		CreateTime func(childComplexity int) int
+		ID         func(childComplexity int) int
+		Name       func(childComplexity int) int
+		Sort       func(childComplexity int) int
+		UpdateTime func(childComplexity int) int
 	}
 
 	SeriesConnection struct {
@@ -222,10 +248,12 @@ type ComplexityRoot struct {
 
 	Shelf struct {
 		Books       func(childComplexity int, after *entgql.Cursor[ksuid.ID], first *int, before *entgql.Cursor[ksuid.ID], last *int, orderBy []*ent.BookOrder, where *ent.BookWhereInput) int
+		CreateTime  func(childComplexity int) int
 		Description func(childComplexity int) int
 		ID          func(childComplexity int) int
 		Name        func(childComplexity int) int
 		Public      func(childComplexity int) int
+		UpdateTime  func(childComplexity int) int
 		User        func(childComplexity int) int
 		UserID      func(childComplexity int) int
 	}
@@ -285,9 +313,11 @@ type ComplexityRoot struct {
 	}
 
 	User struct {
+		CreateTime      func(childComplexity int) int
 		Email           func(childComplexity int) int
 		ID              func(childComplexity int) int
 		Shelves         func(childComplexity int) int
+		UpdateTime      func(childComplexity int) int
 		UserPermissions func(childComplexity int) int
 		Username        func(childComplexity int) int
 	}
@@ -296,7 +326,9 @@ type ComplexityRoot struct {
 		Admin           func(childComplexity int) int
 		CanCreatePublic func(childComplexity int) int
 		CanEdit         func(childComplexity int) int
+		CreateTime      func(childComplexity int) int
 		ID              func(childComplexity int) int
+		UpdateTime      func(childComplexity int) int
 		User            func(childComplexity int) int
 		UserID          func(childComplexity int) int
 	}
@@ -328,6 +360,7 @@ type QueryResolver interface {
 	Nodes(ctx context.Context, ids []ksuid.ID) ([]ent.Noder, error)
 	Authors(ctx context.Context, after *entgql.Cursor[ksuid.ID], first *int, before *entgql.Cursor[ksuid.ID], last *int, orderBy []*ent.AuthorOrder, where *ent.AuthorWhereInput) (*ent.AuthorConnection, error)
 	Books(ctx context.Context, after *entgql.Cursor[ksuid.ID], first *int, before *entgql.Cursor[ksuid.ID], last *int, orderBy []*ent.BookOrder, where *ent.BookWhereInput) (*ent.BookConnection, error)
+	BookFiles(ctx context.Context) ([]*ent.BookFile, error)
 	Identifiers(ctx context.Context, after *entgql.Cursor[ksuid.ID], first *int, before *entgql.Cursor[ksuid.ID], last *int, orderBy []*ent.IdentifierOrder, where *ent.IdentifierWhereInput) (*ent.IdentifierConnection, error)
 	Languages(ctx context.Context, after *entgql.Cursor[ksuid.ID], first *int, before *entgql.Cursor[ksuid.ID], last *int, orderBy []*ent.LanguageOrder, where *ent.LanguageWhereInput) (*ent.LanguageConnection, error)
 	Publishers(ctx context.Context, after *entgql.Cursor[ksuid.ID], first *int, before *entgql.Cursor[ksuid.ID], last *int, orderBy []*ent.PublisherOrder, where *ent.PublisherWhereInput) (*ent.PublisherConnection, error)
@@ -377,6 +410,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Author.CalibreID(childComplexity), true
 
+	case "Author.createTime":
+		if e.complexity.Author.CreateTime == nil {
+			break
+		}
+
+		return e.complexity.Author.CreateTime(childComplexity), true
+
 	case "Author.id":
 		if e.complexity.Author.ID == nil {
 			break
@@ -404,6 +444,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Author.Sort(childComplexity), true
+
+	case "Author.updateTime":
+		if e.complexity.Author.UpdateTime == nil {
+			break
+		}
+
+		return e.complexity.Author.UpdateTime(childComplexity), true
 
 	case "AuthorConnection.edges":
 		if e.complexity.AuthorConnection.Edges == nil {
@@ -454,12 +501,26 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Book.CalibreID(childComplexity), true
 
+	case "Book.createTime":
+		if e.complexity.Book.CreateTime == nil {
+			break
+		}
+
+		return e.complexity.Book.CreateTime(childComplexity), true
+
 	case "Book.description":
 		if e.complexity.Book.Description == nil {
 			break
 		}
 
 		return e.complexity.Book.Description(childComplexity), true
+
+	case "Book.files":
+		if e.complexity.Book.Files == nil {
+			break
+		}
+
+		return e.complexity.Book.Files(childComplexity), true
 
 	case "Book.id":
 		if e.complexity.Book.ID == nil {
@@ -552,6 +613,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Book.Title(childComplexity), true
 
+	case "Book.updateTime":
+		if e.complexity.Book.UpdateTime == nil {
+			break
+		}
+
+		return e.complexity.Book.UpdateTime(childComplexity), true
+
 	case "BookConnection.edges":
 		if e.complexity.BookConnection.Edges == nil {
 			break
@@ -587,6 +655,62 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.BookEdge.Node(childComplexity), true
 
+	case "BookFile.book":
+		if e.complexity.BookFile.Book == nil {
+			break
+		}
+
+		return e.complexity.BookFile.Book(childComplexity), true
+
+	case "BookFile.createTime":
+		if e.complexity.BookFile.CreateTime == nil {
+			break
+		}
+
+		return e.complexity.BookFile.CreateTime(childComplexity), true
+
+	case "BookFile.format":
+		if e.complexity.BookFile.Format == nil {
+			break
+		}
+
+		return e.complexity.BookFile.Format(childComplexity), true
+
+	case "BookFile.id":
+		if e.complexity.BookFile.ID == nil {
+			break
+		}
+
+		return e.complexity.BookFile.ID(childComplexity), true
+
+	case "BookFile.name":
+		if e.complexity.BookFile.Name == nil {
+			break
+		}
+
+		return e.complexity.BookFile.Name(childComplexity), true
+
+	case "BookFile.path":
+		if e.complexity.BookFile.Path == nil {
+			break
+		}
+
+		return e.complexity.BookFile.Path(childComplexity), true
+
+	case "BookFile.size":
+		if e.complexity.BookFile.Size == nil {
+			break
+		}
+
+		return e.complexity.BookFile.Size(childComplexity), true
+
+	case "BookFile.updateTime":
+		if e.complexity.BookFile.UpdateTime == nil {
+			break
+		}
+
+		return e.complexity.BookFile.UpdateTime(childComplexity), true
+
 	case "Identifier.book":
 		if e.complexity.Identifier.Book == nil {
 			break
@@ -601,6 +725,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Identifier.CalibreID(childComplexity), true
 
+	case "Identifier.createTime":
+		if e.complexity.Identifier.CreateTime == nil {
+			break
+		}
+
+		return e.complexity.Identifier.CreateTime(childComplexity), true
+
 	case "Identifier.id":
 		if e.complexity.Identifier.ID == nil {
 			break
@@ -614,6 +745,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Identifier.Type(childComplexity), true
+
+	case "Identifier.updateTime":
+		if e.complexity.Identifier.UpdateTime == nil {
+			break
+		}
+
+		return e.complexity.Identifier.UpdateTime(childComplexity), true
 
 	case "Identifier.value":
 		if e.complexity.Identifier.Value == nil {
@@ -683,12 +821,26 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Language.Code(childComplexity), true
 
+	case "Language.createTime":
+		if e.complexity.Language.CreateTime == nil {
+			break
+		}
+
+		return e.complexity.Language.CreateTime(childComplexity), true
+
 	case "Language.id":
 		if e.complexity.Language.ID == nil {
 			break
 		}
 
 		return e.complexity.Language.ID(childComplexity), true
+
+	case "Language.updateTime":
+		if e.complexity.Language.UpdateTime == nil {
+			break
+		}
+
+		return e.complexity.Language.UpdateTime(childComplexity), true
 
 	case "LanguageConnection.edges":
 		if e.complexity.LanguageConnection.Edges == nil {
@@ -1000,6 +1152,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Publisher.CalibreID(childComplexity), true
 
+	case "Publisher.createTime":
+		if e.complexity.Publisher.CreateTime == nil {
+			break
+		}
+
+		return e.complexity.Publisher.CreateTime(childComplexity), true
+
 	case "Publisher.id":
 		if e.complexity.Publisher.ID == nil {
 			break
@@ -1013,6 +1172,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Publisher.Name(childComplexity), true
+
+	case "Publisher.updateTime":
+		if e.complexity.Publisher.UpdateTime == nil {
+			break
+		}
+
+		return e.complexity.Publisher.UpdateTime(childComplexity), true
 
 	case "PublisherConnection.edges":
 		if e.complexity.PublisherConnection.Edges == nil {
@@ -1060,6 +1226,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.Authors(childComplexity, args["after"].(*entgql.Cursor[ksuid.ID]), args["first"].(*int), args["before"].(*entgql.Cursor[ksuid.ID]), args["last"].(*int), args["orderBy"].([]*ent.AuthorOrder), args["where"].(*ent.AuthorWhereInput)), true
+
+	case "Query.bookFiles":
+		if e.complexity.Query.BookFiles == nil {
+			break
+		}
+
+		return e.complexity.Query.BookFiles(childComplexity), true
 
 	case "Query.books":
 		if e.complexity.Query.Books == nil {
@@ -1209,6 +1382,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Series.CalibreID(childComplexity), true
 
+	case "Series.createTime":
+		if e.complexity.Series.CreateTime == nil {
+			break
+		}
+
+		return e.complexity.Series.CreateTime(childComplexity), true
+
 	case "Series.id":
 		if e.complexity.Series.ID == nil {
 			break
@@ -1229,6 +1409,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Series.Sort(childComplexity), true
+
+	case "Series.updateTime":
+		if e.complexity.Series.UpdateTime == nil {
+			break
+		}
+
+		return e.complexity.Series.UpdateTime(childComplexity), true
 
 	case "SeriesConnection.edges":
 		if e.complexity.SeriesConnection.Edges == nil {
@@ -1277,6 +1464,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Shelf.Books(childComplexity, args["after"].(*entgql.Cursor[ksuid.ID]), args["first"].(*int), args["before"].(*entgql.Cursor[ksuid.ID]), args["last"].(*int), args["orderBy"].([]*ent.BookOrder), args["where"].(*ent.BookWhereInput)), true
 
+	case "Shelf.createTime":
+		if e.complexity.Shelf.CreateTime == nil {
+			break
+		}
+
+		return e.complexity.Shelf.CreateTime(childComplexity), true
+
 	case "Shelf.description":
 		if e.complexity.Shelf.Description == nil {
 			break
@@ -1304,6 +1498,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Shelf.Public(childComplexity), true
+
+	case "Shelf.updateTime":
+		if e.complexity.Shelf.UpdateTime == nil {
+			break
+		}
+
+		return e.complexity.Shelf.UpdateTime(childComplexity), true
 
 	case "Shelf.user":
 		if e.complexity.Shelf.User == nil {
@@ -1534,6 +1735,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.TaskEdge.Node(childComplexity), true
 
+	case "User.createTime":
+		if e.complexity.User.CreateTime == nil {
+			break
+		}
+
+		return e.complexity.User.CreateTime(childComplexity), true
+
 	case "User.email":
 		if e.complexity.User.Email == nil {
 			break
@@ -1554,6 +1762,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.User.Shelves(childComplexity), true
+
+	case "User.updateTime":
+		if e.complexity.User.UpdateTime == nil {
+			break
+		}
+
+		return e.complexity.User.UpdateTime(childComplexity), true
 
 	case "User.userPermissions":
 		if e.complexity.User.UserPermissions == nil {
@@ -1590,12 +1805,26 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.UserPermissions.CanEdit(childComplexity), true
 
+	case "UserPermissions.createTime":
+		if e.complexity.UserPermissions.CreateTime == nil {
+			break
+		}
+
+		return e.complexity.UserPermissions.CreateTime(childComplexity), true
+
 	case "UserPermissions.id":
 		if e.complexity.UserPermissions.ID == nil {
 			break
 		}
 
 		return e.complexity.UserPermissions.ID(childComplexity), true
+
+	case "UserPermissions.updateTime":
+		if e.complexity.UserPermissions.UpdateTime == nil {
+			break
+		}
+
+		return e.complexity.UserPermissions.UpdateTime(childComplexity), true
 
 	case "UserPermissions.user":
 		if e.complexity.UserPermissions.User == nil {
@@ -1621,6 +1850,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
 		ec.unmarshalInputAuthorOrder,
 		ec.unmarshalInputAuthorWhereInput,
+		ec.unmarshalInputBookFileWhereInput,
 		ec.unmarshalInputBookOrder,
 		ec.unmarshalInputBookWhereInput,
 		ec.unmarshalInputCreateAuthorInput,
@@ -1760,6 +1990,8 @@ var sources = []*ast.Source{
 directive @goModel(model: String, models: [String!]) on OBJECT | INPUT_OBJECT | SCALAR | ENUM | INTERFACE | UNION
 type Author implements Node {
   id: ID!
+  createTime: Time!
+  updateTime: Time!
   calibreID: Int
   name: String!
   sort: String!
@@ -1829,6 +2061,24 @@ input AuthorWhereInput {
   idGTE: ID
   idLT: ID
   idLTE: ID
+  """create_time field predicates"""
+  createTime: Time
+  createTimeNEQ: Time
+  createTimeIn: [Time!]
+  createTimeNotIn: [Time!]
+  createTimeGT: Time
+  createTimeGTE: Time
+  createTimeLT: Time
+  createTimeLTE: Time
+  """update_time field predicates"""
+  updateTime: Time
+  updateTimeNEQ: Time
+  updateTimeIn: [Time!]
+  updateTimeNotIn: [Time!]
+  updateTimeGT: Time
+  updateTimeGTE: Time
+  updateTimeLT: Time
+  updateTimeLTE: Time
   """calibre_id field predicates"""
   calibreID: Int
   calibreIDNEQ: Int
@@ -1890,6 +2140,8 @@ input AuthorWhereInput {
 }
 type Book implements Node {
   id: ID!
+  createTime: Time!
+  updateTime: Time!
   calibreID: Int
   title: String!
   sort: String!
@@ -1905,6 +2157,7 @@ type Book implements Node {
   tags: [Tag!]
   language: [Language!]
   shelf: [Shelf!]
+  files: [BookFile!]
 }
 """A connection to a list of items."""
 type BookConnection {
@@ -1922,6 +2175,110 @@ type BookEdge {
   """A cursor for use in pagination."""
   cursor: Cursor!
 }
+type BookFile implements Node {
+  id: ID!
+  createTime: Time!
+  updateTime: Time!
+  name: String!
+  path: String!
+  """Size in bytes"""
+  size: Int!
+  format: BookFileFormat!
+  book: Book!
+}
+"""BookFileFormat is enum for the field format"""
+enum BookFileFormat @goModel(model: "lybbrio/internal/ent/bookfile.Format") {
+  AZW3
+  EPUB
+  KEPUB
+  PDF
+  CBC
+  CBR
+  CB7
+  CBZ
+  CBT
+}
+"""
+BookFileWhereInput is used for filtering BookFile objects.
+Input was generated by ent.
+"""
+input BookFileWhereInput {
+  not: BookFileWhereInput
+  and: [BookFileWhereInput!]
+  or: [BookFileWhereInput!]
+  """id field predicates"""
+  id: ID
+  idNEQ: ID
+  idIn: [ID!]
+  idNotIn: [ID!]
+  idGT: ID
+  idGTE: ID
+  idLT: ID
+  idLTE: ID
+  """create_time field predicates"""
+  createTime: Time
+  createTimeNEQ: Time
+  createTimeIn: [Time!]
+  createTimeNotIn: [Time!]
+  createTimeGT: Time
+  createTimeGTE: Time
+  createTimeLT: Time
+  createTimeLTE: Time
+  """update_time field predicates"""
+  updateTime: Time
+  updateTimeNEQ: Time
+  updateTimeIn: [Time!]
+  updateTimeNotIn: [Time!]
+  updateTimeGT: Time
+  updateTimeGTE: Time
+  updateTimeLT: Time
+  updateTimeLTE: Time
+  """name field predicates"""
+  name: String
+  nameNEQ: String
+  nameIn: [String!]
+  nameNotIn: [String!]
+  nameGT: String
+  nameGTE: String
+  nameLT: String
+  nameLTE: String
+  nameContains: String
+  nameHasPrefix: String
+  nameHasSuffix: String
+  nameEqualFold: String
+  nameContainsFold: String
+  """path field predicates"""
+  path: String
+  pathNEQ: String
+  pathIn: [String!]
+  pathNotIn: [String!]
+  pathGT: String
+  pathGTE: String
+  pathLT: String
+  pathLTE: String
+  pathContains: String
+  pathHasPrefix: String
+  pathHasSuffix: String
+  pathEqualFold: String
+  pathContainsFold: String
+  """size field predicates"""
+  size: Int
+  sizeNEQ: Int
+  sizeIn: [Int!]
+  sizeNotIn: [Int!]
+  sizeGT: Int
+  sizeGTE: Int
+  sizeLT: Int
+  sizeLTE: Int
+  """format field predicates"""
+  format: BookFileFormat
+  formatNEQ: BookFileFormat
+  formatIn: [BookFileFormat!]
+  formatNotIn: [BookFileFormat!]
+  """book edge predicates"""
+  hasBook: Boolean
+  hasBookWith: [BookWhereInput!]
+}
 """Ordering options for Book connections"""
 input BookOrder {
   """The ordering direction."""
@@ -1935,6 +2292,7 @@ enum BookOrderField {
   NAME
   PUB_DATE
   ISBN
+  FILES_COUNT
 }
 """
 BookWhereInput is used for filtering Book objects.
@@ -1953,6 +2311,24 @@ input BookWhereInput {
   idGTE: ID
   idLT: ID
   idLTE: ID
+  """create_time field predicates"""
+  createTime: Time
+  createTimeNEQ: Time
+  createTimeIn: [Time!]
+  createTimeNotIn: [Time!]
+  createTimeGT: Time
+  createTimeGTE: Time
+  createTimeLT: Time
+  createTimeLTE: Time
+  """update_time field predicates"""
+  updateTime: Time
+  updateTimeNEQ: Time
+  updateTimeIn: [Time!]
+  updateTimeNotIn: [Time!]
+  updateTimeGT: Time
+  updateTimeGTE: Time
+  updateTimeLT: Time
+  updateTimeLTE: Time
   """calibre_id field predicates"""
   calibreID: Int
   calibreIDNEQ: Int
@@ -2081,12 +2457,17 @@ input BookWhereInput {
   """shelf edge predicates"""
   hasShelf: Boolean
   hasShelfWith: [ShelfWhereInput!]
+  """files edge predicates"""
+  hasFiles: Boolean
+  hasFilesWith: [BookFileWhereInput!]
 }
 """
 CreateAuthorInput is used for create Author object.
 Input was generated by ent.
 """
 input CreateAuthorInput {
+  createTime: Time
+  updateTime: Time
   calibreID: Int
   name: String!
   sort: String!
@@ -2098,6 +2479,8 @@ CreateBookInput is used for create Book object.
 Input was generated by ent.
 """
 input CreateBookInput {
+  createTime: Time
+  updateTime: Time
   calibreID: Int
   title: String!
   sort: String!
@@ -2113,12 +2496,15 @@ input CreateBookInput {
   tagIDs: [ID!]
   languageIDs: [ID!]
   shelfIDs: [ID!]
+  fileIDs: [ID!]
 }
 """
 CreateIdentifierInput is used for create Identifier object.
 Input was generated by ent.
 """
 input CreateIdentifierInput {
+  createTime: Time
+  updateTime: Time
   calibreID: Int
   type: String!
   value: String!
@@ -2129,6 +2515,8 @@ CreateLanguageInput is used for create Language object.
 Input was generated by ent.
 """
 input CreateLanguageInput {
+  createTime: Time
+  updateTime: Time
   calibreID: Int
   code: String!
   bookIDs: [ID!]
@@ -2138,6 +2526,8 @@ CreatePublisherInput is used for create Publisher object.
 Input was generated by ent.
 """
 input CreatePublisherInput {
+  createTime: Time
+  updateTime: Time
   calibreID: Int
   name: String!
   bookIDs: [ID!]
@@ -2147,6 +2537,8 @@ CreateSeriesInput is used for create Series object.
 Input was generated by ent.
 """
 input CreateSeriesInput {
+  createTime: Time
+  updateTime: Time
   calibreID: Int
   name: String!
   sort: String!
@@ -2166,6 +2558,8 @@ CreateUserInput is used for create User object.
 Input was generated by ent.
 """
 input CreateUserInput {
+  createTime: Time
+  updateTime: Time
   username: String!
   passwordHash: String
   email: String!
@@ -2179,6 +2573,8 @@ https://relay.dev/graphql/connections.htm#sec-Cursor
 scalar Cursor
 type Identifier implements Node {
   id: ID!
+  createTime: Time!
+  updateTime: Time!
   calibreID: Int
   type: String!
   value: String!
@@ -2229,6 +2625,24 @@ input IdentifierWhereInput {
   idGTE: ID
   idLT: ID
   idLTE: ID
+  """create_time field predicates"""
+  createTime: Time
+  createTimeNEQ: Time
+  createTimeIn: [Time!]
+  createTimeNotIn: [Time!]
+  createTimeGT: Time
+  createTimeGTE: Time
+  createTimeLT: Time
+  createTimeLTE: Time
+  """update_time field predicates"""
+  updateTime: Time
+  updateTimeNEQ: Time
+  updateTimeIn: [Time!]
+  updateTimeNotIn: [Time!]
+  updateTimeGT: Time
+  updateTimeGTE: Time
+  updateTimeLT: Time
+  updateTimeLTE: Time
   """calibre_id field predicates"""
   calibreID: Int
   calibreIDNEQ: Int
@@ -2274,6 +2688,8 @@ input IdentifierWhereInput {
 }
 type Language implements Node {
   id: ID!
+  createTime: Time!
+  updateTime: Time!
   calibreID: Int
   code: String!
   books(
@@ -2340,6 +2756,24 @@ input LanguageWhereInput {
   idGTE: ID
   idLT: ID
   idLTE: ID
+  """create_time field predicates"""
+  createTime: Time
+  createTimeNEQ: Time
+  createTimeIn: [Time!]
+  createTimeNotIn: [Time!]
+  createTimeGT: Time
+  createTimeGTE: Time
+  createTimeLT: Time
+  createTimeLTE: Time
+  """update_time field predicates"""
+  updateTime: Time
+  updateTimeNEQ: Time
+  updateTimeIn: [Time!]
+  updateTimeNotIn: [Time!]
+  updateTimeGT: Time
+  updateTimeGTE: Time
+  updateTimeLT: Time
+  updateTimeLTE: Time
   """calibre_id field predicates"""
   calibreID: Int
   calibreIDNEQ: Int
@@ -2400,6 +2834,8 @@ type PageInfo {
 }
 type Publisher implements Node {
   id: ID!
+  createTime: Time!
+  updateTime: Time!
   calibreID: Int
   name: String!
   books(
@@ -2467,6 +2903,24 @@ input PublisherWhereInput {
   idGTE: ID
   idLT: ID
   idLTE: ID
+  """create_time field predicates"""
+  createTime: Time
+  createTimeNEQ: Time
+  createTimeIn: [Time!]
+  createTimeNotIn: [Time!]
+  createTimeGT: Time
+  createTimeGTE: Time
+  createTimeLT: Time
+  createTimeLTE: Time
+  """update_time field predicates"""
+  updateTime: Time
+  updateTimeNEQ: Time
+  updateTimeIn: [Time!]
+  updateTimeNotIn: [Time!]
+  updateTimeGT: Time
+  updateTimeGTE: Time
+  updateTimeLT: Time
+  updateTimeLTE: Time
   """calibre_id field predicates"""
   calibreID: Int
   calibreIDNEQ: Int
@@ -2545,6 +2999,7 @@ type Query {
     """Filtering options for Books returned from the connection."""
     where: BookWhereInput
   ): BookConnection!
+  bookFiles: [BookFile!]!
   identifiers(
     """Returns the elements in the list that come after the specified cursor."""
     after: Cursor
@@ -2682,6 +3137,8 @@ type Query {
 }
 type Series implements Node {
   id: ID!
+  createTime: Time!
+  updateTime: Time!
   calibreID: Int
   name: String!
   sort: String!
@@ -2731,6 +3188,24 @@ input SeriesWhereInput {
   idGTE: ID
   idLT: ID
   idLTE: ID
+  """create_time field predicates"""
+  createTime: Time
+  createTimeNEQ: Time
+  createTimeIn: [Time!]
+  createTimeNotIn: [Time!]
+  createTimeGT: Time
+  createTimeGTE: Time
+  createTimeLT: Time
+  createTimeLTE: Time
+  """update_time field predicates"""
+  updateTime: Time
+  updateTimeNEQ: Time
+  updateTimeIn: [Time!]
+  updateTimeNotIn: [Time!]
+  updateTimeGT: Time
+  updateTimeGTE: Time
+  updateTimeLT: Time
+  updateTimeLTE: Time
   """calibre_id field predicates"""
   calibreID: Int
   calibreIDNEQ: Int
@@ -2776,6 +3251,8 @@ input SeriesWhereInput {
 }
 type Shelf implements Node {
   id: ID!
+  createTime: Time!
+  updateTime: Time!
   public: Boolean!
   userID: ID!
   name: String!
@@ -2846,6 +3323,24 @@ input ShelfWhereInput {
   idGTE: ID
   idLT: ID
   idLTE: ID
+  """create_time field predicates"""
+  createTime: Time
+  createTimeNEQ: Time
+  createTimeIn: [Time!]
+  createTimeNotIn: [Time!]
+  createTimeGT: Time
+  createTimeGTE: Time
+  createTimeLT: Time
+  createTimeLTE: Time
+  """update_time field predicates"""
+  updateTime: Time
+  updateTimeNEQ: Time
+  updateTimeIn: [Time!]
+  updateTimeNotIn: [Time!]
+  updateTimeGT: Time
+  updateTimeGTE: Time
+  updateTimeLT: Time
+  updateTimeLTE: Time
   """public field predicates"""
   public: Boolean
   publicNEQ: Boolean
@@ -3172,6 +3667,7 @@ UpdateAuthorInput is used for update Author object.
 Input was generated by ent.
 """
 input UpdateAuthorInput {
+  updateTime: Time
   calibreID: Int
   clearCalibreID: Boolean
   name: String
@@ -3187,6 +3683,7 @@ UpdateBookInput is used for update Book object.
 Input was generated by ent.
 """
 input UpdateBookInput {
+  updateTime: Time
   calibreID: Int
   clearCalibreID: Boolean
   title: String
@@ -3221,12 +3718,16 @@ input UpdateBookInput {
   addShelfIDs: [ID!]
   removeShelfIDs: [ID!]
   clearShelf: Boolean
+  addFileIDs: [ID!]
+  removeFileIDs: [ID!]
+  clearFiles: Boolean
 }
 """
 UpdateIdentifierInput is used for update Identifier object.
 Input was generated by ent.
 """
 input UpdateIdentifierInput {
+  updateTime: Time
   calibreID: Int
   clearCalibreID: Boolean
   type: String
@@ -3238,6 +3739,7 @@ UpdateLanguageInput is used for update Language object.
 Input was generated by ent.
 """
 input UpdateLanguageInput {
+  updateTime: Time
   calibreID: Int
   clearCalibreID: Boolean
   code: String
@@ -3250,6 +3752,7 @@ UpdatePublisherInput is used for update Publisher object.
 Input was generated by ent.
 """
 input UpdatePublisherInput {
+  updateTime: Time
   calibreID: Int
   clearCalibreID: Boolean
   name: String
@@ -3262,6 +3765,7 @@ UpdateSeriesInput is used for update Series object.
 Input was generated by ent.
 """
 input UpdateSeriesInput {
+  updateTime: Time
   calibreID: Int
   clearCalibreID: Boolean
   name: String
@@ -3275,6 +3779,7 @@ UpdateShelfInput is used for update Shelf object.
 Input was generated by ent.
 """
 input UpdateShelfInput {
+  updateTime: Time
   public: Boolean
   name: String
   description: String
@@ -3300,6 +3805,7 @@ UpdateUserInput is used for update User object.
 Input was generated by ent.
 """
 input UpdateUserInput {
+  updateTime: Time
   username: String
   passwordHash: String
   clearPasswordHash: Boolean
@@ -3310,6 +3816,8 @@ input UpdateUserInput {
 }
 type User implements Node {
   id: ID!
+  createTime: Time!
+  updateTime: Time!
   username: String!
   email: String!
   shelves: [Shelf!]
@@ -3328,10 +3836,12 @@ enum UserOrderField {
 }
 type UserPermissions implements Node {
   id: ID!
+  createTime: Time!
+  updateTime: Time!
   userID: ID
-  canedit: Boolean! @goField(name: "CanEdit", forceResolver: false)
   admin: Boolean!
   cancreatepublic: Boolean! @goField(name: "CanCreatePublic", forceResolver: false)
+  canedit: Boolean! @goField(name: "CanEdit", forceResolver: false)
   user: User
 }
 """
@@ -3351,6 +3861,24 @@ input UserPermissionsWhereInput {
   idGTE: ID
   idLT: ID
   idLTE: ID
+  """create_time field predicates"""
+  createTime: Time
+  createTimeNEQ: Time
+  createTimeIn: [Time!]
+  createTimeNotIn: [Time!]
+  createTimeGT: Time
+  createTimeGTE: Time
+  createTimeLT: Time
+  createTimeLTE: Time
+  """update_time field predicates"""
+  updateTime: Time
+  updateTimeNEQ: Time
+  updateTimeIn: [Time!]
+  updateTimeNotIn: [Time!]
+  updateTimeGT: Time
+  updateTimeGTE: Time
+  updateTimeLT: Time
+  updateTimeLTE: Time
   """user_id field predicates"""
   userID: ID
   userIDNEQ: ID
@@ -3367,15 +3895,15 @@ input UserPermissionsWhereInput {
   userIDNotNil: Boolean
   userIDEqualFold: ID
   userIDContainsFold: ID
-  """CanEdit field predicates"""
-  canedit: Boolean
-  caneditNEQ: Boolean
   """Admin field predicates"""
   admin: Boolean
   adminNEQ: Boolean
   """CanCreatePublic field predicates"""
   cancreatepublic: Boolean
   cancreatepublicNEQ: Boolean
+  """CanEdit field predicates"""
+  canedit: Boolean
+  caneditNEQ: Boolean
   """user edge predicates"""
   hasUser: Boolean
   hasUserWith: [UserWhereInput!]
@@ -3397,6 +3925,24 @@ input UserWhereInput {
   idGTE: ID
   idLT: ID
   idLTE: ID
+  """create_time field predicates"""
+  createTime: Time
+  createTimeNEQ: Time
+  createTimeIn: [Time!]
+  createTimeNotIn: [Time!]
+  createTimeGT: Time
+  createTimeGTE: Time
+  createTimeLT: Time
+  createTimeLTE: Time
+  """update_time field predicates"""
+  updateTime: Time
+  updateTimeNEQ: Time
+  updateTimeIn: [Time!]
+  updateTimeNotIn: [Time!]
+  updateTimeGT: Time
+  updateTimeGTE: Time
+  updateTimeLT: Time
+  updateTimeLTE: Time
   """username field predicates"""
   username: String
   usernameNEQ: String
@@ -4824,6 +5370,94 @@ func (ec *executionContext) fieldContext_Author_id(ctx context.Context, field gr
 	return fc, nil
 }
 
+func (ec *executionContext) _Author_createTime(ctx context.Context, field graphql.CollectedField, obj *ent.Author) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Author_createTime(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CreateTime, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(time.Time)
+	fc.Result = res
+	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Author_createTime(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Author",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Time does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Author_updateTime(ctx context.Context, field graphql.CollectedField, obj *ent.Author) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Author_updateTime(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.UpdateTime, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(time.Time)
+	fc.Result = res
+	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Author_updateTime(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Author",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Time does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Author_calibreID(ctx context.Context, field graphql.CollectedField, obj *ent.Author) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Author_calibreID(ctx, field)
 	if err != nil {
@@ -5240,6 +5874,10 @@ func (ec *executionContext) fieldContext_AuthorEdge_node(ctx context.Context, fi
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Author_id(ctx, field)
+			case "createTime":
+				return ec.fieldContext_Author_createTime(ctx, field)
+			case "updateTime":
+				return ec.fieldContext_Author_updateTime(ctx, field)
 			case "calibreID":
 				return ec.fieldContext_Author_calibreID(ctx, field)
 			case "name":
@@ -5340,6 +5978,94 @@ func (ec *executionContext) fieldContext_Book_id(ctx context.Context, field grap
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Book_createTime(ctx context.Context, field graphql.CollectedField, obj *ent.Book) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Book_createTime(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CreateTime, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(time.Time)
+	fc.Result = res
+	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Book_createTime(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Book",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Time does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Book_updateTime(ctx context.Context, field graphql.CollectedField, obj *ent.Book) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Book_updateTime(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.UpdateTime, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(time.Time)
+	fc.Result = res
+	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Book_updateTime(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Book",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Time does not have child fields")
 		},
 	}
 	return fc, nil
@@ -5720,6 +6446,10 @@ func (ec *executionContext) fieldContext_Book_authors(ctx context.Context, field
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Author_id(ctx, field)
+			case "createTime":
+				return ec.fieldContext_Author_createTime(ctx, field)
+			case "updateTime":
+				return ec.fieldContext_Author_updateTime(ctx, field)
 			case "calibreID":
 				return ec.fieldContext_Author_calibreID(ctx, field)
 			case "name":
@@ -5775,6 +6505,10 @@ func (ec *executionContext) fieldContext_Book_publisher(ctx context.Context, fie
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Publisher_id(ctx, field)
+			case "createTime":
+				return ec.fieldContext_Publisher_createTime(ctx, field)
+			case "updateTime":
+				return ec.fieldContext_Publisher_updateTime(ctx, field)
 			case "calibreID":
 				return ec.fieldContext_Publisher_calibreID(ctx, field)
 			case "name":
@@ -5826,6 +6560,10 @@ func (ec *executionContext) fieldContext_Book_series(ctx context.Context, field 
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Series_id(ctx, field)
+			case "createTime":
+				return ec.fieldContext_Series_createTime(ctx, field)
+			case "updateTime":
+				return ec.fieldContext_Series_updateTime(ctx, field)
 			case "calibreID":
 				return ec.fieldContext_Series_calibreID(ctx, field)
 			case "name":
@@ -5879,6 +6617,10 @@ func (ec *executionContext) fieldContext_Book_identifiers(ctx context.Context, f
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Identifier_id(ctx, field)
+			case "createTime":
+				return ec.fieldContext_Identifier_createTime(ctx, field)
+			case "updateTime":
+				return ec.fieldContext_Identifier_updateTime(ctx, field)
 			case "calibreID":
 				return ec.fieldContext_Identifier_calibreID(ctx, field)
 			case "type":
@@ -5983,6 +6725,10 @@ func (ec *executionContext) fieldContext_Book_language(ctx context.Context, fiel
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Language_id(ctx, field)
+			case "createTime":
+				return ec.fieldContext_Language_createTime(ctx, field)
+			case "updateTime":
+				return ec.fieldContext_Language_updateTime(ctx, field)
 			case "calibreID":
 				return ec.fieldContext_Language_calibreID(ctx, field)
 			case "code":
@@ -6034,6 +6780,10 @@ func (ec *executionContext) fieldContext_Book_shelf(ctx context.Context, field g
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Shelf_id(ctx, field)
+			case "createTime":
+				return ec.fieldContext_Shelf_createTime(ctx, field)
+			case "updateTime":
+				return ec.fieldContext_Shelf_updateTime(ctx, field)
 			case "public":
 				return ec.fieldContext_Shelf_public(ctx, field)
 			case "userID":
@@ -6048,6 +6798,65 @@ func (ec *executionContext) fieldContext_Book_shelf(ctx context.Context, field g
 				return ec.fieldContext_Shelf_books(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Shelf", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Book_files(ctx context.Context, field graphql.CollectedField, obj *ent.Book) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Book_files(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Files(ctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*ent.BookFile)
+	fc.Result = res
+	return ec.marshalOBookFile2ᚕᚖlybbrioᚋinternalᚋentᚐBookFileᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Book_files(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Book",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_BookFile_id(ctx, field)
+			case "createTime":
+				return ec.fieldContext_BookFile_createTime(ctx, field)
+			case "updateTime":
+				return ec.fieldContext_BookFile_updateTime(ctx, field)
+			case "name":
+				return ec.fieldContext_BookFile_name(ctx, field)
+			case "path":
+				return ec.fieldContext_BookFile_path(ctx, field)
+			case "size":
+				return ec.fieldContext_BookFile_size(ctx, field)
+			case "format":
+				return ec.fieldContext_BookFile_format(ctx, field)
+			case "book":
+				return ec.fieldContext_BookFile_book(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type BookFile", field.Name)
 		},
 	}
 	return fc, nil
@@ -6236,6 +7045,10 @@ func (ec *executionContext) fieldContext_BookEdge_node(ctx context.Context, fiel
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Book_id(ctx, field)
+			case "createTime":
+				return ec.fieldContext_Book_createTime(ctx, field)
+			case "updateTime":
+				return ec.fieldContext_Book_updateTime(ctx, field)
 			case "calibreID":
 				return ec.fieldContext_Book_calibreID(ctx, field)
 			case "title":
@@ -6266,6 +7079,8 @@ func (ec *executionContext) fieldContext_BookEdge_node(ctx context.Context, fiel
 				return ec.fieldContext_Book_language(ctx, field)
 			case "shelf":
 				return ec.fieldContext_Book_shelf(ctx, field)
+			case "files":
+				return ec.fieldContext_Book_files(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Book", field.Name)
 		},
@@ -6317,6 +7132,398 @@ func (ec *executionContext) fieldContext_BookEdge_cursor(ctx context.Context, fi
 	return fc, nil
 }
 
+func (ec *executionContext) _BookFile_id(ctx context.Context, field graphql.CollectedField, obj *ent.BookFile) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_BookFile_id(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(ksuid.ID)
+	fc.Result = res
+	return ec.marshalNID2lybbrioᚋinternalᚋentᚋschemaᚋksuidᚐID(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_BookFile_id(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "BookFile",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _BookFile_createTime(ctx context.Context, field graphql.CollectedField, obj *ent.BookFile) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_BookFile_createTime(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CreateTime, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(time.Time)
+	fc.Result = res
+	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_BookFile_createTime(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "BookFile",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Time does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _BookFile_updateTime(ctx context.Context, field graphql.CollectedField, obj *ent.BookFile) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_BookFile_updateTime(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.UpdateTime, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(time.Time)
+	fc.Result = res
+	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_BookFile_updateTime(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "BookFile",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Time does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _BookFile_name(ctx context.Context, field graphql.CollectedField, obj *ent.BookFile) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_BookFile_name(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Name, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_BookFile_name(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "BookFile",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _BookFile_path(ctx context.Context, field graphql.CollectedField, obj *ent.BookFile) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_BookFile_path(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Path, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_BookFile_path(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "BookFile",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _BookFile_size(ctx context.Context, field graphql.CollectedField, obj *ent.BookFile) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_BookFile_size(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Size, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int64)
+	fc.Result = res
+	return ec.marshalNInt2int64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_BookFile_size(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "BookFile",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _BookFile_format(ctx context.Context, field graphql.CollectedField, obj *ent.BookFile) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_BookFile_format(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Format, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bookfile.Format)
+	fc.Result = res
+	return ec.marshalNBookFileFormat2lybbrioᚋinternalᚋentᚋbookfileᚐFormat(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_BookFile_format(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "BookFile",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type BookFileFormat does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _BookFile_book(ctx context.Context, field graphql.CollectedField, obj *ent.BookFile) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_BookFile_book(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Book(ctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.Book)
+	fc.Result = res
+	return ec.marshalNBook2ᚖlybbrioᚋinternalᚋentᚐBook(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_BookFile_book(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "BookFile",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Book_id(ctx, field)
+			case "createTime":
+				return ec.fieldContext_Book_createTime(ctx, field)
+			case "updateTime":
+				return ec.fieldContext_Book_updateTime(ctx, field)
+			case "calibreID":
+				return ec.fieldContext_Book_calibreID(ctx, field)
+			case "title":
+				return ec.fieldContext_Book_title(ctx, field)
+			case "sort":
+				return ec.fieldContext_Book_sort(ctx, field)
+			case "publishedDate":
+				return ec.fieldContext_Book_publishedDate(ctx, field)
+			case "path":
+				return ec.fieldContext_Book_path(ctx, field)
+			case "isbn":
+				return ec.fieldContext_Book_isbn(ctx, field)
+			case "description":
+				return ec.fieldContext_Book_description(ctx, field)
+			case "seriesIndex":
+				return ec.fieldContext_Book_seriesIndex(ctx, field)
+			case "authors":
+				return ec.fieldContext_Book_authors(ctx, field)
+			case "publisher":
+				return ec.fieldContext_Book_publisher(ctx, field)
+			case "series":
+				return ec.fieldContext_Book_series(ctx, field)
+			case "identifiers":
+				return ec.fieldContext_Book_identifiers(ctx, field)
+			case "tags":
+				return ec.fieldContext_Book_tags(ctx, field)
+			case "language":
+				return ec.fieldContext_Book_language(ctx, field)
+			case "shelf":
+				return ec.fieldContext_Book_shelf(ctx, field)
+			case "files":
+				return ec.fieldContext_Book_files(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Book", field.Name)
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Identifier_id(ctx context.Context, field graphql.CollectedField, obj *ent.Identifier) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Identifier_id(ctx, field)
 	if err != nil {
@@ -6356,6 +7563,94 @@ func (ec *executionContext) fieldContext_Identifier_id(ctx context.Context, fiel
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Identifier_createTime(ctx context.Context, field graphql.CollectedField, obj *ent.Identifier) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Identifier_createTime(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CreateTime, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(time.Time)
+	fc.Result = res
+	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Identifier_createTime(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Identifier",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Time does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Identifier_updateTime(ctx context.Context, field graphql.CollectedField, obj *ent.Identifier) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Identifier_updateTime(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.UpdateTime, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(time.Time)
+	fc.Result = res
+	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Identifier_updateTime(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Identifier",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Time does not have child fields")
 		},
 	}
 	return fc, nil
@@ -6531,6 +7826,10 @@ func (ec *executionContext) fieldContext_Identifier_book(ctx context.Context, fi
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Book_id(ctx, field)
+			case "createTime":
+				return ec.fieldContext_Book_createTime(ctx, field)
+			case "updateTime":
+				return ec.fieldContext_Book_updateTime(ctx, field)
 			case "calibreID":
 				return ec.fieldContext_Book_calibreID(ctx, field)
 			case "title":
@@ -6561,6 +7860,8 @@ func (ec *executionContext) fieldContext_Identifier_book(ctx context.Context, fi
 				return ec.fieldContext_Book_language(ctx, field)
 			case "shelf":
 				return ec.fieldContext_Book_shelf(ctx, field)
+			case "files":
+				return ec.fieldContext_Book_files(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Book", field.Name)
 		},
@@ -6751,6 +8052,10 @@ func (ec *executionContext) fieldContext_IdentifierEdge_node(ctx context.Context
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Identifier_id(ctx, field)
+			case "createTime":
+				return ec.fieldContext_Identifier_createTime(ctx, field)
+			case "updateTime":
+				return ec.fieldContext_Identifier_updateTime(ctx, field)
 			case "calibreID":
 				return ec.fieldContext_Identifier_calibreID(ctx, field)
 			case "type":
@@ -6849,6 +8154,94 @@ func (ec *executionContext) fieldContext_Language_id(ctx context.Context, field 
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Language_createTime(ctx context.Context, field graphql.CollectedField, obj *ent.Language) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Language_createTime(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CreateTime, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(time.Time)
+	fc.Result = res
+	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Language_createTime(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Language",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Time does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Language_updateTime(ctx context.Context, field graphql.CollectedField, obj *ent.Language) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Language_updateTime(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.UpdateTime, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(time.Time)
+	fc.Result = res
+	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Language_updateTime(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Language",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Time does not have child fields")
 		},
 	}
 	return fc, nil
@@ -7185,6 +8578,10 @@ func (ec *executionContext) fieldContext_LanguageEdge_node(ctx context.Context, 
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Language_id(ctx, field)
+			case "createTime":
+				return ec.fieldContext_Language_createTime(ctx, field)
+			case "updateTime":
+				return ec.fieldContext_Language_updateTime(ctx, field)
 			case "calibreID":
 				return ec.fieldContext_Language_calibreID(ctx, field)
 			case "code":
@@ -7280,6 +8677,10 @@ func (ec *executionContext) fieldContext_Mutation_createBook(ctx context.Context
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Book_id(ctx, field)
+			case "createTime":
+				return ec.fieldContext_Book_createTime(ctx, field)
+			case "updateTime":
+				return ec.fieldContext_Book_updateTime(ctx, field)
 			case "calibreID":
 				return ec.fieldContext_Book_calibreID(ctx, field)
 			case "title":
@@ -7310,6 +8711,8 @@ func (ec *executionContext) fieldContext_Mutation_createBook(ctx context.Context
 				return ec.fieldContext_Book_language(ctx, field)
 			case "shelf":
 				return ec.fieldContext_Book_shelf(ctx, field)
+			case "files":
+				return ec.fieldContext_Book_files(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Book", field.Name)
 		},
@@ -7366,6 +8769,10 @@ func (ec *executionContext) fieldContext_Mutation_updateBook(ctx context.Context
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Book_id(ctx, field)
+			case "createTime":
+				return ec.fieldContext_Book_createTime(ctx, field)
+			case "updateTime":
+				return ec.fieldContext_Book_updateTime(ctx, field)
 			case "calibreID":
 				return ec.fieldContext_Book_calibreID(ctx, field)
 			case "title":
@@ -7396,6 +8803,8 @@ func (ec *executionContext) fieldContext_Mutation_updateBook(ctx context.Context
 				return ec.fieldContext_Book_language(ctx, field)
 			case "shelf":
 				return ec.fieldContext_Book_shelf(ctx, field)
+			case "files":
+				return ec.fieldContext_Book_files(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Book", field.Name)
 		},
@@ -7452,6 +8861,10 @@ func (ec *executionContext) fieldContext_Mutation_createAuthor(ctx context.Conte
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Author_id(ctx, field)
+			case "createTime":
+				return ec.fieldContext_Author_createTime(ctx, field)
+			case "updateTime":
+				return ec.fieldContext_Author_updateTime(ctx, field)
 			case "calibreID":
 				return ec.fieldContext_Author_calibreID(ctx, field)
 			case "name":
@@ -7518,6 +8931,10 @@ func (ec *executionContext) fieldContext_Mutation_updateAuthor(ctx context.Conte
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Author_id(ctx, field)
+			case "createTime":
+				return ec.fieldContext_Author_createTime(ctx, field)
+			case "updateTime":
+				return ec.fieldContext_Author_updateTime(ctx, field)
 			case "calibreID":
 				return ec.fieldContext_Author_calibreID(ctx, field)
 			case "name":
@@ -7584,6 +9001,10 @@ func (ec *executionContext) fieldContext_Mutation_createShelf(ctx context.Contex
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Shelf_id(ctx, field)
+			case "createTime":
+				return ec.fieldContext_Shelf_createTime(ctx, field)
+			case "updateTime":
+				return ec.fieldContext_Shelf_updateTime(ctx, field)
 			case "public":
 				return ec.fieldContext_Shelf_public(ctx, field)
 			case "userID":
@@ -7652,6 +9073,10 @@ func (ec *executionContext) fieldContext_Mutation_updateShelf(ctx context.Contex
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Shelf_id(ctx, field)
+			case "createTime":
+				return ec.fieldContext_Shelf_createTime(ctx, field)
+			case "updateTime":
+				return ec.fieldContext_Shelf_updateTime(ctx, field)
 			case "public":
 				return ec.fieldContext_Shelf_public(ctx, field)
 			case "userID":
@@ -7844,6 +9269,10 @@ func (ec *executionContext) fieldContext_Mutation_createPublisher(ctx context.Co
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Publisher_id(ctx, field)
+			case "createTime":
+				return ec.fieldContext_Publisher_createTime(ctx, field)
+			case "updateTime":
+				return ec.fieldContext_Publisher_updateTime(ctx, field)
 			case "calibreID":
 				return ec.fieldContext_Publisher_calibreID(ctx, field)
 			case "name":
@@ -7906,6 +9335,10 @@ func (ec *executionContext) fieldContext_Mutation_updatePublisher(ctx context.Co
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Publisher_id(ctx, field)
+			case "createTime":
+				return ec.fieldContext_Publisher_createTime(ctx, field)
+			case "updateTime":
+				return ec.fieldContext_Publisher_updateTime(ctx, field)
 			case "calibreID":
 				return ec.fieldContext_Publisher_calibreID(ctx, field)
 			case "name":
@@ -7968,6 +9401,10 @@ func (ec *executionContext) fieldContext_Mutation_createLanguage(ctx context.Con
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Language_id(ctx, field)
+			case "createTime":
+				return ec.fieldContext_Language_createTime(ctx, field)
+			case "updateTime":
+				return ec.fieldContext_Language_updateTime(ctx, field)
 			case "calibreID":
 				return ec.fieldContext_Language_calibreID(ctx, field)
 			case "code":
@@ -8030,6 +9467,10 @@ func (ec *executionContext) fieldContext_Mutation_updateLanguage(ctx context.Con
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Language_id(ctx, field)
+			case "createTime":
+				return ec.fieldContext_Language_createTime(ctx, field)
+			case "updateTime":
+				return ec.fieldContext_Language_updateTime(ctx, field)
 			case "calibreID":
 				return ec.fieldContext_Language_calibreID(ctx, field)
 			case "code":
@@ -8092,6 +9533,10 @@ func (ec *executionContext) fieldContext_Mutation_createSeries(ctx context.Conte
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Series_id(ctx, field)
+			case "createTime":
+				return ec.fieldContext_Series_createTime(ctx, field)
+			case "updateTime":
+				return ec.fieldContext_Series_updateTime(ctx, field)
 			case "calibreID":
 				return ec.fieldContext_Series_calibreID(ctx, field)
 			case "name":
@@ -8156,6 +9601,10 @@ func (ec *executionContext) fieldContext_Mutation_updateSeries(ctx context.Conte
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Series_id(ctx, field)
+			case "createTime":
+				return ec.fieldContext_Series_createTime(ctx, field)
+			case "updateTime":
+				return ec.fieldContext_Series_updateTime(ctx, field)
 			case "calibreID":
 				return ec.fieldContext_Series_calibreID(ctx, field)
 			case "name":
@@ -8220,6 +9669,10 @@ func (ec *executionContext) fieldContext_Mutation_createIdentifier(ctx context.C
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Identifier_id(ctx, field)
+			case "createTime":
+				return ec.fieldContext_Identifier_createTime(ctx, field)
+			case "updateTime":
+				return ec.fieldContext_Identifier_updateTime(ctx, field)
 			case "calibreID":
 				return ec.fieldContext_Identifier_calibreID(ctx, field)
 			case "type":
@@ -8284,6 +9737,10 @@ func (ec *executionContext) fieldContext_Mutation_updateIdentifier(ctx context.C
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Identifier_id(ctx, field)
+			case "createTime":
+				return ec.fieldContext_Identifier_createTime(ctx, field)
+			case "updateTime":
+				return ec.fieldContext_Identifier_updateTime(ctx, field)
 			case "calibreID":
 				return ec.fieldContext_Identifier_calibreID(ctx, field)
 			case "type":
@@ -8348,6 +9805,10 @@ func (ec *executionContext) fieldContext_Mutation_createUser(ctx context.Context
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_User_id(ctx, field)
+			case "createTime":
+				return ec.fieldContext_User_createTime(ctx, field)
+			case "updateTime":
+				return ec.fieldContext_User_updateTime(ctx, field)
 			case "username":
 				return ec.fieldContext_User_username(ctx, field)
 			case "email":
@@ -8412,6 +9873,10 @@ func (ec *executionContext) fieldContext_Mutation_updateUser(ctx context.Context
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_User_id(ctx, field)
+			case "createTime":
+				return ec.fieldContext_User_createTime(ctx, field)
+			case "updateTime":
+				return ec.fieldContext_User_updateTime(ctx, field)
 			case "username":
 				return ec.fieldContext_User_username(ctx, field)
 			case "email":
@@ -8723,6 +10188,94 @@ func (ec *executionContext) fieldContext_Publisher_id(ctx context.Context, field
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Publisher_createTime(ctx context.Context, field graphql.CollectedField, obj *ent.Publisher) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Publisher_createTime(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CreateTime, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(time.Time)
+	fc.Result = res
+	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Publisher_createTime(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Publisher",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Time does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Publisher_updateTime(ctx context.Context, field graphql.CollectedField, obj *ent.Publisher) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Publisher_updateTime(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.UpdateTime, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(time.Time)
+	fc.Result = res
+	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Publisher_updateTime(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Publisher",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Time does not have child fields")
 		},
 	}
 	return fc, nil
@@ -9059,6 +10612,10 @@ func (ec *executionContext) fieldContext_PublisherEdge_node(ctx context.Context,
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Publisher_id(ctx, field)
+			case "createTime":
+				return ec.fieldContext_Publisher_createTime(ctx, field)
+			case "updateTime":
+				return ec.fieldContext_Publisher_updateTime(ctx, field)
 			case "calibreID":
 				return ec.fieldContext_Publisher_calibreID(ctx, field)
 			case "name":
@@ -9345,6 +10902,68 @@ func (ec *executionContext) fieldContext_Query_books(ctx context.Context, field 
 	if fc.Args, err = ec.field_Query_books_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_bookFiles(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_bookFiles(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().BookFiles(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*ent.BookFile)
+	fc.Result = res
+	return ec.marshalNBookFile2ᚕᚖlybbrioᚋinternalᚋentᚐBookFileᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_bookFiles(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_BookFile_id(ctx, field)
+			case "createTime":
+				return ec.fieldContext_BookFile_createTime(ctx, field)
+			case "updateTime":
+				return ec.fieldContext_BookFile_updateTime(ctx, field)
+			case "name":
+				return ec.fieldContext_BookFile_name(ctx, field)
+			case "path":
+				return ec.fieldContext_BookFile_path(ctx, field)
+			case "size":
+				return ec.fieldContext_BookFile_size(ctx, field)
+			case "format":
+				return ec.fieldContext_BookFile_format(ctx, field)
+			case "book":
+				return ec.fieldContext_BookFile_book(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type BookFile", field.Name)
+		},
 	}
 	return fc, nil
 }
@@ -9831,6 +11450,10 @@ func (ec *executionContext) fieldContext_Query_users(ctx context.Context, field 
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_User_id(ctx, field)
+			case "createTime":
+				return ec.fieldContext_User_createTime(ctx, field)
+			case "updateTime":
+				return ec.fieldContext_User_updateTime(ctx, field)
 			case "username":
 				return ec.fieldContext_User_username(ctx, field)
 			case "email":
@@ -9887,6 +11510,10 @@ func (ec *executionContext) fieldContext_Query_me(ctx context.Context, field gra
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_User_id(ctx, field)
+			case "createTime":
+				return ec.fieldContext_User_createTime(ctx, field)
+			case "updateTime":
+				return ec.fieldContext_User_updateTime(ctx, field)
 			case "username":
 				return ec.fieldContext_User_username(ctx, field)
 			case "email":
@@ -10075,6 +11702,94 @@ func (ec *executionContext) fieldContext_Series_id(ctx context.Context, field gr
 	return fc, nil
 }
 
+func (ec *executionContext) _Series_createTime(ctx context.Context, field graphql.CollectedField, obj *ent.Series) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Series_createTime(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CreateTime, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(time.Time)
+	fc.Result = res
+	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Series_createTime(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Series",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Time does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Series_updateTime(ctx context.Context, field graphql.CollectedField, obj *ent.Series) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Series_updateTime(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.UpdateTime, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(time.Time)
+	fc.Result = res
+	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Series_updateTime(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Series",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Time does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Series_calibreID(ctx context.Context, field graphql.CollectedField, obj *ent.Series) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Series_calibreID(ctx, field)
 	if err != nil {
@@ -10242,6 +11957,10 @@ func (ec *executionContext) fieldContext_Series_books(ctx context.Context, field
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Book_id(ctx, field)
+			case "createTime":
+				return ec.fieldContext_Book_createTime(ctx, field)
+			case "updateTime":
+				return ec.fieldContext_Book_updateTime(ctx, field)
 			case "calibreID":
 				return ec.fieldContext_Book_calibreID(ctx, field)
 			case "title":
@@ -10272,6 +11991,8 @@ func (ec *executionContext) fieldContext_Series_books(ctx context.Context, field
 				return ec.fieldContext_Book_language(ctx, field)
 			case "shelf":
 				return ec.fieldContext_Book_shelf(ctx, field)
+			case "files":
+				return ec.fieldContext_Book_files(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Book", field.Name)
 		},
@@ -10462,6 +12183,10 @@ func (ec *executionContext) fieldContext_SeriesEdge_node(ctx context.Context, fi
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Series_id(ctx, field)
+			case "createTime":
+				return ec.fieldContext_Series_createTime(ctx, field)
+			case "updateTime":
+				return ec.fieldContext_Series_updateTime(ctx, field)
 			case "calibreID":
 				return ec.fieldContext_Series_calibreID(ctx, field)
 			case "name":
@@ -10560,6 +12285,94 @@ func (ec *executionContext) fieldContext_Shelf_id(ctx context.Context, field gra
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Shelf_createTime(ctx context.Context, field graphql.CollectedField, obj *ent.Shelf) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Shelf_createTime(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CreateTime, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(time.Time)
+	fc.Result = res
+	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Shelf_createTime(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Shelf",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Time does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Shelf_updateTime(ctx context.Context, field graphql.CollectedField, obj *ent.Shelf) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Shelf_updateTime(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.UpdateTime, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(time.Time)
+	fc.Result = res
+	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Shelf_updateTime(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Shelf",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Time does not have child fields")
 		},
 	}
 	return fc, nil
@@ -10779,6 +12592,10 @@ func (ec *executionContext) fieldContext_Shelf_user(ctx context.Context, field g
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_User_id(ctx, field)
+			case "createTime":
+				return ec.fieldContext_User_createTime(ctx, field)
+			case "updateTime":
+				return ec.fieldContext_User_updateTime(ctx, field)
 			case "username":
 				return ec.fieldContext_User_username(ctx, field)
 			case "email":
@@ -11040,6 +12857,10 @@ func (ec *executionContext) fieldContext_ShelfEdge_node(ctx context.Context, fie
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Shelf_id(ctx, field)
+			case "createTime":
+				return ec.fieldContext_Shelf_createTime(ctx, field)
+			case "updateTime":
+				return ec.fieldContext_Shelf_updateTime(ctx, field)
 			case "public":
 				return ec.fieldContext_Shelf_public(ctx, field)
 			case "userID":
@@ -12004,6 +13825,10 @@ func (ec *executionContext) fieldContext_Task_user(ctx context.Context, field gr
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_User_id(ctx, field)
+			case "createTime":
+				return ec.fieldContext_User_createTime(ctx, field)
+			case "updateTime":
+				return ec.fieldContext_User_updateTime(ctx, field)
 			case "username":
 				return ec.fieldContext_User_username(ctx, field)
 			case "email":
@@ -12317,6 +14142,94 @@ func (ec *executionContext) fieldContext_User_id(ctx context.Context, field grap
 	return fc, nil
 }
 
+func (ec *executionContext) _User_createTime(ctx context.Context, field graphql.CollectedField, obj *ent.User) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_User_createTime(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CreateTime, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(time.Time)
+	fc.Result = res
+	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_User_createTime(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "User",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Time does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _User_updateTime(ctx context.Context, field graphql.CollectedField, obj *ent.User) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_User_updateTime(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.UpdateTime, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(time.Time)
+	fc.Result = res
+	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_User_updateTime(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "User",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Time does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _User_username(ctx context.Context, field graphql.CollectedField, obj *ent.User) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_User_username(ctx, field)
 	if err != nil {
@@ -12443,6 +14356,10 @@ func (ec *executionContext) fieldContext_User_shelves(ctx context.Context, field
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Shelf_id(ctx, field)
+			case "createTime":
+				return ec.fieldContext_Shelf_createTime(ctx, field)
+			case "updateTime":
+				return ec.fieldContext_Shelf_updateTime(ctx, field)
 			case "public":
 				return ec.fieldContext_Shelf_public(ctx, field)
 			case "userID":
@@ -12503,14 +14420,18 @@ func (ec *executionContext) fieldContext_User_userPermissions(ctx context.Contex
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_UserPermissions_id(ctx, field)
+			case "createTime":
+				return ec.fieldContext_UserPermissions_createTime(ctx, field)
+			case "updateTime":
+				return ec.fieldContext_UserPermissions_updateTime(ctx, field)
 			case "userID":
 				return ec.fieldContext_UserPermissions_userID(ctx, field)
-			case "canedit":
-				return ec.fieldContext_UserPermissions_canedit(ctx, field)
 			case "admin":
 				return ec.fieldContext_UserPermissions_admin(ctx, field)
 			case "cancreatepublic":
 				return ec.fieldContext_UserPermissions_cancreatepublic(ctx, field)
+			case "canedit":
+				return ec.fieldContext_UserPermissions_canedit(ctx, field)
 			case "user":
 				return ec.fieldContext_UserPermissions_user(ctx, field)
 			}
@@ -12564,6 +14485,94 @@ func (ec *executionContext) fieldContext_UserPermissions_id(ctx context.Context,
 	return fc, nil
 }
 
+func (ec *executionContext) _UserPermissions_createTime(ctx context.Context, field graphql.CollectedField, obj *ent.UserPermissions) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_UserPermissions_createTime(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CreateTime, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(time.Time)
+	fc.Result = res
+	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_UserPermissions_createTime(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "UserPermissions",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Time does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _UserPermissions_updateTime(ctx context.Context, field graphql.CollectedField, obj *ent.UserPermissions) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_UserPermissions_updateTime(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.UpdateTime, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(time.Time)
+	fc.Result = res
+	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_UserPermissions_updateTime(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "UserPermissions",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Time does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _UserPermissions_userID(ctx context.Context, field graphql.CollectedField, obj *ent.UserPermissions) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_UserPermissions_userID(ctx, field)
 	if err != nil {
@@ -12600,50 +14609,6 @@ func (ec *executionContext) fieldContext_UserPermissions_userID(ctx context.Cont
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type ID does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _UserPermissions_canedit(ctx context.Context, field graphql.CollectedField, obj *ent.UserPermissions) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_UserPermissions_canedit(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.CanEdit, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(bool)
-	fc.Result = res
-	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_UserPermissions_canedit(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "UserPermissions",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Boolean does not have child fields")
 		},
 	}
 	return fc, nil
@@ -12737,6 +14702,50 @@ func (ec *executionContext) fieldContext_UserPermissions_cancreatepublic(ctx con
 	return fc, nil
 }
 
+func (ec *executionContext) _UserPermissions_canedit(ctx context.Context, field graphql.CollectedField, obj *ent.UserPermissions) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_UserPermissions_canedit(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CanEdit, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_UserPermissions_canedit(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "UserPermissions",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _UserPermissions_user(ctx context.Context, field graphql.CollectedField, obj *ent.UserPermissions) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_UserPermissions_user(ctx, field)
 	if err != nil {
@@ -12775,6 +14784,10 @@ func (ec *executionContext) fieldContext_UserPermissions_user(ctx context.Contex
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_User_id(ctx, field)
+			case "createTime":
+				return ec.fieldContext_User_createTime(ctx, field)
+			case "updateTime":
+				return ec.fieldContext_User_updateTime(ctx, field)
 			case "username":
 				return ec.fieldContext_User_username(ctx, field)
 			case "email":
@@ -14608,7 +16621,7 @@ func (ec *executionContext) unmarshalInputAuthorWhereInput(ctx context.Context, 
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "calibreID", "calibreIDNEQ", "calibreIDIn", "calibreIDNotIn", "calibreIDGT", "calibreIDGTE", "calibreIDLT", "calibreIDLTE", "calibreIDIsNil", "calibreIDNotNil", "name", "nameNEQ", "nameIn", "nameNotIn", "nameGT", "nameGTE", "nameLT", "nameLTE", "nameContains", "nameHasPrefix", "nameHasSuffix", "nameEqualFold", "nameContainsFold", "sort", "sortNEQ", "sortIn", "sortNotIn", "sortGT", "sortGTE", "sortLT", "sortLTE", "sortContains", "sortHasPrefix", "sortHasSuffix", "sortEqualFold", "sortContainsFold", "link", "linkNEQ", "linkIn", "linkNotIn", "linkGT", "linkGTE", "linkLT", "linkLTE", "linkContains", "linkHasPrefix", "linkHasSuffix", "linkIsNil", "linkNotNil", "linkEqualFold", "linkContainsFold", "hasBooks", "hasBooksWith"}
+	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createTime", "createTimeNEQ", "createTimeIn", "createTimeNotIn", "createTimeGT", "createTimeGTE", "createTimeLT", "createTimeLTE", "updateTime", "updateTimeNEQ", "updateTimeIn", "updateTimeNotIn", "updateTimeGT", "updateTimeGTE", "updateTimeLT", "updateTimeLTE", "calibreID", "calibreIDNEQ", "calibreIDIn", "calibreIDNotIn", "calibreIDGT", "calibreIDGTE", "calibreIDLT", "calibreIDLTE", "calibreIDIsNil", "calibreIDNotNil", "name", "nameNEQ", "nameIn", "nameNotIn", "nameGT", "nameGTE", "nameLT", "nameLTE", "nameContains", "nameHasPrefix", "nameHasSuffix", "nameEqualFold", "nameContainsFold", "sort", "sortNEQ", "sortIn", "sortNotIn", "sortGT", "sortGTE", "sortLT", "sortLTE", "sortContains", "sortHasPrefix", "sortHasSuffix", "sortEqualFold", "sortContainsFold", "link", "linkNEQ", "linkIn", "linkNotIn", "linkGT", "linkGTE", "linkLT", "linkLTE", "linkContains", "linkHasPrefix", "linkHasSuffix", "linkIsNil", "linkNotNil", "linkEqualFold", "linkContainsFold", "hasBooks", "hasBooksWith"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -14692,6 +16705,118 @@ func (ec *executionContext) unmarshalInputAuthorWhereInput(ctx context.Context, 
 				return it, err
 			}
 			it.IDLTE = data
+		case "createTime":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTime"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTime = data
+		case "createTimeNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeNEQ"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTimeNEQ = data
+		case "createTimeIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeIn"))
+			data, err := ec.unmarshalOTime2ᚕtimeᚐTimeᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTimeIn = data
+		case "createTimeNotIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeNotIn"))
+			data, err := ec.unmarshalOTime2ᚕtimeᚐTimeᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTimeNotIn = data
+		case "createTimeGT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeGT"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTimeGT = data
+		case "createTimeGTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeGTE"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTimeGTE = data
+		case "createTimeLT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeLT"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTimeLT = data
+		case "createTimeLTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeLTE"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTimeLTE = data
+		case "updateTime":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTime"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTime = data
+		case "updateTimeNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeNEQ"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTimeNEQ = data
+		case "updateTimeIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeIn"))
+			data, err := ec.unmarshalOTime2ᚕtimeᚐTimeᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTimeIn = data
+		case "updateTimeNotIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeNotIn"))
+			data, err := ec.unmarshalOTime2ᚕtimeᚐTimeᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTimeNotIn = data
+		case "updateTimeGT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeGT"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTimeGT = data
+		case "updateTimeGTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeGTE"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTimeGTE = data
+		case "updateTimeLT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeLT"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTimeLT = data
+		case "updateTimeLTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeLTE"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTimeLTE = data
 		case "calibreID":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("calibreID"))
 			data, err := ec.unmarshalOInt2ᚖint64(ctx, v)
@@ -15069,6 +17194,495 @@ func (ec *executionContext) unmarshalInputAuthorWhereInput(ctx context.Context, 
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputBookFileWhereInput(ctx context.Context, obj interface{}) (ent.BookFileWhereInput, error) {
+	var it ent.BookFileWhereInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createTime", "createTimeNEQ", "createTimeIn", "createTimeNotIn", "createTimeGT", "createTimeGTE", "createTimeLT", "createTimeLTE", "updateTime", "updateTimeNEQ", "updateTimeIn", "updateTimeNotIn", "updateTimeGT", "updateTimeGTE", "updateTimeLT", "updateTimeLTE", "name", "nameNEQ", "nameIn", "nameNotIn", "nameGT", "nameGTE", "nameLT", "nameLTE", "nameContains", "nameHasPrefix", "nameHasSuffix", "nameEqualFold", "nameContainsFold", "path", "pathNEQ", "pathIn", "pathNotIn", "pathGT", "pathGTE", "pathLT", "pathLTE", "pathContains", "pathHasPrefix", "pathHasSuffix", "pathEqualFold", "pathContainsFold", "size", "sizeNEQ", "sizeIn", "sizeNotIn", "sizeGT", "sizeGTE", "sizeLT", "sizeLTE", "format", "formatNEQ", "formatIn", "formatNotIn", "hasBook", "hasBookWith"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "not":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("not"))
+			data, err := ec.unmarshalOBookFileWhereInput2ᚖlybbrioᚋinternalᚋentᚐBookFileWhereInput(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Not = data
+		case "and":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("and"))
+			data, err := ec.unmarshalOBookFileWhereInput2ᚕᚖlybbrioᚋinternalᚋentᚐBookFileWhereInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.And = data
+		case "or":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("or"))
+			data, err := ec.unmarshalOBookFileWhereInput2ᚕᚖlybbrioᚋinternalᚋentᚐBookFileWhereInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Or = data
+		case "id":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+			data, err := ec.unmarshalOID2ᚖlybbrioᚋinternalᚋentᚋschemaᚋksuidᚐID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ID = data
+		case "idNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("idNEQ"))
+			data, err := ec.unmarshalOID2ᚖlybbrioᚋinternalᚋentᚋschemaᚋksuidᚐID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.IDNEQ = data
+		case "idIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("idIn"))
+			data, err := ec.unmarshalOID2ᚕlybbrioᚋinternalᚋentᚋschemaᚋksuidᚐIDᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.IDIn = data
+		case "idNotIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("idNotIn"))
+			data, err := ec.unmarshalOID2ᚕlybbrioᚋinternalᚋentᚋschemaᚋksuidᚐIDᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.IDNotIn = data
+		case "idGT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("idGT"))
+			data, err := ec.unmarshalOID2ᚖlybbrioᚋinternalᚋentᚋschemaᚋksuidᚐID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.IDGT = data
+		case "idGTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("idGTE"))
+			data, err := ec.unmarshalOID2ᚖlybbrioᚋinternalᚋentᚋschemaᚋksuidᚐID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.IDGTE = data
+		case "idLT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("idLT"))
+			data, err := ec.unmarshalOID2ᚖlybbrioᚋinternalᚋentᚋschemaᚋksuidᚐID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.IDLT = data
+		case "idLTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("idLTE"))
+			data, err := ec.unmarshalOID2ᚖlybbrioᚋinternalᚋentᚋschemaᚋksuidᚐID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.IDLTE = data
+		case "createTime":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTime"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTime = data
+		case "createTimeNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeNEQ"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTimeNEQ = data
+		case "createTimeIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeIn"))
+			data, err := ec.unmarshalOTime2ᚕtimeᚐTimeᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTimeIn = data
+		case "createTimeNotIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeNotIn"))
+			data, err := ec.unmarshalOTime2ᚕtimeᚐTimeᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTimeNotIn = data
+		case "createTimeGT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeGT"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTimeGT = data
+		case "createTimeGTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeGTE"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTimeGTE = data
+		case "createTimeLT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeLT"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTimeLT = data
+		case "createTimeLTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeLTE"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTimeLTE = data
+		case "updateTime":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTime"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTime = data
+		case "updateTimeNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeNEQ"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTimeNEQ = data
+		case "updateTimeIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeIn"))
+			data, err := ec.unmarshalOTime2ᚕtimeᚐTimeᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTimeIn = data
+		case "updateTimeNotIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeNotIn"))
+			data, err := ec.unmarshalOTime2ᚕtimeᚐTimeᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTimeNotIn = data
+		case "updateTimeGT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeGT"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTimeGT = data
+		case "updateTimeGTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeGTE"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTimeGTE = data
+		case "updateTimeLT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeLT"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTimeLT = data
+		case "updateTimeLTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeLTE"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTimeLTE = data
+		case "name":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Name = data
+		case "nameNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("nameNEQ"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.NameNEQ = data
+		case "nameIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("nameIn"))
+			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.NameIn = data
+		case "nameNotIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("nameNotIn"))
+			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.NameNotIn = data
+		case "nameGT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("nameGT"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.NameGT = data
+		case "nameGTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("nameGTE"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.NameGTE = data
+		case "nameLT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("nameLT"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.NameLT = data
+		case "nameLTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("nameLTE"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.NameLTE = data
+		case "nameContains":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("nameContains"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.NameContains = data
+		case "nameHasPrefix":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("nameHasPrefix"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.NameHasPrefix = data
+		case "nameHasSuffix":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("nameHasSuffix"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.NameHasSuffix = data
+		case "nameEqualFold":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("nameEqualFold"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.NameEqualFold = data
+		case "nameContainsFold":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("nameContainsFold"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.NameContainsFold = data
+		case "path":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("path"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Path = data
+		case "pathNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pathNEQ"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PathNEQ = data
+		case "pathIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pathIn"))
+			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PathIn = data
+		case "pathNotIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pathNotIn"))
+			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PathNotIn = data
+		case "pathGT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pathGT"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PathGT = data
+		case "pathGTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pathGTE"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PathGTE = data
+		case "pathLT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pathLT"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PathLT = data
+		case "pathLTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pathLTE"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PathLTE = data
+		case "pathContains":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pathContains"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PathContains = data
+		case "pathHasPrefix":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pathHasPrefix"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PathHasPrefix = data
+		case "pathHasSuffix":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pathHasSuffix"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PathHasSuffix = data
+		case "pathEqualFold":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pathEqualFold"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PathEqualFold = data
+		case "pathContainsFold":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pathContainsFold"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PathContainsFold = data
+		case "size":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("size"))
+			data, err := ec.unmarshalOInt2ᚖint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Size = data
+		case "sizeNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("sizeNEQ"))
+			data, err := ec.unmarshalOInt2ᚖint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.SizeNEQ = data
+		case "sizeIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("sizeIn"))
+			data, err := ec.unmarshalOInt2ᚕint64ᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.SizeIn = data
+		case "sizeNotIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("sizeNotIn"))
+			data, err := ec.unmarshalOInt2ᚕint64ᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.SizeNotIn = data
+		case "sizeGT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("sizeGT"))
+			data, err := ec.unmarshalOInt2ᚖint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.SizeGT = data
+		case "sizeGTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("sizeGTE"))
+			data, err := ec.unmarshalOInt2ᚖint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.SizeGTE = data
+		case "sizeLT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("sizeLT"))
+			data, err := ec.unmarshalOInt2ᚖint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.SizeLT = data
+		case "sizeLTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("sizeLTE"))
+			data, err := ec.unmarshalOInt2ᚖint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.SizeLTE = data
+		case "format":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("format"))
+			data, err := ec.unmarshalOBookFileFormat2ᚖlybbrioᚋinternalᚋentᚋbookfileᚐFormat(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Format = data
+		case "formatNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("formatNEQ"))
+			data, err := ec.unmarshalOBookFileFormat2ᚖlybbrioᚋinternalᚋentᚋbookfileᚐFormat(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.FormatNEQ = data
+		case "formatIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("formatIn"))
+			data, err := ec.unmarshalOBookFileFormat2ᚕlybbrioᚋinternalᚋentᚋbookfileᚐFormatᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.FormatIn = data
+		case "formatNotIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("formatNotIn"))
+			data, err := ec.unmarshalOBookFileFormat2ᚕlybbrioᚋinternalᚋentᚋbookfileᚐFormatᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.FormatNotIn = data
+		case "hasBook":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasBook"))
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HasBook = data
+		case "hasBookWith":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasBookWith"))
+			data, err := ec.unmarshalOBookWhereInput2ᚕᚖlybbrioᚋinternalᚋentᚐBookWhereInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HasBookWith = data
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputBookOrder(ctx context.Context, obj interface{}) (ent.BookOrder, error) {
 	var it ent.BookOrder
 	asMap := map[string]interface{}{}
@@ -15114,7 +17728,7 @@ func (ec *executionContext) unmarshalInputBookWhereInput(ctx context.Context, ob
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "calibreID", "calibreIDNEQ", "calibreIDIn", "calibreIDNotIn", "calibreIDGT", "calibreIDGTE", "calibreIDLT", "calibreIDLTE", "calibreIDIsNil", "calibreIDNotNil", "title", "titleNEQ", "titleIn", "titleNotIn", "titleGT", "titleGTE", "titleLT", "titleLTE", "titleContains", "titleHasPrefix", "titleHasSuffix", "titleEqualFold", "titleContainsFold", "sort", "sortNEQ", "sortIn", "sortNotIn", "sortGT", "sortGTE", "sortLT", "sortLTE", "sortContains", "sortHasPrefix", "sortHasSuffix", "sortEqualFold", "sortContainsFold", "publishedDate", "publishedDateNEQ", "publishedDateIn", "publishedDateNotIn", "publishedDateGT", "publishedDateGTE", "publishedDateLT", "publishedDateLTE", "publishedDateIsNil", "publishedDateNotNil", "path", "pathNEQ", "pathIn", "pathNotIn", "pathGT", "pathGTE", "pathLT", "pathLTE", "pathContains", "pathHasPrefix", "pathHasSuffix", "pathEqualFold", "pathContainsFold", "isbn", "isbnNEQ", "isbnIn", "isbnNotIn", "isbnGT", "isbnGTE", "isbnLT", "isbnLTE", "isbnContains", "isbnHasPrefix", "isbnHasSuffix", "isbnIsNil", "isbnNotNil", "isbnEqualFold", "isbnContainsFold", "description", "descriptionNEQ", "descriptionIn", "descriptionNotIn", "descriptionGT", "descriptionGTE", "descriptionLT", "descriptionLTE", "descriptionContains", "descriptionHasPrefix", "descriptionHasSuffix", "descriptionIsNil", "descriptionNotNil", "descriptionEqualFold", "descriptionContainsFold", "seriesIndex", "seriesIndexNEQ", "seriesIndexIn", "seriesIndexNotIn", "seriesIndexGT", "seriesIndexGTE", "seriesIndexLT", "seriesIndexLTE", "seriesIndexIsNil", "seriesIndexNotNil", "hasAuthors", "hasAuthorsWith", "hasPublisher", "hasPublisherWith", "hasSeries", "hasSeriesWith", "hasIdentifiers", "hasIdentifiersWith", "hasTags", "hasTagsWith", "hasLanguage", "hasLanguageWith", "hasShelf", "hasShelfWith"}
+	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createTime", "createTimeNEQ", "createTimeIn", "createTimeNotIn", "createTimeGT", "createTimeGTE", "createTimeLT", "createTimeLTE", "updateTime", "updateTimeNEQ", "updateTimeIn", "updateTimeNotIn", "updateTimeGT", "updateTimeGTE", "updateTimeLT", "updateTimeLTE", "calibreID", "calibreIDNEQ", "calibreIDIn", "calibreIDNotIn", "calibreIDGT", "calibreIDGTE", "calibreIDLT", "calibreIDLTE", "calibreIDIsNil", "calibreIDNotNil", "title", "titleNEQ", "titleIn", "titleNotIn", "titleGT", "titleGTE", "titleLT", "titleLTE", "titleContains", "titleHasPrefix", "titleHasSuffix", "titleEqualFold", "titleContainsFold", "sort", "sortNEQ", "sortIn", "sortNotIn", "sortGT", "sortGTE", "sortLT", "sortLTE", "sortContains", "sortHasPrefix", "sortHasSuffix", "sortEqualFold", "sortContainsFold", "publishedDate", "publishedDateNEQ", "publishedDateIn", "publishedDateNotIn", "publishedDateGT", "publishedDateGTE", "publishedDateLT", "publishedDateLTE", "publishedDateIsNil", "publishedDateNotNil", "path", "pathNEQ", "pathIn", "pathNotIn", "pathGT", "pathGTE", "pathLT", "pathLTE", "pathContains", "pathHasPrefix", "pathHasSuffix", "pathEqualFold", "pathContainsFold", "isbn", "isbnNEQ", "isbnIn", "isbnNotIn", "isbnGT", "isbnGTE", "isbnLT", "isbnLTE", "isbnContains", "isbnHasPrefix", "isbnHasSuffix", "isbnIsNil", "isbnNotNil", "isbnEqualFold", "isbnContainsFold", "description", "descriptionNEQ", "descriptionIn", "descriptionNotIn", "descriptionGT", "descriptionGTE", "descriptionLT", "descriptionLTE", "descriptionContains", "descriptionHasPrefix", "descriptionHasSuffix", "descriptionIsNil", "descriptionNotNil", "descriptionEqualFold", "descriptionContainsFold", "seriesIndex", "seriesIndexNEQ", "seriesIndexIn", "seriesIndexNotIn", "seriesIndexGT", "seriesIndexGTE", "seriesIndexLT", "seriesIndexLTE", "seriesIndexIsNil", "seriesIndexNotNil", "hasAuthors", "hasAuthorsWith", "hasPublisher", "hasPublisherWith", "hasSeries", "hasSeriesWith", "hasIdentifiers", "hasIdentifiersWith", "hasTags", "hasTagsWith", "hasLanguage", "hasLanguageWith", "hasShelf", "hasShelfWith", "hasFiles", "hasFilesWith"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -15198,6 +17812,118 @@ func (ec *executionContext) unmarshalInputBookWhereInput(ctx context.Context, ob
 				return it, err
 			}
 			it.IDLTE = data
+		case "createTime":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTime"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTime = data
+		case "createTimeNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeNEQ"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTimeNEQ = data
+		case "createTimeIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeIn"))
+			data, err := ec.unmarshalOTime2ᚕtimeᚐTimeᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTimeIn = data
+		case "createTimeNotIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeNotIn"))
+			data, err := ec.unmarshalOTime2ᚕtimeᚐTimeᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTimeNotIn = data
+		case "createTimeGT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeGT"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTimeGT = data
+		case "createTimeGTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeGTE"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTimeGTE = data
+		case "createTimeLT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeLT"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTimeLT = data
+		case "createTimeLTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeLTE"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTimeLTE = data
+		case "updateTime":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTime"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTime = data
+		case "updateTimeNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeNEQ"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTimeNEQ = data
+		case "updateTimeIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeIn"))
+			data, err := ec.unmarshalOTime2ᚕtimeᚐTimeᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTimeIn = data
+		case "updateTimeNotIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeNotIn"))
+			data, err := ec.unmarshalOTime2ᚕtimeᚐTimeᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTimeNotIn = data
+		case "updateTimeGT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeGT"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTimeGT = data
+		case "updateTimeGTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeGTE"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTimeGTE = data
+		case "updateTimeLT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeLT"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTimeLT = data
+		case "updateTimeLTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeLTE"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTimeLTE = data
 		case "calibreID":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("calibreID"))
 			data, err := ec.unmarshalOInt2ᚖint64(ctx, v)
@@ -15989,6 +18715,20 @@ func (ec *executionContext) unmarshalInputBookWhereInput(ctx context.Context, ob
 				return it, err
 			}
 			it.HasShelfWith = data
+		case "hasFiles":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasFiles"))
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HasFiles = data
+		case "hasFilesWith":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasFilesWith"))
+			data, err := ec.unmarshalOBookFileWhereInput2ᚕᚖlybbrioᚋinternalᚋentᚐBookFileWhereInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HasFilesWith = data
 		}
 	}
 
@@ -16002,13 +18742,27 @@ func (ec *executionContext) unmarshalInputCreateAuthorInput(ctx context.Context,
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"calibreID", "name", "sort", "link", "bookIDs"}
+	fieldsInOrder := [...]string{"createTime", "updateTime", "calibreID", "name", "sort", "link", "bookIDs"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
 			continue
 		}
 		switch k {
+		case "createTime":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTime"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTime = data
+		case "updateTime":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTime"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTime = data
 		case "calibreID":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("calibreID"))
 			data, err := ec.unmarshalOInt2ᚖint64(ctx, v)
@@ -16057,13 +18811,27 @@ func (ec *executionContext) unmarshalInputCreateBookInput(ctx context.Context, o
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"calibreID", "title", "sort", "publishedDate", "path", "isbn", "description", "seriesIndex", "authorIDs", "publisherIDs", "seriesIDs", "identifierIDs", "tagIDs", "languageIDs", "shelfIDs"}
+	fieldsInOrder := [...]string{"createTime", "updateTime", "calibreID", "title", "sort", "publishedDate", "path", "isbn", "description", "seriesIndex", "authorIDs", "publisherIDs", "seriesIDs", "identifierIDs", "tagIDs", "languageIDs", "shelfIDs", "fileIDs"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
 			continue
 		}
 		switch k {
+		case "createTime":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTime"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTime = data
+		case "updateTime":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTime"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTime = data
 		case "calibreID":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("calibreID"))
 			data, err := ec.unmarshalOInt2ᚖint64(ctx, v)
@@ -16169,6 +18937,13 @@ func (ec *executionContext) unmarshalInputCreateBookInput(ctx context.Context, o
 				return it, err
 			}
 			it.ShelfIDs = data
+		case "fileIDs":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("fileIDs"))
+			data, err := ec.unmarshalOID2ᚕlybbrioᚋinternalᚋentᚋschemaᚋksuidᚐIDᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.FileIDs = data
 		}
 	}
 
@@ -16182,13 +18957,27 @@ func (ec *executionContext) unmarshalInputCreateIdentifierInput(ctx context.Cont
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"calibreID", "type", "value", "bookID"}
+	fieldsInOrder := [...]string{"createTime", "updateTime", "calibreID", "type", "value", "bookID"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
 			continue
 		}
 		switch k {
+		case "createTime":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTime"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTime = data
+		case "updateTime":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTime"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTime = data
 		case "calibreID":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("calibreID"))
 			data, err := ec.unmarshalOInt2ᚖint64(ctx, v)
@@ -16230,13 +19019,27 @@ func (ec *executionContext) unmarshalInputCreateLanguageInput(ctx context.Contex
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"calibreID", "code", "bookIDs"}
+	fieldsInOrder := [...]string{"createTime", "updateTime", "calibreID", "code", "bookIDs"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
 			continue
 		}
 		switch k {
+		case "createTime":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTime"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTime = data
+		case "updateTime":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTime"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTime = data
 		case "calibreID":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("calibreID"))
 			data, err := ec.unmarshalOInt2ᚖint64(ctx, v)
@@ -16271,13 +19074,27 @@ func (ec *executionContext) unmarshalInputCreatePublisherInput(ctx context.Conte
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"calibreID", "name", "bookIDs"}
+	fieldsInOrder := [...]string{"createTime", "updateTime", "calibreID", "name", "bookIDs"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
 			continue
 		}
 		switch k {
+		case "createTime":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTime"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTime = data
+		case "updateTime":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTime"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTime = data
 		case "calibreID":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("calibreID"))
 			data, err := ec.unmarshalOInt2ᚖint64(ctx, v)
@@ -16312,13 +19129,27 @@ func (ec *executionContext) unmarshalInputCreateSeriesInput(ctx context.Context,
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"calibreID", "name", "sort", "bookIDs"}
+	fieldsInOrder := [...]string{"createTime", "updateTime", "calibreID", "name", "sort", "bookIDs"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
 			continue
 		}
 		switch k {
+		case "createTime":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTime"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTime = data
+		case "updateTime":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTime"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTime = data
 		case "calibreID":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("calibreID"))
 			data, err := ec.unmarshalOInt2ᚖint64(ctx, v)
@@ -16476,13 +19307,27 @@ func (ec *executionContext) unmarshalInputCreateUserInput(ctx context.Context, o
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"username", "passwordHash", "email", "shelfIDs", "userPermissionsID"}
+	fieldsInOrder := [...]string{"createTime", "updateTime", "username", "passwordHash", "email", "shelfIDs", "userPermissionsID"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
 			continue
 		}
 		switch k {
+		case "createTime":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTime"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTime = data
+		case "updateTime":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTime"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTime = data
 		case "username":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("username"))
 			data, err := ec.unmarshalNString2string(ctx, v)
@@ -16569,7 +19414,7 @@ func (ec *executionContext) unmarshalInputIdentifierWhereInput(ctx context.Conte
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "calibreID", "calibreIDNEQ", "calibreIDIn", "calibreIDNotIn", "calibreIDGT", "calibreIDGTE", "calibreIDLT", "calibreIDLTE", "calibreIDIsNil", "calibreIDNotNil", "type", "typeNEQ", "typeIn", "typeNotIn", "typeGT", "typeGTE", "typeLT", "typeLTE", "typeContains", "typeHasPrefix", "typeHasSuffix", "typeEqualFold", "typeContainsFold", "value", "valueNEQ", "valueIn", "valueNotIn", "valueGT", "valueGTE", "valueLT", "valueLTE", "valueContains", "valueHasPrefix", "valueHasSuffix", "valueEqualFold", "valueContainsFold", "hasBook", "hasBookWith"}
+	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createTime", "createTimeNEQ", "createTimeIn", "createTimeNotIn", "createTimeGT", "createTimeGTE", "createTimeLT", "createTimeLTE", "updateTime", "updateTimeNEQ", "updateTimeIn", "updateTimeNotIn", "updateTimeGT", "updateTimeGTE", "updateTimeLT", "updateTimeLTE", "calibreID", "calibreIDNEQ", "calibreIDIn", "calibreIDNotIn", "calibreIDGT", "calibreIDGTE", "calibreIDLT", "calibreIDLTE", "calibreIDIsNil", "calibreIDNotNil", "type", "typeNEQ", "typeIn", "typeNotIn", "typeGT", "typeGTE", "typeLT", "typeLTE", "typeContains", "typeHasPrefix", "typeHasSuffix", "typeEqualFold", "typeContainsFold", "value", "valueNEQ", "valueIn", "valueNotIn", "valueGT", "valueGTE", "valueLT", "valueLTE", "valueContains", "valueHasPrefix", "valueHasSuffix", "valueEqualFold", "valueContainsFold", "hasBook", "hasBookWith"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -16653,6 +19498,118 @@ func (ec *executionContext) unmarshalInputIdentifierWhereInput(ctx context.Conte
 				return it, err
 			}
 			it.IDLTE = data
+		case "createTime":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTime"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTime = data
+		case "createTimeNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeNEQ"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTimeNEQ = data
+		case "createTimeIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeIn"))
+			data, err := ec.unmarshalOTime2ᚕtimeᚐTimeᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTimeIn = data
+		case "createTimeNotIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeNotIn"))
+			data, err := ec.unmarshalOTime2ᚕtimeᚐTimeᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTimeNotIn = data
+		case "createTimeGT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeGT"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTimeGT = data
+		case "createTimeGTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeGTE"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTimeGTE = data
+		case "createTimeLT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeLT"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTimeLT = data
+		case "createTimeLTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeLTE"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTimeLTE = data
+		case "updateTime":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTime"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTime = data
+		case "updateTimeNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeNEQ"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTimeNEQ = data
+		case "updateTimeIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeIn"))
+			data, err := ec.unmarshalOTime2ᚕtimeᚐTimeᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTimeIn = data
+		case "updateTimeNotIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeNotIn"))
+			data, err := ec.unmarshalOTime2ᚕtimeᚐTimeᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTimeNotIn = data
+		case "updateTimeGT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeGT"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTimeGT = data
+		case "updateTimeGTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeGTE"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTimeGTE = data
+		case "updateTimeLT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeLT"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTimeLT = data
+		case "updateTimeLTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeLTE"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTimeLTE = data
 		case "calibreID":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("calibreID"))
 			data, err := ec.unmarshalOInt2ᚖint64(ctx, v)
@@ -16970,7 +19927,7 @@ func (ec *executionContext) unmarshalInputLanguageWhereInput(ctx context.Context
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "calibreID", "calibreIDNEQ", "calibreIDIn", "calibreIDNotIn", "calibreIDGT", "calibreIDGTE", "calibreIDLT", "calibreIDLTE", "calibreIDIsNil", "calibreIDNotNil", "code", "codeNEQ", "codeIn", "codeNotIn", "codeGT", "codeGTE", "codeLT", "codeLTE", "codeContains", "codeHasPrefix", "codeHasSuffix", "codeEqualFold", "codeContainsFold", "hasBooks", "hasBooksWith"}
+	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createTime", "createTimeNEQ", "createTimeIn", "createTimeNotIn", "createTimeGT", "createTimeGTE", "createTimeLT", "createTimeLTE", "updateTime", "updateTimeNEQ", "updateTimeIn", "updateTimeNotIn", "updateTimeGT", "updateTimeGTE", "updateTimeLT", "updateTimeLTE", "calibreID", "calibreIDNEQ", "calibreIDIn", "calibreIDNotIn", "calibreIDGT", "calibreIDGTE", "calibreIDLT", "calibreIDLTE", "calibreIDIsNil", "calibreIDNotNil", "code", "codeNEQ", "codeIn", "codeNotIn", "codeGT", "codeGTE", "codeLT", "codeLTE", "codeContains", "codeHasPrefix", "codeHasSuffix", "codeEqualFold", "codeContainsFold", "hasBooks", "hasBooksWith"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -17054,6 +20011,118 @@ func (ec *executionContext) unmarshalInputLanguageWhereInput(ctx context.Context
 				return it, err
 			}
 			it.IDLTE = data
+		case "createTime":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTime"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTime = data
+		case "createTimeNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeNEQ"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTimeNEQ = data
+		case "createTimeIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeIn"))
+			data, err := ec.unmarshalOTime2ᚕtimeᚐTimeᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTimeIn = data
+		case "createTimeNotIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeNotIn"))
+			data, err := ec.unmarshalOTime2ᚕtimeᚐTimeᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTimeNotIn = data
+		case "createTimeGT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeGT"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTimeGT = data
+		case "createTimeGTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeGTE"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTimeGTE = data
+		case "createTimeLT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeLT"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTimeLT = data
+		case "createTimeLTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeLTE"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTimeLTE = data
+		case "updateTime":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTime"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTime = data
+		case "updateTimeNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeNEQ"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTimeNEQ = data
+		case "updateTimeIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeIn"))
+			data, err := ec.unmarshalOTime2ᚕtimeᚐTimeᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTimeIn = data
+		case "updateTimeNotIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeNotIn"))
+			data, err := ec.unmarshalOTime2ᚕtimeᚐTimeᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTimeNotIn = data
+		case "updateTimeGT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeGT"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTimeGT = data
+		case "updateTimeGTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeGTE"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTimeGTE = data
+		case "updateTimeLT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeLT"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTimeLT = data
+		case "updateTimeLTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeLTE"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTimeLTE = data
 		case "calibreID":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("calibreID"))
 			data, err := ec.unmarshalOInt2ᚖint64(ctx, v)
@@ -17280,7 +20349,7 @@ func (ec *executionContext) unmarshalInputPublisherWhereInput(ctx context.Contex
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "calibreID", "calibreIDNEQ", "calibreIDIn", "calibreIDNotIn", "calibreIDGT", "calibreIDGTE", "calibreIDLT", "calibreIDLTE", "calibreIDIsNil", "calibreIDNotNil", "name", "nameNEQ", "nameIn", "nameNotIn", "nameGT", "nameGTE", "nameLT", "nameLTE", "nameContains", "nameHasPrefix", "nameHasSuffix", "nameEqualFold", "nameContainsFold", "hasBooks", "hasBooksWith"}
+	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createTime", "createTimeNEQ", "createTimeIn", "createTimeNotIn", "createTimeGT", "createTimeGTE", "createTimeLT", "createTimeLTE", "updateTime", "updateTimeNEQ", "updateTimeIn", "updateTimeNotIn", "updateTimeGT", "updateTimeGTE", "updateTimeLT", "updateTimeLTE", "calibreID", "calibreIDNEQ", "calibreIDIn", "calibreIDNotIn", "calibreIDGT", "calibreIDGTE", "calibreIDLT", "calibreIDLTE", "calibreIDIsNil", "calibreIDNotNil", "name", "nameNEQ", "nameIn", "nameNotIn", "nameGT", "nameGTE", "nameLT", "nameLTE", "nameContains", "nameHasPrefix", "nameHasSuffix", "nameEqualFold", "nameContainsFold", "hasBooks", "hasBooksWith"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -17364,6 +20433,118 @@ func (ec *executionContext) unmarshalInputPublisherWhereInput(ctx context.Contex
 				return it, err
 			}
 			it.IDLTE = data
+		case "createTime":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTime"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTime = data
+		case "createTimeNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeNEQ"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTimeNEQ = data
+		case "createTimeIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeIn"))
+			data, err := ec.unmarshalOTime2ᚕtimeᚐTimeᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTimeIn = data
+		case "createTimeNotIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeNotIn"))
+			data, err := ec.unmarshalOTime2ᚕtimeᚐTimeᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTimeNotIn = data
+		case "createTimeGT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeGT"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTimeGT = data
+		case "createTimeGTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeGTE"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTimeGTE = data
+		case "createTimeLT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeLT"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTimeLT = data
+		case "createTimeLTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeLTE"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTimeLTE = data
+		case "updateTime":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTime"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTime = data
+		case "updateTimeNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeNEQ"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTimeNEQ = data
+		case "updateTimeIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeIn"))
+			data, err := ec.unmarshalOTime2ᚕtimeᚐTimeᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTimeIn = data
+		case "updateTimeNotIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeNotIn"))
+			data, err := ec.unmarshalOTime2ᚕtimeᚐTimeᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTimeNotIn = data
+		case "updateTimeGT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeGT"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTimeGT = data
+		case "updateTimeGTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeGTE"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTimeGTE = data
+		case "updateTimeLT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeLT"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTimeLT = data
+		case "updateTimeLTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeLTE"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTimeLTE = data
 		case "calibreID":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("calibreID"))
 			data, err := ec.unmarshalOInt2ᚖint64(ctx, v)
@@ -17590,7 +20771,7 @@ func (ec *executionContext) unmarshalInputSeriesWhereInput(ctx context.Context, 
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "calibreID", "calibreIDNEQ", "calibreIDIn", "calibreIDNotIn", "calibreIDGT", "calibreIDGTE", "calibreIDLT", "calibreIDLTE", "calibreIDIsNil", "calibreIDNotNil", "name", "nameNEQ", "nameIn", "nameNotIn", "nameGT", "nameGTE", "nameLT", "nameLTE", "nameContains", "nameHasPrefix", "nameHasSuffix", "nameEqualFold", "nameContainsFold", "sort", "sortNEQ", "sortIn", "sortNotIn", "sortGT", "sortGTE", "sortLT", "sortLTE", "sortContains", "sortHasPrefix", "sortHasSuffix", "sortEqualFold", "sortContainsFold", "hasBooks", "hasBooksWith"}
+	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createTime", "createTimeNEQ", "createTimeIn", "createTimeNotIn", "createTimeGT", "createTimeGTE", "createTimeLT", "createTimeLTE", "updateTime", "updateTimeNEQ", "updateTimeIn", "updateTimeNotIn", "updateTimeGT", "updateTimeGTE", "updateTimeLT", "updateTimeLTE", "calibreID", "calibreIDNEQ", "calibreIDIn", "calibreIDNotIn", "calibreIDGT", "calibreIDGTE", "calibreIDLT", "calibreIDLTE", "calibreIDIsNil", "calibreIDNotNil", "name", "nameNEQ", "nameIn", "nameNotIn", "nameGT", "nameGTE", "nameLT", "nameLTE", "nameContains", "nameHasPrefix", "nameHasSuffix", "nameEqualFold", "nameContainsFold", "sort", "sortNEQ", "sortIn", "sortNotIn", "sortGT", "sortGTE", "sortLT", "sortLTE", "sortContains", "sortHasPrefix", "sortHasSuffix", "sortEqualFold", "sortContainsFold", "hasBooks", "hasBooksWith"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -17674,6 +20855,118 @@ func (ec *executionContext) unmarshalInputSeriesWhereInput(ctx context.Context, 
 				return it, err
 			}
 			it.IDLTE = data
+		case "createTime":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTime"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTime = data
+		case "createTimeNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeNEQ"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTimeNEQ = data
+		case "createTimeIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeIn"))
+			data, err := ec.unmarshalOTime2ᚕtimeᚐTimeᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTimeIn = data
+		case "createTimeNotIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeNotIn"))
+			data, err := ec.unmarshalOTime2ᚕtimeᚐTimeᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTimeNotIn = data
+		case "createTimeGT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeGT"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTimeGT = data
+		case "createTimeGTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeGTE"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTimeGTE = data
+		case "createTimeLT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeLT"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTimeLT = data
+		case "createTimeLTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeLTE"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTimeLTE = data
+		case "updateTime":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTime"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTime = data
+		case "updateTimeNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeNEQ"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTimeNEQ = data
+		case "updateTimeIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeIn"))
+			data, err := ec.unmarshalOTime2ᚕtimeᚐTimeᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTimeIn = data
+		case "updateTimeNotIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeNotIn"))
+			data, err := ec.unmarshalOTime2ᚕtimeᚐTimeᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTimeNotIn = data
+		case "updateTimeGT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeGT"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTimeGT = data
+		case "updateTimeGTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeGTE"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTimeGTE = data
+		case "updateTimeLT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeLT"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTimeLT = data
+		case "updateTimeLTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeLTE"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTimeLTE = data
 		case "calibreID":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("calibreID"))
 			data, err := ec.unmarshalOInt2ᚖint64(ctx, v)
@@ -17991,7 +21284,7 @@ func (ec *executionContext) unmarshalInputShelfWhereInput(ctx context.Context, o
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "public", "publicNEQ", "userID", "userIDNEQ", "userIDIn", "userIDNotIn", "userIDGT", "userIDGTE", "userIDLT", "userIDLTE", "userIDContains", "userIDHasPrefix", "userIDHasSuffix", "userIDEqualFold", "userIDContainsFold", "name", "nameNEQ", "nameIn", "nameNotIn", "nameGT", "nameGTE", "nameLT", "nameLTE", "nameContains", "nameHasPrefix", "nameHasSuffix", "nameEqualFold", "nameContainsFold", "description", "descriptionNEQ", "descriptionIn", "descriptionNotIn", "descriptionGT", "descriptionGTE", "descriptionLT", "descriptionLTE", "descriptionContains", "descriptionHasPrefix", "descriptionHasSuffix", "descriptionIsNil", "descriptionNotNil", "descriptionEqualFold", "descriptionContainsFold", "hasUser", "hasUserWith", "hasBooks", "hasBooksWith"}
+	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createTime", "createTimeNEQ", "createTimeIn", "createTimeNotIn", "createTimeGT", "createTimeGTE", "createTimeLT", "createTimeLTE", "updateTime", "updateTimeNEQ", "updateTimeIn", "updateTimeNotIn", "updateTimeGT", "updateTimeGTE", "updateTimeLT", "updateTimeLTE", "public", "publicNEQ", "userID", "userIDNEQ", "userIDIn", "userIDNotIn", "userIDGT", "userIDGTE", "userIDLT", "userIDLTE", "userIDContains", "userIDHasPrefix", "userIDHasSuffix", "userIDEqualFold", "userIDContainsFold", "name", "nameNEQ", "nameIn", "nameNotIn", "nameGT", "nameGTE", "nameLT", "nameLTE", "nameContains", "nameHasPrefix", "nameHasSuffix", "nameEqualFold", "nameContainsFold", "description", "descriptionNEQ", "descriptionIn", "descriptionNotIn", "descriptionGT", "descriptionGTE", "descriptionLT", "descriptionLTE", "descriptionContains", "descriptionHasPrefix", "descriptionHasSuffix", "descriptionIsNil", "descriptionNotNil", "descriptionEqualFold", "descriptionContainsFold", "hasUser", "hasUserWith", "hasBooks", "hasBooksWith"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -18075,6 +21368,118 @@ func (ec *executionContext) unmarshalInputShelfWhereInput(ctx context.Context, o
 				return it, err
 			}
 			it.IDLTE = data
+		case "createTime":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTime"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTime = data
+		case "createTimeNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeNEQ"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTimeNEQ = data
+		case "createTimeIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeIn"))
+			data, err := ec.unmarshalOTime2ᚕtimeᚐTimeᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTimeIn = data
+		case "createTimeNotIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeNotIn"))
+			data, err := ec.unmarshalOTime2ᚕtimeᚐTimeᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTimeNotIn = data
+		case "createTimeGT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeGT"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTimeGT = data
+		case "createTimeGTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeGTE"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTimeGTE = data
+		case "createTimeLT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeLT"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTimeLT = data
+		case "createTimeLTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeLTE"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTimeLTE = data
+		case "updateTime":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTime"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTime = data
+		case "updateTimeNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeNEQ"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTimeNEQ = data
+		case "updateTimeIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeIn"))
+			data, err := ec.unmarshalOTime2ᚕtimeᚐTimeᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTimeIn = data
+		case "updateTimeNotIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeNotIn"))
+			data, err := ec.unmarshalOTime2ᚕtimeᚐTimeᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTimeNotIn = data
+		case "updateTimeGT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeGT"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTimeGT = data
+		case "updateTimeGTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeGTE"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTimeGTE = data
+		case "updateTimeLT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeLT"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTimeLT = data
+		case "updateTimeLTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeLTE"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTimeLTE = data
 		case "public":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("public"))
 			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
@@ -19429,13 +22834,20 @@ func (ec *executionContext) unmarshalInputUpdateAuthorInput(ctx context.Context,
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"calibreID", "clearCalibreID", "name", "sort", "link", "clearLink", "addBookIDs", "removeBookIDs", "clearBooks"}
+	fieldsInOrder := [...]string{"updateTime", "calibreID", "clearCalibreID", "name", "sort", "link", "clearLink", "addBookIDs", "removeBookIDs", "clearBooks"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
 			continue
 		}
 		switch k {
+		case "updateTime":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTime"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTime = data
 		case "calibreID":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("calibreID"))
 			data, err := ec.unmarshalOInt2ᚖint64(ctx, v)
@@ -19512,13 +22924,20 @@ func (ec *executionContext) unmarshalInputUpdateBookInput(ctx context.Context, o
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"calibreID", "clearCalibreID", "title", "sort", "publishedDate", "clearPublishedDate", "path", "isbn", "clearIsbn", "description", "clearDescription", "seriesIndex", "clearSeriesIndex", "addAuthorIDs", "removeAuthorIDs", "clearAuthors", "addPublisherIDs", "removePublisherIDs", "clearPublisher", "addSeriesIDs", "removeSeriesIDs", "clearSeries", "addIdentifierIDs", "removeIdentifierIDs", "clearIdentifiers", "addTagIDs", "removeTagIDs", "clearTags", "addLanguageIDs", "removeLanguageIDs", "clearLanguage", "addShelfIDs", "removeShelfIDs", "clearShelf"}
+	fieldsInOrder := [...]string{"updateTime", "calibreID", "clearCalibreID", "title", "sort", "publishedDate", "clearPublishedDate", "path", "isbn", "clearIsbn", "description", "clearDescription", "seriesIndex", "clearSeriesIndex", "addAuthorIDs", "removeAuthorIDs", "clearAuthors", "addPublisherIDs", "removePublisherIDs", "clearPublisher", "addSeriesIDs", "removeSeriesIDs", "clearSeries", "addIdentifierIDs", "removeIdentifierIDs", "clearIdentifiers", "addTagIDs", "removeTagIDs", "clearTags", "addLanguageIDs", "removeLanguageIDs", "clearLanguage", "addShelfIDs", "removeShelfIDs", "clearShelf", "addFileIDs", "removeFileIDs", "clearFiles"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
 			continue
 		}
 		switch k {
+		case "updateTime":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTime"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTime = data
 		case "calibreID":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("calibreID"))
 			data, err := ec.unmarshalOInt2ᚖint64(ctx, v)
@@ -19757,6 +23176,27 @@ func (ec *executionContext) unmarshalInputUpdateBookInput(ctx context.Context, o
 				return it, err
 			}
 			it.ClearShelf = data
+		case "addFileIDs":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("addFileIDs"))
+			data, err := ec.unmarshalOID2ᚕlybbrioᚋinternalᚋentᚋschemaᚋksuidᚐIDᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.AddFileIDs = data
+		case "removeFileIDs":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("removeFileIDs"))
+			data, err := ec.unmarshalOID2ᚕlybbrioᚋinternalᚋentᚋschemaᚋksuidᚐIDᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.RemoveFileIDs = data
+		case "clearFiles":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clearFiles"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ClearFiles = data
 		}
 	}
 
@@ -19770,13 +23210,20 @@ func (ec *executionContext) unmarshalInputUpdateIdentifierInput(ctx context.Cont
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"calibreID", "clearCalibreID", "type", "value", "bookID"}
+	fieldsInOrder := [...]string{"updateTime", "calibreID", "clearCalibreID", "type", "value", "bookID"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
 			continue
 		}
 		switch k {
+		case "updateTime":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTime"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTime = data
 		case "calibreID":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("calibreID"))
 			data, err := ec.unmarshalOInt2ᚖint64(ctx, v)
@@ -19825,13 +23272,20 @@ func (ec *executionContext) unmarshalInputUpdateLanguageInput(ctx context.Contex
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"calibreID", "clearCalibreID", "code", "addBookIDs", "removeBookIDs", "clearBooks"}
+	fieldsInOrder := [...]string{"updateTime", "calibreID", "clearCalibreID", "code", "addBookIDs", "removeBookIDs", "clearBooks"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
 			continue
 		}
 		switch k {
+		case "updateTime":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTime"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTime = data
 		case "calibreID":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("calibreID"))
 			data, err := ec.unmarshalOInt2ᚖint64(ctx, v)
@@ -19887,13 +23341,20 @@ func (ec *executionContext) unmarshalInputUpdatePublisherInput(ctx context.Conte
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"calibreID", "clearCalibreID", "name", "addBookIDs", "removeBookIDs", "clearBooks"}
+	fieldsInOrder := [...]string{"updateTime", "calibreID", "clearCalibreID", "name", "addBookIDs", "removeBookIDs", "clearBooks"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
 			continue
 		}
 		switch k {
+		case "updateTime":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTime"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTime = data
 		case "calibreID":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("calibreID"))
 			data, err := ec.unmarshalOInt2ᚖint64(ctx, v)
@@ -19949,13 +23410,20 @@ func (ec *executionContext) unmarshalInputUpdateSeriesInput(ctx context.Context,
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"calibreID", "clearCalibreID", "name", "sort", "addBookIDs", "removeBookIDs", "clearBooks"}
+	fieldsInOrder := [...]string{"updateTime", "calibreID", "clearCalibreID", "name", "sort", "addBookIDs", "removeBookIDs", "clearBooks"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
 			continue
 		}
 		switch k {
+		case "updateTime":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTime"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTime = data
 		case "calibreID":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("calibreID"))
 			data, err := ec.unmarshalOInt2ᚖint64(ctx, v)
@@ -20018,13 +23486,20 @@ func (ec *executionContext) unmarshalInputUpdateShelfInput(ctx context.Context, 
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"public", "name", "description", "clearDescription", "addBookIDs", "removeBookIDs", "clearBooks"}
+	fieldsInOrder := [...]string{"updateTime", "public", "name", "description", "clearDescription", "addBookIDs", "removeBookIDs", "clearBooks"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
 			continue
 		}
 		switch k {
+		case "updateTime":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTime"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTime = data
 		case "public":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("public"))
 			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
@@ -20149,13 +23624,20 @@ func (ec *executionContext) unmarshalInputUpdateUserInput(ctx context.Context, o
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"username", "passwordHash", "clearPasswordHash", "email", "addShelfIDs", "removeShelfIDs", "clearShelves"}
+	fieldsInOrder := [...]string{"updateTime", "username", "passwordHash", "clearPasswordHash", "email", "addShelfIDs", "removeShelfIDs", "clearShelves"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
 			continue
 		}
 		switch k {
+		case "updateTime":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTime"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTime = data
 		case "username":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("username"))
 			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
@@ -20256,7 +23738,7 @@ func (ec *executionContext) unmarshalInputUserPermissionsWhereInput(ctx context.
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "userID", "userIDNEQ", "userIDIn", "userIDNotIn", "userIDGT", "userIDGTE", "userIDLT", "userIDLTE", "userIDContains", "userIDHasPrefix", "userIDHasSuffix", "userIDIsNil", "userIDNotNil", "userIDEqualFold", "userIDContainsFold", "canedit", "caneditNEQ", "admin", "adminNEQ", "cancreatepublic", "cancreatepublicNEQ", "hasUser", "hasUserWith"}
+	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createTime", "createTimeNEQ", "createTimeIn", "createTimeNotIn", "createTimeGT", "createTimeGTE", "createTimeLT", "createTimeLTE", "updateTime", "updateTimeNEQ", "updateTimeIn", "updateTimeNotIn", "updateTimeGT", "updateTimeGTE", "updateTimeLT", "updateTimeLTE", "userID", "userIDNEQ", "userIDIn", "userIDNotIn", "userIDGT", "userIDGTE", "userIDLT", "userIDLTE", "userIDContains", "userIDHasPrefix", "userIDHasSuffix", "userIDIsNil", "userIDNotNil", "userIDEqualFold", "userIDContainsFold", "admin", "adminNEQ", "cancreatepublic", "cancreatepublicNEQ", "canedit", "caneditNEQ", "hasUser", "hasUserWith"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -20340,6 +23822,118 @@ func (ec *executionContext) unmarshalInputUserPermissionsWhereInput(ctx context.
 				return it, err
 			}
 			it.IDLTE = data
+		case "createTime":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTime"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTime = data
+		case "createTimeNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeNEQ"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTimeNEQ = data
+		case "createTimeIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeIn"))
+			data, err := ec.unmarshalOTime2ᚕtimeᚐTimeᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTimeIn = data
+		case "createTimeNotIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeNotIn"))
+			data, err := ec.unmarshalOTime2ᚕtimeᚐTimeᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTimeNotIn = data
+		case "createTimeGT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeGT"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTimeGT = data
+		case "createTimeGTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeGTE"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTimeGTE = data
+		case "createTimeLT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeLT"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTimeLT = data
+		case "createTimeLTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeLTE"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTimeLTE = data
+		case "updateTime":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTime"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTime = data
+		case "updateTimeNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeNEQ"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTimeNEQ = data
+		case "updateTimeIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeIn"))
+			data, err := ec.unmarshalOTime2ᚕtimeᚐTimeᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTimeIn = data
+		case "updateTimeNotIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeNotIn"))
+			data, err := ec.unmarshalOTime2ᚕtimeᚐTimeᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTimeNotIn = data
+		case "updateTimeGT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeGT"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTimeGT = data
+		case "updateTimeGTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeGTE"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTimeGTE = data
+		case "updateTimeLT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeLT"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTimeLT = data
+		case "updateTimeLTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeLTE"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTimeLTE = data
 		case "userID":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("userID"))
 			data, err := ec.unmarshalOID2ᚖlybbrioᚋinternalᚋentᚋschemaᚋksuidᚐID(ctx, v)
@@ -20445,20 +24039,6 @@ func (ec *executionContext) unmarshalInputUserPermissionsWhereInput(ctx context.
 				return it, err
 			}
 			it.UserIDContainsFold = data
-		case "canedit":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("canedit"))
-			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.CanEdit = data
-		case "caneditNEQ":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("caneditNEQ"))
-			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.CanEditNEQ = data
 		case "admin":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("admin"))
 			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
@@ -20487,6 +24067,20 @@ func (ec *executionContext) unmarshalInputUserPermissionsWhereInput(ctx context.
 				return it, err
 			}
 			it.CanCreatePublicNEQ = data
+		case "canedit":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("canedit"))
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CanEdit = data
+		case "caneditNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("caneditNEQ"))
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CanEditNEQ = data
 		case "hasUser":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasUser"))
 			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
@@ -20514,7 +24108,7 @@ func (ec *executionContext) unmarshalInputUserWhereInput(ctx context.Context, ob
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "username", "usernameNEQ", "usernameIn", "usernameNotIn", "usernameGT", "usernameGTE", "usernameLT", "usernameLTE", "usernameContains", "usernameHasPrefix", "usernameHasSuffix", "usernameEqualFold", "usernameContainsFold", "email", "emailNEQ", "emailIn", "emailNotIn", "emailGT", "emailGTE", "emailLT", "emailLTE", "emailContains", "emailHasPrefix", "emailHasSuffix", "emailEqualFold", "emailContainsFold", "hasShelves", "hasShelvesWith", "hasUserPermissions", "hasUserPermissionsWith"}
+	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createTime", "createTimeNEQ", "createTimeIn", "createTimeNotIn", "createTimeGT", "createTimeGTE", "createTimeLT", "createTimeLTE", "updateTime", "updateTimeNEQ", "updateTimeIn", "updateTimeNotIn", "updateTimeGT", "updateTimeGTE", "updateTimeLT", "updateTimeLTE", "username", "usernameNEQ", "usernameIn", "usernameNotIn", "usernameGT", "usernameGTE", "usernameLT", "usernameLTE", "usernameContains", "usernameHasPrefix", "usernameHasSuffix", "usernameEqualFold", "usernameContainsFold", "email", "emailNEQ", "emailIn", "emailNotIn", "emailGT", "emailGTE", "emailLT", "emailLTE", "emailContains", "emailHasPrefix", "emailHasSuffix", "emailEqualFold", "emailContainsFold", "hasShelves", "hasShelvesWith", "hasUserPermissions", "hasUserPermissionsWith"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -20598,6 +24192,118 @@ func (ec *executionContext) unmarshalInputUserWhereInput(ctx context.Context, ob
 				return it, err
 			}
 			it.IDLTE = data
+		case "createTime":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTime"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTime = data
+		case "createTimeNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeNEQ"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTimeNEQ = data
+		case "createTimeIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeIn"))
+			data, err := ec.unmarshalOTime2ᚕtimeᚐTimeᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTimeIn = data
+		case "createTimeNotIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeNotIn"))
+			data, err := ec.unmarshalOTime2ᚕtimeᚐTimeᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTimeNotIn = data
+		case "createTimeGT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeGT"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTimeGT = data
+		case "createTimeGTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeGTE"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTimeGTE = data
+		case "createTimeLT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeLT"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTimeLT = data
+		case "createTimeLTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeLTE"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTimeLTE = data
+		case "updateTime":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTime"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTime = data
+		case "updateTimeNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeNEQ"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTimeNEQ = data
+		case "updateTimeIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeIn"))
+			data, err := ec.unmarshalOTime2ᚕtimeᚐTimeᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTimeIn = data
+		case "updateTimeNotIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeNotIn"))
+			data, err := ec.unmarshalOTime2ᚕtimeᚐTimeᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTimeNotIn = data
+		case "updateTimeGT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeGT"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTimeGT = data
+		case "updateTimeGTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeGTE"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTimeGTE = data
+		case "updateTimeLT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeLT"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTimeLT = data
+		case "updateTimeLTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeLTE"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTimeLTE = data
 		case "username":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("username"))
 			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
@@ -20832,6 +24538,11 @@ func (ec *executionContext) _Node(ctx context.Context, sel ast.SelectionSet, obj
 			return graphql.Null
 		}
 		return ec._Book(ctx, sel, obj)
+	case *ent.BookFile:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._BookFile(ctx, sel, obj)
 	case *ent.Identifier:
 		if obj == nil {
 			return graphql.Null
@@ -20899,6 +24610,16 @@ func (ec *executionContext) _Author(ctx context.Context, sel ast.SelectionSet, o
 			out.Values[i] = graphql.MarshalString("Author")
 		case "id":
 			out.Values[i] = ec._Author_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "createTime":
+			out.Values[i] = ec._Author_createTime(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "updateTime":
+			out.Values[i] = ec._Author_updateTime(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
 			}
@@ -21075,6 +24796,16 @@ func (ec *executionContext) _Book(ctx context.Context, sel ast.SelectionSet, obj
 			out.Values[i] = graphql.MarshalString("Book")
 		case "id":
 			out.Values[i] = ec._Book_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "createTime":
+			out.Values[i] = ec._Book_createTime(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "updateTime":
+			out.Values[i] = ec._Book_updateTime(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
 			}
@@ -21334,6 +25065,39 @@ func (ec *executionContext) _Book(ctx context.Context, sel ast.SelectionSet, obj
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "files":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Book_files(ctx, field, obj)
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -21444,6 +25208,111 @@ func (ec *executionContext) _BookEdge(ctx context.Context, sel ast.SelectionSet,
 	return out
 }
 
+var bookFileImplementors = []string{"BookFile", "Node"}
+
+func (ec *executionContext) _BookFile(ctx context.Context, sel ast.SelectionSet, obj *ent.BookFile) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, bookFileImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("BookFile")
+		case "id":
+			out.Values[i] = ec._BookFile_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "createTime":
+			out.Values[i] = ec._BookFile_createTime(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "updateTime":
+			out.Values[i] = ec._BookFile_updateTime(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "name":
+			out.Values[i] = ec._BookFile_name(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "path":
+			out.Values[i] = ec._BookFile_path(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "size":
+			out.Values[i] = ec._BookFile_size(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "format":
+			out.Values[i] = ec._BookFile_format(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "book":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._BookFile_book(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
 var identifierImplementors = []string{"Identifier", "Node"}
 
 func (ec *executionContext) _Identifier(ctx context.Context, sel ast.SelectionSet, obj *ent.Identifier) graphql.Marshaler {
@@ -21457,6 +25326,16 @@ func (ec *executionContext) _Identifier(ctx context.Context, sel ast.SelectionSe
 			out.Values[i] = graphql.MarshalString("Identifier")
 		case "id":
 			out.Values[i] = ec._Identifier_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "createTime":
+			out.Values[i] = ec._Identifier_createTime(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "updateTime":
+			out.Values[i] = ec._Identifier_updateTime(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
 			}
@@ -21631,6 +25510,16 @@ func (ec *executionContext) _Language(ctx context.Context, sel ast.SelectionSet,
 			out.Values[i] = graphql.MarshalString("Language")
 		case "id":
 			out.Values[i] = ec._Language_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "createTime":
+			out.Values[i] = ec._Language_createTime(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "updateTime":
+			out.Values[i] = ec._Language_updateTime(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
 			}
@@ -21969,6 +25858,16 @@ func (ec *executionContext) _Publisher(ctx context.Context, sel ast.SelectionSet
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
 			}
+		case "createTime":
+			out.Values[i] = ec._Publisher_createTime(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "updateTime":
+			out.Values[i] = ec._Publisher_updateTime(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
 		case "calibreID":
 			out.Values[i] = ec._Publisher_calibreID(ctx, field, obj)
 		case "name":
@@ -22226,6 +26125,28 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "bookFiles":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_bookFiles(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
 		case "identifiers":
 			field := field
 
@@ -22471,6 +26392,16 @@ func (ec *executionContext) _Series(ctx context.Context, sel ast.SelectionSet, o
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
 			}
+		case "createTime":
+			out.Values[i] = ec._Series_createTime(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "updateTime":
+			out.Values[i] = ec._Series_updateTime(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
 		case "calibreID":
 			out.Values[i] = ec._Series_calibreID(ctx, field, obj)
 		case "name":
@@ -22639,6 +26570,16 @@ func (ec *executionContext) _Shelf(ctx context.Context, sel ast.SelectionSet, ob
 			out.Values[i] = graphql.MarshalString("Shelf")
 		case "id":
 			out.Values[i] = ec._Shelf_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "createTime":
+			out.Values[i] = ec._Shelf_createTime(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "updateTime":
+			out.Values[i] = ec._Shelf_updateTime(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
 			}
@@ -23221,6 +27162,16 @@ func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
 			}
+		case "createTime":
+			out.Values[i] = ec._User_createTime(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "updateTime":
+			out.Values[i] = ec._User_updateTime(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
 		case "username":
 			out.Values[i] = ec._User_username(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -23339,13 +27290,18 @@ func (ec *executionContext) _UserPermissions(ctx context.Context, sel ast.Select
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
 			}
-		case "userID":
-			out.Values[i] = ec._UserPermissions_userID(ctx, field, obj)
-		case "canedit":
-			out.Values[i] = ec._UserPermissions_canedit(ctx, field, obj)
+		case "createTime":
+			out.Values[i] = ec._UserPermissions_createTime(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
 			}
+		case "updateTime":
+			out.Values[i] = ec._UserPermissions_updateTime(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "userID":
+			out.Values[i] = ec._UserPermissions_userID(ctx, field, obj)
 		case "admin":
 			out.Values[i] = ec._UserPermissions_admin(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -23353,6 +27309,11 @@ func (ec *executionContext) _UserPermissions(ctx context.Context, sel ast.Select
 			}
 		case "cancreatepublic":
 			out.Values[i] = ec._UserPermissions_cancreatepublic(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "canedit":
+			out.Values[i] = ec._UserPermissions_canedit(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
 			}
@@ -23810,6 +27771,75 @@ func (ec *executionContext) marshalNBookConnection2ᚖlybbrioᚋinternalᚋent�
 		return graphql.Null
 	}
 	return ec._BookConnection(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNBookFile2ᚕᚖlybbrioᚋinternalᚋentᚐBookFileᚄ(ctx context.Context, sel ast.SelectionSet, v []*ent.BookFile) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNBookFile2ᚖlybbrioᚋinternalᚋentᚐBookFile(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNBookFile2ᚖlybbrioᚋinternalᚋentᚐBookFile(ctx context.Context, sel ast.SelectionSet, v *ent.BookFile) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._BookFile(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNBookFileFormat2lybbrioᚋinternalᚋentᚋbookfileᚐFormat(ctx context.Context, v interface{}) (bookfile.Format, error) {
+	var res bookfile.Format
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNBookFileFormat2lybbrioᚋinternalᚋentᚋbookfileᚐFormat(ctx context.Context, sel ast.SelectionSet, v bookfile.Format) graphql.Marshaler {
+	return v
+}
+
+func (ec *executionContext) unmarshalNBookFileWhereInput2ᚖlybbrioᚋinternalᚋentᚐBookFileWhereInput(ctx context.Context, v interface{}) (*ent.BookFileWhereInput, error) {
+	res, err := ec.unmarshalInputBookFileWhereInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalNBookOrder2ᚖlybbrioᚋinternalᚋentᚐBookOrder(ctx context.Context, v interface{}) (*ent.BookOrder, error) {
@@ -25084,6 +29114,164 @@ func (ec *executionContext) marshalOBookEdge2ᚖlybbrioᚋinternalᚋentᚐBookE
 		return graphql.Null
 	}
 	return ec._BookEdge(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalOBookFile2ᚕᚖlybbrioᚋinternalᚋentᚐBookFileᚄ(ctx context.Context, sel ast.SelectionSet, v []*ent.BookFile) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNBookFile2ᚖlybbrioᚋinternalᚋentᚐBookFile(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) unmarshalOBookFileFormat2ᚕlybbrioᚋinternalᚋentᚋbookfileᚐFormatᚄ(ctx context.Context, v interface{}) ([]bookfile.Format, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var vSlice []interface{}
+	if v != nil {
+		vSlice = graphql.CoerceList(v)
+	}
+	var err error
+	res := make([]bookfile.Format, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNBookFileFormat2lybbrioᚋinternalᚋentᚋbookfileᚐFormat(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) marshalOBookFileFormat2ᚕlybbrioᚋinternalᚋentᚋbookfileᚐFormatᚄ(ctx context.Context, sel ast.SelectionSet, v []bookfile.Format) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNBookFileFormat2lybbrioᚋinternalᚋentᚋbookfileᚐFormat(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) unmarshalOBookFileFormat2ᚖlybbrioᚋinternalᚋentᚋbookfileᚐFormat(ctx context.Context, v interface{}) (*bookfile.Format, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var res = new(bookfile.Format)
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOBookFileFormat2ᚖlybbrioᚋinternalᚋentᚋbookfileᚐFormat(ctx context.Context, sel ast.SelectionSet, v *bookfile.Format) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return v
+}
+
+func (ec *executionContext) unmarshalOBookFileWhereInput2ᚕᚖlybbrioᚋinternalᚋentᚐBookFileWhereInputᚄ(ctx context.Context, v interface{}) ([]*ent.BookFileWhereInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var vSlice []interface{}
+	if v != nil {
+		vSlice = graphql.CoerceList(v)
+	}
+	var err error
+	res := make([]*ent.BookFileWhereInput, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNBookFileWhereInput2ᚖlybbrioᚋinternalᚋentᚐBookFileWhereInput(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) unmarshalOBookFileWhereInput2ᚖlybbrioᚋinternalᚋentᚐBookFileWhereInput(ctx context.Context, v interface{}) (*ent.BookFileWhereInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputBookFileWhereInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalOBookOrder2ᚕᚖlybbrioᚋinternalᚋentᚐBookOrderᚄ(ctx context.Context, v interface{}) ([]*ent.BookOrder, error) {

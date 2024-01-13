@@ -28,7 +28,7 @@ var defaultSettings = map[string]interface{}{
 	"interface":                 "127.0.0.1",
 	"go-collector":              true,
 	"process-collector":         true,
-	"calibre-db-path":           "database/metadata.db",
+	"calibre-library-path":      "./books/",
 	"db": map[string]interface{}{
 		"driver":            "sqlite3",
 		"dsn":               "file:database/app.db?cache=shared&_fk=1",
@@ -55,7 +55,7 @@ func RegisterFlags(flagSet *flag.FlagSet) {
 	flagSet.Bool("process-collector", false, "Enable process prometheus collector")
 	flagSet.Int("port", 8080, "Port to Listen On")
 	flagSet.String("interface", "127.0.0.1", "Interface")
-	flagSet.String("calibre-db-path", "/database/metadata.db", "Path to Calibre database")
+	flagSet.String("calibre-library-path", "./books/", "Path to Calibre database")
 	flagSet.String("db.driver", "sqlite3", "Database driver")
 	flagSet.String("db.dsn", "file:database/app.db?cache=shared&_fk=1", "Database DSN")
 	flagSet.Int("db.max-idle-conns", 10, "Database max idle connections")
@@ -97,7 +97,7 @@ type Config struct {
 	GoCollector      bool `koanf:"go-collector"`
 	ProcessCollector bool `koanf:"process-collector"`
 
-	CalibreDBPath string `koanf:"calibre-db-path" validate:"required"`
+	CalibreLibraryPath string `koanf:"calibre-library-path" validate:"required"`
 
 	DB   DatabaseConfig `koanf:"db"`
 	Task TaskConfig     `koanf:"task"`
@@ -191,7 +191,7 @@ func (c Config) Translates() map[string]string {
 		"ProcessCollector":        "process-collector",
 		"Port":                    "port",
 		"Interface":               "interface",
-		"CalibreDBPath":           "calibre-db-path",
+		"CalibreLibraryPath":      "calibre-library-path",
 	}
 }
 

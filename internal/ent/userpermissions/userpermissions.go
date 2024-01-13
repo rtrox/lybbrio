@@ -4,6 +4,7 @@ package userpermissions
 
 import (
 	"lybbrio/internal/ent/schema/ksuid"
+	"time"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
@@ -15,14 +16,18 @@ const (
 	Label = "user_permissions"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
+	// FieldCreateTime holds the string denoting the create_time field in the database.
+	FieldCreateTime = "create_time"
+	// FieldUpdateTime holds the string denoting the update_time field in the database.
+	FieldUpdateTime = "update_time"
 	// FieldUserID holds the string denoting the user_id field in the database.
 	FieldUserID = "user_id"
-	// FieldCanEdit holds the string denoting the canedit field in the database.
-	FieldCanEdit = "can_edit"
 	// FieldAdmin holds the string denoting the admin field in the database.
 	FieldAdmin = "admin"
 	// FieldCanCreatePublic holds the string denoting the cancreatepublic field in the database.
 	FieldCanCreatePublic = "can_create_public"
+	// FieldCanEdit holds the string denoting the canedit field in the database.
+	FieldCanEdit = "can_edit"
 	// EdgeUser holds the string denoting the user edge name in mutations.
 	EdgeUser = "user"
 	// Table holds the table name of the userpermissions in the database.
@@ -39,10 +44,12 @@ const (
 // Columns holds all SQL columns for userpermissions fields.
 var Columns = []string{
 	FieldID,
+	FieldCreateTime,
+	FieldUpdateTime,
 	FieldUserID,
-	FieldCanEdit,
 	FieldAdmin,
 	FieldCanCreatePublic,
+	FieldCanEdit,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -63,12 +70,18 @@ func ValidColumn(column string) bool {
 var (
 	Hooks  [1]ent.Hook
 	Policy ent.Policy
-	// DefaultCanEdit holds the default value on creation for the "CanEdit" field.
-	DefaultCanEdit bool
+	// DefaultCreateTime holds the default value on creation for the "create_time" field.
+	DefaultCreateTime func() time.Time
+	// DefaultUpdateTime holds the default value on creation for the "update_time" field.
+	DefaultUpdateTime func() time.Time
+	// UpdateDefaultUpdateTime holds the default value on update for the "update_time" field.
+	UpdateDefaultUpdateTime func() time.Time
 	// DefaultAdmin holds the default value on creation for the "Admin" field.
 	DefaultAdmin bool
 	// DefaultCanCreatePublic holds the default value on creation for the "CanCreatePublic" field.
 	DefaultCanCreatePublic bool
+	// DefaultCanEdit holds the default value on creation for the "CanEdit" field.
+	DefaultCanEdit bool
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() ksuid.ID
 )
@@ -81,14 +94,19 @@ func ByID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldID, opts...).ToFunc()
 }
 
+// ByCreateTime orders the results by the create_time field.
+func ByCreateTime(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldCreateTime, opts...).ToFunc()
+}
+
+// ByUpdateTime orders the results by the update_time field.
+func ByUpdateTime(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldUpdateTime, opts...).ToFunc()
+}
+
 // ByUserID orders the results by the user_id field.
 func ByUserID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldUserID, opts...).ToFunc()
-}
-
-// ByCanEdit orders the results by the CanEdit field.
-func ByCanEdit(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldCanEdit, opts...).ToFunc()
 }
 
 // ByAdmin orders the results by the Admin field.
@@ -99,6 +117,11 @@ func ByAdmin(opts ...sql.OrderTermOption) OrderOption {
 // ByCanCreatePublic orders the results by the CanCreatePublic field.
 func ByCanCreatePublic(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldCanCreatePublic, opts...).ToFunc()
+}
+
+// ByCanEdit orders the results by the CanEdit field.
+func ByCanEdit(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldCanEdit, opts...).ToFunc()
 }
 
 // ByUserField orders the results by user field.

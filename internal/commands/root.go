@@ -30,7 +30,7 @@ import (
 	"lybbrio/internal/graph"
 	"lybbrio/internal/metrics"
 	"lybbrio/internal/middleware"
-	"lybbrio/internal/task"
+	"lybbrio/internal/scheduler"
 	"lybbrio/internal/viewer"
 )
 
@@ -147,8 +147,8 @@ func rootRun(_ *cobra.Command, _ []string) {
 	}
 
 	// Calibre
-	cal, error := calibre.NewCalibreSQLite(conf.CalibreDBPath)
-	cal = cal.WithLogger(&log.Logger).(*calibre.CalibreSQLite)
+	cal, error := calibre.NewCalibreSQLite(conf.CalibreLibraryPath)
+	cal = cal.WithLogger(&log.Logger)
 
 	if error != nil {
 		log.Fatal().Err(error).Msg("Failed to initialize Calibre")
@@ -168,9 +168,9 @@ func rootRun(_ *cobra.Command, _ []string) {
 
 	// Task Scheduler
 	schedulerVC := viewer.NewSystemAdminContext(schedulerCtx)
-	workerPool := task.NewWorkerPool(
+	workerPool := scheduler.NewWorkerPool(
 		client,
-		&task.WorkerPoolConfig{
+		&scheduler.WorkerPoolConfig{
 			Ctx:         schedulerVC,
 			NumWorkers:  conf.Task.Workers,
 			QueueLength: conf.Task.QueueLength,
@@ -178,9 +178,9 @@ func rootRun(_ *cobra.Command, _ []string) {
 	)
 	workerPool.Start()
 
-	scheduler := task.NewScheduler(
+	scheduler := scheduler.NewScheduler(
 		client,
-		&task.SchedulerConfig{
+		&scheduler.SchedulerConfig{
 			Ctx:       schedulerVC,
 			WorkQueue: workerPool.WorkQueue(),
 			Cadence:   conf.Task.Cadence,
