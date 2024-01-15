@@ -4,6 +4,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/go-playground/validator/v10"
 	flag "github.com/spf13/pflag"
 	"github.com/stretchr/testify/require"
 )
@@ -201,7 +202,7 @@ func Test_Validate(t *testing.T) {
 				JWT: JWTConfig{
 					SigningMethod: "HS512",
 					HMACSecret:    "asdf",
-					Issuer:        "issuer",
+					Issuer:        "http://issuer.com",
 					Expiry:        12 * time.Hour,
 				},
 			},
@@ -224,7 +225,7 @@ func Test_Validate(t *testing.T) {
 				JWT: JWTConfig{
 					SigningMethod: "HS512",
 					HMACSecret:    "asdf",
-					Issuer:        "issuer",
+					Issuer:        "http://issuer.com",
 					Expiry:        12 * time.Hour,
 				},
 			},
@@ -247,7 +248,7 @@ func Test_Validate(t *testing.T) {
 				JWT: JWTConfig{
 					SigningMethod: "HS512",
 					HMACSecret:    "asdf",
-					Issuer:        "issuer",
+					Issuer:        "http://issuer.com",
 					Expiry:        12 * time.Hour,
 				},
 			},
@@ -270,7 +271,7 @@ func Test_Validate(t *testing.T) {
 				JWT: JWTConfig{
 					SigningMethod: "HS512",
 					HMACSecret:    "asdf",
-					Issuer:        "issuer",
+					Issuer:        "http://issuer.com",
 					Expiry:        12 * time.Hour,
 				},
 			},
@@ -293,7 +294,7 @@ func Test_Validate(t *testing.T) {
 				JWT: JWTConfig{
 					SigningMethod: "HS512",
 					HMACSecret:    "asdf",
-					Issuer:        "issuer",
+					Issuer:        "http://issuer.com",
 					Expiry:        12 * time.Hour,
 				},
 			},
@@ -316,7 +317,7 @@ func Test_Validate(t *testing.T) {
 				JWT: JWTConfig{
 					SigningMethod: "HS512",
 					HMACSecret:    "asdf",
-					Issuer:        "issuer",
+					Issuer:        "http://issuer.com",
 					Expiry:        12 * time.Hour,
 				},
 			},
@@ -330,6 +331,91 @@ func Test_Validate(t *testing.T) {
 			t.Parallel()
 			require := require.New(t)
 			err := tt.config.Validate()
+			if tt.wantErr {
+				require.Error(err)
+			} else {
+				require.NoError(err)
+			}
+		})
+	}
+}
+
+func TestJWTValidate(t *testing.T) {
+	tests := []struct {
+		name    string
+		config  JWTConfig
+		wantErr bool
+	}{
+		{
+			name: "valid hs512",
+			config: JWTConfig{
+				SigningMethod: "HS512",
+				Expiry:        12 * time.Hour,
+				Issuer:        "http://issuer.com",
+				HMACSecret:    "asdf",
+			},
+			wantErr: false,
+		},
+		{
+			name: "valid rs512",
+			config: JWTConfig{
+				SigningMethod: "RS512",
+				Expiry:        12 * time.Hour,
+				Issuer:        "http://issuer.com",
+				RSAPublicKey:  "./config.go", // needs to be existing file
+				RSAPrivateKey: "./config.go", // needs to be existing file
+			},
+			wantErr: false,
+		},
+		{
+			name: "invalid signing method",
+			config: JWTConfig{
+				SigningMethod: "HSDF",
+				Expiry:        12 * time.Hour,
+				Issuer:        "http://issuer.com",
+				HMACSecret:    "asdf",
+			},
+			wantErr: true,
+		},
+		{
+			name: "hs512 needs secret",
+			config: JWTConfig{
+				SigningMethod: "HS512",
+				Expiry:        12 * time.Hour,
+				Issuer:        "http://issuer.com",
+			},
+			wantErr: true,
+		},
+		{
+			name: "rs512 needs signing key",
+			config: JWTConfig{
+				SigningMethod: "RS512",
+				Expiry:        12 * time.Hour,
+				Issuer:        "http://issuer.com",
+				RSAPublicKey:  "asdf",
+			},
+			wantErr: true,
+		},
+		{
+			name: "rs512 needs verifying key",
+			config: JWTConfig{
+				SigningMethod: "RS512",
+				Expiry:        12 * time.Hour,
+				Issuer:        "http://issuer.com",
+				RSAPrivateKey: "asdf",
+			},
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			require := require.New(t)
+			validate := validator.New(validator.WithRequiredStructEnabled())
+			validate.RegisterStructValidation(ValidateJWTConfig, JWTConfig{})
+			err := validate.Struct(tt.config)
 			if tt.wantErr {
 				require.Error(err)
 			} else {

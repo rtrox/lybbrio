@@ -2,12 +2,11 @@ package config
 
 import (
 	"crypto/rand"
-	"fmt"
 	"strings"
 	"time"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
-	"github.com/gookit/validate"
 	flag "github.com/spf13/pflag"
 
 	"github.com/knadh/koanf/v2"
@@ -76,7 +75,7 @@ func RegisterFlags(flagSet *flag.FlagSet) {
 }
 
 type DatabaseConfig struct {
-	Driver          string        `koanf:"driver" validate:"required|in:sqlite3,mysql,postgres"`
+	Driver          string        `koanf:"driver" validate:"oneof=sqlite3 mysql postgres"`
 	DSN             string        `koanf:"dsn" validate:"required"`
 	MaxIdleConns    int           `koanf:"max-idle-conns"`
 	MaxOpenConns    int           `koanf:"max-open-conns"`
@@ -84,50 +83,47 @@ type DatabaseConfig struct {
 }
 
 type TaskConfig struct {
-	Workers     int           `koanf:"workers" validate:"required|int|gt:0"`
-	QueueLength int           `koanf:"queue-length" validate:"required|int|gt:0"`
+	Workers     int           `koanf:"workers" validate:"number,gt=0"`
+	QueueLength int           `koanf:"queue-length" validate:"number,gt=0"`
 	Cadence     time.Duration `koanf:"cadence" validate:"required"`
 }
 
 type JWTConfig struct {
-	SigningMethod string        `koanf:"signing-method" validate:"required|in:HS512,RS512"`
+	SigningMethod string        `koanf:"signing-method" validate:"oneof=HS512 RS512"`
 	Expiry        time.Duration `koanf:"expiry" validate:"required"`
-	Issuer        string        `koanf:"issuer" validate:"required|url"`
+	Issuer        string        `koanf:"issuer" validate:"url"`
 	HMACSecret    string        `koanf:"hmac-secret"`
-	RSAPrivateKey string        `koanf:"rsa-private-key"`
-	RSAPublicKey  string        `koanf:"rsa-public-key"`
+	RSAPrivateKey string        `koanf:"rsa-private-key" validate:"omitempty,file"`
+	RSAPublicKey  string        `koanf:"rsa-public-key" validate:"omitempty,file"`
 }
 
-func (c JWTConfig) Validate() error {
-	v := validate.Struct(c)
-	if !v.Validate() {
-		return v.Errors
-	}
+func ValidateJWTConfig(sl validator.StructLevel) {
+	c := sl.Current().Interface().(JWTConfig)
+
 	if c.SigningMethod == "HS512" {
 		if c.HMACSecret == "" {
-			return fmt.Errorf("HMACSecret is required for HS512")
+			sl.ReportError(c.HMACSecret, "hmac-secret", "HMACSecret", "required", "")
 		}
 	}
 	if c.SigningMethod == "RS512" {
 		if c.RSAPrivateKey == "" {
-			return fmt.Errorf("RSAPrivateKey is required for RS512")
+			sl.ReportError(c.RSAPrivateKey, "rsa-private-key", "RSAPrivateKey", "required", "")
 		}
 		if c.RSAPublicKey == "" {
-			return fmt.Errorf("RSAPublicKey is required for RS512")
+			sl.ReportError(c.RSAPublicKey, "rsa-public-key", "RSAPublicKey", "required", "")
 		}
 	}
-	return nil
 }
 
 type Config struct {
 	// Logging
-	LogLevel  string `koanf:"log-level" validate:"ValidateLogLevel"`
-	LogFormat string `koanf:"log-format" validate:"in:json,text"`
+	LogLevel  string `koanf:"log-level" validate:"log_level"`
+	LogFormat string `koanf:"log-format" validate:"oneof=json text"`
 	// HTTPServer
 	GracefulShutdownTimeout time.Duration `koanf:"graceful-shutdown-timeout"`
-	BaseURL                 string        `koanf:"base-url" validate:"required|url"`
-	Interface               string        `koanf:"interface" validate:"required|ip"`
-	Port                    int           `koanf:"port" validate:"required|int|gt:0"`
+	BaseURL                 string        `koanf:"base-url" validate:"url"`
+	Interface               string        `koanf:"interface" validate:"ip"`
+	Port                    int           `koanf:"port" validate:"number,gt=0"`
 	DevMode                 bool          `koanf:"dev-mode"`
 
 	GoCollector      bool `koanf:"go-collector"`
@@ -142,43 +138,20 @@ type Config struct {
 	k *koanf.Koanf
 }
 
-func (c Config) ValidateLogLevel(val string) bool {
-	if _, err := zerolog.ParseLevel(val); err != nil {
-		return false
-	}
-	return true
-}
-
 func (c *Config) Validate() error {
-	v := validate.Struct(c)
-	if !v.Validate() {
-		return v.Errors
-	}
-	vd := validate.Struct(c.DB)
-	if !vd.Validate() {
-		return vd.Errors
-	}
-	vt := validate.Struct(c.Task)
-	if !vt.Validate() {
-		return vt.Errors
-	}
-	vj := validate.Struct(c.JWT)
-	if !vj.Validate() {
-		return vj.Errors
-	}
-	return nil
-}
-
-func (c Config) Messages() map[string]string {
-	lvls := []string{}
-	for i := zerolog.TraceLevel; i < zerolog.Disabled; i++ {
-		if i.String() != "" {
-			lvls = append(lvls, i.String())
+	validate := validator.New(validator.WithRequiredStructEnabled())
+	validate.RegisterStructValidation(ValidateJWTConfig, JWTConfig{})
+	err := validate.RegisterValidation("log_level", func(fl validator.FieldLevel) bool {
+		value := fl.Field().String()
+		if _, err := zerolog.ParseLevel(value); err != nil {
+			return false
 		}
+		return true
+	})
+	if err != nil {
+		return err
 	}
-	return validate.MS{
-		"LogLevel.ValidateLogLevel": fmt.Sprintf("Invalid log level, must be one of: [%s]", strings.Join(lvls, ", ")),
-	}
+	return validate.Struct(c)
 }
 
 func LoadConfig(flagSet *flag.FlagSet) (*Config, error) {
@@ -216,28 +189,4 @@ func LoadConfig(flagSet *flag.FlagSet) (*Config, error) {
 
 	out.k = k
 	return out, nil
-}
-
-func (c Config) Translates() map[string]string {
-	return validate.MS{
-		"LogLevel":                "log-level",
-		"LogFormat":               "log-format",
-		"GracefulShutdownTimeout": "graceful-shutdown-timeout",
-		"BaseURL":                 "base-url",
-		"GoCollector":             "go-collector",
-		"ProcessCollector":        "process-collector",
-		"Port":                    "port",
-		"Interface":               "interface",
-		"CalibreLibraryPath":      "calibre-library-path",
-	}
-}
-
-func (c DatabaseConfig) Translates() map[string]string {
-	return validate.MS{
-		"Driver":          "driver",
-		"DSN":             "dsn",
-		"MaxIdleConns":    "max-idle-conns",
-		"MaxOpenConns":    "max-open-conns",
-		"ConnMaxLifetime": "conn-max-lifetime",
-	}
 }
