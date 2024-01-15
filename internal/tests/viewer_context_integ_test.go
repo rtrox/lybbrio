@@ -32,8 +32,11 @@ func Test_ViewerContextGetsSet(t *testing.T) {
 		SetUserPermissions(perms).
 		SaveX(adminCtx)
 
+	kc, err := auth.NewHS512KeyContainer("some_secret")
+	require.NoError(err)
+
 	jwtProvider, err := auth.NewJWTProvider(
-		"some_secret",
+		kc,
 		"some_issuer",
 		10*time.Second,
 	)

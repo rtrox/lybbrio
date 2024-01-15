@@ -14,12 +14,7 @@ import (
 func Test_Middleware(t *testing.T) {
 	t.Parallel()
 	require := require.New(t)
-	provider, err := NewJWTProvider(
-		"some_secret",
-		"some_issuer",
-		10*time.Second,
-	)
-	require.NoError(err)
+	provider := testProviderHS512(t)
 
 	handler := ViewerContextMiddleware(provider)(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		view := viewer.FromContext(r.Context())
@@ -48,15 +43,12 @@ func Test_Middleware(t *testing.T) {
 func Test_Middleware_BadToken(t *testing.T) {
 	t.Parallel()
 	require := require.New(t)
-	provider, err := NewJWTProvider(
-		"some_secret",
-		"some_issuer",
-		10*time.Second,
-	)
-	require.NoError(err)
+	provider := testProviderHS512(t)
 
+	wrongKC, err := NewHS512KeyContainer("some_wrong_secret")
+	require.NoError(err)
 	wrong_provider, err := NewJWTProvider(
-		"some_other_secret",
+		wrongKC,
 		"some_issuer",
 		10*time.Second,
 	)
@@ -94,12 +86,7 @@ func Test_Middleware_BadToken(t *testing.T) {
 func Test_Middleware_EmptyToken(t *testing.T) {
 	t.Parallel()
 	require := require.New(t)
-	provider, err := NewJWTProvider(
-		"some_secret",
-		"some_issuer",
-		10*time.Second,
-	)
-	require.NoError(err)
+	provider := testProviderHS512(t)
 
 	handler := ViewerContextMiddleware(provider)(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)

@@ -147,11 +147,11 @@ func rootRun(_ *cobra.Command, _ []string) {
 	}
 
 	// Calibre
-	cal, error := calibre.NewCalibreSQLite(conf.CalibreLibraryPath)
+	cal, err := calibre.NewCalibreSQLite(conf.CalibreLibraryPath)
 	cal = cal.WithLogger(&log.Logger)
 
-	if error != nil {
-		log.Fatal().Err(error).Msg("Failed to initialize Calibre")
+	if err != nil {
+		log.Fatal().Err(err).Msg("Failed to initialize Calibre")
 	}
 
 	// Database
@@ -190,7 +190,18 @@ func rootRun(_ *cobra.Command, _ []string) {
 	scheduler.Start()
 
 	// Auth Provider
-	jwtProvider, err := auth.NewJWTProvider(conf.JWTSecret, conf.JWTIssuer, conf.JWTExpiry)
+	var kc auth.KeyContainer
+	switch conf.JWT.SigningMethod {
+	case "HS512":
+		kc, err = auth.NewHS512KeyContainer(conf.JWT.HMACSecret)
+	case "RS512":
+		kc, err = auth.NewRS512KeyContainer(conf.JWT.RSAPrivateKey, conf.JWT.RSAPublicKey)
+	}
+	if err != nil {
+		log.Fatal().Err(err).Msg("Failed to initialize Key Container")
+	}
+
+	jwtProvider, err := auth.NewJWTProvider(kc, conf.JWT.Issuer, conf.JWT.Expiry)
 	if err != nil {
 		log.Fatal().Err(err).Msg("Failed to initialize JWT Provider")
 	}

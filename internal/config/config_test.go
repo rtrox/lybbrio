@@ -43,15 +43,16 @@ func Test_LoadConfig_Defaults(t *testing.T) {
 	require.Equal(task["queue-length"], config.Task.QueueLength)
 	require.Equal(task["cadence"], config.Task.Cadence)
 
-	require.Equal(defaultSettings["jwt-issuer"], config.JWTIssuer)
-	require.Equal(defaultSettings["jwt-expiry"], config.JWTExpiry)
+	defaultJWT := defaultSettings["jwt"].(map[string]interface{})
+	require.Equal(defaultJWT["issuer"], config.JWT.Issuer)
+	require.Equal(defaultJWT["expiry"], config.JWT.Expiry)
 
-	require.NotEmpty(config.JWTSecret)
-	firstSecret := config.JWTSecret
+	require.NotEmpty(config.JWT.HMACSecret, "JWT Secret should be set by default")
+	firstSecret := config.JWT.HMACSecret
 
 	config2, err := LoadConfig(&flag.FlagSet{})
 	require.NoError(err)
-	require.NotEqual(firstSecret, config2.JWTSecret, "JWT Secret should be unique when not set")
+	require.NotEqual(firstSecret, config2.JWT.HMACSecret, "JWT Secret should be unique when not set")
 }
 
 // nolint: errcheck
@@ -76,9 +77,9 @@ func Test_LoadConfig_Flags(t *testing.T) {
 	flags.Set("task.workers", "15")
 	flags.Set("task.queue-length", "10")
 	flags.Set("task.cadence", "1s")
-	flags.Set("jwt-secret", "asdf")
-	flags.Set("jwt-issuer", "issuer")
-	flags.Set("jwt-expiry", "12h")
+	flags.Set("jwt.hmac-secret", "asdf")
+	flags.Set("jwt.issuer", "issuer")
+	flags.Set("jwt.expiry", "12h")
 
 	config, err := LoadConfig(flags)
 	require.NoError(err)
@@ -99,9 +100,9 @@ func Test_LoadConfig_Flags(t *testing.T) {
 	require.Equal(15, config.Task.Workers)
 	require.Equal(10, config.Task.QueueLength)
 	require.Equal(1*time.Second, config.Task.Cadence)
-	require.Equal("asdf", config.JWTSecret)
-	require.Equal("issuer", config.JWTIssuer)
-	require.Equal(12*time.Hour, config.JWTExpiry)
+	require.Equal("asdf", config.JWT.HMACSecret)
+	require.Equal("issuer", config.JWT.Issuer)
+	require.Equal(12*time.Hour, config.JWT.Expiry)
 }
 
 func Test_LoadConfig_Env(t *testing.T) {
@@ -125,9 +126,9 @@ func Test_LoadConfig_Env(t *testing.T) {
 	t.Setenv("TASK__WORKERS", "15")
 	t.Setenv("TASK__QUEUE_LENGTH", "10")
 	t.Setenv("TASK__CADENCE", "1s")
-	t.Setenv("JWT_SECRET", "asdf")
-	t.Setenv("JWT_ISSUER", "issuer")
-	t.Setenv("JWT_EXPIRY", "12h")
+	t.Setenv("JWT__HMAC_SECRET", "asdf")
+	t.Setenv("JWT__ISSUER", "issuer")
+	t.Setenv("JWT__EXPIRY", "12h")
 
 	config, err := LoadConfig(&flag.FlagSet{})
 	require.NoError(err)
@@ -148,9 +149,9 @@ func Test_LoadConfig_Env(t *testing.T) {
 	require.Equal(15, config.Task.Workers)
 	require.Equal(10, config.Task.QueueLength)
 	require.Equal(1*time.Second, config.Task.Cadence)
-	require.Equal("asdf", config.JWTSecret)
-	require.Equal("issuer", config.JWTIssuer)
-	require.Equal(12*time.Hour, config.JWTExpiry)
+	require.Equal("asdf", config.JWT.HMACSecret)
+	require.Equal("issuer", config.JWT.Issuer)
+	require.Equal(12*time.Hour, config.JWT.Expiry)
 }
 
 // nolint: errcheck
@@ -197,9 +198,12 @@ func Test_Validate(t *testing.T) {
 				CalibreLibraryPath:      "/tmp/",
 				DB:                      DatabaseConfig{Driver: "sqlite3", DSN: "file::memory:?cache=shared"},
 				Task:                    TaskConfig{Workers: 10, QueueLength: 100, Cadence: 5 * time.Second},
-				JWTSecret:               "asdf",
-				JWTIssuer:               "issuer",
-				JWTExpiry:               12 * time.Hour,
+				JWT: JWTConfig{
+					SigningMethod: "HS512",
+					HMACSecret:    "asdf",
+					Issuer:        "issuer",
+					Expiry:        12 * time.Hour,
+				},
 			},
 			wantErr: false,
 		},
@@ -217,9 +221,12 @@ func Test_Validate(t *testing.T) {
 				CalibreLibraryPath:      "/tmp/",
 				DB:                      DatabaseConfig{Driver: "sqlite3", DSN: "file::memory:?cache=shared"},
 				Task:                    TaskConfig{Workers: 10, QueueLength: 100, Cadence: 5 * time.Second},
-				JWTSecret:               "asdf",
-				JWTIssuer:               "issuer",
-				JWTExpiry:               12 * time.Hour,
+				JWT: JWTConfig{
+					SigningMethod: "HS512",
+					HMACSecret:    "asdf",
+					Issuer:        "issuer",
+					Expiry:        12 * time.Hour,
+				},
 			},
 			wantErr: true,
 		},
@@ -237,9 +244,12 @@ func Test_Validate(t *testing.T) {
 				CalibreLibraryPath:      "/tmp/",
 				DB:                      DatabaseConfig{Driver: "sqlite3", DSN: "file::memory:?cache=shared"},
 				Task:                    TaskConfig{Workers: 10, QueueLength: 100, Cadence: 5 * time.Second},
-				JWTSecret:               "asdf",
-				JWTIssuer:               "issuer",
-				JWTExpiry:               12 * time.Hour,
+				JWT: JWTConfig{
+					SigningMethod: "HS512",
+					HMACSecret:    "asdf",
+					Issuer:        "issuer",
+					Expiry:        12 * time.Hour,
+				},
 			},
 			wantErr: true,
 		},
@@ -257,9 +267,12 @@ func Test_Validate(t *testing.T) {
 				CalibreLibraryPath:      "/tmp/",
 				DB:                      DatabaseConfig{Driver: "invalid", DSN: "file::memory:?cache=shared"},
 				Task:                    TaskConfig{Workers: 10, QueueLength: 100, Cadence: 5 * time.Second},
-				JWTSecret:               "asdf",
-				JWTIssuer:               "issuer",
-				JWTExpiry:               12 * time.Hour,
+				JWT: JWTConfig{
+					SigningMethod: "HS512",
+					HMACSecret:    "asdf",
+					Issuer:        "issuer",
+					Expiry:        12 * time.Hour,
+				},
 			},
 			wantErr: true,
 		},
@@ -277,9 +290,12 @@ func Test_Validate(t *testing.T) {
 				CalibreLibraryPath:      "/tmp/",
 				DB:                      DatabaseConfig{Driver: "invalid", DSN: ""},
 				Task:                    TaskConfig{Workers: 10, QueueLength: 100, Cadence: 5 * time.Second},
-				JWTSecret:               "asdf",
-				JWTIssuer:               "issuer",
-				JWTExpiry:               12 * time.Hour,
+				JWT: JWTConfig{
+					SigningMethod: "HS512",
+					HMACSecret:    "asdf",
+					Issuer:        "issuer",
+					Expiry:        12 * time.Hour,
+				},
 			},
 			wantErr: true,
 		},
@@ -297,9 +313,12 @@ func Test_Validate(t *testing.T) {
 				CalibreLibraryPath:      "/tmp/",
 				DB:                      DatabaseConfig{Driver: "invalid", DSN: ""},
 				Task:                    TaskConfig{Workers: -1, QueueLength: 100, Cadence: 5 * time.Second},
-				JWTSecret:               "asdf",
-				JWTIssuer:               "issuer",
-				JWTExpiry:               12 * time.Hour,
+				JWT: JWTConfig{
+					SigningMethod: "HS512",
+					HMACSecret:    "asdf",
+					Issuer:        "issuer",
+					Expiry:        12 * time.Hour,
+				},
 			},
 			wantErr: true,
 		},

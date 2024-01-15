@@ -41,8 +41,11 @@ var defaultSettings = map[string]interface{}{
 		"queue-length": 100, // 1000 tasks
 		"cadence":      5 * time.Second,
 	},
-	"jwt-issuer": "http://localhost:8080",
-	"jwt-expiry": 1 * time.Hour,
+	"jwt": map[string]interface{}{
+		"signing-method": "HS512",
+		"issuer":         "http://localhost:8080",
+		"expiry":         1 * time.Hour,
+	},
 }
 
 func RegisterFlags(flagSet *flag.FlagSet) {
@@ -64,9 +67,12 @@ func RegisterFlags(flagSet *flag.FlagSet) {
 	flagSet.Int("task.workers", 10, "Number of workers")
 	flagSet.Int("task.queue-length", 100, "Task queue length")
 	flagSet.Duration("task.cadence", 5*time.Second, "Task cadence")
-	flagSet.String("jwt-issuer", "http://localhost:8080", "JWT Issuer")
-	flagSet.Duration("jwt-expiry", 1*time.Hour, "JWT Expiry")
-	flagSet.String("jwt-secret", "", "JWT Secret")
+	flagSet.String("jwt.issuer", "http://localhost:8080", "JWT Issuer")
+	flagSet.Duration("jwt.expiry", 1*time.Hour, "JWT Expiry")
+	flagSet.String("jwt.signing-method", "HS512", "JWT Signing Method")
+	flagSet.String("jwt.hmac-secret", "", "JWT HMACSecret")
+	flagSet.String("jwt.rsa-private-key", "", "JWT RSAPrivateKey")
+	flagSet.String("jwt.rsa-public-key", "", "JWT RSAPublicKey")
 }
 
 type DatabaseConfig struct {
@@ -81,6 +87,36 @@ type TaskConfig struct {
 	Workers     int           `koanf:"workers" validate:"required|int|gt:0"`
 	QueueLength int           `koanf:"queue-length" validate:"required|int|gt:0"`
 	Cadence     time.Duration `koanf:"cadence" validate:"required"`
+}
+
+type JWTConfig struct {
+	SigningMethod string        `koanf:"signing-method" validate:"required|in:HS512,RS512"`
+	Expiry        time.Duration `koanf:"expiry" validate:"required"`
+	Issuer        string        `koanf:"issuer" validate:"required|url"`
+	HMACSecret    string        `koanf:"hmac-secret"`
+	RSAPrivateKey string        `koanf:"rsa-private-key"`
+	RSAPublicKey  string        `koanf:"rsa-public-key"`
+}
+
+func (c JWTConfig) Validate() error {
+	v := validate.Struct(c)
+	if !v.Validate() {
+		return v.Errors
+	}
+	if c.SigningMethod == "HS512" {
+		if c.HMACSecret == "" {
+			return fmt.Errorf("HMACSecret is required for HS512")
+		}
+	}
+	if c.SigningMethod == "RS512" {
+		if c.RSAPrivateKey == "" {
+			return fmt.Errorf("RSAPrivateKey is required for RS512")
+		}
+		if c.RSAPublicKey == "" {
+			return fmt.Errorf("RSAPublicKey is required for RS512")
+		}
+	}
+	return nil
 }
 
 type Config struct {
@@ -101,10 +137,7 @@ type Config struct {
 
 	DB   DatabaseConfig `koanf:"db"`
 	Task TaskConfig     `koanf:"task"`
-
-	JWTSecret string        `koanf:"jwt-secret" validate:"required"`
-	JWTIssuer string        `koanf:"jwt-issuer" validate:"required"`
-	JWTExpiry time.Duration `koanf:"jwt-expiry" validate:"required"`
+	JWT  JWTConfig      `koanf:"jwt"`
 
 	k *koanf.Koanf
 }
@@ -129,6 +162,10 @@ func (c *Config) Validate() error {
 	if !vt.Validate() {
 		return vt.Errors
 	}
+	vj := validate.Struct(c.JWT)
+	if !vj.Validate() {
+		return vj.Errors
+	}
 	return nil
 }
 
@@ -152,12 +189,12 @@ func LoadConfig(flagSet *flag.FlagSet) (*Config, error) {
 		return nil, err
 	}
 
-	if !k.Exists("jwt-secret") {
+	if k.Get("jwt.signing-method") == "HS512" && !k.Exists("jwt.hmac-secret") {
 		u, err := uuid.NewRandomFromReader(rand.Reader)
 		if err != nil {
 			return nil, err
 		}
-		if err := k.Set("jwt-secret", u.String()); err != nil {
+		if err := k.Set("jwt.hmac-secret", u.String()); err != nil {
 			return nil, err
 		}
 	}
