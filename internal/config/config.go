@@ -2,12 +2,11 @@ package config
 
 import (
 	"crypto/rand"
-	"fmt"
 	"strings"
 	"time"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
-	"github.com/gookit/validate"
 	flag "github.com/spf13/pflag"
 
 	"github.com/knadh/koanf/v2"
@@ -41,8 +40,11 @@ var defaultSettings = map[string]interface{}{
 		"queue-length": 100, // 1000 tasks
 		"cadence":      5 * time.Second,
 	},
-	"jwt-issuer": "http://localhost:8080",
-	"jwt-expiry": 1 * time.Hour,
+	"jwt": map[string]interface{}{
+		"signing-method": "HS512",
+		"issuer":         "http://localhost:8080",
+		"expiry":         1 * time.Hour,
+	},
 }
 
 func RegisterFlags(flagSet *flag.FlagSet) {
@@ -64,13 +66,16 @@ func RegisterFlags(flagSet *flag.FlagSet) {
 	flagSet.Int("task.workers", 10, "Number of workers")
 	flagSet.Int("task.queue-length", 100, "Task queue length")
 	flagSet.Duration("task.cadence", 5*time.Second, "Task cadence")
-	flagSet.String("jwt-issuer", "http://localhost:8080", "JWT Issuer")
-	flagSet.Duration("jwt-expiry", 1*time.Hour, "JWT Expiry")
-	flagSet.String("jwt-secret", "", "JWT Secret")
+	flagSet.String("jwt.issuer", "http://localhost:8080", "JWT Issuer")
+	flagSet.Duration("jwt.expiry", 1*time.Hour, "JWT Expiry")
+	flagSet.String("jwt.signing-method", "HS512", "JWT Signing Method")
+	flagSet.String("jwt.hmac-secret", "", "JWT HMACSecret")
+	flagSet.String("jwt.rsa-private-key", "", "JWT RSAPrivateKey")
+	flagSet.String("jwt.rsa-public-key", "", "JWT RSAPublicKey")
 }
 
 type DatabaseConfig struct {
-	Driver          string        `koanf:"driver" validate:"required|in:sqlite3,mysql,postgres"`
+	Driver          string        `koanf:"driver" validate:"oneof=sqlite3 mysql postgres"`
 	DSN             string        `koanf:"dsn" validate:"required"`
 	MaxIdleConns    int           `koanf:"max-idle-conns"`
 	MaxOpenConns    int           `koanf:"max-open-conns"`
@@ -78,20 +83,47 @@ type DatabaseConfig struct {
 }
 
 type TaskConfig struct {
-	Workers     int           `koanf:"workers" validate:"required|int|gt:0"`
-	QueueLength int           `koanf:"queue-length" validate:"required|int|gt:0"`
+	Workers     int           `koanf:"workers" validate:"number,gt=0"`
+	QueueLength int           `koanf:"queue-length" validate:"number,gt=0"`
 	Cadence     time.Duration `koanf:"cadence" validate:"required"`
+}
+
+type JWTConfig struct {
+	SigningMethod string        `koanf:"signing-method" validate:"oneof=HS512 RS512"`
+	Expiry        time.Duration `koanf:"expiry" validate:"required"`
+	Issuer        string        `koanf:"issuer" validate:"url"`
+	HMACSecret    string        `koanf:"hmac-secret"`
+	RSAPrivateKey string        `koanf:"rsa-private-key" validate:"omitempty,file"`
+	RSAPublicKey  string        `koanf:"rsa-public-key" validate:"omitempty,file"`
+}
+
+func ValidateJWTConfig(sl validator.StructLevel) {
+	c := sl.Current().Interface().(JWTConfig)
+
+	if c.SigningMethod == "HS512" {
+		if c.HMACSecret == "" {
+			sl.ReportError(c.HMACSecret, "hmac-secret", "HMACSecret", "required", "")
+		}
+	}
+	if c.SigningMethod == "RS512" {
+		if c.RSAPrivateKey == "" {
+			sl.ReportError(c.RSAPrivateKey, "rsa-private-key", "RSAPrivateKey", "required", "")
+		}
+		if c.RSAPublicKey == "" {
+			sl.ReportError(c.RSAPublicKey, "rsa-public-key", "RSAPublicKey", "required", "")
+		}
+	}
 }
 
 type Config struct {
 	// Logging
-	LogLevel  string `koanf:"log-level" validate:"ValidateLogLevel"`
-	LogFormat string `koanf:"log-format" validate:"in:json,text"`
+	LogLevel  string `koanf:"log-level" validate:"log_level"`
+	LogFormat string `koanf:"log-format" validate:"oneof=json text"`
 	// HTTPServer
 	GracefulShutdownTimeout time.Duration `koanf:"graceful-shutdown-timeout"`
-	BaseURL                 string        `koanf:"base-url" validate:"required|url"`
-	Interface               string        `koanf:"interface" validate:"required|ip"`
-	Port                    int           `koanf:"port" validate:"required|int|gt:0"`
+	BaseURL                 string        `koanf:"base-url" validate:"url"`
+	Interface               string        `koanf:"interface" validate:"ip"`
+	Port                    int           `koanf:"port" validate:"number,gt=0"`
 	DevMode                 bool          `koanf:"dev-mode"`
 
 	GoCollector      bool `koanf:"go-collector"`
@@ -101,47 +133,25 @@ type Config struct {
 
 	DB   DatabaseConfig `koanf:"db"`
 	Task TaskConfig     `koanf:"task"`
-
-	JWTSecret string        `koanf:"jwt-secret" validate:"required"`
-	JWTIssuer string        `koanf:"jwt-issuer" validate:"required"`
-	JWTExpiry time.Duration `koanf:"jwt-expiry" validate:"required"`
+	JWT  JWTConfig      `koanf:"jwt"`
 
 	k *koanf.Koanf
 }
 
-func (c Config) ValidateLogLevel(val string) bool {
-	if _, err := zerolog.ParseLevel(val); err != nil {
-		return false
-	}
-	return true
-}
-
 func (c *Config) Validate() error {
-	v := validate.Struct(c)
-	if !v.Validate() {
-		return v.Errors
-	}
-	vd := validate.Struct(c.DB)
-	if !vd.Validate() {
-		return vd.Errors
-	}
-	vt := validate.Struct(c.Task)
-	if !vt.Validate() {
-		return vt.Errors
-	}
-	return nil
-}
-
-func (c Config) Messages() map[string]string {
-	lvls := []string{}
-	for i := zerolog.TraceLevel; i < zerolog.Disabled; i++ {
-		if i.String() != "" {
-			lvls = append(lvls, i.String())
+	validate := validator.New(validator.WithRequiredStructEnabled())
+	validate.RegisterStructValidation(ValidateJWTConfig, JWTConfig{})
+	err := validate.RegisterValidation("log_level", func(fl validator.FieldLevel) bool {
+		value := fl.Field().String()
+		if _, err := zerolog.ParseLevel(value); err != nil {
+			return false
 		}
+		return true
+	})
+	if err != nil {
+		return err
 	}
-	return validate.MS{
-		"LogLevel.ValidateLogLevel": fmt.Sprintf("Invalid log level, must be one of: [%s]", strings.Join(lvls, ", ")),
-	}
+	return validate.Struct(c)
 }
 
 func LoadConfig(flagSet *flag.FlagSet) (*Config, error) {
@@ -152,12 +162,12 @@ func LoadConfig(flagSet *flag.FlagSet) (*Config, error) {
 		return nil, err
 	}
 
-	if !k.Exists("jwt-secret") {
+	if k.Get("jwt.signing-method") == "HS512" && !k.Exists("jwt.hmac-secret") {
 		u, err := uuid.NewRandomFromReader(rand.Reader)
 		if err != nil {
 			return nil, err
 		}
-		if err := k.Set("jwt-secret", u.String()); err != nil {
+		if err := k.Set("jwt.hmac-secret", u.String()); err != nil {
 			return nil, err
 		}
 	}
@@ -179,28 +189,4 @@ func LoadConfig(flagSet *flag.FlagSet) (*Config, error) {
 
 	out.k = k
 	return out, nil
-}
-
-func (c Config) Translates() map[string]string {
-	return validate.MS{
-		"LogLevel":                "log-level",
-		"LogFormat":               "log-format",
-		"GracefulShutdownTimeout": "graceful-shutdown-timeout",
-		"BaseURL":                 "base-url",
-		"GoCollector":             "go-collector",
-		"ProcessCollector":        "process-collector",
-		"Port":                    "port",
-		"Interface":               "interface",
-		"CalibreLibraryPath":      "calibre-library-path",
-	}
-}
-
-func (c DatabaseConfig) Translates() map[string]string {
-	return validate.MS{
-		"Driver":          "driver",
-		"DSN":             "dsn",
-		"MaxIdleConns":    "max-idle-conns",
-		"MaxOpenConns":    "max-open-conns",
-		"ConnMaxLifetime": "conn-max-lifetime",
-	}
 }
