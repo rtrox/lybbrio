@@ -137,6 +137,14 @@ func Test_PasswordAuth(t *testing.T) {
 			defer res.Body.Close()
 
 			require.Equal(tt.wantCode, res.StatusCode)
+
+			requireFunc := require.Empty
+			if tt.wantCode == http.StatusOK {
+				requireFunc = require.NotEmpty
+			}
+			requireFunc(res.Header.Get("X-Api-Token"))
+			requireFunc(res.Header.Get("X-Api-Expires"))
+			requireFunc(res.Header.Get("Set-Cookie"))
 		})
 	}
 }
