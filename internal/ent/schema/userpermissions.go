@@ -6,7 +6,9 @@ import (
 	"lybbrio/internal/ent/schema/permissions"
 	"lybbrio/internal/rule"
 
+	"entgo.io/contrib/entgql"
 	"entgo.io/ent"
+	"entgo.io/ent/schema"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/mixin"
@@ -15,6 +17,12 @@ import (
 // UserPermissions holds the schema definition for the UserPermissions entity.
 type UserPermissions struct {
 	ent.Schema
+}
+
+func (UserPermissions) Annotations() []schema.Annotation {
+	return []schema.Annotation{
+		entgql.Mutations(entgql.MutationCreate(), entgql.MutationUpdate()),
+	}
 }
 
 func (UserPermissions) Mixin() []ent.Mixin {

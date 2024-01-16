@@ -105,15 +105,8 @@ type Format string
 
 // Format values.
 const (
-	FormatAZW3  Format = "AZW3"
 	FormatEPUB  Format = "EPUB"
 	FormatKEPUB Format = "KEPUB"
-	FormatPDF   Format = "PDF"
-	FormatCBC   Format = "CBC"
-	FormatCBR   Format = "CBR"
-	FormatCB7   Format = "CB7"
-	FormatCBZ   Format = "CBZ"
-	FormatCBT   Format = "CBT"
 )
 
 func (f Format) String() string {
@@ -123,7 +116,7 @@ func (f Format) String() string {
 // FormatValidator is a validator for the "format" field enum values. It is called by the builders before save.
 func FormatValidator(f Format) error {
 	switch f {
-	case FormatAZW3, FormatEPUB, FormatKEPUB, FormatPDF, FormatCBC, FormatCBR, FormatCB7, FormatCBZ, FormatCBT:
+	case FormatEPUB, FormatKEPUB:
 		return nil
 	default:
 		return fmt.Errorf("bookfile: invalid enum value for format field: %q", f)

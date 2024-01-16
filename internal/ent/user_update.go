@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"lybbrio/internal/ent/predicate"
+	"lybbrio/internal/ent/schema/argon2id"
 	"lybbrio/internal/ent/schema/ksuid"
 	"lybbrio/internal/ent/shelf"
 	"lybbrio/internal/ent/user"
@@ -51,15 +52,15 @@ func (uu *UserUpdate) SetNillableUsername(s *string) *UserUpdate {
 }
 
 // SetPasswordHash sets the "password_hash" field.
-func (uu *UserUpdate) SetPasswordHash(s string) *UserUpdate {
-	uu.mutation.SetPasswordHash(s)
+func (uu *UserUpdate) SetPasswordHash(ah argon2id.Argon2IDHash) *UserUpdate {
+	uu.mutation.SetPasswordHash(ah)
 	return uu
 }
 
 // SetNillablePasswordHash sets the "password_hash" field if the given value is not nil.
-func (uu *UserUpdate) SetNillablePasswordHash(s *string) *UserUpdate {
-	if s != nil {
-		uu.SetPasswordHash(*s)
+func (uu *UserUpdate) SetNillablePasswordHash(ah *argon2id.Argon2IDHash) *UserUpdate {
+	if ah != nil {
+		uu.SetPasswordHash(*ah)
 	}
 	return uu
 }
@@ -298,15 +299,15 @@ func (uuo *UserUpdateOne) SetNillableUsername(s *string) *UserUpdateOne {
 }
 
 // SetPasswordHash sets the "password_hash" field.
-func (uuo *UserUpdateOne) SetPasswordHash(s string) *UserUpdateOne {
-	uuo.mutation.SetPasswordHash(s)
+func (uuo *UserUpdateOne) SetPasswordHash(ah argon2id.Argon2IDHash) *UserUpdateOne {
+	uuo.mutation.SetPasswordHash(ah)
 	return uuo
 }
 
 // SetNillablePasswordHash sets the "password_hash" field if the given value is not nil.
-func (uuo *UserUpdateOne) SetNillablePasswordHash(s *string) *UserUpdateOne {
-	if s != nil {
-		uuo.SetPasswordHash(*s)
+func (uuo *UserUpdateOne) SetNillablePasswordHash(ah *argon2id.Argon2IDHash) *UserUpdateOne {
+	if ah != nil {
+		uuo.SetPasswordHash(*ah)
 	}
 	return uuo
 }

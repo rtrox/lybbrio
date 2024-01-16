@@ -94,9 +94,9 @@ var (
 		{Name: "create_time", Type: field.TypeTime},
 		{Name: "update_time", Type: field.TypeTime},
 		{Name: "name", Type: field.TypeString, Size: 2147483647},
-		{Name: "path", Type: field.TypeString, Size: 2147483647},
+		{Name: "path", Type: field.TypeString, Unique: true, Size: 2147483647},
 		{Name: "size", Type: field.TypeInt64},
-		{Name: "format", Type: field.TypeEnum, Enums: []string{"AZW3", "EPUB", "KEPUB", "PDF", "CBC", "CBR", "CB7", "CBZ", "CBT"}},
+		{Name: "format", Type: field.TypeEnum, Enums: []string{"EPUB", "KEPUB"}},
 		{Name: "book_file_book", Type: field.TypeString},
 	}
 	// BookFilesTable holds the schema information for the "book_files" table.
@@ -342,9 +342,9 @@ var (
 		{Name: "id", Type: field.TypeString},
 		{Name: "create_time", Type: field.TypeTime},
 		{Name: "update_time", Type: field.TypeTime},
+		{Name: "can_edit", Type: field.TypeBool, Default: false},
 		{Name: "admin", Type: field.TypeBool, Default: false},
 		{Name: "can_create_public", Type: field.TypeBool, Default: false},
-		{Name: "can_edit", Type: field.TypeBool, Default: false},
 		{Name: "user_id", Type: field.TypeString, Unique: true, Nullable: true},
 	}
 	// UserPermissionsTable holds the schema information for the "user_permissions" table.

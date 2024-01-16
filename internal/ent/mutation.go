@@ -13,6 +13,7 @@ import (
 	"lybbrio/internal/ent/language"
 	"lybbrio/internal/ent/predicate"
 	"lybbrio/internal/ent/publisher"
+	"lybbrio/internal/ent/schema/argon2id"
 	"lybbrio/internal/ent/schema/ksuid"
 	"lybbrio/internal/ent/schema/task_enums"
 	"lybbrio/internal/ent/series"
@@ -8080,7 +8081,7 @@ type UserMutation struct {
 	create_time             *time.Time
 	update_time             *time.Time
 	username                *string
-	password_hash           *string
+	password_hash           *argon2id.Argon2IDHash
 	email                   *string
 	clearedFields           map[string]struct{}
 	shelves                 map[ksuid.ID]struct{}
@@ -8306,12 +8307,12 @@ func (m *UserMutation) ResetUsername() {
 }
 
 // SetPasswordHash sets the "password_hash" field.
-func (m *UserMutation) SetPasswordHash(s string) {
-	m.password_hash = &s
+func (m *UserMutation) SetPasswordHash(ah argon2id.Argon2IDHash) {
+	m.password_hash = &ah
 }
 
 // PasswordHash returns the value of the "password_hash" field in the mutation.
-func (m *UserMutation) PasswordHash() (r string, exists bool) {
+func (m *UserMutation) PasswordHash() (r argon2id.Argon2IDHash, exists bool) {
 	v := m.password_hash
 	if v == nil {
 		return
@@ -8322,7 +8323,7 @@ func (m *UserMutation) PasswordHash() (r string, exists bool) {
 // OldPasswordHash returns the old "password_hash" field's value of the User entity.
 // If the User object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *UserMutation) OldPasswordHash(ctx context.Context) (v string, err error) {
+func (m *UserMutation) OldPasswordHash(ctx context.Context) (v argon2id.Argon2IDHash, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldPasswordHash is only allowed on UpdateOne operations")
 	}
@@ -8601,7 +8602,7 @@ func (m *UserMutation) SetField(name string, value ent.Value) error {
 		m.SetUsername(v)
 		return nil
 	case user.FieldPasswordHash:
-		v, ok := value.(string)
+		v, ok := value.(argon2id.Argon2IDHash)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
@@ -8801,9 +8802,9 @@ type UserPermissionsMutation struct {
 	id               *ksuid.ID
 	create_time      *time.Time
 	update_time      *time.Time
+	_CanEdit         *bool
 	_Admin           *bool
 	_CanCreatePublic *bool
-	_CanEdit         *bool
 	clearedFields    map[string]struct{}
 	user             *ksuid.ID
 	cleareduser      bool
@@ -9037,6 +9038,42 @@ func (m *UserPermissionsMutation) ResetUserID() {
 	delete(m.clearedFields, userpermissions.FieldUserID)
 }
 
+// SetCanEdit sets the "CanEdit" field.
+func (m *UserPermissionsMutation) SetCanEdit(b bool) {
+	m._CanEdit = &b
+}
+
+// CanEdit returns the value of the "CanEdit" field in the mutation.
+func (m *UserPermissionsMutation) CanEdit() (r bool, exists bool) {
+	v := m._CanEdit
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCanEdit returns the old "CanEdit" field's value of the UserPermissions entity.
+// If the UserPermissions object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserPermissionsMutation) OldCanEdit(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCanEdit is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCanEdit requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCanEdit: %w", err)
+	}
+	return oldValue.CanEdit, nil
+}
+
+// ResetCanEdit resets all changes to the "CanEdit" field.
+func (m *UserPermissionsMutation) ResetCanEdit() {
+	m._CanEdit = nil
+}
+
 // SetAdmin sets the "Admin" field.
 func (m *UserPermissionsMutation) SetAdmin(b bool) {
 	m._Admin = &b
@@ -9107,42 +9144,6 @@ func (m *UserPermissionsMutation) OldCanCreatePublic(ctx context.Context) (v boo
 // ResetCanCreatePublic resets all changes to the "CanCreatePublic" field.
 func (m *UserPermissionsMutation) ResetCanCreatePublic() {
 	m._CanCreatePublic = nil
-}
-
-// SetCanEdit sets the "CanEdit" field.
-func (m *UserPermissionsMutation) SetCanEdit(b bool) {
-	m._CanEdit = &b
-}
-
-// CanEdit returns the value of the "CanEdit" field in the mutation.
-func (m *UserPermissionsMutation) CanEdit() (r bool, exists bool) {
-	v := m._CanEdit
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldCanEdit returns the old "CanEdit" field's value of the UserPermissions entity.
-// If the UserPermissions object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *UserPermissionsMutation) OldCanEdit(ctx context.Context) (v bool, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldCanEdit is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldCanEdit requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldCanEdit: %w", err)
-	}
-	return oldValue.CanEdit, nil
-}
-
-// ResetCanEdit resets all changes to the "CanEdit" field.
-func (m *UserPermissionsMutation) ResetCanEdit() {
-	m._CanEdit = nil
 }
 
 // ClearUser clears the "user" edge to the User entity.
@@ -9216,14 +9217,14 @@ func (m *UserPermissionsMutation) Fields() []string {
 	if m.user != nil {
 		fields = append(fields, userpermissions.FieldUserID)
 	}
+	if m._CanEdit != nil {
+		fields = append(fields, userpermissions.FieldCanEdit)
+	}
 	if m._Admin != nil {
 		fields = append(fields, userpermissions.FieldAdmin)
 	}
 	if m._CanCreatePublic != nil {
 		fields = append(fields, userpermissions.FieldCanCreatePublic)
-	}
-	if m._CanEdit != nil {
-		fields = append(fields, userpermissions.FieldCanEdit)
 	}
 	return fields
 }
@@ -9239,12 +9240,12 @@ func (m *UserPermissionsMutation) Field(name string) (ent.Value, bool) {
 		return m.UpdateTime()
 	case userpermissions.FieldUserID:
 		return m.UserID()
+	case userpermissions.FieldCanEdit:
+		return m.CanEdit()
 	case userpermissions.FieldAdmin:
 		return m.Admin()
 	case userpermissions.FieldCanCreatePublic:
 		return m.CanCreatePublic()
-	case userpermissions.FieldCanEdit:
-		return m.CanEdit()
 	}
 	return nil, false
 }
@@ -9260,12 +9261,12 @@ func (m *UserPermissionsMutation) OldField(ctx context.Context, name string) (en
 		return m.OldUpdateTime(ctx)
 	case userpermissions.FieldUserID:
 		return m.OldUserID(ctx)
+	case userpermissions.FieldCanEdit:
+		return m.OldCanEdit(ctx)
 	case userpermissions.FieldAdmin:
 		return m.OldAdmin(ctx)
 	case userpermissions.FieldCanCreatePublic:
 		return m.OldCanCreatePublic(ctx)
-	case userpermissions.FieldCanEdit:
-		return m.OldCanEdit(ctx)
 	}
 	return nil, fmt.Errorf("unknown UserPermissions field %s", name)
 }
@@ -9296,6 +9297,13 @@ func (m *UserPermissionsMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetUserID(v)
 		return nil
+	case userpermissions.FieldCanEdit:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCanEdit(v)
+		return nil
 	case userpermissions.FieldAdmin:
 		v, ok := value.(bool)
 		if !ok {
@@ -9309,13 +9317,6 @@ func (m *UserPermissionsMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetCanCreatePublic(v)
-		return nil
-	case userpermissions.FieldCanEdit:
-		v, ok := value.(bool)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetCanEdit(v)
 		return nil
 	}
 	return fmt.Errorf("unknown UserPermissions field %s", name)
@@ -9384,14 +9385,14 @@ func (m *UserPermissionsMutation) ResetField(name string) error {
 	case userpermissions.FieldUserID:
 		m.ResetUserID()
 		return nil
+	case userpermissions.FieldCanEdit:
+		m.ResetCanEdit()
+		return nil
 	case userpermissions.FieldAdmin:
 		m.ResetAdmin()
 		return nil
 	case userpermissions.FieldCanCreatePublic:
 		m.ResetCanCreatePublic()
-		return nil
-	case userpermissions.FieldCanEdit:
-		m.ResetCanEdit()
 		return nil
 	}
 	return fmt.Errorf("unknown UserPermissions field %s", name)

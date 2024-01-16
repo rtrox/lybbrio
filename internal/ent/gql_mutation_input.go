@@ -799,90 +799,84 @@ func (c *TagUpdateOne) SetInput(i UpdateTagInput) *TagUpdateOne {
 	return c
 }
 
-// UpdateUserInput represents a mutation input for updating users.
-type UpdateUserInput struct {
-	UpdateTime        *time.Time
-	Username          *string
-	ClearPasswordHash bool
-	PasswordHash      *string
-	Email             *string
-	ClearShelves      bool
-	AddShelfIDs       []ksuid.ID
-	RemoveShelfIDs    []ksuid.ID
+// CreateUserPermissionsInput represents a mutation input for creating userpermissionsslice.
+type CreateUserPermissionsInput struct {
+	CreateTime      *time.Time
+	UpdateTime      *time.Time
+	CanEdit         *bool
+	Admin           *bool
+	CanCreatePublic *bool
+	UserID          *ksuid.ID
 }
 
-// Mutate applies the UpdateUserInput on the UserMutation builder.
-func (i *UpdateUserInput) Mutate(m *UserMutation) {
-	if v := i.UpdateTime; v != nil {
-		m.SetUpdateTime(*v)
-	}
-	if v := i.Username; v != nil {
-		m.SetUsername(*v)
-	}
-	if i.ClearPasswordHash {
-		m.ClearPasswordHash()
-	}
-	if v := i.PasswordHash; v != nil {
-		m.SetPasswordHash(*v)
-	}
-	if v := i.Email; v != nil {
-		m.SetEmail(*v)
-	}
-	if i.ClearShelves {
-		m.ClearShelves()
-	}
-	if v := i.AddShelfIDs; len(v) > 0 {
-		m.AddShelfIDs(v...)
-	}
-	if v := i.RemoveShelfIDs; len(v) > 0 {
-		m.RemoveShelfIDs(v...)
-	}
-}
-
-// SetInput applies the change-set in the UpdateUserInput on the UserUpdate builder.
-func (c *UserUpdate) SetInput(i UpdateUserInput) *UserUpdate {
-	i.Mutate(c.Mutation())
-	return c
-}
-
-// SetInput applies the change-set in the UpdateUserInput on the UserUpdateOne builder.
-func (c *UserUpdateOne) SetInput(i UpdateUserInput) *UserUpdateOne {
-	i.Mutate(c.Mutation())
-	return c
-}
-
-// CreateUserInput represents a mutation input for creating users.
-type CreateUserInput struct {
-	CreateTime        *time.Time
-	UpdateTime        *time.Time
-	Username          string
-	PasswordHash      *string
-	Email             string
-	ShelfIDs          []ksuid.ID
-	UserPermissionsID ksuid.ID
-}
-
-// Mutate applies the CreateUserInput on the UserMutation builder.
-func (i *CreateUserInput) Mutate(m *UserMutation) {
+// Mutate applies the CreateUserPermissionsInput on the UserPermissionsMutation builder.
+func (i *CreateUserPermissionsInput) Mutate(m *UserPermissionsMutation) {
 	if v := i.CreateTime; v != nil {
 		m.SetCreateTime(*v)
 	}
 	if v := i.UpdateTime; v != nil {
 		m.SetUpdateTime(*v)
 	}
-	m.SetUsername(i.Username)
-	if v := i.PasswordHash; v != nil {
-		m.SetPasswordHash(*v)
+	if v := i.CanEdit; v != nil {
+		m.SetCanEdit(*v)
 	}
-	m.SetEmail(i.Email)
-	if v := i.ShelfIDs; len(v) > 0 {
-		m.AddShelfIDs(v...)
+	if v := i.Admin; v != nil {
+		m.SetAdmin(*v)
 	}
-	m.SetUserPermissionsID(i.UserPermissionsID)
+	if v := i.CanCreatePublic; v != nil {
+		m.SetCanCreatePublic(*v)
+	}
+	if v := i.UserID; v != nil {
+		m.SetUserID(*v)
+	}
 }
 
-// SetInput applies the change-set in the CreateUserInput on the UserCreate builder.
-func (c *UserCreate) SetInput(i CreateUserInput) *UserCreate {
+// SetInput applies the change-set in the CreateUserPermissionsInput on the UserPermissionsCreate builder.
+func (c *UserPermissionsCreate) SetInput(i CreateUserPermissionsInput) *UserPermissionsCreate {
+	i.Mutate(c.Mutation())
+	return c
+}
+
+// UpdateUserPermissionsInput represents a mutation input for updating userpermissionsslice.
+type UpdateUserPermissionsInput struct {
+	UpdateTime      *time.Time
+	CanEdit         *bool
+	Admin           *bool
+	CanCreatePublic *bool
+	ClearUser       bool
+	UserID          *ksuid.ID
+}
+
+// Mutate applies the UpdateUserPermissionsInput on the UserPermissionsMutation builder.
+func (i *UpdateUserPermissionsInput) Mutate(m *UserPermissionsMutation) {
+	if v := i.UpdateTime; v != nil {
+		m.SetUpdateTime(*v)
+	}
+	if v := i.CanEdit; v != nil {
+		m.SetCanEdit(*v)
+	}
+	if v := i.Admin; v != nil {
+		m.SetAdmin(*v)
+	}
+	if v := i.CanCreatePublic; v != nil {
+		m.SetCanCreatePublic(*v)
+	}
+	if i.ClearUser {
+		m.ClearUser()
+	}
+	if v := i.UserID; v != nil {
+		m.SetUserID(*v)
+	}
+}
+
+// SetInput applies the change-set in the UpdateUserPermissionsInput on the UserPermissionsUpdate builder.
+func (c *UserPermissionsUpdate) SetInput(i UpdateUserPermissionsInput) *UserPermissionsUpdate {
+	i.Mutate(c.Mutation())
+	return c
+}
+
+// SetInput applies the change-set in the UpdateUserPermissionsInput on the UserPermissionsUpdateOne builder.
+func (c *UserPermissionsUpdateOne) SetInput(i UpdateUserPermissionsInput) *UserPermissionsUpdateOne {
 	i.Mutate(c.Mutation())
 	return c
 }

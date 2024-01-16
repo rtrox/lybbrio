@@ -12,6 +12,7 @@ import (
 	"lybbrio/internal/ent/language"
 	"lybbrio/internal/ent/predicate"
 	"lybbrio/internal/ent/publisher"
+	"lybbrio/internal/ent/schema/argon2id"
 	"lybbrio/internal/ent/schema/ksuid"
 	"lybbrio/internal/ent/schema/task_enums"
 	"lybbrio/internal/ent/series"
@@ -4142,21 +4143,21 @@ type UserWhereInput struct {
 	UsernameContainsFold *string  `json:"usernameContainsFold,omitempty"`
 
 	// "password_hash" field predicates.
-	PasswordHash             *string  `json:"passwordHash,omitempty"`
-	PasswordHashNEQ          *string  `json:"passwordHashNEQ,omitempty"`
-	PasswordHashIn           []string `json:"passwordHashIn,omitempty"`
-	PasswordHashNotIn        []string `json:"passwordHashNotIn,omitempty"`
-	PasswordHashGT           *string  `json:"passwordHashGT,omitempty"`
-	PasswordHashGTE          *string  `json:"passwordHashGTE,omitempty"`
-	PasswordHashLT           *string  `json:"passwordHashLT,omitempty"`
-	PasswordHashLTE          *string  `json:"passwordHashLTE,omitempty"`
-	PasswordHashContains     *string  `json:"passwordHashContains,omitempty"`
-	PasswordHashHasPrefix    *string  `json:"passwordHashHasPrefix,omitempty"`
-	PasswordHashHasSuffix    *string  `json:"passwordHashHasSuffix,omitempty"`
-	PasswordHashIsNil        bool     `json:"passwordHashIsNil,omitempty"`
-	PasswordHashNotNil       bool     `json:"passwordHashNotNil,omitempty"`
-	PasswordHashEqualFold    *string  `json:"passwordHashEqualFold,omitempty"`
-	PasswordHashContainsFold *string  `json:"passwordHashContainsFold,omitempty"`
+	PasswordHash             *argon2id.Argon2IDHash  `json:"passwordHash,omitempty"`
+	PasswordHashNEQ          *argon2id.Argon2IDHash  `json:"passwordHashNEQ,omitempty"`
+	PasswordHashIn           []argon2id.Argon2IDHash `json:"passwordHashIn,omitempty"`
+	PasswordHashNotIn        []argon2id.Argon2IDHash `json:"passwordHashNotIn,omitempty"`
+	PasswordHashGT           *argon2id.Argon2IDHash  `json:"passwordHashGT,omitempty"`
+	PasswordHashGTE          *argon2id.Argon2IDHash  `json:"passwordHashGTE,omitempty"`
+	PasswordHashLT           *argon2id.Argon2IDHash  `json:"passwordHashLT,omitempty"`
+	PasswordHashLTE          *argon2id.Argon2IDHash  `json:"passwordHashLTE,omitempty"`
+	PasswordHashContains     *argon2id.Argon2IDHash  `json:"passwordHashContains,omitempty"`
+	PasswordHashHasPrefix    *argon2id.Argon2IDHash  `json:"passwordHashHasPrefix,omitempty"`
+	PasswordHashHasSuffix    *argon2id.Argon2IDHash  `json:"passwordHashHasSuffix,omitempty"`
+	PasswordHashIsNil        bool                    `json:"passwordHashIsNil,omitempty"`
+	PasswordHashNotNil       bool                    `json:"passwordHashNotNil,omitempty"`
+	PasswordHashEqualFold    *argon2id.Argon2IDHash  `json:"passwordHashEqualFold,omitempty"`
+	PasswordHashContainsFold *argon2id.Argon2IDHash  `json:"passwordHashContainsFold,omitempty"`
 
 	// "email" field predicates.
 	Email             *string  `json:"email,omitempty"`
@@ -4549,6 +4550,10 @@ type UserPermissionsWhereInput struct {
 	UserIDEqualFold    *ksuid.ID  `json:"userIDEqualFold,omitempty"`
 	UserIDContainsFold *ksuid.ID  `json:"userIDContainsFold,omitempty"`
 
+	// "CanEdit" field predicates.
+	CanEdit    *bool `json:"canedit,omitempty"`
+	CanEditNEQ *bool `json:"caneditNEQ,omitempty"`
+
 	// "Admin" field predicates.
 	Admin    *bool `json:"admin,omitempty"`
 	AdminNEQ *bool `json:"adminNEQ,omitempty"`
@@ -4556,10 +4561,6 @@ type UserPermissionsWhereInput struct {
 	// "CanCreatePublic" field predicates.
 	CanCreatePublic    *bool `json:"cancreatepublic,omitempty"`
 	CanCreatePublicNEQ *bool `json:"cancreatepublicNEQ,omitempty"`
-
-	// "CanEdit" field predicates.
-	CanEdit    *bool `json:"canedit,omitempty"`
-	CanEditNEQ *bool `json:"caneditNEQ,omitempty"`
 
 	// "user" edge predicates.
 	HasUser     *bool             `json:"hasUser,omitempty"`
@@ -4754,6 +4755,12 @@ func (i *UserPermissionsWhereInput) P() (predicate.UserPermissions, error) {
 	if i.UserIDContainsFold != nil {
 		predicates = append(predicates, userpermissions.UserIDContainsFold(*i.UserIDContainsFold))
 	}
+	if i.CanEdit != nil {
+		predicates = append(predicates, userpermissions.CanEditEQ(*i.CanEdit))
+	}
+	if i.CanEditNEQ != nil {
+		predicates = append(predicates, userpermissions.CanEditNEQ(*i.CanEditNEQ))
+	}
 	if i.Admin != nil {
 		predicates = append(predicates, userpermissions.AdminEQ(*i.Admin))
 	}
@@ -4765,12 +4772,6 @@ func (i *UserPermissionsWhereInput) P() (predicate.UserPermissions, error) {
 	}
 	if i.CanCreatePublicNEQ != nil {
 		predicates = append(predicates, userpermissions.CanCreatePublicNEQ(*i.CanCreatePublicNEQ))
-	}
-	if i.CanEdit != nil {
-		predicates = append(predicates, userpermissions.CanEditEQ(*i.CanEdit))
-	}
-	if i.CanEditNEQ != nil {
-		predicates = append(predicates, userpermissions.CanEditNEQ(*i.CanEditNEQ))
 	}
 
 	if i.HasUser != nil {

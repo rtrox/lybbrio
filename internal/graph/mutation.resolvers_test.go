@@ -13,6 +13,7 @@ import (
 
 	"lybbrio/internal/db"
 	"lybbrio/internal/ent"
+	"lybbrio/internal/ent/schema/argon2id"
 	"lybbrio/internal/ent/schema/permissions"
 	"lybbrio/internal/ent/user"
 	"lybbrio/internal/viewer"
@@ -60,8 +61,14 @@ func setupGQLTest(t *testing.T, testName string, teardown ...func()) graphqlTest
 		user.ID,
 		permissions.NewPermissions(permissions.Admin),
 	)
-
-	handler := handler.NewDefaultServer(NewSchema(dbClient))
+	argon2idConfig := argon2id.Config{
+		Memory:      64,
+		Iterations:  1,
+		Parallelism: 1,
+		SaltLen:     16,
+		KeyLen:      32,
+	}
+	handler := handler.NewDefaultServer(NewSchema(dbClient, argon2idConfig))
 	handler.Use(
 		entgql.Transactioner{TxOpener: dbClient},
 	)
@@ -792,31 +799,40 @@ func Test_CreateUser(t *testing.T) {
 
 	var resp struct {
 		CreateUser struct {
-			ID       string
-			Username string
-			Email    string
+			ID              string
+			Username        string
+			Email           string
+			UserPermissions struct {
+				ID    string
+				Admin bool
+			}
 		}
 	}
-
-	perms := tc.DBClient.UserPermissions.Create().SaveX(tc.AdminCtx)
 	mutation := `
 	mutation {
 		createUser(input: {
 			username:"some_username",
 			email:"an_email",
-			userPermissionsID:"%s"
+			userPermissions: {
+				admin: true,
+			}
 		}){
 		  id
 		  username
 		  email
+		  userPermissions {
+			admin
+		  }
 		}
 	  }`
-	err := tc.Client.Post(fmt.Sprintf(mutation, perms.ID), &resp)
+	err := tc.Client.Post(mutation, &resp)
 	require.NoError(err)
 
 	require.NotEmpty(resp.CreateUser.ID)
 	require.Equal("some_username", resp.CreateUser.Username)
 	require.Equal("an_email", resp.CreateUser.Email)
+	require.Equal(true, resp.CreateUser.UserPermissions.Admin)
+
 }
 
 func Test_UpdateUser(t *testing.T) {

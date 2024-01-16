@@ -2,6 +2,7 @@ package schema
 
 import (
 	"lybbrio/internal/ent/privacy"
+	"lybbrio/internal/ent/schema/argon2id"
 	"lybbrio/internal/ent/schema/ksuid"
 	"lybbrio/internal/rule"
 
@@ -22,9 +23,6 @@ type User struct {
 func (User) Annotations() []schema.Annotation {
 	return []schema.Annotation{
 		entgql.QueryField(),
-		// TODO: MutationCreate should not be allowed as-is through the graph long-term,
-		// but it's useful for testing right now.
-		entgql.Mutations(entgql.MutationUpdate(), entgql.MutationCreate()),
 	}
 }
 
@@ -46,6 +44,7 @@ func (User) Fields() []ent.Field {
 				entgql.OrderField("USERNAME"),
 			),
 		field.String("password_hash").
+			GoType(argon2id.Argon2IDHash{}).
 			Optional().
 			Sensitive(),
 		field.String("email").
