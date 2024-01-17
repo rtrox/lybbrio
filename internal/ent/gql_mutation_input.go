@@ -803,9 +803,9 @@ func (c *TagUpdateOne) SetInput(i UpdateTagInput) *TagUpdateOne {
 type CreateUserPermissionsInput struct {
 	CreateTime      *time.Time
 	UpdateTime      *time.Time
-	CanEdit         *bool
 	Admin           *bool
 	CanCreatePublic *bool
+	CanEdit         *bool
 	UserID          *ksuid.ID
 }
 
@@ -817,14 +817,14 @@ func (i *CreateUserPermissionsInput) Mutate(m *UserPermissionsMutation) {
 	if v := i.UpdateTime; v != nil {
 		m.SetUpdateTime(*v)
 	}
-	if v := i.CanEdit; v != nil {
-		m.SetCanEdit(*v)
-	}
 	if v := i.Admin; v != nil {
 		m.SetAdmin(*v)
 	}
 	if v := i.CanCreatePublic; v != nil {
 		m.SetCanCreatePublic(*v)
+	}
+	if v := i.CanEdit; v != nil {
+		m.SetCanEdit(*v)
 	}
 	if v := i.UserID; v != nil {
 		m.SetUserID(*v)
@@ -840,9 +840,9 @@ func (c *UserPermissionsCreate) SetInput(i CreateUserPermissionsInput) *UserPerm
 // UpdateUserPermissionsInput represents a mutation input for updating userpermissionsslice.
 type UpdateUserPermissionsInput struct {
 	UpdateTime      *time.Time
-	CanEdit         *bool
 	Admin           *bool
 	CanCreatePublic *bool
+	CanEdit         *bool
 	ClearUser       bool
 	UserID          *ksuid.ID
 }
@@ -852,14 +852,14 @@ func (i *UpdateUserPermissionsInput) Mutate(m *UserPermissionsMutation) {
 	if v := i.UpdateTime; v != nil {
 		m.SetUpdateTime(*v)
 	}
-	if v := i.CanEdit; v != nil {
-		m.SetCanEdit(*v)
-	}
 	if v := i.Admin; v != nil {
 		m.SetAdmin(*v)
 	}
 	if v := i.CanCreatePublic; v != nil {
 		m.SetCanCreatePublic(*v)
+	}
+	if v := i.CanEdit; v != nil {
+		m.SetCanEdit(*v)
 	}
 	if i.ClearUser {
 		m.ClearUser()

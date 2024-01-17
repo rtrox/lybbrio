@@ -71,3 +71,21 @@ func (v SystemAdminViewer) Has(p permissions.Permission) bool {
 func NewSystemAdminContext(ctx context.Context) context.Context {
 	return context.WithValue(ctx, viewerCtxKey, SystemAdminViewer{})
 }
+
+type AnonymousViewer struct{}
+
+func (v AnonymousViewer) IsAdmin() bool {
+	return false
+}
+
+func (v AnonymousViewer) UserID() (ksuid.ID, bool) {
+	return "", false
+}
+
+func (v AnonymousViewer) Has(p permissions.Permission) bool {
+	return false
+}
+
+func NewAnonymousContext(ctx context.Context) context.Context {
+	return context.WithValue(ctx, viewerCtxKey, AnonymousViewer{})
+}

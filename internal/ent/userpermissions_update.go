@@ -56,20 +56,6 @@ func (upu *UserPermissionsUpdate) ClearUserID() *UserPermissionsUpdate {
 	return upu
 }
 
-// SetCanEdit sets the "CanEdit" field.
-func (upu *UserPermissionsUpdate) SetCanEdit(b bool) *UserPermissionsUpdate {
-	upu.mutation.SetCanEdit(b)
-	return upu
-}
-
-// SetNillableCanEdit sets the "CanEdit" field if the given value is not nil.
-func (upu *UserPermissionsUpdate) SetNillableCanEdit(b *bool) *UserPermissionsUpdate {
-	if b != nil {
-		upu.SetCanEdit(*b)
-	}
-	return upu
-}
-
 // SetAdmin sets the "Admin" field.
 func (upu *UserPermissionsUpdate) SetAdmin(b bool) *UserPermissionsUpdate {
 	upu.mutation.SetAdmin(b)
@@ -94,6 +80,20 @@ func (upu *UserPermissionsUpdate) SetCanCreatePublic(b bool) *UserPermissionsUpd
 func (upu *UserPermissionsUpdate) SetNillableCanCreatePublic(b *bool) *UserPermissionsUpdate {
 	if b != nil {
 		upu.SetCanCreatePublic(*b)
+	}
+	return upu
+}
+
+// SetCanEdit sets the "CanEdit" field.
+func (upu *UserPermissionsUpdate) SetCanEdit(b bool) *UserPermissionsUpdate {
+	upu.mutation.SetCanEdit(b)
+	return upu
+}
+
+// SetNillableCanEdit sets the "CanEdit" field if the given value is not nil.
+func (upu *UserPermissionsUpdate) SetNillableCanEdit(b *bool) *UserPermissionsUpdate {
+	if b != nil {
+		upu.SetCanEdit(*b)
 	}
 	return upu
 }
@@ -168,14 +168,14 @@ func (upu *UserPermissionsUpdate) sqlSave(ctx context.Context) (n int, err error
 	if value, ok := upu.mutation.UpdateTime(); ok {
 		_spec.SetField(userpermissions.FieldUpdateTime, field.TypeTime, value)
 	}
-	if value, ok := upu.mutation.CanEdit(); ok {
-		_spec.SetField(userpermissions.FieldCanEdit, field.TypeBool, value)
-	}
 	if value, ok := upu.mutation.Admin(); ok {
 		_spec.SetField(userpermissions.FieldAdmin, field.TypeBool, value)
 	}
 	if value, ok := upu.mutation.CanCreatePublic(); ok {
 		_spec.SetField(userpermissions.FieldCanCreatePublic, field.TypeBool, value)
+	}
+	if value, ok := upu.mutation.CanEdit(); ok {
+		_spec.SetField(userpermissions.FieldCanEdit, field.TypeBool, value)
 	}
 	if upu.mutation.UserCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -252,20 +252,6 @@ func (upuo *UserPermissionsUpdateOne) ClearUserID() *UserPermissionsUpdateOne {
 	return upuo
 }
 
-// SetCanEdit sets the "CanEdit" field.
-func (upuo *UserPermissionsUpdateOne) SetCanEdit(b bool) *UserPermissionsUpdateOne {
-	upuo.mutation.SetCanEdit(b)
-	return upuo
-}
-
-// SetNillableCanEdit sets the "CanEdit" field if the given value is not nil.
-func (upuo *UserPermissionsUpdateOne) SetNillableCanEdit(b *bool) *UserPermissionsUpdateOne {
-	if b != nil {
-		upuo.SetCanEdit(*b)
-	}
-	return upuo
-}
-
 // SetAdmin sets the "Admin" field.
 func (upuo *UserPermissionsUpdateOne) SetAdmin(b bool) *UserPermissionsUpdateOne {
 	upuo.mutation.SetAdmin(b)
@@ -290,6 +276,20 @@ func (upuo *UserPermissionsUpdateOne) SetCanCreatePublic(b bool) *UserPermission
 func (upuo *UserPermissionsUpdateOne) SetNillableCanCreatePublic(b *bool) *UserPermissionsUpdateOne {
 	if b != nil {
 		upuo.SetCanCreatePublic(*b)
+	}
+	return upuo
+}
+
+// SetCanEdit sets the "CanEdit" field.
+func (upuo *UserPermissionsUpdateOne) SetCanEdit(b bool) *UserPermissionsUpdateOne {
+	upuo.mutation.SetCanEdit(b)
+	return upuo
+}
+
+// SetNillableCanEdit sets the "CanEdit" field if the given value is not nil.
+func (upuo *UserPermissionsUpdateOne) SetNillableCanEdit(b *bool) *UserPermissionsUpdateOne {
+	if b != nil {
+		upuo.SetCanEdit(*b)
 	}
 	return upuo
 }
@@ -394,14 +394,14 @@ func (upuo *UserPermissionsUpdateOne) sqlSave(ctx context.Context) (_node *UserP
 	if value, ok := upuo.mutation.UpdateTime(); ok {
 		_spec.SetField(userpermissions.FieldUpdateTime, field.TypeTime, value)
 	}
-	if value, ok := upuo.mutation.CanEdit(); ok {
-		_spec.SetField(userpermissions.FieldCanEdit, field.TypeBool, value)
-	}
 	if value, ok := upuo.mutation.Admin(); ok {
 		_spec.SetField(userpermissions.FieldAdmin, field.TypeBool, value)
 	}
 	if value, ok := upuo.mutation.CanCreatePublic(); ok {
 		_spec.SetField(userpermissions.FieldCanCreatePublic, field.TypeBool, value)
+	}
+	if value, ok := upuo.mutation.CanEdit(); ok {
+		_spec.SetField(userpermissions.FieldCanEdit, field.TypeBool, value)
 	}
 	if upuo.mutation.UserCleared() {
 		edge := &sqlgraph.EdgeSpec{

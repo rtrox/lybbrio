@@ -168,3 +168,33 @@ func Test_NewSystemAdminContext(t *testing.T) {
 	assert.True(v.IsAdmin(), "FromContext should return admin permissions")
 	assert.True(v.Has(permissions.Admin), "FromContext should return admin permissions")
 }
+
+func Test_AnonymousViewer_HasNoUserID(t *testing.T) {
+	assert := assert.New(t)
+	ctx := NewAnonymousContext(context.Background())
+	if !assert.NotNil(ctx, "NewAnonymousContext should not return nil") {
+		t.FailNow()
+	}
+	v := FromContext(ctx)
+	if !assert.NotNil(v, "FromContext should not return nil") {
+		t.FailNow()
+	}
+	u, ok := v.UserID()
+	assert.Empty(u)
+	assert.False(ok)
+}
+
+func Test_AnonymousViewer_HasNoPermissions(t *testing.T) {
+	assert := assert.New(t)
+	ctx := NewAnonymousContext(context.Background())
+	if !assert.NotNil(ctx, "NewAnonymousContext should not return nil") {
+		t.FailNow()
+	}
+	v := FromContext(ctx)
+	if !assert.NotNil(v, "FromContext should not return nil") {
+		t.FailNow()
+	}
+	for p := range permissions.All() {
+		assert.False(v.Has(p))
+	}
+}

@@ -28,7 +28,6 @@ func (UserPermissions) Annotations() []schema.Annotation {
 func (UserPermissions) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		mixin.Time{},
-		BaseMixin{},
 		ksuid.MixinWithPrefix("prm"),
 	}
 }
@@ -62,14 +61,19 @@ func (UserPermissions) Policy() ent.Policy {
 	// Admins can query and modify any user's permissions.
 	return privacy.Policy{
 		Query: privacy.QueryPolicy{
+			/// Does Not use base policy mixin!! Tread with Care.
 			rule.DenyIfNoViewer(),
+			rule.DenyIfAnonymousViewer(),
 			rule.AllowIfAdmin(),
 			rule.FilterUserRule(),
 			privacy.AlwaysAllowRule(),
 		},
 		Mutation: privacy.MutationPolicy{
+			// Does Not use base policy mixin!! Tread with Care.
 			rule.DenyIfNoViewer(),
 			rule.AllowIfAdmin(),
+			rule.DenyNonDefaultPermissions(),
+			rule.AllowCreate(),
 			privacy.AlwaysDenyRule(),
 		},
 	}

@@ -1954,11 +1954,6 @@ func (up *UserPermissionsQuery) collectField(ctx context.Context, opCtx *graphql
 				selectedFields = append(selectedFields, userpermissions.FieldUserID)
 				fieldSeen[userpermissions.FieldUserID] = struct{}{}
 			}
-		case "canedit":
-			if _, ok := fieldSeen[userpermissions.FieldCanEdit]; !ok {
-				selectedFields = append(selectedFields, userpermissions.FieldCanEdit)
-				fieldSeen[userpermissions.FieldCanEdit] = struct{}{}
-			}
 		case "admin":
 			if _, ok := fieldSeen[userpermissions.FieldAdmin]; !ok {
 				selectedFields = append(selectedFields, userpermissions.FieldAdmin)
@@ -1968,6 +1963,11 @@ func (up *UserPermissionsQuery) collectField(ctx context.Context, opCtx *graphql
 			if _, ok := fieldSeen[userpermissions.FieldCanCreatePublic]; !ok {
 				selectedFields = append(selectedFields, userpermissions.FieldCanCreatePublic)
 				fieldSeen[userpermissions.FieldCanCreatePublic] = struct{}{}
+			}
+		case "canedit":
+			if _, ok := fieldSeen[userpermissions.FieldCanEdit]; !ok {
+				selectedFields = append(selectedFields, userpermissions.FieldCanEdit)
+				fieldSeen[userpermissions.FieldCanEdit] = struct{}{}
 			}
 		case "id":
 		case "__typename":

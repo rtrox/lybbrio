@@ -245,9 +245,9 @@ var schemaGraph = func() *sqlgraph.Schema {
 			userpermissions.FieldCreateTime:      {Type: field.TypeTime, Column: userpermissions.FieldCreateTime},
 			userpermissions.FieldUpdateTime:      {Type: field.TypeTime, Column: userpermissions.FieldUpdateTime},
 			userpermissions.FieldUserID:          {Type: field.TypeString, Column: userpermissions.FieldUserID},
-			userpermissions.FieldCanEdit:         {Type: field.TypeBool, Column: userpermissions.FieldCanEdit},
 			userpermissions.FieldAdmin:           {Type: field.TypeBool, Column: userpermissions.FieldAdmin},
 			userpermissions.FieldCanCreatePublic: {Type: field.TypeBool, Column: userpermissions.FieldCanCreatePublic},
+			userpermissions.FieldCanEdit:         {Type: field.TypeBool, Column: userpermissions.FieldCanEdit},
 		},
 	}
 	graph.MustAddE(
@@ -1596,11 +1596,6 @@ func (f *UserPermissionsFilter) WhereUserID(p entql.StringP) {
 	f.Where(p.Field(userpermissions.FieldUserID))
 }
 
-// WhereCanEdit applies the entql bool predicate on the CanEdit field.
-func (f *UserPermissionsFilter) WhereCanEdit(p entql.BoolP) {
-	f.Where(p.Field(userpermissions.FieldCanEdit))
-}
-
 // WhereAdmin applies the entql bool predicate on the Admin field.
 func (f *UserPermissionsFilter) WhereAdmin(p entql.BoolP) {
 	f.Where(p.Field(userpermissions.FieldAdmin))
@@ -1609,6 +1604,11 @@ func (f *UserPermissionsFilter) WhereAdmin(p entql.BoolP) {
 // WhereCanCreatePublic applies the entql bool predicate on the CanCreatePublic field.
 func (f *UserPermissionsFilter) WhereCanCreatePublic(p entql.BoolP) {
 	f.Where(p.Field(userpermissions.FieldCanCreatePublic))
+}
+
+// WhereCanEdit applies the entql bool predicate on the CanEdit field.
+func (f *UserPermissionsFilter) WhereCanEdit(p entql.BoolP) {
+	f.Where(p.Field(userpermissions.FieldCanEdit))
 }
 
 // WhereHasUser applies a predicate to check if query has an edge user.

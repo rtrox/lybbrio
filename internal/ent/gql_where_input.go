@@ -4550,10 +4550,6 @@ type UserPermissionsWhereInput struct {
 	UserIDEqualFold    *ksuid.ID  `json:"userIDEqualFold,omitempty"`
 	UserIDContainsFold *ksuid.ID  `json:"userIDContainsFold,omitempty"`
 
-	// "CanEdit" field predicates.
-	CanEdit    *bool `json:"canedit,omitempty"`
-	CanEditNEQ *bool `json:"caneditNEQ,omitempty"`
-
 	// "Admin" field predicates.
 	Admin    *bool `json:"admin,omitempty"`
 	AdminNEQ *bool `json:"adminNEQ,omitempty"`
@@ -4561,6 +4557,10 @@ type UserPermissionsWhereInput struct {
 	// "CanCreatePublic" field predicates.
 	CanCreatePublic    *bool `json:"cancreatepublic,omitempty"`
 	CanCreatePublicNEQ *bool `json:"cancreatepublicNEQ,omitempty"`
+
+	// "CanEdit" field predicates.
+	CanEdit    *bool `json:"canedit,omitempty"`
+	CanEditNEQ *bool `json:"caneditNEQ,omitempty"`
 
 	// "user" edge predicates.
 	HasUser     *bool             `json:"hasUser,omitempty"`
@@ -4755,12 +4755,6 @@ func (i *UserPermissionsWhereInput) P() (predicate.UserPermissions, error) {
 	if i.UserIDContainsFold != nil {
 		predicates = append(predicates, userpermissions.UserIDContainsFold(*i.UserIDContainsFold))
 	}
-	if i.CanEdit != nil {
-		predicates = append(predicates, userpermissions.CanEditEQ(*i.CanEdit))
-	}
-	if i.CanEditNEQ != nil {
-		predicates = append(predicates, userpermissions.CanEditNEQ(*i.CanEditNEQ))
-	}
 	if i.Admin != nil {
 		predicates = append(predicates, userpermissions.AdminEQ(*i.Admin))
 	}
@@ -4772,6 +4766,12 @@ func (i *UserPermissionsWhereInput) P() (predicate.UserPermissions, error) {
 	}
 	if i.CanCreatePublicNEQ != nil {
 		predicates = append(predicates, userpermissions.CanCreatePublicNEQ(*i.CanCreatePublicNEQ))
+	}
+	if i.CanEdit != nil {
+		predicates = append(predicates, userpermissions.CanEditEQ(*i.CanEdit))
+	}
+	if i.CanEditNEQ != nil {
+		predicates = append(predicates, userpermissions.CanEditNEQ(*i.CanEditNEQ))
 	}
 
 	if i.HasUser != nil {

@@ -2,6 +2,8 @@ package permissions
 
 import (
 	"reflect"
+	"strings"
+	"unicode"
 )
 
 type Permission int
@@ -26,6 +28,23 @@ func (p Permission) String() string {
 		return "CanEdit"
 	}
 	return ""
+}
+
+func (p Permission) FieldName() string {
+	var b strings.Builder
+	for i, v := range p.String() {
+		if i == 0 {
+			b.WriteRune(unicode.ToLower(v))
+			continue
+		}
+		if unicode.IsLower(v) {
+			b.WriteRune(v)
+		} else {
+			b.WriteRune('_')
+			b.WriteRune(unicode.ToLower(v))
+		}
+	}
+	return b.String()
 }
 
 func FromString(s string) Permission {

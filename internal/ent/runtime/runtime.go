@@ -387,7 +387,7 @@ func init() {
 	// task.DefaultID holds the default value on creation for the id field.
 	task.DefaultID = taskDescID.Default.(func() ksuid.ID)
 	userMixin := schema.User{}.Mixin()
-	user.Policy = privacy.NewPolicies(userMixin[1], schema.User{})
+	user.Policy = privacy.NewPolicies(schema.User{})
 	user.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 			if err := user.Policy.EvalMutation(ctx, m); err != nil {
@@ -398,8 +398,8 @@ func init() {
 	}
 	userMixinFields0 := userMixin[0].Fields()
 	_ = userMixinFields0
-	userMixinFields2 := userMixin[2].Fields()
-	_ = userMixinFields2
+	userMixinFields1 := userMixin[1].Fields()
+	_ = userMixinFields1
 	userFields := schema.User{}.Fields()
 	_ = userFields
 	// userDescCreateTime is the schema descriptor for create_time field.
@@ -421,11 +421,11 @@ func init() {
 	// user.EmailValidator is a validator for the "email" field. It is called by the builders before save.
 	user.EmailValidator = userDescEmail.Validators[0].(func(string) error)
 	// userDescID is the schema descriptor for id field.
-	userDescID := userMixinFields2[0].Descriptor()
+	userDescID := userMixinFields1[0].Descriptor()
 	// user.DefaultID holds the default value on creation for the id field.
 	user.DefaultID = userDescID.Default.(func() ksuid.ID)
 	userpermissionsMixin := schema.UserPermissions{}.Mixin()
-	userpermissions.Policy = privacy.NewPolicies(userpermissionsMixin[1], schema.UserPermissions{})
+	userpermissions.Policy = privacy.NewPolicies(schema.UserPermissions{})
 	userpermissions.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 			if err := userpermissions.Policy.EvalMutation(ctx, m); err != nil {
@@ -436,8 +436,8 @@ func init() {
 	}
 	userpermissionsMixinFields0 := userpermissionsMixin[0].Fields()
 	_ = userpermissionsMixinFields0
-	userpermissionsMixinFields2 := userpermissionsMixin[2].Fields()
-	_ = userpermissionsMixinFields2
+	userpermissionsMixinFields1 := userpermissionsMixin[1].Fields()
+	_ = userpermissionsMixinFields1
 	userpermissionsFields := schema.UserPermissions{}.Fields()
 	_ = userpermissionsFields
 	// userpermissionsDescCreateTime is the schema descriptor for create_time field.
@@ -450,20 +450,20 @@ func init() {
 	userpermissions.DefaultUpdateTime = userpermissionsDescUpdateTime.Default.(func() time.Time)
 	// userpermissions.UpdateDefaultUpdateTime holds the default value on update for the update_time field.
 	userpermissions.UpdateDefaultUpdateTime = userpermissionsDescUpdateTime.UpdateDefault.(func() time.Time)
-	// userpermissionsDescCanEdit is the schema descriptor for CanEdit field.
-	userpermissionsDescCanEdit := userpermissionsFields[1].Descriptor()
-	// userpermissions.DefaultCanEdit holds the default value on creation for the CanEdit field.
-	userpermissions.DefaultCanEdit = userpermissionsDescCanEdit.Default.(bool)
 	// userpermissionsDescAdmin is the schema descriptor for Admin field.
-	userpermissionsDescAdmin := userpermissionsFields[2].Descriptor()
+	userpermissionsDescAdmin := userpermissionsFields[1].Descriptor()
 	// userpermissions.DefaultAdmin holds the default value on creation for the Admin field.
 	userpermissions.DefaultAdmin = userpermissionsDescAdmin.Default.(bool)
 	// userpermissionsDescCanCreatePublic is the schema descriptor for CanCreatePublic field.
-	userpermissionsDescCanCreatePublic := userpermissionsFields[3].Descriptor()
+	userpermissionsDescCanCreatePublic := userpermissionsFields[2].Descriptor()
 	// userpermissions.DefaultCanCreatePublic holds the default value on creation for the CanCreatePublic field.
 	userpermissions.DefaultCanCreatePublic = userpermissionsDescCanCreatePublic.Default.(bool)
+	// userpermissionsDescCanEdit is the schema descriptor for CanEdit field.
+	userpermissionsDescCanEdit := userpermissionsFields[3].Descriptor()
+	// userpermissions.DefaultCanEdit holds the default value on creation for the CanEdit field.
+	userpermissions.DefaultCanEdit = userpermissionsDescCanEdit.Default.(bool)
 	// userpermissionsDescID is the schema descriptor for id field.
-	userpermissionsDescID := userpermissionsMixinFields2[0].Descriptor()
+	userpermissionsDescID := userpermissionsMixinFields1[0].Descriptor()
 	// userpermissions.DefaultID holds the default value on creation for the id field.
 	userpermissions.DefaultID = userpermissionsDescID.Default.(func() ksuid.ID)
 }

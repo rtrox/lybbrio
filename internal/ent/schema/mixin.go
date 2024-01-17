@@ -23,12 +23,14 @@ func (BaseMixin) Policy() ent.Policy {
 		Query: privacy.QueryPolicy{
 			// Deny any operation in case there is no "viewer context".
 			rule.DenyIfNoViewer(),
+			rule.DenyIfAnonymousViewer(),
 			// Allow SuperRead to bypass all other rules.
 			rule.AllowIfSuperRead(),
 		},
 		Mutation: privacy.MutationPolicy{
 			// Deny any operation in case there is no "viewer context".
 			rule.DenyIfNoViewer(),
+			rule.DenyIfAnonymousViewer(),
 		},
 	}
 }

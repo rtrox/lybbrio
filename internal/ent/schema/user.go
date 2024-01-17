@@ -29,7 +29,6 @@ func (User) Annotations() []schema.Annotation {
 func (User) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		mixin.Time{},
-		BaseMixin{},
 		ksuid.MixinWithPrefix("usr"),
 	}
 }
@@ -69,12 +68,18 @@ func (User) Edges() []ent.Edge {
 func (User) Policy() ent.Policy {
 	return privacy.Policy{
 		Mutation: privacy.MutationPolicy{
+			// Does Not use base policy mixin!! Tread with Care.
 			rule.DenyIfNoViewer(),
+			rule.AllowCreate(),
+			rule.DenyIfAnonymousViewer(),
 			rule.AllowIfAdmin(),
 			rule.FilterSelfRule(),
 			privacy.AlwaysAllowRule(),
 		},
 		Query: privacy.QueryPolicy{
+			// Does Not use base policy mixin!! Tread with Care.
+			rule.DenyIfNoViewer(),
+			rule.DenyIfAnonymousViewer(),
 			privacy.AlwaysAllowRule(),
 		},
 	}

@@ -342,9 +342,9 @@ var (
 		{Name: "id", Type: field.TypeString},
 		{Name: "create_time", Type: field.TypeTime},
 		{Name: "update_time", Type: field.TypeTime},
-		{Name: "can_edit", Type: field.TypeBool, Default: false},
 		{Name: "admin", Type: field.TypeBool, Default: false},
 		{Name: "can_create_public", Type: field.TypeBool, Default: false},
+		{Name: "can_edit", Type: field.TypeBool, Default: false},
 		{Name: "user_id", Type: field.TypeString, Unique: true, Nullable: true},
 	}
 	// UserPermissionsTable holds the schema information for the "user_permissions" table.

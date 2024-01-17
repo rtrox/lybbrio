@@ -17,6 +17,15 @@ func Test_String(t *testing.T) {
 	require.Equal("", Permission(0).String())
 }
 
+func Test_FieldName(t *testing.T) {
+	t.Parallel()
+	require := require.New(t)
+
+	require.Equal("admin", Admin.FieldName())
+	require.Equal("can_create_public", CanCreatePublic.FieldName())
+	require.Equal("can_edit", CanEdit.FieldName())
+}
+
 func Test_FromString(t *testing.T) {
 	t.Parallel()
 	require := require.New(t)
