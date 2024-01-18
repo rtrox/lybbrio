@@ -795,7 +795,7 @@ func Test_DenyNonDefaultPermissions(t *testing.T) {
 			mutationFunc: func() *ent.UserPermissionsMutation {
 				ret := &ent.UserPermissionsMutation{}
 				ret.SetOp(ent.OpCreate)
-				ret.SetField(p.FieldName(), true)
+				ret.SetField(p.FieldName(), true) //nolint: errcheck
 				return ret
 			},
 			expectedError: privacy.Deny,

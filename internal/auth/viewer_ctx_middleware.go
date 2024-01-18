@@ -29,6 +29,7 @@ func ViewerContextMiddleware(prov *JWTProvider) func(http.Handler) http.Handler 
 			if r.URL.Query().Get("anonymous") == "true" {
 				ctx = viewer.NewAnonymousContext(ctx)
 				next.ServeHTTP(w, r.WithContext(ctx))
+				return
 			}
 			var token string
 			if tokenCookie, err := r.Cookie("token"); err != nil {

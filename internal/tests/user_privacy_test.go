@@ -140,8 +140,9 @@ func Test_AnonymousUserCannotCreateUserWithPermissions(t *testing.T) {
 			teardown, client, _ := setupTest(t, "anonymous user cannot create user with "+p.String())
 			defer teardown(t)
 			c := client.UserPermissions.Create()
-			c.Mutation().SetField(p.FieldName(), true)
-			_, err := c.Save(viewer.NewAnonymousContext(context.Background()))
+			err := c.Mutation().SetField(p.FieldName(), true)
+			require.NoError(t, err, "failed to set field "+p.FieldName())
+			_, err = c.Save(viewer.NewAnonymousContext(context.Background()))
 			require.Error(t, err, "expected error creating user with permission "+p.String())
 		})
 	}
