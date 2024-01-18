@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"lybbrio/internal/ent/schema/argon2id"
 	"lybbrio/internal/ent/schema/ksuid"
 	"lybbrio/internal/ent/shelf"
 	"lybbrio/internal/ent/user"
@@ -61,15 +62,15 @@ func (uc *UserCreate) SetUsername(s string) *UserCreate {
 }
 
 // SetPasswordHash sets the "password_hash" field.
-func (uc *UserCreate) SetPasswordHash(s string) *UserCreate {
-	uc.mutation.SetPasswordHash(s)
+func (uc *UserCreate) SetPasswordHash(ah argon2id.Argon2IDHash) *UserCreate {
+	uc.mutation.SetPasswordHash(ah)
 	return uc
 }
 
 // SetNillablePasswordHash sets the "password_hash" field if the given value is not nil.
-func (uc *UserCreate) SetNillablePasswordHash(s *string) *UserCreate {
-	if s != nil {
-		uc.SetPasswordHash(*s)
+func (uc *UserCreate) SetNillablePasswordHash(ah *argon2id.Argon2IDHash) *UserCreate {
+	if ah != nil {
+		uc.SetPasswordHash(*ah)
 	}
 	return uc
 }
@@ -373,7 +374,7 @@ func (u *UserUpsert) UpdateUsername() *UserUpsert {
 }
 
 // SetPasswordHash sets the "password_hash" field.
-func (u *UserUpsert) SetPasswordHash(v string) *UserUpsert {
+func (u *UserUpsert) SetPasswordHash(v argon2id.Argon2IDHash) *UserUpsert {
 	u.Set(user.FieldPasswordHash, v)
 	return u
 }
@@ -482,7 +483,7 @@ func (u *UserUpsertOne) UpdateUsername() *UserUpsertOne {
 }
 
 // SetPasswordHash sets the "password_hash" field.
-func (u *UserUpsertOne) SetPasswordHash(v string) *UserUpsertOne {
+func (u *UserUpsertOne) SetPasswordHash(v argon2id.Argon2IDHash) *UserUpsertOne {
 	return u.Update(func(s *UserUpsert) {
 		s.SetPasswordHash(v)
 	})
@@ -763,7 +764,7 @@ func (u *UserUpsertBulk) UpdateUsername() *UserUpsertBulk {
 }
 
 // SetPasswordHash sets the "password_hash" field.
-func (u *UserUpsertBulk) SetPasswordHash(v string) *UserUpsertBulk {
+func (u *UserUpsertBulk) SetPasswordHash(v argon2id.Argon2IDHash) *UserUpsertBulk {
 	return u.Update(func(s *UserUpsert) {
 		s.SetPasswordHash(v)
 	})

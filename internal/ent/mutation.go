@@ -13,6 +13,7 @@ import (
 	"lybbrio/internal/ent/language"
 	"lybbrio/internal/ent/predicate"
 	"lybbrio/internal/ent/publisher"
+	"lybbrio/internal/ent/schema/argon2id"
 	"lybbrio/internal/ent/schema/ksuid"
 	"lybbrio/internal/ent/schema/task_enums"
 	"lybbrio/internal/ent/series"
@@ -8080,7 +8081,7 @@ type UserMutation struct {
 	create_time             *time.Time
 	update_time             *time.Time
 	username                *string
-	password_hash           *string
+	password_hash           *argon2id.Argon2IDHash
 	email                   *string
 	clearedFields           map[string]struct{}
 	shelves                 map[ksuid.ID]struct{}
@@ -8306,12 +8307,12 @@ func (m *UserMutation) ResetUsername() {
 }
 
 // SetPasswordHash sets the "password_hash" field.
-func (m *UserMutation) SetPasswordHash(s string) {
-	m.password_hash = &s
+func (m *UserMutation) SetPasswordHash(ah argon2id.Argon2IDHash) {
+	m.password_hash = &ah
 }
 
 // PasswordHash returns the value of the "password_hash" field in the mutation.
-func (m *UserMutation) PasswordHash() (r string, exists bool) {
+func (m *UserMutation) PasswordHash() (r argon2id.Argon2IDHash, exists bool) {
 	v := m.password_hash
 	if v == nil {
 		return
@@ -8322,7 +8323,7 @@ func (m *UserMutation) PasswordHash() (r string, exists bool) {
 // OldPasswordHash returns the old "password_hash" field's value of the User entity.
 // If the User object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *UserMutation) OldPasswordHash(ctx context.Context) (v string, err error) {
+func (m *UserMutation) OldPasswordHash(ctx context.Context) (v argon2id.Argon2IDHash, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldPasswordHash is only allowed on UpdateOne operations")
 	}
@@ -8601,7 +8602,7 @@ func (m *UserMutation) SetField(name string, value ent.Value) error {
 		m.SetUsername(v)
 		return nil
 	case user.FieldPasswordHash:
-		v, ok := value.(string)
+		v, ok := value.(argon2id.Argon2IDHash)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}

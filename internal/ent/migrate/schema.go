@@ -94,9 +94,9 @@ var (
 		{Name: "create_time", Type: field.TypeTime},
 		{Name: "update_time", Type: field.TypeTime},
 		{Name: "name", Type: field.TypeString, Size: 2147483647},
-		{Name: "path", Type: field.TypeString, Size: 2147483647},
+		{Name: "path", Type: field.TypeString, Unique: true, Size: 2147483647},
 		{Name: "size", Type: field.TypeInt64},
-		{Name: "format", Type: field.TypeEnum, Enums: []string{"AZW3", "EPUB", "KEPUB", "PDF", "CBC", "CBR", "CB7", "CBZ", "CBT"}},
+		{Name: "format", Type: field.TypeEnum, Enums: []string{"EPUB", "KEPUB"}},
 		{Name: "book_file_book", Type: field.TypeString},
 	}
 	// BookFilesTable holds the schema information for the "book_files" table.

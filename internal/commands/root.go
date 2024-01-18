@@ -207,7 +207,10 @@ func rootRun(_ *cobra.Command, _ []string) {
 	}
 
 	// GraphQL
-	graphqlHandler := handler.NewDefaultServer(graph.NewSchema(client))
+	graphqlHandler := handler.NewDefaultServer(graph.NewSchema(
+		client,
+		conf.Argon2ID,
+	))
 	graphqlHandler.Use(
 		entgql.Transactioner{TxOpener: client},
 	)
@@ -228,7 +231,7 @@ func rootRun(_ *cobra.Command, _ []string) {
 
 	r.Handle("/metrics", promhttp.HandlerFor(reg, promhttp.HandlerOpts{}))
 
-	r.Mount("/auth", auth.Routes(client, jwtProvider))
+	r.Mount("/auth", auth.Routes(client, jwtProvider, conf.Argon2ID))
 	r.Route("/graphql", func(r chi.Router) {
 		r.With(
 			auth.ViewerContextMiddleware(jwtProvider),

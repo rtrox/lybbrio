@@ -6,7 +6,9 @@ import (
 	"lybbrio/internal/ent/schema/permissions"
 	"lybbrio/internal/rule"
 
+	"entgo.io/contrib/entgql"
 	"entgo.io/ent"
+	"entgo.io/ent/schema"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/mixin"
@@ -17,10 +19,15 @@ type UserPermissions struct {
 	ent.Schema
 }
 
+func (UserPermissions) Annotations() []schema.Annotation {
+	return []schema.Annotation{
+		entgql.Mutations(entgql.MutationCreate(), entgql.MutationUpdate()),
+	}
+}
+
 func (UserPermissions) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		mixin.Time{},
-		BaseMixin{},
 		ksuid.MixinWithPrefix("prm"),
 	}
 }
@@ -54,14 +61,19 @@ func (UserPermissions) Policy() ent.Policy {
 	// Admins can query and modify any user's permissions.
 	return privacy.Policy{
 		Query: privacy.QueryPolicy{
+			/// Does Not use base policy mixin!! Tread with Care.
 			rule.DenyIfNoViewer(),
+			rule.DenyIfAnonymousViewer(),
 			rule.AllowIfAdmin(),
 			rule.FilterUserRule(),
 			privacy.AlwaysAllowRule(),
 		},
 		Mutation: privacy.MutationPolicy{
+			// Does Not use base policy mixin!! Tread with Care.
 			rule.DenyIfNoViewer(),
 			rule.AllowIfAdmin(),
+			rule.DenyNonDefaultPermissions(),
+			rule.AllowCreate(),
 			privacy.AlwaysDenyRule(),
 		},
 	}

@@ -4,6 +4,7 @@ package user
 
 import (
 	"lybbrio/internal/ent/predicate"
+	"lybbrio/internal/ent/schema/argon2id"
 	"lybbrio/internal/ent/schema/ksuid"
 	"time"
 
@@ -72,7 +73,7 @@ func Username(v string) predicate.User {
 }
 
 // PasswordHash applies equality check predicate on the "password_hash" field. It's identical to PasswordHashEQ.
-func PasswordHash(v string) predicate.User {
+func PasswordHash(v argon2id.Argon2IDHash) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldPasswordHash, v))
 }
 
@@ -227,58 +228,61 @@ func UsernameContainsFold(v string) predicate.User {
 }
 
 // PasswordHashEQ applies the EQ predicate on the "password_hash" field.
-func PasswordHashEQ(v string) predicate.User {
+func PasswordHashEQ(v argon2id.Argon2IDHash) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldPasswordHash, v))
 }
 
 // PasswordHashNEQ applies the NEQ predicate on the "password_hash" field.
-func PasswordHashNEQ(v string) predicate.User {
+func PasswordHashNEQ(v argon2id.Argon2IDHash) predicate.User {
 	return predicate.User(sql.FieldNEQ(FieldPasswordHash, v))
 }
 
 // PasswordHashIn applies the In predicate on the "password_hash" field.
-func PasswordHashIn(vs ...string) predicate.User {
+func PasswordHashIn(vs ...argon2id.Argon2IDHash) predicate.User {
 	return predicate.User(sql.FieldIn(FieldPasswordHash, vs...))
 }
 
 // PasswordHashNotIn applies the NotIn predicate on the "password_hash" field.
-func PasswordHashNotIn(vs ...string) predicate.User {
+func PasswordHashNotIn(vs ...argon2id.Argon2IDHash) predicate.User {
 	return predicate.User(sql.FieldNotIn(FieldPasswordHash, vs...))
 }
 
 // PasswordHashGT applies the GT predicate on the "password_hash" field.
-func PasswordHashGT(v string) predicate.User {
+func PasswordHashGT(v argon2id.Argon2IDHash) predicate.User {
 	return predicate.User(sql.FieldGT(FieldPasswordHash, v))
 }
 
 // PasswordHashGTE applies the GTE predicate on the "password_hash" field.
-func PasswordHashGTE(v string) predicate.User {
+func PasswordHashGTE(v argon2id.Argon2IDHash) predicate.User {
 	return predicate.User(sql.FieldGTE(FieldPasswordHash, v))
 }
 
 // PasswordHashLT applies the LT predicate on the "password_hash" field.
-func PasswordHashLT(v string) predicate.User {
+func PasswordHashLT(v argon2id.Argon2IDHash) predicate.User {
 	return predicate.User(sql.FieldLT(FieldPasswordHash, v))
 }
 
 // PasswordHashLTE applies the LTE predicate on the "password_hash" field.
-func PasswordHashLTE(v string) predicate.User {
+func PasswordHashLTE(v argon2id.Argon2IDHash) predicate.User {
 	return predicate.User(sql.FieldLTE(FieldPasswordHash, v))
 }
 
 // PasswordHashContains applies the Contains predicate on the "password_hash" field.
-func PasswordHashContains(v string) predicate.User {
-	return predicate.User(sql.FieldContains(FieldPasswordHash, v))
+func PasswordHashContains(v argon2id.Argon2IDHash) predicate.User {
+	vc := v.String()
+	return predicate.User(sql.FieldContains(FieldPasswordHash, vc))
 }
 
 // PasswordHashHasPrefix applies the HasPrefix predicate on the "password_hash" field.
-func PasswordHashHasPrefix(v string) predicate.User {
-	return predicate.User(sql.FieldHasPrefix(FieldPasswordHash, v))
+func PasswordHashHasPrefix(v argon2id.Argon2IDHash) predicate.User {
+	vc := v.String()
+	return predicate.User(sql.FieldHasPrefix(FieldPasswordHash, vc))
 }
 
 // PasswordHashHasSuffix applies the HasSuffix predicate on the "password_hash" field.
-func PasswordHashHasSuffix(v string) predicate.User {
-	return predicate.User(sql.FieldHasSuffix(FieldPasswordHash, v))
+func PasswordHashHasSuffix(v argon2id.Argon2IDHash) predicate.User {
+	vc := v.String()
+	return predicate.User(sql.FieldHasSuffix(FieldPasswordHash, vc))
 }
 
 // PasswordHashIsNil applies the IsNil predicate on the "password_hash" field.
@@ -292,13 +296,15 @@ func PasswordHashNotNil() predicate.User {
 }
 
 // PasswordHashEqualFold applies the EqualFold predicate on the "password_hash" field.
-func PasswordHashEqualFold(v string) predicate.User {
-	return predicate.User(sql.FieldEqualFold(FieldPasswordHash, v))
+func PasswordHashEqualFold(v argon2id.Argon2IDHash) predicate.User {
+	vc := v.String()
+	return predicate.User(sql.FieldEqualFold(FieldPasswordHash, vc))
 }
 
 // PasswordHashContainsFold applies the ContainsFold predicate on the "password_hash" field.
-func PasswordHashContainsFold(v string) predicate.User {
-	return predicate.User(sql.FieldContainsFold(FieldPasswordHash, v))
+func PasswordHashContainsFold(v argon2id.Argon2IDHash) predicate.User {
+	vc := v.String()
+	return predicate.User(sql.FieldContainsFold(FieldPasswordHash, vc))
 }
 
 // EmailEQ applies the EQ predicate on the "email" field.

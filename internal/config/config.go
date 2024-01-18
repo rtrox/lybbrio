@@ -2,6 +2,7 @@ package config
 
 import (
 	"crypto/rand"
+	"lybbrio/internal/ent/schema/argon2id"
 	"strings"
 	"time"
 
@@ -44,6 +45,13 @@ var defaultSettings = map[string]interface{}{
 		"signing-method": "HS512",
 		"issuer":         "http://localhost:8080",
 		"expiry":         1 * time.Hour,
+	},
+	"argon2id": map[string]interface{}{
+		"iterations":  3,
+		"memory":      12288,
+		"parallelism": 1,
+		"keyLength":   32,
+		"saltLength":  16,
 	},
 }
 
@@ -115,6 +123,23 @@ func ValidateJWTConfig(sl validator.StructLevel) {
 	}
 }
 
+func ValidateArgon2IDConfig(sl validator.StructLevel) {
+	c := sl.Current().Interface().(argon2id.Config)
+
+	// https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html#argon2id
+	if c.Iterations == 3 && c.Memory < 12288 {
+		sl.ReportError(c.Memory, "memory", "Memory", "min", "12288")
+	}
+
+	if c.Iterations == 4 && c.Memory < 9216 {
+		sl.ReportError(c.Memory, "memory", "Memory", "min", "9216")
+	}
+
+	if c.Iterations == 5 && c.Memory < 7168 {
+		sl.ReportError(c.Memory, "memory", "Memory", "min", "7168")
+	}
+}
+
 type Config struct {
 	// Logging
 	LogLevel  string `koanf:"log-level" validate:"log_level"`
@@ -131,9 +156,10 @@ type Config struct {
 
 	CalibreLibraryPath string `koanf:"calibre-library-path" validate:"required"`
 
-	DB   DatabaseConfig `koanf:"db"`
-	Task TaskConfig     `koanf:"task"`
-	JWT  JWTConfig      `koanf:"jwt"`
+	DB       DatabaseConfig  `koanf:"db"`
+	Task     TaskConfig      `koanf:"task"`
+	JWT      JWTConfig       `koanf:"jwt"`
+	Argon2ID argon2id.Config `koanf:"argon2id"`
 
 	k *koanf.Koanf
 }
@@ -141,6 +167,7 @@ type Config struct {
 func (c *Config) Validate() error {
 	validate := validator.New(validator.WithRequiredStructEnabled())
 	validate.RegisterStructValidation(ValidateJWTConfig, JWTConfig{})
+	validate.RegisterStructValidation(ValidateArgon2IDConfig, argon2id.Config{})
 	err := validate.RegisterValidation("log_level", func(fl validator.FieldLevel) bool {
 		value := fl.Field().String()
 		if _, err := zerolog.ParseLevel(value); err != nil {

@@ -3,6 +3,7 @@ package auth
 import (
 	"fmt"
 	"lybbrio/internal/ent"
+	"lybbrio/internal/ent/schema/argon2id"
 	"lybbrio/internal/ent/schema/permissions"
 	"lybbrio/internal/ent/user"
 	"lybbrio/internal/viewer"
@@ -14,10 +15,24 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func Routes(client *ent.Client, jwt *JWTProvider) http.Handler {
+func Routes(client *ent.Client, jwt *JWTProvider, conf argon2id.Config) http.Handler {
 	r := chi.NewRouter()
 	r.Get("/testAuthDONOTUSE/{username}", TestAuthDONOTUSE(client, jwt))
+	r.Post("/login", PasswordAuth(client, jwt, conf))
 	return r
+}
+
+type PasswordRequest struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+}
+
+func cookieFromToken(token SignedToken) *http.Cookie {
+	return &http.Cookie{
+		Name:    "token",
+		Value:   token.String(),
+		Expires: token.Claims().ExpiresAt.Time,
+	}
 }
 
 func TestAuthDONOTUSE(client *ent.Client, jwt *JWTProvider) http.HandlerFunc {
@@ -61,14 +76,68 @@ func TestAuthDONOTUSE(client *ent.Client, jwt *JWTProvider) http.HandlerFunc {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
-		http.SetCookie(w, &http.Cookie{
-			Name:    "token",
-			Value:   token.String(),
-			Expires: token.Claims().ExpiresAt.Time,
-		})
+		http.SetCookie(w, cookieFromToken(token))
 		w.Header().Add("X-Api-Token", token.String())
 		w.Header().Add("X-Api-Expires", token.Claims().ExpiresAt.Format(time.RFC3339))
 		render.Status(r, http.StatusOK)
 		render.JSON(w, r, staticUser)
+	}
+}
+
+func PasswordAuth(client *ent.Client, jwt *JWTProvider, conf argon2id.Config) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+		data := &PasswordRequest{}
+		if err := render.DecodeJSON(r.Body, data); err != nil {
+			s := http.StatusBadRequest
+			render.Status(r, s)
+			render.DefaultResponder(w, r, render.M{"error": http.StatusText(s)})
+			return
+		}
+		if data.Username == "" || data.Password == "" {
+			s := http.StatusBadRequest
+			render.Status(r, s)
+			render.DefaultResponder(w, r, render.M{"error": http.StatusText(s)})
+			return
+		}
+		adminCtx := viewer.NewSystemAdminContext(ctx)
+		user, err := client.User.Query().
+			Where(user.Username(data.Username)).
+			First(adminCtx)
+		if err != nil {
+			s := http.StatusUnauthorized
+			render.Status(r, s)
+			render.DefaultResponder(w, r, render.M{"error": http.StatusText(s)})
+			return
+		}
+		if err := user.PasswordHash.Verify([]byte(data.Password)); err != nil {
+			s := http.StatusUnauthorized
+			render.Status(r, s)
+			render.DefaultResponder(w, r, render.M{"error": http.StatusText(s)})
+			return
+		}
+		perms, err := user.QueryUserPermissions().First(adminCtx)
+		if err != nil {
+			s := http.StatusInternalServerError
+			render.Status(r, s)
+			render.DefaultResponder(w, r, render.M{"error": http.StatusText(s)})
+			return
+		}
+		token, err := jwt.CreateToken(
+			user.ID.String(),
+			user.Username,
+			permissions.From(perms).StringSlice(),
+		)
+		if err != nil {
+			s := http.StatusInternalServerError
+			render.Status(r, s)
+			render.DefaultResponder(w, r, render.M{"error": http.StatusText(s)})
+			return
+		}
+		http.SetCookie(w, cookieFromToken(token))
+		w.Header().Add("X-Api-Token", token.String())
+		w.Header().Add("X-Api-Expires", token.Claims().ExpiresAt.Format(time.RFC3339))
+		render.Status(r, http.StatusOK)
+		render.JSON(w, r, user)
 	}
 }

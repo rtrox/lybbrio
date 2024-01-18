@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"lybbrio"
 	"lybbrio/internal/ent"
+	"lybbrio/internal/ent/schema/argon2id"
 	"lybbrio/internal/ent/schema/ksuid"
 	"lybbrio/internal/ent/schema/task_enums"
 	"lybbrio/internal/graph/generated"
@@ -129,15 +130,47 @@ func (r *mutationResolver) UpdateIdentifier(ctx context.Context, id ksuid.ID, in
 }
 
 // CreateUser is the resolver for the createUser field.
-func (r *mutationResolver) CreateUser(ctx context.Context, input ent.CreateUserInput) (*ent.User, error) {
+func (r *mutationResolver) CreateUser(ctx context.Context, input lybbrio.CreateUserInput) (*ent.User, error) {
 	client := ent.FromContext(ctx)
-	return client.User.Create().SetInput(input).Save(ctx)
+	permissions, err := client.UserPermissions.Create().SetInput(*input.UserPermissions).Save(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	create := client.User.Create().
+		SetUsername(input.Username).
+		SetEmail(input.Email).
+		SetUserPermissions(permissions)
+
+	if input.Password != nil {
+		hash, err := argon2id.NewArgon2idHashFromPassword([]byte(*input.Password), r.argon2idConfig)
+		if err != nil {
+			return nil, err
+		}
+		create.SetPasswordHash(*hash)
+	}
+
+	return create.Save(ctx)
 }
 
 // UpdateUser is the resolver for the updateUser field.
-func (r *mutationResolver) UpdateUser(ctx context.Context, id ksuid.ID, input ent.UpdateUserInput) (*ent.User, error) {
+func (r *mutationResolver) UpdateUser(ctx context.Context, id ksuid.ID, input lybbrio.UpdateUserInput) (*ent.User, error) {
 	client := ent.FromContext(ctx)
-	return client.User.UpdateOneID(id).SetInput(input).Save(ctx)
+	update := client.User.UpdateOneID(id)
+	if input.Username != nil {
+		update.SetUsername(*input.Username)
+	}
+	if input.Email != nil {
+		update.SetEmail(*input.Email)
+	}
+	if input.Password != nil {
+		hash, err := argon2id.NewArgon2idHashFromPassword([]byte(*input.Password), r.argon2idConfig)
+		if err != nil {
+			return nil, err
+		}
+		update.SetPasswordHash(*hash)
+	}
+	return update.Save(ctx)
 }
 
 // CreateTask is the resolver for the createTask field.

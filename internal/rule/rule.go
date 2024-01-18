@@ -1,7 +1,3 @@
-// Copyright 2019-present Facebook Inc. All rights reserved.
-// This source code is licensed under the Apache 2.0 license found
-// in the LICENSE file in the root directory of this source tree.
-
 package rule
 
 import (
@@ -16,7 +12,6 @@ import (
 	"lybbrio/internal/viewer"
 
 	"entgo.io/ent/entql"
-	"github.com/rs/zerolog/log"
 )
 
 // DenyIfNoViewer is a rule that returns deny decision if the viewer is missing in the context.
@@ -24,9 +19,21 @@ func DenyIfNoViewer() privacy.QueryMutationRule {
 	return privacy.ContextQueryMutationRule(func(ctx context.Context) error {
 		view := viewer.FromContext(ctx)
 		if view == nil {
-			log := log.Ctx(ctx)
-			log.Error().Msg("viewer-context is missing")
 			return privacy.Denyf("viewer-context is missing")
+		}
+		// Skip to the next privacy rule (equivalent to return nil).
+		return privacy.Skip
+	})
+}
+
+func DenyIfAnonymousViewer() privacy.QueryMutationRule {
+	return privacy.ContextQueryMutationRule(func(ctx context.Context) error {
+		view := viewer.FromContext(ctx)
+		if view == nil {
+			return privacy.Denyf("viewer-context is missing user information")
+		}
+		if _, ok := view.UserID(); !ok && !view.IsAdmin() {
+			return privacy.Denyf("anonymous users cannot access this resource")
 		}
 		// Skip to the next privacy rule (equivalent to return nil).
 		return privacy.Skip
@@ -255,6 +262,29 @@ func DenySystemTaskForNonAdmin() privacy.MutationRule {
 			return privacy.Skip
 		} else if isSystemTask {
 			return privacy.Denyf("cannot create system tasks")
+		}
+		return privacy.Skip
+	})
+}
+
+func AllowCreate() privacy.MutationRule {
+	return privacy.MutationRuleFunc(func(ctx context.Context, m ent.Mutation) error {
+		if m.Op() == ent.OpCreate {
+			return privacy.Allow
+		}
+		return privacy.Skip
+	})
+}
+
+func DenyNonDefaultPermissions() privacy.MutationRule {
+	return privacy.UserPermissionsMutationRuleFunc(func(ctx context.Context, m *ent.UserPermissionsMutation) error {
+		if m.Op() != ent.OpCreate {
+			return privacy.Deny
+		}
+		for p := range permissions.All() {
+			if v, ok := m.Field(p.FieldName()); ok && v.(bool) {
+				return privacy.Denyf("cannot create user with permissions")
+			}
 		}
 		return privacy.Skip
 	})

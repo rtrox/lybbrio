@@ -4,6 +4,7 @@ import (
 	"context"
 	"lybbrio/internal/db"
 	"lybbrio/internal/ent"
+	"lybbrio/internal/ent/schema/argon2id"
 	"lybbrio/internal/ent/schema/permissions"
 	"lybbrio/internal/ent/user"
 	"lybbrio/internal/viewer"
@@ -31,6 +32,13 @@ func (tc testContext) Teardown() {
 
 func setupTest(t *testing.T, testName string, teardown ...func()) testContext {
 	client := db.OpenTest(t, testName)
+	argon2idConfig := argon2id.Config{
+		Memory:      64,
+		Iterations:  1,
+		Parallelism: 1,
+		SaltLen:     16,
+		KeyLen:      32,
+	}
 
 	adminCtx := viewer.NewSystemAdminContext(context.Background())
 	perms := client.UserPermissions.Create().SaveX(adminCtx)
@@ -46,7 +54,7 @@ func setupTest(t *testing.T, testName string, teardown ...func()) testContext {
 		permissions.NewPermissions(),
 	)
 
-	r := &Resolver{client}
+	r := &Resolver{client, argon2idConfig}
 
 	ret := testContext{
 		Client:   client,

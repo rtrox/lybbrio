@@ -4,6 +4,7 @@ package ent
 
 import (
 	"fmt"
+	"lybbrio/internal/ent/schema/argon2id"
 	"lybbrio/internal/ent/schema/ksuid"
 	"lybbrio/internal/ent/user"
 	"lybbrio/internal/ent/userpermissions"
@@ -26,7 +27,7 @@ type User struct {
 	// Username holds the value of the "username" field.
 	Username string `json:"username,omitempty"`
 	// PasswordHash holds the value of the "password_hash" field.
-	PasswordHash string `json:"-"`
+	PasswordHash argon2id.Argon2IDHash `json:"-"`
 	// Email holds the value of the "email" field.
 	Email string `json:"email,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -77,7 +78,9 @@ func (*User) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case user.FieldID, user.FieldUsername, user.FieldPasswordHash, user.FieldEmail:
+		case user.FieldPasswordHash:
+			values[i] = new(argon2id.Argon2IDHash)
+		case user.FieldID, user.FieldUsername, user.FieldEmail:
 			values[i] = new(sql.NullString)
 		case user.FieldCreateTime, user.FieldUpdateTime:
 			values[i] = new(sql.NullTime)
@@ -121,10 +124,10 @@ func (u *User) assignValues(columns []string, values []any) error {
 				u.Username = value.String
 			}
 		case user.FieldPasswordHash:
-			if value, ok := values[i].(*sql.NullString); !ok {
+			if value, ok := values[i].(*argon2id.Argon2IDHash); !ok {
 				return fmt.Errorf("unexpected type %T for field password_hash", values[i])
-			} else if value.Valid {
-				u.PasswordHash = value.String
+			} else if value != nil {
+				u.PasswordHash = *value
 			}
 		case user.FieldEmail:
 			if value, ok := values[i].(*sql.NullString); !ok {

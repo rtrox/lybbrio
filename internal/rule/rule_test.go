@@ -57,6 +57,55 @@ func Test_DenyIfNoViewer(t *testing.T) {
 	}
 }
 
+func Test_DenyIfAnonymousViewer(t *testing.T) {
+	tests := []struct {
+		name        string
+		contextFunc func() context.Context
+		expectedErr error
+	}{
+		{
+			name: "viewer is nil",
+			contextFunc: func() context.Context {
+				return context.Background()
+			},
+			expectedErr: privacy.Denyf("viewer-context is missing user information"),
+		},
+		{
+			name: "viewer is not nil but is anonymous",
+			contextFunc: func() context.Context {
+				return viewer.NewAnonymousContext(context.Background())
+			},
+			expectedErr: privacy.Denyf("anonymous users cannot access this resource"),
+		},
+		{
+			name: "viewer is admin",
+			contextFunc: func() context.Context {
+				return viewer.NewSystemAdminContext(context.Background())
+			},
+			expectedErr: privacy.Skip,
+		},
+		{
+			name: "viewer is not nil and not anonymous",
+			contextFunc: func() context.Context {
+				return viewer.NewContext(context.Background(), "asdf", nil)
+			},
+			expectedErr: privacy.Skip,
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			require := require.New(t)
+			privacyFunc := DenyIfAnonymousViewer()
+			err1 := privacyFunc.EvalQuery(tt.contextFunc(), nil)
+			err2 := privacyFunc.EvalMutation(tt.contextFunc(), nil)
+			require.Equal(tt.expectedErr, err1)
+			require.Equal(tt.expectedErr, err2)
+		})
+	}
+}
+
 func Test_AllowIfAdmin(t *testing.T) {
 	tests := []struct {
 		name        string
@@ -669,6 +718,101 @@ func Test_DenySystemTaskForNonAdmin(t *testing.T) {
 				require.Equal(tt.wantErr, err2, "error: %v", err)
 			} else {
 				require.Equal(tt.wantErr, err)
+			}
+		})
+	}
+}
+
+func Test_AllowIfCreate(t *testing.T) {
+	tests := []struct {
+		name          string
+		mutationFunc  func() *ent.UserMutation
+		expectedError error
+	}{
+		{
+			name: "create",
+			mutationFunc: func() *ent.UserMutation {
+				ret := &ent.UserMutation{}
+				ret.SetOp(ent.OpCreate)
+				return ret
+			},
+			expectedError: privacy.Allow,
+		},
+		{
+			name: "update",
+			mutationFunc: func() *ent.UserMutation {
+				ret := &ent.UserMutation{}
+				ret.SetOp(ent.OpUpdateOne)
+				return ret
+			},
+			expectedError: privacy.Skip,
+		},
+	}
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			require := require.New(t)
+			privacyFunc := AllowCreate()
+			err := privacyFunc.EvalMutation(context.Background(), tt.mutationFunc())
+			if err2 := errors.Unwrap(err); err2 != nil {
+				require.Equal(tt.expectedError, err2, "error: %v", err)
+			} else {
+				require.Equal(tt.expectedError, err)
+			}
+		})
+	}
+}
+
+func Test_DenyNonDefaultPermissions(t *testing.T) {
+	type testCase struct {
+		name          string
+		mutationFunc  func() *ent.UserPermissionsMutation
+		expectedError error
+	}
+	tests := []testCase{
+		{
+			name: "create no fields",
+			mutationFunc: func() *ent.UserPermissionsMutation {
+				ret := &ent.UserPermissionsMutation{}
+				ret.SetOp(ent.OpCreate)
+				return ret
+			},
+			expectedError: privacy.Skip,
+		},
+		{
+			name: "update",
+			mutationFunc: func() *ent.UserPermissionsMutation {
+				ret := &ent.UserPermissionsMutation{}
+				ret.SetOp(ent.OpUpdateOne)
+				return ret
+			},
+			expectedError: privacy.Deny,
+		},
+	}
+	for p := range permissions.All() {
+		tests = append(tests, testCase{
+			name: "create " + p.String(),
+			mutationFunc: func() *ent.UserPermissionsMutation {
+				ret := &ent.UserPermissionsMutation{}
+				ret.SetOp(ent.OpCreate)
+				ret.SetField(p.FieldName(), true) //nolint: errcheck
+				return ret
+			},
+			expectedError: privacy.Deny,
+		})
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			require := require.New(t)
+			privacyFunc := DenyNonDefaultPermissions()
+			err := privacyFunc.EvalMutation(context.Background(), tt.mutationFunc())
+			if err2 := errors.Unwrap(err); err2 != nil {
+				require.Equal(tt.expectedError, err2, "error: %v", err)
+			} else {
+				require.Equal(tt.expectedError, err)
 			}
 		})
 	}

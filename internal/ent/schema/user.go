@@ -2,6 +2,7 @@ package schema
 
 import (
 	"lybbrio/internal/ent/privacy"
+	"lybbrio/internal/ent/schema/argon2id"
 	"lybbrio/internal/ent/schema/ksuid"
 	"lybbrio/internal/rule"
 
@@ -22,16 +23,12 @@ type User struct {
 func (User) Annotations() []schema.Annotation {
 	return []schema.Annotation{
 		entgql.QueryField(),
-		// TODO: MutationCreate should not be allowed as-is through the graph long-term,
-		// but it's useful for testing right now.
-		entgql.Mutations(entgql.MutationUpdate(), entgql.MutationCreate()),
 	}
 }
 
 func (User) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		mixin.Time{},
-		BaseMixin{},
 		ksuid.MixinWithPrefix("usr"),
 	}
 }
@@ -46,6 +43,7 @@ func (User) Fields() []ent.Field {
 				entgql.OrderField("USERNAME"),
 			),
 		field.String("password_hash").
+			GoType(argon2id.Argon2IDHash{}).
 			Optional().
 			Sensitive(),
 		field.String("email").
@@ -70,12 +68,18 @@ func (User) Edges() []ent.Edge {
 func (User) Policy() ent.Policy {
 	return privacy.Policy{
 		Mutation: privacy.MutationPolicy{
+			// Does Not use base policy mixin!! Tread with Care.
 			rule.DenyIfNoViewer(),
+			rule.AllowCreate(),
+			rule.DenyIfAnonymousViewer(),
 			rule.AllowIfAdmin(),
 			rule.FilterSelfRule(),
 			privacy.AlwaysAllowRule(),
 		},
 		Query: privacy.QueryPolicy{
+			// Does Not use base policy mixin!! Tread with Care.
+			rule.DenyIfNoViewer(),
+			rule.DenyIfAnonymousViewer(),
 			privacy.AlwaysAllowRule(),
 		},
 	}
