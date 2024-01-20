@@ -27,7 +27,7 @@ require (
 	github.com/spf13/pflag v1.0.5
 	github.com/stretchr/testify v1.8.4
 	github.com/tj/assert v0.0.3
-	github.com/vektah/gqlparser/v2 v2.5.10
+	github.com/vektah/gqlparser/v2 v2.5.11
 	golang.org/x/crypto v0.17.0
 	gorm.io/driver/sqlite v1.5.4
 	gorm.io/gorm v1.25.5
