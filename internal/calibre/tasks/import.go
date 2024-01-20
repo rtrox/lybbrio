@@ -392,8 +392,8 @@ func registerBookFile(ctx context.Context, client *ent.Client, bookID ksuid.ID, 
 		return nil
 	}
 
-	filetype := filetype.FromExtension(ext)
-	if filetype == 0 {
+	ft := filetype.FromExtension(ext)
+	if ft == filetype.Unknown {
 		return errors.New("unknown file type")
 	}
 	info, err := file.Info()
@@ -402,10 +402,10 @@ func registerBookFile(ctx context.Context, client *ent.Client, bookID ksuid.ID, 
 	}
 	size := info.Size()
 	_, err = client.BookFile.Create().
-		SetName(file.Name()).
+		SetName(nameWithoutExt).
 		SetPath(path).
 		SetSize(size).
-		SetFormat(bookfile.Format(filetype.String())).
+		SetFormat(bookfile.Format(ft.String())).
 		SetBookID(bookID).
 		Save(ctx)
 	if err != nil {
