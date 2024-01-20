@@ -32,6 +32,7 @@ func cookieFromToken(token SignedToken) *http.Cookie {
 		Name:    "token",
 		Value:   token.String(),
 		Expires: token.Claims().ExpiresAt.Time,
+		Path:    "/",
 	}
 }
 
