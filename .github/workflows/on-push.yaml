@@ -12,3 +12,10 @@ jobs:
       pull-requests: read
       checks: write
     uses: ./.github/workflows/tests.yaml
+
+  build-and-push:
+    needs: tests
+    uses: ./.github/workflows/docker-image.yaml
+    with:
+      push: true
+      suffix: -dev

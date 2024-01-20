@@ -1,0 +1,149 @@
+---
+name: Create Docker Image (Matrixed)
+
+on:
+  workflow_call:
+    inputs:
+      push:
+        description: 'Push image to registry'
+        required: false
+        default: false
+        type: string
+      suffix:
+        description: 'Suffix to append to image name'
+        required: false
+        default: ''
+        type: string
+    outputs:
+      version:
+        description: 'Version of the image (sha-* or v*)'
+        value: ${{ jobs.merge.outputs.version }}
+      registry_image:
+        description: "Registry image name (without tag)"
+        value: ${{ jobs.merge.outputs.registry_image }}
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        platform:
+          - linux/amd64
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}${{ inputs.suffix }}
+          flavor: |
+            latest=true
+            prefix=v
+          tags: |
+            type=sha,suffix=-{{date 'YYYYMMDDHHmmss'}}
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Docker Login
+        uses: docker/login-action@v2
+        if: ${{ inputs.push == 'true' }}
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and Push by Digest
+        id: build
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          platforms: ${{ matrix.platform }}
+          labels: ${{ steps.meta.outputs.labels }}
+          outputs: type=image,name=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}${{ inputs.suffix }},push-by-digest=true,name-canonical=true,push=${{ inputs.push }}
+          build-args: |
+            VERSION=${{ steps.meta.outputs.version }}
+            BUILDTIME=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.created'] }}
+            REVISION=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.revision'] }}
+
+      - name: Export Digest
+        if: ${{ inputs.push == 'true' }}
+        run: |
+          mkdir -p /tmp/digests
+          digest="${{ steps.build.outputs.digest }}"
+          touch "/tmp/digests/${digest#sha256:}"
+
+      - name: Upload Digest
+        if: ${{ inputs.push == 'true' }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: digests
+          path: /tmp/digests/*
+          if-no-files-found: error
+          retention-days: 1
+
+  merge:
+    runs-on: ubuntu-latest
+    needs:
+      - build
+    if: ${{ inputs.push == 'true' }}
+    outputs:
+      version: ${{ steps.meta.outputs.version }}
+      registry_image: ${{ steps.inspect.outputs.registry_image }}
+
+    steps:
+      - name: Download digests
+        uses: actions/download-artifact@v3
+        with:
+          name: digests
+          path: /tmp/digests
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Docker Login
+        uses: docker/login-action@v2
+        if: ${{ inputs.push == 'true' }}
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@31cebacef4805868f9ce9a0cb03ee36c32df2ac4
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}${{ inputs.suffix }}
+          flavor: |
+            latest=true
+          tags: |
+            type=sha,suffix=-{{date 'YYYYMMDDHHmmss'}}
+            type=semver,pattern=v{{version}}
+            type=semver,pattern=v{{major}}.{{minor}}
+            type=semver,pattern=v{{major}}
+
+      - name: Create manifest list and push
+        working-directory: /tmp/digests
+        run: |
+          docker buildx imagetools create $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
+            $(printf '${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}${{ inputs.suffix }}@sha256:%s ' *)
+
+      - name: Inspect Image
+        id: inspect
+        run: |
+          docker buildx imagetools inspect ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}${{ inputs.suffix }}:${{ steps.meta.outputs.version }}
+          echo registry_image="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}${{ inputs.suffix }}" >> "$GITHUB_OUTPUT"
