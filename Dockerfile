@@ -30,7 +30,6 @@ RUN --mount=type=cache,target=/go/pkg/mod \
 FROM scratch
 COPY --from=backend_build /tmp/lybbrio/out/lybbrio /bin/lybbrio
 COPY --from=backend_build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
-COPY --from=frontend_build /out /dist
 
 EXPOSE 8080/tcp
 ENTRYPOINT ["/bin/lybbrio"]
