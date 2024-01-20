@@ -29,6 +29,15 @@ func (f FileType) String() string {
 	return ""
 }
 
+func (f FileType) Extension() string {
+	switch f {
+	case KEPUB:
+		return ".kepub.epub"
+	default:
+		return "." + strings.ToLower(f.String())
+	}
+}
+
 func FromString(s string) FileType {
 	switch s {
 	case EPUB.String():
