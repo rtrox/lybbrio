@@ -89,7 +89,7 @@ jobs:
 
       - name: Upload Digest
         if: ${{ inputs.push == 'true' }}
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: digests
           path: /tmp/digests/*
