@@ -8,11 +8,13 @@ on:
 jobs:
   tests:
     uses: ./.github/workflows/tests.yaml
+
   main-branch-check:
     runs-on: ubuntu-latest
     needs: tests
     outputs:
       on_main_branch: ${{ steps.register_tag.outputs.on_main_branch }}
+
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -29,6 +31,7 @@ jobs:
         run: |
           echo "retval: ${{ steps.contains_tag.outputs.retval }}"
           echo "::set-output name=on_main_branch::${{ steps.contains_tag.outputs.retval }}"
+
   release-tag:
     runs-on: ubuntu-latest
     needs: main-branch-check
@@ -51,3 +54,9 @@ jobs:
           args: release --rm-dist --config .github/goreleaser-dist.yaml
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  release-image:
+    needs: main-branch-check
+    uses: ./.github/workflows/docker-image.yaml
+    with:
+      push: true
