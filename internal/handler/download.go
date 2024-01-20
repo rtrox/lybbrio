@@ -69,7 +69,7 @@ func Download(client *ent.Client) http.HandlerFunc {
 			mtype = "application/octet-stream"
 		}
 		w.Header().Set("Content-Type", mtype)
-		dispo := fmt.Sprintf("attachment; filename=%s.%s; filename*=UTF-8''%s.%s",
+		dispo := fmt.Sprintf("attachment; filename=%s%s; filename*=UTF-8''%s%s",
 			url.QueryEscape(bookFile.Name),
 			filetype.FromString(bookFile.Format.String()).Extension(),
 			url.QueryEscape(bookFile.Name),
