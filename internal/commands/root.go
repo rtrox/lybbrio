@@ -10,7 +10,7 @@ import (
 	"syscall"
 
 	"entgo.io/contrib/entgql"
-	"github.com/99designs/gqlgen/graphql/handler"
+	graphql_handler "github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/go-chi/chi/v5"
 	chi_middleware "github.com/go-chi/chi/v5/middleware"
@@ -28,6 +28,7 @@ import (
 	"lybbrio/internal/config"
 	"lybbrio/internal/db"
 	"lybbrio/internal/graph"
+	"lybbrio/internal/handler"
 	"lybbrio/internal/metrics"
 	"lybbrio/internal/middleware"
 	"lybbrio/internal/scheduler"
@@ -207,7 +208,7 @@ func rootRun(_ *cobra.Command, _ []string) {
 	}
 
 	// GraphQL
-	graphqlHandler := handler.NewDefaultServer(graph.NewSchema(
+	graphqlHandler := graphql_handler.NewDefaultServer(graph.NewSchema(
 		client,
 		conf.Argon2ID,
 	))
@@ -232,6 +233,12 @@ func rootRun(_ *cobra.Command, _ []string) {
 	r.Handle("/metrics", promhttp.HandlerFor(reg, promhttp.HandlerOpts{}))
 
 	r.Mount("/auth", auth.Routes(client, jwtProvider, conf.Argon2ID))
+
+	r.With(
+		auth.ViewerContextMiddleware(jwtProvider),
+	).Mount("/download",
+		handler.DownloadRoutes(client))
+
 	r.Route("/graphql", func(r chi.Router) {
 		r.With(
 			auth.ViewerContextMiddleware(jwtProvider),

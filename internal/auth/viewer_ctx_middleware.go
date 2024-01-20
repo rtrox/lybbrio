@@ -47,7 +47,7 @@ func ViewerContextMiddleware(prov *JWTProvider) func(http.Handler) http.Handler 
 
 			claims, err := prov.ParseToken(token)
 			if err != nil {
-				log.Error().Err(err).Msg("Failed to Parse Token")
+				log.Error().Err(err).Str("token", token).Msg("Failed to Parse Token")
 				render.Status(r, http.StatusUnauthorized)
 				render.JSON(w, r, map[string]string{"error": "Unauthorized"})
 				return
