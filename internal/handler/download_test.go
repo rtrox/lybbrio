@@ -80,8 +80,8 @@ func TestDownload(t *testing.T) {
 	require.Equal(200, resp.StatusCode)
 	require.Equal("application/epub+zip", resp.Header.Get("Content-Type"))
 	require.Equal(
-		"attachment; filename=Twenty+Thousand+Leagues+under+t+-+Jules+Verne; "+
-			"filename*=UTF-8''Twenty+Thousand+Leagues+under+t+-+Jules+Verne",
+		"attachment; filename=Twenty+Thousand+Leagues+under+t+-+Jules+Verne.epub; "+
+			"filename*=UTF-8''Twenty+Thousand+Leagues+under+t+-+Jules+Verne.epub",
 		resp.Header.Get("Content-Disposition"),
 	)
 	require.Equal("369814", resp.Header.Get("Content-Length"))
