@@ -51,7 +51,8 @@ jobs:
           git diff --exit-code
 
   golangci-lint:
-    if: jobs.check-changed-files.outputs.go-files == 'true'
+    needs: check-changed-files
+    if: needs.check-changed-files.outputs.go-files == 'true' || needs.check-changed-files.outputs.linter-configs == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -69,7 +70,8 @@ jobs:
           args: --timeout 5m --config .github/lint/golangci.yaml
 
   go-tests:
-    if: jobs.check-changed-files.outputs.go-files == 'true'
+    needs: check-changed-files
+    if: needs.check-changed-files.outputs.go-files == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
