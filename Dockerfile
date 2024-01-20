@@ -1,4 +1,4 @@
-FROM golang:1.20-alpine AS backend_build
+FROM golang:1.21-alpine AS backend_build
 WORKDIR /tmp/lybbrio
 
 ARG VERSION="dev"
