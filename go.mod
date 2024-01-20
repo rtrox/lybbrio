@@ -5,7 +5,7 @@ go 1.21
 require (
 	entgo.io/contrib v0.4.5
 	entgo.io/ent v0.12.5
-	github.com/99designs/gqlgen v0.17.42
+	github.com/99designs/gqlgen v0.17.43
 	github.com/go-chi/chi/v5 v5.0.11
 	github.com/go-chi/render v1.0.3
 	github.com/go-playground/validator/v10 v10.17.0
