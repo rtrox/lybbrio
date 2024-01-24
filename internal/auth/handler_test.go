@@ -6,6 +6,7 @@ import (
 	"lybbrio/internal/db"
 	"lybbrio/internal/ent"
 	"lybbrio/internal/ent/schema/argon2id"
+	"lybbrio/internal/ent/schema/permissions"
 	"lybbrio/internal/viewer"
 	"net/http"
 	"net/http/httptest"
@@ -21,6 +22,7 @@ type handlerTestContext struct {
 	jwt      *JWTProvider
 	conf     argon2id.Config
 	user     *ent.User
+	perms    *ent.UserPermissions
 	teardown func()
 }
 
@@ -55,12 +57,12 @@ func setupHandlerTest(t *testing.T, testName string, teardown ...func()) handler
 	hash, err := argon2id.NewArgon2idHashFromPassword([]byte("notasafepassword"), ret.conf)
 	require.NoError(t, err)
 	adminCtx := viewer.NewSystemAdminContext(context.Background())
-	perms := ret.client.UserPermissions.Create().SetAdmin(true).SaveX(adminCtx)
+	ret.perms = ret.client.UserPermissions.Create().SetAdmin(true).SaveX(adminCtx)
 	ret.user = ret.client.User.Create().
 		SetUsername(testName).
 		SetEmail(testName + "@notarealemail.com").
 		SetPasswordHash(*hash).
-		SetUserPermissions(perms).
+		SetUserPermissions(ret.perms).
 		SaveX(adminCtx)
 
 	if len(teardown) > 0 {
@@ -164,4 +166,97 @@ func Test_PasswordAuth_BadRequest(t *testing.T) {
 	defer res.Body.Close()
 
 	require.Equal(http.StatusBadRequest, res.StatusCode)
+}
+
+func Test_RefreshToken(t *testing.T) {
+	t.Parallel()
+	require := require.New(t)
+	tc := setupHandlerTest(t, "Test_RefreshToken")
+	defer tc.Teardown()
+
+	testMiddleware := func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			ctx := r.Context()
+			ctx = viewer.NewContext(
+				ctx,
+				tc.user.ID,
+				permissions.From(tc.perms),
+			)
+			next.ServeHTTP(w, r.WithContext(ctx))
+		})
+	}
+
+	req := httptest.NewRequest(http.MethodPost, "/", nil)
+
+	w := httptest.NewRecorder()
+
+	handler := testMiddleware(RefreshAuth(tc.client, tc.jwt))
+	handler.ServeHTTP(w, req)
+	res := w.Result()
+	defer res.Body.Close()
+
+	require.Equal(http.StatusOK, res.StatusCode)
+
+	require.NotEmpty(res.Header.Get("X-Api-Token"))
+	require.NotEmpty(res.Header.Get("X-Api-Expires"))
+	require.NotEmpty(res.Header.Get("Set-Cookie"))
+}
+
+func Test_AdminContext_CantRefresh(t *testing.T) {
+	t.Parallel()
+	require := require.New(t)
+	tc := setupHandlerTest(t, "Test_AdminContext_CantRefresh")
+	defer tc.Teardown()
+
+	testMiddleware := func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			ctx := r.Context()
+			ctx = viewer.NewSystemAdminContext(ctx)
+			next.ServeHTTP(w, r.WithContext(ctx))
+		})
+	}
+
+	req := httptest.NewRequest(http.MethodPost, "/", nil)
+
+	w := httptest.NewRecorder()
+
+	handler := testMiddleware(RefreshAuth(tc.client, tc.jwt))
+	handler.ServeHTTP(w, req)
+	res := w.Result()
+	defer res.Body.Close()
+
+	require.Equal(http.StatusUnauthorized, res.StatusCode)
+}
+
+func Test_DeletedUser_CantRefresh(t *testing.T) {
+	t.Parallel()
+	require := require.New(t)
+	tc := setupHandlerTest(t, "Test_DeletedUser_CantRefresh")
+	defer tc.Teardown()
+
+	testMiddleware := func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			ctx := r.Context()
+			ctx = viewer.NewContext(
+				ctx,
+				tc.user.ID,
+				permissions.From(tc.perms),
+			)
+			next.ServeHTTP(w, r.WithContext(ctx))
+		})
+	}
+
+	adminCtx := viewer.NewSystemAdminContext(context.Background())
+	require.NoError(tc.client.User.DeleteOneID(tc.user.ID).Exec(adminCtx))
+
+	req := httptest.NewRequest(http.MethodPost, "/", nil)
+
+	w := httptest.NewRecorder()
+
+	handler := testMiddleware(RefreshAuth(tc.client, tc.jwt))
+	handler.ServeHTTP(w, req)
+	res := w.Result()
+	defer res.Body.Close()
+
+	require.Equal(http.StatusUnauthorized, res.StatusCode)
 }

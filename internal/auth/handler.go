@@ -19,6 +19,7 @@ func Routes(client *ent.Client, jwt *JWTProvider, conf argon2id.Config) http.Han
 	r := chi.NewRouter()
 	r.Get("/testAuthDONOTUSE/{username}", TestAuthDONOTUSE(client, jwt))
 	r.Post("/login", PasswordAuth(client, jwt, conf))
+	r.Post("/refresh", RefreshAuth(client, jwt))
 	return r
 }
 
@@ -88,6 +89,7 @@ func TestAuthDONOTUSE(client *ent.Client, jwt *JWTProvider) http.HandlerFunc {
 func PasswordAuth(client *ent.Client, jwt *JWTProvider, conf argon2id.Config) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
+
 		data := &PasswordRequest{}
 		if err := render.DecodeJSON(r.Body, data); err != nil {
 			s := http.StatusBadRequest
@@ -104,6 +106,7 @@ func PasswordAuth(client *ent.Client, jwt *JWTProvider, conf argon2id.Config) ht
 		adminCtx := viewer.NewSystemAdminContext(ctx)
 		user, err := client.User.Query().
 			Where(user.Username(data.Username)).
+			WithUserPermissions().
 			First(adminCtx)
 		if err != nil {
 			s := http.StatusUnauthorized
@@ -117,17 +120,11 @@ func PasswordAuth(client *ent.Client, jwt *JWTProvider, conf argon2id.Config) ht
 			render.DefaultResponder(w, r, render.M{"error": http.StatusText(s)})
 			return
 		}
-		perms, err := user.QueryUserPermissions().First(adminCtx)
-		if err != nil {
-			s := http.StatusInternalServerError
-			render.Status(r, s)
-			render.DefaultResponder(w, r, render.M{"error": http.StatusText(s)})
-			return
-		}
+
 		token, err := jwt.CreateToken(
 			user.ID.String(),
 			user.Username,
-			permissions.From(perms).StringSlice(),
+			permissions.From(user.Edges.UserPermissions).StringSlice(),
 		)
 		if err != nil {
 			s := http.StatusInternalServerError
@@ -138,6 +135,59 @@ func PasswordAuth(client *ent.Client, jwt *JWTProvider, conf argon2id.Config) ht
 		http.SetCookie(w, cookieFromToken(token))
 		w.Header().Add("X-Api-Token", token.String())
 		w.Header().Add("X-Api-Expires", token.Claims().ExpiresAt.Format(time.RFC3339))
+		render.Status(r, http.StatusOK)
+		render.JSON(w, r, user)
+	}
+}
+
+func RefreshAuth(client *ent.Client, jwt *JWTProvider) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+		view := viewer.FromContext(ctx)
+		if view == nil {
+			render.Status(r, http.StatusUnauthorized)
+			render.JSON(w, r, map[string]string{"error": "Unauthorized"})
+			return
+		}
+
+		uid, ok := view.UserID()
+		if !ok {
+			log.Error().Msg("Failed to get user id from viewer")
+			s := http.StatusUnauthorized
+			render.Status(r, s)
+			render.JSON(w, r, map[string]string{"error": http.StatusText(s)})
+			return
+		}
+
+		user, err := client.User.Query().
+			Where(user.ID(uid)).
+			WithUserPermissions().
+			Only(ctx)
+		if err != nil {
+			if !ent.IsNotFound(err) {
+				log.Error().Err(err).Str("uid", uid.String()).Msg("Failed to find user")
+			}
+			s := http.StatusUnauthorized
+			render.Status(r, s)
+			render.JSON(w, r, map[string]string{"error": http.StatusText(s)})
+			return
+		}
+
+		refreshedToken, err := jwt.CreateToken(
+			user.ID.String(),
+			user.Username,
+			permissions.From(user.Edges.UserPermissions).StringSlice(),
+		)
+		if err != nil {
+			log.Error().Err(err).Msg("Failed to refresh token")
+			s := http.StatusInternalServerError
+			render.Status(r, s)
+			render.JSON(w, r, map[string]string{"error": http.StatusText(s)})
+			return
+		}
+		http.SetCookie(w, cookieFromToken(refreshedToken))
+		w.Header().Add("X-Api-Token", refreshedToken.String())
+		w.Header().Add("X-Api-Expires", refreshedToken.Claims().ExpiresAt.Format(time.RFC3339))
 		render.Status(r, http.StatusOK)
 		render.JSON(w, r, user)
 	}
