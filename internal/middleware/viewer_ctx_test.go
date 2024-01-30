@@ -70,16 +70,25 @@ func TestViewerContextMiddleware(t *testing.T) {
 			name: "valid token",
 			reqFunc: func() *http.Request {
 				req, _ := http.NewRequest("GET", "/", nil)
-				claims := &auth.AccessTokenClaims{
-					UserID:      testUID,
-					Permissions: []string{"admin", "canedit"},
-				}
+				claims := auth.NewAccessTokenClaims(testUID, "test-user", "asdf@asdf", []string{"admin", "canedit"})
 				token, err := provider.CreateToken(claims)
 				require.NoError(err)
 				req.Header.Add("Authorization", "Bearer "+token.Token)
 				return req
 			},
 			wantStatus: http.StatusOK,
+		},
+		{
+			name: "refresh token as access token",
+			reqFunc: func() *http.Request {
+				req, _ := http.NewRequest("GET", "/", nil)
+				claims := auth.NewRefreshTokenClaims(testUID)
+				token, err := provider.CreateToken(claims)
+				require.NoError(err)
+				req.Header.Add("Authorization", "Bearer "+token.Token)
+				return req
+			},
+			wantStatus: http.StatusUnauthorized,
 		},
 	}
 

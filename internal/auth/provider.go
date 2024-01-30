@@ -63,5 +63,8 @@ func (p *JWTProvider) ExpiryFromClaims(claims Claims) time.Duration {
 
 func (p JWTProvider) ParseToken(tokenString string, dest Claims) error {
 	_, err := jwt.ParseWithClaims(tokenString, dest, p.keyContainer.VerificationKey)
-	return err
+	if err != nil {
+		return ErrInvalidToken
+	}
+	return dest.ValidateType()
 }

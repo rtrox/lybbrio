@@ -227,6 +227,18 @@ func Test_RefreshToken(t *testing.T) {
 			},
 			expectedCode: http.StatusUnauthorized,
 		},
+		{
+			name: "Access Token as Refresh Token",
+			reqFunc: func(tc authHandlerTestContext) *http.Request {
+				claims := auth.NewAccessTokenClaims(tc.user.ID.String(), tc.user.Username, tc.user.Email, []string{"admin"})
+				token, err := tc.jwt.CreateToken(claims)
+				require.NoError(t, err)
+				req := httptest.NewRequest(http.MethodPost, "/", nil)
+				req.Header.Set("X-Refresh-Token", token.Token)
+				return req
+			},
+			expectedCode: http.StatusUnauthorized,
+		},
 	}
 	for _, tt := range tests {
 		tt := tt

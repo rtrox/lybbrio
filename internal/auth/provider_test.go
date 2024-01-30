@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"errors"
 	"testing"
 	"time"
 
@@ -28,6 +29,7 @@ func Test_CreateToken(t *testing.T) {
 				UserName:    "user_name",
 				Email:       "email",
 				Permissions: []string{"permission1", "permission2"},
+				Type:        Access,
 			},
 		},
 		{
@@ -41,6 +43,7 @@ func Test_CreateToken(t *testing.T) {
 					ExpiresAt: jwt.NewNumericDate(time.Time{}),
 				},
 				UserID: "user_id",
+				Type:   Refresh,
 			},
 		},
 	}
@@ -102,6 +105,22 @@ func Test_CreateToken(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestParseToken_IncorrectClaimType(t *testing.T) {
+	require := require.New(t)
+	kc := testKCHS512(t)
+	p, err := NewJWTProvider(kc, "an_issuer", 10*time.Second, 24*time.Hour)
+	require.NoError(err)
+
+	claims := &RefreshTokenClaims{}
+	token, err := p.CreateToken(claims)
+	require.NoError(err)
+
+	claims2 := &AccessTokenClaims{}
+	err = p.ParseToken(token.Token, claims2)
+	require.Error(err)
+	require.True(errors.Is(err, ErrInvalidClaimsType))
 }
 
 func TestExpiryFromClaims(t *testing.T) {
