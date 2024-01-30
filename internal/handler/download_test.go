@@ -15,19 +15,19 @@ import (
 	"lybbrio/internal/viewer"
 )
 
-type testContext struct {
+type downloadTestContext struct {
 	client   *ent.Client
 	teardown func()
 	adminCtx context.Context
 }
 
-func (t testContext) Teardown() {
+func (t downloadTestContext) Teardown() {
 	t.client.Close()
 	t.teardown()
 }
 
-func setupHandlerTest(t *testing.T, testName string, teardown ...func()) testContext {
-	var ret testContext
+func setupDownloadHandlerTest(t *testing.T, testName string, teardown ...func()) downloadTestContext {
+	var ret downloadTestContext
 
 	ret.client = db.OpenTest(t, testName)
 
@@ -50,7 +50,7 @@ func addContextMiddleware(next http.Handler) http.Handler {
 func TestDownload(t *testing.T) {
 	t.Parallel()
 	require := require.New(t)
-	tc := setupHandlerTest(t, "TestDownload")
+	tc := setupDownloadHandlerTest(t, "TestDownload")
 	defer tc.Teardown()
 
 	r := chi.NewRouter()
@@ -120,7 +120,7 @@ func TestDownloadErrors(t *testing.T) {
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			tc := setupHandlerTest(t, tt.name)
+			tc := setupDownloadHandlerTest(t, tt.name)
 			defer tc.Teardown()
 
 			r := chi.NewRouter()

@@ -1,18 +1,25 @@
-package auth
+package middleware
 
 import (
 	"context"
+	"lybbrio/internal/auth"
 	"lybbrio/internal/ent/schema/ksuid"
 	"lybbrio/internal/ent/schema/permissions"
 	"lybbrio/internal/viewer"
 	"net/http"
+	"strings"
 
 	"github.com/go-chi/render"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
 
-func viewerCtxFromClaims(ctx context.Context, claims *Claims) context.Context {
+func renderUnauthorized(w http.ResponseWriter, r *http.Request) {
+	render.Status(r, http.StatusUnauthorized)
+	render.JSON(w, r, map[string]string{"error": http.StatusText(http.StatusUnauthorized)})
+}
+
+func viewerCtxFromClaims(ctx context.Context, claims *auth.AccessTokenClaims) context.Context {
 	perms := permissions.NewPermissions()
 	for _, perm := range claims.Permissions {
 		perms.Add(permissions.FromString(perm))
@@ -20,7 +27,7 @@ func viewerCtxFromClaims(ctx context.Context, claims *Claims) context.Context {
 	return viewer.NewContext(ctx, ksuid.ID(claims.UserID), perms)
 }
 
-func ViewerContextMiddleware(prov *JWTProvider) func(http.Handler) http.Handler {
+func ViewerContextMiddleware(prov *auth.JWTProvider) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			ctx := r.Context()
@@ -31,25 +38,23 @@ func ViewerContextMiddleware(prov *JWTProvider) func(http.Handler) http.Handler 
 				next.ServeHTTP(w, r.WithContext(ctx))
 				return
 			}
-			var token string
-			if tokenCookie, err := r.Cookie("token"); err != nil {
-				token = r.Header.Get("X-Api-Token")
-			} else {
-				token = tokenCookie.Value
+			authHeader := r.Header.Get("Authorization")
+			parts := strings.Split(authHeader, " ")
+			if len(parts) != 2 || parts[0] != "Bearer" {
+				renderUnauthorized(w, r)
+				return
 			}
+			token := parts[1]
 
 			if token == "" {
-				log.Info().Str("token", token).Msg("Empty Token")
-				render.Status(r, http.StatusUnauthorized)
-				render.JSON(w, r, map[string]string{"error": "Unauthorized"})
+				renderUnauthorized(w, r)
 				return
 			}
 
-			claims, err := prov.ParseToken(token)
+			claims := &auth.AccessTokenClaims{}
+			err := prov.ParseToken(token, claims)
 			if err != nil {
-				log.Error().Err(err).Str("token", token).Msg("Failed to Parse Token")
-				render.Status(r, http.StatusUnauthorized)
-				render.JSON(w, r, map[string]string{"error": "Unauthorized"})
+				renderUnauthorized(w, r)
 				return
 			}
 

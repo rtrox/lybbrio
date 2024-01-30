@@ -2,7 +2,6 @@ package test
 
 import (
 	"context"
-	"fmt"
 	"lybbrio/internal/ent/schema/ksuid"
 	"lybbrio/internal/ent/schema/permissions"
 	"lybbrio/internal/viewer"
@@ -120,7 +119,6 @@ func Test_AnonymousUserCanCreateUser(t *testing.T) {
 
 	ctx := viewer.NewAnonymousContext(context.Background())
 	pc := client.UserPermissions.Create()
-	fmt.Printf("%+v", pc.Mutation())
 	perms, err := pc.Save(ctx)
 	require.NoError(t, err, "failed to create user permissions")
 

@@ -1,118 +1,178 @@
 package auth
 
 import (
+	"errors"
 	"testing"
 	"time"
 
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/stretchr/testify/require"
 )
 
-func testProviderHS512(t *testing.T, expiration ...time.Duration) *JWTProvider {
-	if len(expiration) == 0 {
-		expiration = []time.Duration{10 * time.Second}
-	}
-	kc, err := NewHS512KeyContainer("some_secret")
-	require.NoError(t, err)
-	provider, err := NewJWTProvider(
-		kc,
-		"some_issuer",
-		expiration[0],
-	)
-	require.NoError(t, err)
-	return provider
-}
-
-func testProviderRS512(t *testing.T, expiration ...time.Duration) *JWTProvider {
-	if len(expiration) == 0 {
-		expiration = []time.Duration{10 * time.Second}
-	}
-	kc, err := NewRS512KeyContainer(
-		"test/jwtRS512.key",
-		"test/jwtRS512.key.pub",
-	)
-	require.NoError(t, err)
-	provider, err := NewJWTProvider(
-		kc,
-		"some_issuer",
-		expiration[0],
-	)
-	require.NoError(t, err)
-	return provider
-}
-
-type providerTestCase struct {
-	name     string
-	provider *JWTProvider
-}
-
-func testEachProvider(t *testing.T, expiration ...time.Duration) []providerTestCase {
-	return []providerTestCase{
-		{
-			name:     "HS512",
-			provider: testProviderHS512(t, expiration...),
-		},
-		{
-			name:     "RS512",
-			provider: testProviderRS512(t, expiration...),
-		},
-	}
-}
-
 func Test_CreateToken(t *testing.T) {
-	for _, tt := range testEachProvider(t) {
+	tests := []struct {
+		name   string
+		claims Claims
+	}{
+		{
+			name: "AccessTokenClaims",
+			claims: &AccessTokenClaims{
+
+				RegisteredClaims: jwt.RegisteredClaims{
+					Issuer:    "issuer",
+					Subject:   "subject",
+					Audience:  []string{"audience"},
+					IssuedAt:  jwt.NewNumericDate(time.Time{}),
+					ExpiresAt: jwt.NewNumericDate(time.Time{}),
+				},
+				UserID:      "user_id",
+				UserName:    "user_name",
+				Email:       "email",
+				Permissions: []string{"permission1", "permission2"},
+				Type:        Access,
+			},
+		},
+		{
+			name: "RefreshTokenClaims",
+			claims: &RefreshTokenClaims{
+				RegisteredClaims: jwt.RegisteredClaims{
+					Issuer:    "issuer",
+					Subject:   "subject",
+					Audience:  []string{"audience"},
+					IssuedAt:  jwt.NewNumericDate(time.Time{}),
+					ExpiresAt: jwt.NewNumericDate(time.Time{}),
+				},
+				UserID: "user_id",
+				Type:   Refresh,
+			},
+		},
+	}
+	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 			require := require.New(t)
+			kc := testKCHS512(t)
+			p, err := NewJWTProvider(kc, "an_issuer", 10*time.Second, 24*time.Hour)
+			require.NoError(err)
+			token, err := p.CreateToken(tt.claims)
+			require.NoError(err)
+			require.NotEqual(time.Time{}, token.ExpiresAt)
+			require.NotEqual(time.Time{}, token.IssuedAt)
+			require.NotEmpty(token.Token)
 
-			signedToken, err := tt.provider.CreateToken("some_user_id", "some_user_name", []string{"some_permission"})
+			var claims Claims
+			switch tt.claims.(type) {
+			case *AccessTokenClaims:
+				claims = &AccessTokenClaims{}
+			case *RefreshTokenClaims:
+				claims = &RefreshTokenClaims{}
+			}
+			err = p.ParseToken(token.Token, claims)
 			require.NoError(err)
 
-			claims := signedToken.Claims()
-			require.Equal("some_user_id", claims.UserID)
-			require.Equal("some_user_name", claims.UserName)
-			require.Equal("some_issuer", claims.Issuer)
-			require.Equal("some_user_id", claims.Subject)
-			require.Equal("some_issuer", claims.Audience[0])
-			require.Contains(claims.Permissions, "some_permission")
-
-			claims2, err := tt.provider.ParseToken(signedToken.String())
+			expiresAt, err := claims.GetExpirationTime()
 			require.NoError(err)
-			require.Equal(claims, *claims2)
+			require.Equal(jwt.NewNumericDate(token.ExpiresAt), expiresAt)
+
+			issuer, err := claims.GetIssuer()
+			require.NoError(err)
+			require.Equal("an_issuer", issuer)
+
+			subject, err := claims.GetSubject()
+			require.NoError(err)
+			require.Equal("user_id", subject)
+			audience, err := claims.GetAudience()
+			require.NoError(err)
+			require.Equal(jwt.ClaimStrings{"an_issuer"}, audience)
+
+			switch tt.claims.(type) {
+			case *AccessTokenClaims:
+				require.Equal("user_id", claims.(*AccessTokenClaims).UserID)
+				require.Equal("user_name", claims.(*AccessTokenClaims).UserName)
+				require.Equal("email", claims.(*AccessTokenClaims).Email)
+				require.Equal([]string{"permission1", "permission2"}, claims.(*AccessTokenClaims).Permissions)
+				require.Less(
+					token.ExpiresAt.Sub(token.IssuedAt),
+					30*time.Second,
+				)
+			case *RefreshTokenClaims:
+				require.Equal("user_id", claims.(*RefreshTokenClaims).UserID)
+				require.Greater(
+					token.ExpiresAt.Sub(token.IssuedAt),
+					12*time.Hour,
+				)
+			}
 		})
 	}
 }
 
-func Test_ExpiredToken(t *testing.T) {
-	for _, tt := range testEachProvider(t, 1*time.Nanosecond) {
-		tt := tt
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-			require := require.New(t)
+func TestParseToken_IncorrectClaimType(t *testing.T) {
+	require := require.New(t)
+	kc := testKCHS512(t)
+	p, err := NewJWTProvider(kc, "an_issuer", 10*time.Second, 24*time.Hour)
+	require.NoError(err)
 
-			token, err := tt.provider.CreateToken(
-				"some_user_id",
-				"some_user_name",
-				[]string{"some_permission"},
-			)
-			require.NoError(err)
+	claims := &RefreshTokenClaims{}
+	token, err := p.CreateToken(claims)
+	require.NoError(err)
 
-			time.Sleep(20 * time.Nanosecond)
-			_, err = tt.provider.ParseToken(token.String())
-			require.Error(err)
-		})
-	}
+	claims2 := &AccessTokenClaims{}
+	err = p.ParseToken(token.Token, claims2)
+	require.Error(err)
+	require.True(errors.Is(err, ErrInvalidClaimsType))
 }
 
-func Test_BadToken(t *testing.T) {
-	for _, tt := range testEachProvider(t) {
+func TestParseToken_Expired(t *testing.T) {
+	require := require.New(t)
+	kc := testKCHS512(t)
+	p, err := NewJWTProvider(kc, "an_issuer", 10*time.Second, 24*time.Hour)
+	require.NoError(err)
+
+	claims := NewAccessTokenClaims("user_id", "user_name", "email", []string{})
+	token, err := p.CreateToken(claims)
+	require.NoError(err)
+
+	claims2 := &AccessTokenClaims{}
+	err = p.ParseToken(token.Token, claims2)
+	require.NoError(err)
+
+	TimeFunc = func() time.Time {
+		return time.Now().Add(11 * time.Second)
+	}
+	defer func() {
+		TimeFunc = time.Now
+	}()
+
+	err = p.ParseToken(token.Token, claims2)
+	require.Error(err)
+	require.True(errors.Is(err, ErrInvalidToken), "expected ErrExpiredToken, got %v", err)
+}
+
+func TestExpiryFromClaims(t *testing.T) {
+	tests := []struct {
+		name   string
+		claims Claims
+		expiry time.Duration
+	}{
+		{
+			name:   "AccessTokenClaims",
+			claims: &AccessTokenClaims{},
+			expiry: 10 * time.Second,
+		},
+		{
+			name:   "RefreshTokenClaims",
+			claims: &RefreshTokenClaims{},
+			expiry: 24 * time.Hour,
+		},
+	}
+	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			require := require.New(t)
-
-			_, err := tt.provider.ParseToken("some_bad_token")
-			require.Error(err)
+			p, err := NewJWTProvider(testKCHS512(t), "an_issuer", 10*time.Second, 24*time.Hour)
+			require.NoError(t, err)
+			require.Equal(t, tt.expiry, p.ExpiryFromClaims(tt.claims))
 		})
 	}
 }

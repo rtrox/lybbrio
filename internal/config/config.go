@@ -45,6 +45,7 @@ var defaultSettings = map[string]interface{}{
 		"signing-method": "HS512",
 		"issuer":         "http://localhost:8080",
 		"expiry":         1 * time.Hour,
+		"refreshExpiry":  24 * time.Hour,
 	},
 	"argon2id": map[string]interface{}{
 		"iterations":  3,
@@ -76,6 +77,7 @@ func RegisterFlags(flagSet *flag.FlagSet) {
 	flagSet.Duration("task.cadence", 5*time.Second, "Task cadence")
 	flagSet.String("jwt.issuer", "http://localhost:8080", "JWT Issuer")
 	flagSet.Duration("jwt.expiry", 1*time.Hour, "JWT Expiry")
+	flagSet.Duration("jwt.refresh-expiry", 24*time.Hour, "JWT Refresh Expiry")
 	flagSet.String("jwt.signing-method", "HS512", "JWT Signing Method")
 	flagSet.String("jwt.hmac-secret", "", "JWT HMACSecret")
 	flagSet.String("jwt.rsa-private-key", "", "JWT RSAPrivateKey")
@@ -99,6 +101,7 @@ type TaskConfig struct {
 type JWTConfig struct {
 	SigningMethod string        `koanf:"signing-method" validate:"oneof=HS512 RS512"`
 	Expiry        time.Duration `koanf:"expiry" validate:"required"`
+	RefreshExpiry time.Duration `koanf:"refresh-expiry" validate:"required"`
 	Issuer        string        `koanf:"issuer" validate:"url"`
 	HMACSecret    string        `koanf:"hmac-secret"`
 	RSAPrivateKey string        `koanf:"rsa-private-key" validate:"omitempty,file"`

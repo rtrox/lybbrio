@@ -2,16 +2,17 @@ package test
 
 import (
 	"context"
+	"fmt"
 	"lybbrio/internal/auth"
 	"lybbrio/internal/db"
 	"lybbrio/internal/ent/schema/permissions"
+	"lybbrio/internal/middleware"
 	"lybbrio/internal/viewer"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 	"time"
 
-	"github.com/go-chi/chi/v5"
 	"github.com/stretchr/testify/require"
 )
 
@@ -39,19 +40,22 @@ func Test_ViewerContextGetsSet(t *testing.T) {
 		kc,
 		"some_issuer",
 		10*time.Second,
+		30*time.Second,
 	)
 	require.NoError(err)
 
 	token, err := jwtProvider.CreateToken(
-		user.ID.String(),
-		user.Username,
-		permissions.From(perms).StringSlice())
+		auth.NewAccessTokenClaims(
+			user.ID.String(),
+			user.Username,
+			user.Email,
+			[]string{permissions.Admin.String()},
+		),
+	)
 	require.NoError(err)
 
-	r := chi.NewRouter()
-	r.Use(auth.ViewerContextMiddleware(jwtProvider))
-
-	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
+	executed := false
+	ts := httptest.NewServer(middleware.ViewerContextMiddleware(jwtProvider)(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		viewerCtx := viewer.FromContext(r.Context())
 		require.NotNil(viewerCtx)
 
@@ -61,17 +65,17 @@ func Test_ViewerContextGetsSet(t *testing.T) {
 		require.Equal(user.ID, viewerUserID)
 		require.True(viewerCtx.Has(permissions.Admin))
 		require.True(viewerCtx.IsAdmin())
-	})
-
-	ts := httptest.NewServer(r)
+		executed = true
+	})))
 	defer ts.Close()
 
 	req, err := http.NewRequest("GET", ts.URL, nil)
 	require.NoError(err)
 
-	req.Header.Set("X-Api-Token", token.String())
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token.Token))
 
-	_, err = http.DefaultClient.Do(req)
+	resp, err := ts.Client().Do(req)
 	require.NoError(err)
-
+	require.Equal(http.StatusOK, resp.StatusCode)
+	require.True(executed)
 }

@@ -8,56 +8,47 @@ import (
 )
 
 type KeyContainer interface {
-	SignedToken(Claims) (string, error)
-	VerificationKeyFunc(token *jwt.Token) (interface{}, error)
-}
-
-type ErrInvalidSigningKey struct{}
-
-func (e ErrInvalidSigningKey) Error() string {
-	return "invalid signing key"
-}
-
-type ErrInvalidVerificationKey struct{}
-
-func (e ErrInvalidVerificationKey) Error() string {
-	return "invalid verification key"
+	SigningMethod() jwt.SigningMethod
+	SigningKey() interface{}
+	VerificationKey(token *jwt.Token) (interface{}, error)
 }
 
 type HS512KeyContainer struct {
 	signingKey []byte
 }
 
+var _ KeyContainer = &HS512KeyContainer{}
+
 func NewHS512KeyContainer(signingKey string) (*HS512KeyContainer, error) {
 	if signingKey == "" {
-		return nil, ErrInvalidSigningKey{}
+		return nil, ErrInvalidSigningKey
 	}
 	return &HS512KeyContainer{
 		signingKey: []byte(signingKey),
 	}, nil
 }
 
-func (k *HS512KeyContainer) SignedToken(claims Claims) (string, error) {
-	token := jwt.NewWithClaims(jwt.SigningMethodHS512, claims)
-	return token.SignedString(k.signingKey)
+func (k *HS512KeyContainer) SigningMethod() jwt.SigningMethod {
+	return jwt.SigningMethodHS512
 }
 
-func (k *HS512KeyContainer) VerificationKeyFunc(token *jwt.Token) (interface{}, error) {
+func (k *HS512KeyContainer) SigningKey() interface{} {
+	return k.signingKey
+}
+
+func (k *HS512KeyContainer) VerificationKey(token *jwt.Token) (interface{}, error) {
 	if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-		return nil, ErrInvalidAlgorithm{}
+		return nil, ErrInvalidAlgorithm
 	}
 	return k.signingKey, nil
 }
 
-// Generating Keys:
-//
-//	ssh-keygen -t rsa -b 4096 -m PEM -E SHA512 -f jwtRS512.key -N ""
-//	# Don't add passphrase
-//	openssl rsa -in jwtRS512.key -pubout -outform PEM -out jwtRS512.key.pub
 type RS512KeyContainer struct {
 	signingKey      *rsa.PrivateKey
 	verificationKey *rsa.PublicKey
 }
+
+var _ KeyContainer = &RS512KeyContainer{}
 
 func NewRS512KeyContainer(signingKeyPath string, verificationKeyPath string) (*RS512KeyContainer, error) {
 	signBytes, err := os.ReadFile(signingKeyPath)
@@ -84,14 +75,17 @@ func NewRS512KeyContainer(signingKeyPath string, verificationKeyPath string) (*R
 	}, nil
 }
 
-func (k *RS512KeyContainer) SignedToken(claims Claims) (string, error) {
-	token := jwt.NewWithClaims(jwt.SigningMethodRS512, claims)
-	return token.SignedString(k.signingKey)
+func (k *RS512KeyContainer) SigningMethod() jwt.SigningMethod {
+	return jwt.SigningMethodRS512
 }
 
-func (k *RS512KeyContainer) VerificationKeyFunc(token *jwt.Token) (interface{}, error) {
+func (k *RS512KeyContainer) SigningKey() interface{} {
+	return k.signingKey
+}
+
+func (k *RS512KeyContainer) VerificationKey(token *jwt.Token) (interface{}, error) {
 	if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
-		return nil, ErrInvalidAlgorithm{}
+		return nil, ErrInvalidAlgorithm
 	}
 	return k.verificationKey, nil
 }

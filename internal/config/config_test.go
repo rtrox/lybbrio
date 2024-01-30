@@ -82,6 +82,7 @@ func Test_LoadConfig_Flags(t *testing.T) {
 	flags.Set("jwt.hmac-secret", "asdf")
 	flags.Set("jwt.issuer", "issuer")
 	flags.Set("jwt.expiry", "12h")
+	flags.Set("jwt.refresh-expiry", "13h")
 
 	config, err := LoadConfig(flags)
 	require.NoError(err)
@@ -105,6 +106,7 @@ func Test_LoadConfig_Flags(t *testing.T) {
 	require.Equal("asdf", config.JWT.HMACSecret)
 	require.Equal("issuer", config.JWT.Issuer)
 	require.Equal(12*time.Hour, config.JWT.Expiry)
+	require.Equal(13*time.Hour, config.JWT.RefreshExpiry)
 }
 
 func Test_LoadConfig_Env(t *testing.T) {
@@ -205,6 +207,7 @@ func Test_Validate(t *testing.T) {
 					HMACSecret:    "asdf",
 					Issuer:        "http://issuer.com",
 					Expiry:        12 * time.Hour,
+					RefreshExpiry: 24 * time.Hour,
 				},
 				Argon2ID: argon2id.Config{
 					Memory:      12288,
@@ -235,6 +238,7 @@ func Test_Validate(t *testing.T) {
 					HMACSecret:    "asdf",
 					Issuer:        "http://issuer.com",
 					Expiry:        12 * time.Hour,
+					RefreshExpiry: 24 * time.Hour,
 				},
 				Argon2ID: argon2id.Config{
 					Memory:      12288,
@@ -265,6 +269,7 @@ func Test_Validate(t *testing.T) {
 					HMACSecret:    "asdf",
 					Issuer:        "http://issuer.com",
 					Expiry:        12 * time.Hour,
+					RefreshExpiry: 24 * time.Hour,
 				},
 				Argon2ID: argon2id.Config{
 					Memory:      12288,
@@ -295,6 +300,7 @@ func Test_Validate(t *testing.T) {
 					HMACSecret:    "asdf",
 					Issuer:        "http://issuer.com",
 					Expiry:        12 * time.Hour,
+					RefreshExpiry: 24 * time.Hour,
 				},
 				Argon2ID: argon2id.Config{
 					Memory:      12288,
@@ -325,6 +331,7 @@ func Test_Validate(t *testing.T) {
 					HMACSecret:    "asdf",
 					Issuer:        "http://issuer.com",
 					Expiry:        12 * time.Hour,
+					RefreshExpiry: 24 * time.Hour,
 				},
 				Argon2ID: argon2id.Config{
 					Memory:      12288,
@@ -355,6 +362,7 @@ func Test_Validate(t *testing.T) {
 					HMACSecret:    "asdf",
 					Issuer:        "http://issuer.com",
 					Expiry:        12 * time.Hour,
+					RefreshExpiry: 24 * time.Hour,
 				},
 				Argon2ID: argon2id.Config{
 					Memory:      12288,
@@ -385,6 +393,7 @@ func Test_Validate(t *testing.T) {
 					HMACSecret:    "asdf",
 					Issuer:        "http://issuer.com",
 					Expiry:        12 * time.Hour,
+					RefreshExpiry: 24 * time.Hour,
 				},
 				Argon2ID: argon2id.Config{
 					Memory:      9216,
@@ -415,6 +424,7 @@ func Test_Validate(t *testing.T) {
 					HMACSecret:    "asdf",
 					Issuer:        "http://issuer.com",
 					Expiry:        12 * time.Hour,
+					RefreshExpiry: 24 * time.Hour,
 				},
 				Argon2ID: argon2id.Config{
 					Memory:      7168,
@@ -445,6 +455,7 @@ func Test_Validate(t *testing.T) {
 					HMACSecret:    "asdf",
 					Issuer:        "http://issuer.com",
 					Expiry:        12 * time.Hour,
+					RefreshExpiry: 24 * time.Hour,
 				},
 				Argon2ID: argon2id.Config{
 					Memory:      5120,
@@ -484,6 +495,7 @@ func TestJWTValidate(t *testing.T) {
 			config: JWTConfig{
 				SigningMethod: "HS512",
 				Expiry:        12 * time.Hour,
+				RefreshExpiry: 24 * time.Hour,
 				Issuer:        "http://issuer.com",
 				HMACSecret:    "asdf",
 			},
@@ -494,6 +506,7 @@ func TestJWTValidate(t *testing.T) {
 			config: JWTConfig{
 				SigningMethod: "RS512",
 				Expiry:        12 * time.Hour,
+				RefreshExpiry: 24 * time.Hour,
 				Issuer:        "http://issuer.com",
 				RSAPublicKey:  "./config.go", // needs to be existing file
 				RSAPrivateKey: "./config.go", // needs to be existing file
@@ -505,6 +518,7 @@ func TestJWTValidate(t *testing.T) {
 			config: JWTConfig{
 				SigningMethod: "HSDF",
 				Expiry:        12 * time.Hour,
+				RefreshExpiry: 24 * time.Hour,
 				Issuer:        "http://issuer.com",
 				HMACSecret:    "asdf",
 			},
@@ -515,6 +529,7 @@ func TestJWTValidate(t *testing.T) {
 			config: JWTConfig{
 				SigningMethod: "HS512",
 				Expiry:        12 * time.Hour,
+				RefreshExpiry: 24 * time.Hour,
 				Issuer:        "http://issuer.com",
 			},
 			wantErr: true,
@@ -524,6 +539,7 @@ func TestJWTValidate(t *testing.T) {
 			config: JWTConfig{
 				SigningMethod: "RS512",
 				Expiry:        12 * time.Hour,
+				RefreshExpiry: 24 * time.Hour,
 				Issuer:        "http://issuer.com",
 				RSAPublicKey:  "asdf",
 			},
@@ -534,6 +550,7 @@ func TestJWTValidate(t *testing.T) {
 			config: JWTConfig{
 				SigningMethod: "RS512",
 				Expiry:        12 * time.Hour,
+				RefreshExpiry: 24 * time.Hour,
 				Issuer:        "http://issuer.com",
 				RSAPrivateKey: "asdf",
 			},

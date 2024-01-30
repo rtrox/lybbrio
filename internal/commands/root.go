@@ -202,7 +202,7 @@ func rootRun(_ *cobra.Command, _ []string) {
 		log.Fatal().Err(err).Msg("Failed to initialize Key Container")
 	}
 
-	jwtProvider, err := auth.NewJWTProvider(kc, conf.JWT.Issuer, conf.JWT.Expiry)
+	jwtProvider, err := auth.NewJWTProvider(kc, conf.JWT.Issuer, conf.JWT.Expiry, conf.JWT.RefreshExpiry)
 	if err != nil {
 		log.Fatal().Err(err).Msg("Failed to initialize JWT Provider")
 	}
@@ -231,17 +231,16 @@ func rootRun(_ *cobra.Command, _ []string) {
 	})
 
 	r.Handle("/metrics", promhttp.HandlerFor(reg, promhttp.HandlerOpts{}))
-
-	r.Mount("/auth", auth.Routes(client, jwtProvider, conf.Argon2ID))
+	r.Mount("/auth", handler.AuthRoutes(client, jwtProvider, conf.Argon2ID))
 
 	r.With(
-		auth.ViewerContextMiddleware(jwtProvider),
+		middleware.ViewerContextMiddleware(jwtProvider),
 	).Mount("/download",
 		handler.DownloadRoutes(client))
 
 	r.Route("/graphql", func(r chi.Router) {
 		r.With(
-			auth.ViewerContextMiddleware(jwtProvider),
+			middleware.ViewerContextMiddleware(jwtProvider),
 			middleware.SuperRead,
 		).Handle("/", graphqlHandler)
 		r.Handle("/playground", playground.Handler("Lybbrio GraphQL playground", "/graphql"))
