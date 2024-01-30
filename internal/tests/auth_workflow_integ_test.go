@@ -7,6 +7,7 @@ import (
 	"lybbrio/internal/db"
 	"lybbrio/internal/ent/schema/argon2id"
 	"lybbrio/internal/handler"
+	"lybbrio/internal/middleware"
 	"lybbrio/internal/viewer"
 	"net/http"
 	"net/http/cookiejar"
@@ -15,6 +16,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/render"
 	"github.com/stretchr/testify/require"
 	"golang.org/x/net/publicsuffix"
@@ -47,11 +49,19 @@ func TestAuthWorkflow(t *testing.T) {
 		KeyLen:      32,
 	}
 
-	r := handler.AuthRoutes(
+	r := chi.NewRouter()
+	r.Mount("/", handler.AuthRoutes(
 		testClient,
 		testJWT,
 		testConfig,
-	)
+	))
+	r.With(middleware.ViewerContextMiddleware(testJWT)).Get("/test", func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+		v := viewer.FromContext(ctx)
+		_, ok := v.UserID()
+		require.True(ok)
+		render.JSON(w, r, v)
+	})
 
 	hash, err := argon2id.NewArgon2idHashFromPassword([]byte(testPassword), testConfig)
 	require.NoError(err)
@@ -81,7 +91,6 @@ func TestAuthWorkflow(t *testing.T) {
 	require.NoError(err)
 	require.Equal(http.StatusOK, resp.StatusCode)
 
-	fmt.Printf("%+v\n", client.Jar)
 	var authResp handler.AuthResponse
 	err = render.DecodeJSON(resp.Body, &authResp)
 	require.NoError(err)
@@ -109,4 +118,12 @@ func TestAuthWorkflow(t *testing.T) {
 	require.NotNil(refreshAuthResp.User)
 	require.NotNil(refreshAuthResp.AccessToken)
 	require.NotEqual(authResp.AccessToken.Token, refreshAuthResp.AccessToken.Token)
+
+	testReq, err := http.NewRequest("GET", ts.URL+"/test", nil)
+	require.NoError(err)
+	testReq.Header.Add("Authorization", "Bearer "+refreshAuthResp.AccessToken.Token)
+
+	testResp, err := client.Do(testReq)
+	require.NoError(err)
+	require.Equal(http.StatusOK, testResp.StatusCode)
 }

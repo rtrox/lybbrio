@@ -32,12 +32,12 @@ type AuthResponse struct {
 }
 
 func accessTokenClaimsFromUser(user *ent.User) *auth.AccessTokenClaims {
-	return &auth.AccessTokenClaims{
-		UserID:      user.ID.String(),
-		UserName:    user.Username,
-		Email:       user.Email,
-		Permissions: permissions.From(user.Edges.UserPermissions).StringSlice(),
-	}
+	return auth.NewAccessTokenClaims(
+		user.ID.String(),
+		user.Username,
+		user.Email,
+		permissions.From(user.Edges.UserPermissions).StringSlice(),
+	)
 }
 
 func AuthRoutes(client *ent.Client, jwt *auth.JWTProvider, conf argon2id.Config) http.Handler {
