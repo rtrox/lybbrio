@@ -284,3 +284,30 @@ func Test_DeletedUser_CantRefresh(t *testing.T) {
 
 	require.Equal(http.StatusUnauthorized, res.StatusCode)
 }
+
+func Test_Logout(t *testing.T) {
+	t.Parallel()
+	require := require.New(t)
+	tc := setupAuthHandlerTest(t, "Test_Logout")
+	defer tc.Teardown()
+
+	req := httptest.NewRequest(http.MethodPost, "/", nil)
+	w := httptest.NewRecorder()
+
+	handler := Logout
+	handler(w, req)
+
+	res := w.Result()
+	defer res.Body.Close()
+
+	require.Equal(http.StatusOK, res.StatusCode)
+	found := false
+	for _, cookie := range res.Cookies() {
+		if cookie.Name == "refreshToken" {
+			require.True(cookie.Expires.Before(time.Now()))
+			require.Empty(cookie.Value)
+			found = true
+		}
+	}
+	require.True(found, "Expected to find refreshToken cookie")
+}
