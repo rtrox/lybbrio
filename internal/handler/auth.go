@@ -44,6 +44,7 @@ func AuthRoutes(client *ent.Client, jwt *auth.JWTProvider, conf argon2id.Config)
 	r := chi.NewRouter()
 	r.Post("/password", PasswordAuth(client, jwt, conf))
 	r.Get("/refresh", RefreshAuth(client, jwt))
+	r.Get("/logout", Logout)
 	return r
 }
 
@@ -169,4 +170,16 @@ func RefreshAuth(client *ent.Client, jwt *auth.JWTProvider) http.HandlerFunc {
 			User:        user,
 		})
 	}
+}
+
+func Logout(w http.ResponseWriter, r *http.Request) {
+	http.SetCookie(w, &http.Cookie{
+		Name:     "refreshToken",
+		Value:    "",
+		Expires:  time.Now().Add(-1 * time.Hour),
+		HttpOnly: true,
+		Secure:   true,
+		Path:     "/",
+	})
+	w.WriteHeader(http.StatusOK)
 }
