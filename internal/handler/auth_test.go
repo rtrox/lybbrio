@@ -79,12 +79,6 @@ func setupAuthHandlerTest(t *testing.T, testName string, teardown ...func()) aut
 	return ret
 }
 
-func makeRequestCookie(c *http.Cookie) string {
-	w := httptest.NewRecorder()
-	http.SetCookie(w, c)
-	return w.Header().Get("Set-Cookie")
-}
-
 func Test_PasswordAuth(t *testing.T) {
 	tests := []struct {
 		name             string

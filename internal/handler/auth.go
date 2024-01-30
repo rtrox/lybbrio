@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	"lybbrio/internal/auth"
 	"lybbrio/internal/ent"
 	"lybbrio/internal/ent/schema/argon2id"
@@ -79,9 +80,7 @@ func PasswordAuth(client *ent.Client, jwt *auth.JWTProvider, conf argon2id.Confi
 			return
 		}
 
-		refreshClaims := &auth.AccessTokenClaims{
-			UserID: user.ID.String(),
-		}
+		refreshClaims := auth.NewRefreshTokenClaims(user.ID.String())
 		accessClaims := accessTokenClaimsFromUser(user)
 
 		refreshToken, err := jwt.CreateToken(refreshClaims)
@@ -123,8 +122,8 @@ func RefreshAuth(client *ent.Client, jwt *auth.JWTProvider) http.HandlerFunc {
 			token = r.Header.Get("X-Refresh-Token")
 		} else {
 			token = tokenCookie.Value
-		}
 
+		}
 		if token == "" {
 			statusCodeResponse(w, r, http.StatusUnauthorized)
 			return
@@ -132,6 +131,7 @@ func RefreshAuth(client *ent.Client, jwt *auth.JWTProvider) http.HandlerFunc {
 
 		claims := &auth.RefreshTokenClaims{}
 		if err := jwt.ParseToken(token, claims); err != nil {
+			fmt.Printf("Error parsing token: %v\n", err)
 			statusCodeResponse(w, r, http.StatusUnauthorized)
 			return
 		}
@@ -143,6 +143,7 @@ func RefreshAuth(client *ent.Client, jwt *auth.JWTProvider) http.HandlerFunc {
 			Only(adminCtx)
 
 		if err != nil {
+			fmt.Printf("Error querying user: %v\n", err)
 			statusCodeResponse(w, r, http.StatusUnauthorized)
 			return
 		}

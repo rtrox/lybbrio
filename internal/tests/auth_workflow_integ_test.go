@@ -17,6 +17,7 @@ import (
 
 	"github.com/go-chi/render"
 	"github.com/stretchr/testify/require"
+	"golang.org/x/net/publicsuffix"
 )
 
 func TestAuthWorkflow(t *testing.T) {
@@ -64,28 +65,39 @@ func TestAuthWorkflow(t *testing.T) {
 		SetUserPermissions(perms).
 		SaveX(adminCtx)
 
-	ts := httptest.NewServer(r)
+	ts := httptest.NewTLSServer(r)
 	defer ts.Close()
 
-	jar, err := cookiejar.New(nil)
+	jar, err := cookiejar.New(&cookiejar.Options{PublicSuffixList: publicsuffix.List})
 	require.NoError(err)
 	client := ts.Client()
 	client.Jar = jar
 
 	data := fmt.Sprintf("{\"username\": \"%s\", \"password\": \"%s\"}", testUsername, testPassword)
-	req := httptest.NewRequest("POST", ts.URL+"/password", strings.NewReader(data))
+	req, err := http.NewRequest("POST", ts.URL+"/password", strings.NewReader(data))
+	require.NoError(err)
 
 	resp, err := client.Do(req)
 	require.NoError(err)
 	require.Equal(http.StatusOK, resp.StatusCode)
 
+	fmt.Printf("%+v\n", client.Jar)
 	var authResp handler.AuthResponse
 	err = render.DecodeJSON(resp.Body, &authResp)
 	require.NoError(err)
 	require.NotNil(authResp.User)
 	require.NotNil(authResp.AccessToken)
 
-	refreshReq := httptest.NewRequest("GET", ts.URL+"/refresh", nil)
+	auth.TimeFunc = func() time.Time {
+		return time.Now().Add(11 * time.Second)
+	}
+	defer func() {
+		auth.TimeFunc = time.Now
+	}()
+
+	refreshReq, err := http.NewRequest("GET", ts.URL+"/refresh", nil)
+	require.NoError(err)
+
 	refreshReq.Header.Add("Authorization", "Bearer "+authResp.AccessToken.Token)
 	refreshResp, err := client.Do(refreshReq)
 	require.NoError(err)

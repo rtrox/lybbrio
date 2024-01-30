@@ -6,6 +6,8 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
+var TimeFunc = time.Now
+
 type SignedToken struct {
 	Token     string    `json:"token"`
 	IssuedAt  time.Time `json:"issued_at"`
@@ -31,12 +33,13 @@ func NewJWTProvider(keyContainer KeyContainer, issuer string, expiry time.Durati
 func (p *JWTProvider) CreateToken(claims Claims) (SignedToken, error) {
 	expiry := p.ExpiryFromClaims(claims)
 
+	now := TimeFunc()
 	reg := jwt.RegisteredClaims{
 		Issuer:    p.issuer,
 		Subject:   claims.Subject(),
 		Audience:  jwt.ClaimStrings{p.issuer},
-		IssuedAt:  jwt.NewNumericDate(time.Now()),
-		ExpiresAt: jwt.NewNumericDate(time.Now().Add(expiry)),
+		IssuedAt:  jwt.NewNumericDate(now),
+		ExpiresAt: jwt.NewNumericDate(now.Add(expiry)),
 	}
 	claims.SetRegisteredClaims(reg)
 	token := jwt.NewWithClaims(p.keyContainer.SigningMethod(), claims)
@@ -62,7 +65,7 @@ func (p *JWTProvider) ExpiryFromClaims(claims Claims) time.Duration {
 }
 
 func (p JWTProvider) ParseToken(tokenString string, dest Claims) error {
-	_, err := jwt.ParseWithClaims(tokenString, dest, p.keyContainer.VerificationKey)
+	_, err := jwt.ParseWithClaims(tokenString, dest, p.keyContainer.VerificationKey, jwt.WithTimeFunc(TimeFunc))
 	if err != nil {
 		return ErrInvalidToken
 	}

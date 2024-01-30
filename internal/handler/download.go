@@ -7,7 +7,6 @@ import (
 	"lybbrio/internal/ent/bookfile"
 	"lybbrio/internal/ent/schema/filetype"
 	"lybbrio/internal/ent/schema/ksuid"
-	"mime"
 	"net/http"
 	"net/url"
 	"strings"
@@ -63,10 +62,6 @@ func Download(client *ent.Client) http.HandlerFunc {
 				"error": http.StatusText(status),
 			})
 			return
-		}
-		mtype := mime.TypeByExtension("." + strings.ToLower(bookFile.Format.String()))
-		if mtype == "" {
-			mtype = "application/octet-stream"
 		}
 		dispo := fmt.Sprintf("attachment; filename=%s%s; filename*=UTF-8''%s%s",
 			url.QueryEscape(bookFile.Name),

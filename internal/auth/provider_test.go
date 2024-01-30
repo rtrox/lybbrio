@@ -123,6 +123,32 @@ func TestParseToken_IncorrectClaimType(t *testing.T) {
 	require.True(errors.Is(err, ErrInvalidClaimsType))
 }
 
+func TestParseToken_Expired(t *testing.T) {
+	require := require.New(t)
+	kc := testKCHS512(t)
+	p, err := NewJWTProvider(kc, "an_issuer", 10*time.Second, 24*time.Hour)
+	require.NoError(err)
+
+	claims := NewAccessTokenClaims("user_id", "user_name", "email", []string{})
+	token, err := p.CreateToken(claims)
+	require.NoError(err)
+
+	claims2 := &AccessTokenClaims{}
+	err = p.ParseToken(token.Token, claims2)
+	require.NoError(err)
+
+	TimeFunc = func() time.Time {
+		return time.Now().Add(11 * time.Second)
+	}
+	defer func() {
+		TimeFunc = time.Now
+	}()
+
+	err = p.ParseToken(token.Token, claims2)
+	require.Error(err)
+	require.True(errors.Is(err, ErrInvalidToken), "expected ErrExpiredToken, got %v", err)
+}
+
 func TestExpiryFromClaims(t *testing.T) {
 	tests := []struct {
 		name   string
