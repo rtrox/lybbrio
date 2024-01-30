@@ -1,12 +1,12 @@
-package auth
+package handler
 
 import (
 	"context"
 	"encoding/json"
+	"lybbrio/internal/auth"
 	"lybbrio/internal/db"
 	"lybbrio/internal/ent"
 	"lybbrio/internal/ent/schema/argon2id"
-	"lybbrio/internal/ent/schema/permissions"
 	"lybbrio/internal/viewer"
 	"net/http"
 	"net/http/httptest"
@@ -17,32 +17,34 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-type handlerTestContext struct {
-	client   *ent.Client
-	jwt      *JWTProvider
-	conf     argon2id.Config
-	user     *ent.User
-	perms    *ent.UserPermissions
-	teardown func()
+type authHandlerTestContext struct {
+	client       *ent.Client
+	jwt          *auth.JWTProvider
+	conf         argon2id.Config
+	user         *ent.User
+	perms        *ent.UserPermissions
+	refreshToken auth.SignedToken
+	teardown     func()
 }
 
-func (h handlerTestContext) Teardown() {
+func (h authHandlerTestContext) Teardown() {
 	h.client.Close()
 	h.teardown()
 }
 
-func setupHandlerTest(t *testing.T, testName string, teardown ...func()) handlerTestContext {
-	var ret handlerTestContext
+func setupAuthHandlerTest(t *testing.T, testName string, teardown ...func()) authHandlerTestContext {
+	var ret authHandlerTestContext
 	var err error
-	kc, err := NewHS512KeyContainer("testkey")
+	kc, err := auth.NewHS512KeyContainer("testkey")
 	require.NoError(t, err)
 
 	ret.client = db.OpenTest(t, testName)
 
-	ret.jwt, err = NewJWTProvider(
+	ret.jwt, err = auth.NewJWTProvider(
 		kc,
 		"testissuer",
 		10*time.Second,
+		30*time.Second,
 	)
 	require.NoError(t, err)
 
@@ -65,12 +67,22 @@ func setupHandlerTest(t *testing.T, testName string, teardown ...func()) handler
 		SetUserPermissions(ret.perms).
 		SaveX(adminCtx)
 
+	refreshClaims := auth.NewRefreshTokenClaims(ret.user.ID.String())
+	ret.refreshToken, err = ret.jwt.CreateToken(refreshClaims)
+	require.NoError(t, err)
+
 	if len(teardown) > 0 {
 		ret.teardown = teardown[0]
 	} else {
 		ret.teardown = func() {}
 	}
 	return ret
+}
+
+func makeRequestCookie(c *http.Cookie) string {
+	w := httptest.NewRecorder()
+	http.SetCookie(w, c)
+	return w.Header().Get("Set-Cookie")
 }
 
 func Test_PasswordAuth(t *testing.T) {
@@ -115,7 +127,7 @@ func Test_PasswordAuth(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 			require := require.New(t)
-			tc := setupHandlerTest(t, tt.name)
+			tc := setupAuthHandlerTest(t, tt.name)
 			defer tc.Teardown()
 
 			username := tt.name
@@ -144,8 +156,8 @@ func Test_PasswordAuth(t *testing.T) {
 			if tt.wantCode == http.StatusOK {
 				requireFunc = require.NotEmpty
 			}
-			requireFunc(res.Header.Get("X-Api-Token"))
-			requireFunc(res.Header.Get("X-Api-Expires"))
+			requireFunc(res.Header.Get(ACCESS_TOKEN_HEADER))
+			requireFunc(res.Header.Get(ACCESS_TOKEN_EXPIRATION_HEADER))
 			requireFunc(res.Header.Get("Set-Cookie"))
 		})
 	}
@@ -154,7 +166,7 @@ func Test_PasswordAuth(t *testing.T) {
 func Test_PasswordAuth_BadRequest(t *testing.T) {
 	t.Parallel()
 	require := require.New(t)
-	tc := setupHandlerTest(t, "Test_PasswordAuth_BadRequest")
+	tc := setupAuthHandlerTest(t, "Test_PasswordAuth_BadRequest")
 	defer tc.Teardown()
 
 	req := httptest.NewRequest(http.MethodPost, "/login", nil)
@@ -169,91 +181,97 @@ func Test_PasswordAuth_BadRequest(t *testing.T) {
 }
 
 func Test_RefreshToken(t *testing.T) {
-	t.Parallel()
-	require := require.New(t)
-	tc := setupHandlerTest(t, "Test_RefreshToken")
-	defer tc.Teardown()
+	tests := []struct {
+		name         string
+		reqFunc      func(authHandlerTestContext) *http.Request
+		expectedCode int
+	}{
+		{
+			name: "Cookie",
+			reqFunc: func(tc authHandlerTestContext) *http.Request {
+				req := httptest.NewRequest(http.MethodPost, "/", nil)
+				req.AddCookie(&http.Cookie{
+					Name:     "refreshToken",
+					Value:    tc.refreshToken.Token,
+					Expires:  tc.refreshToken.ExpiresAt,
+					HttpOnly: true,
+					Secure:   true,
+					Path:     "/",
+				})
+				return req
+			},
+			expectedCode: http.StatusOK,
+		},
+		{
+			name: "Header",
+			reqFunc: func(tc authHandlerTestContext) *http.Request {
+				req := httptest.NewRequest(http.MethodPost, "/", nil)
+				req.Header.Set("X-Refresh-Token", tc.refreshToken.Token)
+				return req
+			},
+			expectedCode: http.StatusOK,
+		},
+		{
+			name: "No Token",
+			reqFunc: func(tc authHandlerTestContext) *http.Request {
+				return httptest.NewRequest(http.MethodPost, "/", nil)
+			},
+			expectedCode: http.StatusUnauthorized,
+		},
+		{
+			name: "Invalid Token",
+			reqFunc: func(tc authHandlerTestContext) *http.Request {
+				req := httptest.NewRequest(http.MethodPost, "/", nil)
+				req.Header.Set("X-Refresh-Token", "invalidtoken")
+				return req
+			},
+			expectedCode: http.StatusUnauthorized,
+		},
+	}
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			require := require.New(t)
+			tc := setupAuthHandlerTest(t, tt.name)
+			defer tc.Teardown()
 
-	testMiddleware := func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			ctx := r.Context()
-			ctx = viewer.NewContext(
-				ctx,
-				tc.user.ID,
-				permissions.From(tc.perms),
-			)
-			next.ServeHTTP(w, r.WithContext(ctx))
+			w := httptest.NewRecorder()
+
+			handler := RefreshAuth(tc.client, tc.jwt)
+			handler.ServeHTTP(w, tt.reqFunc(tc))
+			res := w.Result()
+			defer res.Body.Close()
+
+			require.Equal(tt.expectedCode, res.StatusCode)
+
+			requireFunc := require.Empty
+			if tt.expectedCode == http.StatusOK {
+				requireFunc = require.NotEmpty
+			}
+			if tt.expectedCode == http.StatusOK {
+				requireFunc(res.Header.Get(ACCESS_TOKEN_HEADER))
+				requireFunc(res.Header.Get(ACCESS_TOKEN_EXPIRATION_HEADER))
+			}
 		})
 	}
-
-	req := httptest.NewRequest(http.MethodPost, "/", nil)
-
-	w := httptest.NewRecorder()
-
-	handler := testMiddleware(RefreshAuth(tc.client, tc.jwt))
-	handler.ServeHTTP(w, req)
-	res := w.Result()
-	defer res.Body.Close()
-
-	require.Equal(http.StatusOK, res.StatusCode)
-
-	require.NotEmpty(res.Header.Get("X-Api-Token"))
-	require.NotEmpty(res.Header.Get("X-Api-Expires"))
-	require.NotEmpty(res.Header.Get("Set-Cookie"))
-}
-
-func Test_AdminContext_CantRefresh(t *testing.T) {
-	t.Parallel()
-	require := require.New(t)
-	tc := setupHandlerTest(t, "Test_AdminContext_CantRefresh")
-	defer tc.Teardown()
-
-	testMiddleware := func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			ctx := r.Context()
-			ctx = viewer.NewSystemAdminContext(ctx)
-			next.ServeHTTP(w, r.WithContext(ctx))
-		})
-	}
-
-	req := httptest.NewRequest(http.MethodPost, "/", nil)
-
-	w := httptest.NewRecorder()
-
-	handler := testMiddleware(RefreshAuth(tc.client, tc.jwt))
-	handler.ServeHTTP(w, req)
-	res := w.Result()
-	defer res.Body.Close()
-
-	require.Equal(http.StatusUnauthorized, res.StatusCode)
 }
 
 func Test_DeletedUser_CantRefresh(t *testing.T) {
 	t.Parallel()
 	require := require.New(t)
-	tc := setupHandlerTest(t, "Test_DeletedUser_CantRefresh")
+	tc := setupAuthHandlerTest(t, "Test_DeletedUser_CantRefresh")
 	defer tc.Teardown()
-
-	testMiddleware := func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			ctx := r.Context()
-			ctx = viewer.NewContext(
-				ctx,
-				tc.user.ID,
-				permissions.From(tc.perms),
-			)
-			next.ServeHTTP(w, r.WithContext(ctx))
-		})
-	}
 
 	adminCtx := viewer.NewSystemAdminContext(context.Background())
 	require.NoError(tc.client.User.DeleteOneID(tc.user.ID).Exec(adminCtx))
 
 	req := httptest.NewRequest(http.MethodPost, "/", nil)
+	req.Header.Set("X-Refresh-Token", tc.refreshToken.Token)
 
 	w := httptest.NewRecorder()
 
-	handler := testMiddleware(RefreshAuth(tc.client, tc.jwt))
+	handler := RefreshAuth(tc.client, tc.jwt)
 	handler.ServeHTTP(w, req)
 	res := w.Result()
 	defer res.Body.Close()

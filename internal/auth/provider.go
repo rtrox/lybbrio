@@ -6,82 +6,62 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-type ErrInvalidToken struct{}
-
-func (e ErrInvalidToken) Error() string {
-	return "invalid token"
-}
-
-type ErrInvalidAlgorithm struct{}
-
-func (e ErrInvalidAlgorithm) Error() string {
-	return "invalid algorithm"
-}
-
-type Claims struct {
-	UserID      string   `json:"user_id"`
-	UserName    string   `json:"user_name"`
-	Permissions []string `json:"permissions"`
-	jwt.RegisteredClaims
-}
-
 type SignedToken struct {
-	token  string
-	claims Claims
-}
-
-func (s SignedToken) String() string {
-	return s.token
-}
-
-func (s SignedToken) Claims() Claims {
-	return s.claims
+	Token     string    `json:"token"`
+	IssuedAt  time.Time `json:"issued_at"`
+	ExpiresAt time.Time `json:"expires_at"`
 }
 
 type JWTProvider struct {
-	keyContainer KeyContainer
-	issuer       string
-	expiry       time.Duration
+	keyContainer  KeyContainer
+	issuer        string
+	expiry        time.Duration
+	refreshExpiry time.Duration
 }
 
-func NewJWTProvider(keyContainer KeyContainer, issuer string, expiry time.Duration) (*JWTProvider, error) {
+func NewJWTProvider(keyContainer KeyContainer, issuer string, expiry time.Duration, refreshExpiry time.Duration) (*JWTProvider, error) {
 	return &JWTProvider{
-		keyContainer: keyContainer,
-		issuer:       issuer,
-		expiry:       expiry,
+		keyContainer:  keyContainer,
+		issuer:        issuer,
+		expiry:        expiry,
+		refreshExpiry: refreshExpiry,
 	}, nil
 }
 
-func (p *JWTProvider) CreateToken(userID, userName string, permissions []string) (SignedToken, error) {
-	claims := Claims{
-		UserID:      userID,
-		UserName:    userName,
-		Permissions: permissions,
-		RegisteredClaims: jwt.RegisteredClaims{
-			Issuer:    p.issuer,
-			Subject:   userID,
-			Audience:  jwt.ClaimStrings{p.issuer},
-			IssuedAt:  jwt.NewNumericDate(time.Now()),
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(p.expiry)),
-		},
+func (p *JWTProvider) CreateToken(claims Claims) (SignedToken, error) {
+	expiry := p.ExpiryFromClaims(claims)
+
+	reg := jwt.RegisteredClaims{
+		Issuer:    p.issuer,
+		Subject:   claims.Subject(),
+		Audience:  jwt.ClaimStrings{p.issuer},
+		IssuedAt:  jwt.NewNumericDate(time.Now()),
+		ExpiresAt: jwt.NewNumericDate(time.Now().Add(expiry)),
 	}
-	signed, err := p.keyContainer.SignedToken(claims)
+	claims.SetRegisteredClaims(reg)
+	token := jwt.NewWithClaims(p.keyContainer.SigningMethod(), claims)
+	signedToken, err := token.SignedString(p.keyContainer.SigningKey())
 	if err != nil {
 		return SignedToken{}, err
 	}
 	return SignedToken{
-		token:  signed,
-		claims: claims,
+		Token:     signedToken,
+		IssuedAt:  reg.IssuedAt.Time,
+		ExpiresAt: reg.ExpiresAt.Time,
 	}, nil
 }
 
-func (p *JWTProvider) ParseToken(tokenString string) (*Claims, error) {
-	c := Claims{}
-	_, err := jwt.ParseWithClaims(tokenString, &c, p.keyContainer.VerificationKeyFunc)
-
-	if err != nil {
-		return nil, err
+func (p *JWTProvider) ExpiryFromClaims(claims Claims) time.Duration {
+	switch claims.(type) {
+	case *RefreshTokenClaims:
+		return p.refreshExpiry
+	case *AccessTokenClaims:
+		return p.expiry
 	}
+	return time.Duration(0) // ensure any invalid claims type is expired
+}
 
-	return &c, nil
+func (p JWTProvider) ParseToken(tokenString string, dest Claims) error {
+	_, err := jwt.ParseWithClaims(tokenString, dest, p.keyContainer.VerificationKey)
+	return err
 }
