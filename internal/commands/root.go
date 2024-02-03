@@ -246,6 +246,8 @@ func rootRun(_ *cobra.Command, _ []string) {
 		r.Handle("/playground", playground.Handler("Lybbrio GraphQL playground", "/graphql"))
 	})
 
+	r.Mount("/", handler.WebRoutes(conf.DevMode, conf.DevProxy, conf.AssetFolder))
+
 	srv.Addr = fmt.Sprintf("%s:%d", conf.Interface, conf.Port)
 	srv.Handler = r
 

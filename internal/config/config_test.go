@@ -200,6 +200,7 @@ func Test_Validate(t *testing.T) {
 				GoCollector:             false,
 				ProcessCollector:        false,
 				CalibreLibraryPath:      "/tmp/",
+				DevProxy:                "http://localhost:3000",
 				DB:                      DatabaseConfig{Driver: "sqlite3", DSN: "file::memory:?cache=shared"},
 				Task:                    TaskConfig{Workers: 10, QueueLength: 100, Cadence: 5 * time.Second},
 				JWT: JWTConfig{
@@ -231,6 +232,7 @@ func Test_Validate(t *testing.T) {
 				GoCollector:             false,
 				ProcessCollector:        false,
 				CalibreLibraryPath:      "/tmp/",
+				DevProxy:                "http://localhost:3000",
 				DB:                      DatabaseConfig{Driver: "sqlite3", DSN: "file::memory:?cache=shared"},
 				Task:                    TaskConfig{Workers: 10, QueueLength: 100, Cadence: 5 * time.Second},
 				JWT: JWTConfig{
@@ -262,6 +264,7 @@ func Test_Validate(t *testing.T) {
 				GoCollector:             false,
 				ProcessCollector:        false,
 				CalibreLibraryPath:      "/tmp/",
+				DevProxy:                "http://localhost:3000",
 				DB:                      DatabaseConfig{Driver: "sqlite3", DSN: "file::memory:?cache=shared"},
 				Task:                    TaskConfig{Workers: 10, QueueLength: 100, Cadence: 5 * time.Second},
 				JWT: JWTConfig{
@@ -293,6 +296,7 @@ func Test_Validate(t *testing.T) {
 				GoCollector:             false,
 				ProcessCollector:        false,
 				CalibreLibraryPath:      "/tmp/",
+				DevProxy:                "http://localhost:3000",
 				DB:                      DatabaseConfig{Driver: "invalid", DSN: "file::memory:?cache=shared"},
 				Task:                    TaskConfig{Workers: 10, QueueLength: 100, Cadence: 5 * time.Second},
 				JWT: JWTConfig{
@@ -324,6 +328,7 @@ func Test_Validate(t *testing.T) {
 				GoCollector:             false,
 				ProcessCollector:        false,
 				CalibreLibraryPath:      "/tmp/",
+				DevProxy:                "http://localhost:3000",
 				DB:                      DatabaseConfig{Driver: "invalid", DSN: ""},
 				Task:                    TaskConfig{Workers: 10, QueueLength: 100, Cadence: 5 * time.Second},
 				JWT: JWTConfig{
@@ -355,6 +360,7 @@ func Test_Validate(t *testing.T) {
 				GoCollector:             false,
 				ProcessCollector:        false,
 				CalibreLibraryPath:      "/tmp/",
+				DevProxy:                "http://localhost:3000",
 				DB:                      DatabaseConfig{Driver: "invalid", DSN: ""},
 				Task:                    TaskConfig{Workers: -1, QueueLength: 100, Cadence: 5 * time.Second},
 				JWT: JWTConfig{
@@ -386,6 +392,7 @@ func Test_Validate(t *testing.T) {
 				GoCollector:             false,
 				ProcessCollector:        false,
 				CalibreLibraryPath:      "/tmp/",
+				DevProxy:                "http://localhost:3000",
 				DB:                      DatabaseConfig{Driver: "sqlite3", DSN: "file::memory:?cache=shared"},
 				Task:                    TaskConfig{Workers: 10, QueueLength: 100, Cadence: 5 * time.Second},
 				JWT: JWTConfig{
@@ -417,6 +424,7 @@ func Test_Validate(t *testing.T) {
 				GoCollector:             false,
 				ProcessCollector:        false,
 				CalibreLibraryPath:      "/tmp/",
+				DevProxy:                "http://localhost:3000",
 				DB:                      DatabaseConfig{Driver: "sqlite3", DSN: "file::memory:?cache=shared"},
 				Task:                    TaskConfig{Workers: 10, QueueLength: 100, Cadence: 5 * time.Second},
 				JWT: JWTConfig{
@@ -448,6 +456,7 @@ func Test_Validate(t *testing.T) {
 				GoCollector:             false,
 				ProcessCollector:        false,
 				CalibreLibraryPath:      "/tmp/",
+				DevProxy:                "http://localhost:3000",
 				DB:                      DatabaseConfig{Driver: "sqlite3", DSN: "file::memory:?cache=shared"},
 				Task:                    TaskConfig{Workers: 10, QueueLength: 100, Cadence: 5 * time.Second},
 				JWT: JWTConfig{
