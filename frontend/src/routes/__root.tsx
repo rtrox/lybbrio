@@ -1,7 +1,16 @@
-import { createRootRoute, Link, Outlet } from "@tanstack/react-router";
+import { Outlet, createRootRouteWithContext } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/router-devtools";
+import { QueryClient } from "@tanstack/react-query";
 
-export const Route = createRootRoute({
+import { AuthContext } from "../context/AuthProvider";
+import { GraphQLContext } from "../context/GraphQLProvider";
+
+interface RouterContext {
+  auth: AuthContext;
+  graphql: GraphQLContext;
+  queryClient: QueryClient;
+}
+export const Route = createRootRouteWithContext<RouterContext>()({
   component: () => (
     <>
       <Outlet />
