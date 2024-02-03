@@ -81,6 +81,8 @@ func (Book) Edges() []ent.Edge {
 			Annotations(
 				entgql.OrderField("FILES_COUNT"),
 			),
+		edge.From("covers", BookCover.Type).
+			Ref("book"),
 	}
 }
 

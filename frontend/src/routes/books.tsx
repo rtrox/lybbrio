@@ -34,17 +34,18 @@ function Books() {
   const { graphql: g } = useGraphQLClient();
   const { data } = useQuery({
     queryKey: ["allBooks", { first: 10 }],
-    queryFn: async () => g.request(bookQuery, { first: 10 }),
+    queryFn: async () => g.request(bookQuery, { first: 100 }),
   });
 
   return (
-    <div>
-      {data && (
-        <ul>
-          {data.books?.edges?.map(
-            (e, i) => e?.node && <Book book={e?.node} key={`film-${i}`} />
-          )}
-        </ul>
+    <div className="grid grid-cols-7 gap-4">
+      {data?.books?.edges?.map(
+        (e, i) =>
+          e?.node && (
+            <div>
+              <Book book={e?.node} key={`film-${i}`} />
+            </div>
+          )
       )}
     </div>
   );

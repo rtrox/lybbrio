@@ -125,6 +125,26 @@ func (b *Book) Files(ctx context.Context) (result []*BookFile, err error) {
 	return result, err
 }
 
+func (b *Book) Covers(ctx context.Context) (result []*BookCover, err error) {
+	if fc := graphql.GetFieldContext(ctx); fc != nil && fc.Field.Alias != "" {
+		result, err = b.NamedCovers(graphql.GetFieldContext(ctx).Field.Alias)
+	} else {
+		result, err = b.Edges.CoversOrErr()
+	}
+	if IsNotLoaded(err) {
+		result, err = b.QueryCovers().All(ctx)
+	}
+	return result, err
+}
+
+func (bc *BookCover) Book(ctx context.Context) (*Book, error) {
+	result, err := bc.Edges.BookOrErr()
+	if IsNotLoaded(err) {
+		result, err = bc.QueryBook().Only(ctx)
+	}
+	return result, err
+}
+
 func (bf *BookFile) Book(ctx context.Context) (*Book, error) {
 	result, err := bf.Edges.BookOrErr()
 	if IsNotLoaded(err) {

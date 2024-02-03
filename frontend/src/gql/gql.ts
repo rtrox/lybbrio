@@ -13,7 +13,7 @@ import { TypedDocumentNode as DocumentNode } from '@graphql-typed-document-node/
  * Therefore it is highly recommended to use the babel or swc plugin for production.
  */
 const documents = {
-    "\n  fragment BookItem on Book {\n    id\n    title\n    authors {\n      name\n    }\n    description\n  }\n": types.BookItemFragmentDoc,
+    "\n  fragment BookItem on Book {\n    id\n    title\n    authors {\n      name\n    }\n    covers {\n      width\n      height\n      url\n    }\n    description\n  }\n": types.BookItemFragmentDoc,
     "\n  query allBooks($first: Int!) {\n    books(first: $first) {\n      edges {\n        node {\n          ...BookItem\n        }\n      }\n    }\n  }\n": types.AllBooksDocument,
 };
 
@@ -34,7 +34,7 @@ export function graphql(source: string): unknown;
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function graphql(source: "\n  fragment BookItem on Book {\n    id\n    title\n    authors {\n      name\n    }\n    description\n  }\n"): (typeof documents)["\n  fragment BookItem on Book {\n    id\n    title\n    authors {\n      name\n    }\n    description\n  }\n"];
+export function graphql(source: "\n  fragment BookItem on Book {\n    id\n    title\n    authors {\n      name\n    }\n    covers {\n      width\n      height\n      url\n    }\n    description\n  }\n"): (typeof documents)["\n  fragment BookItem on Book {\n    id\n    title\n    authors {\n      name\n    }\n    covers {\n      width\n      height\n      url\n    }\n    description\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */

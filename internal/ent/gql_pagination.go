@@ -9,6 +9,7 @@ import (
 	"io"
 	"lybbrio/internal/ent/author"
 	"lybbrio/internal/ent/book"
+	"lybbrio/internal/ent/bookcover"
 	"lybbrio/internal/ent/bookfile"
 	"lybbrio/internal/ent/identifier"
 	"lybbrio/internal/ent/language"
@@ -891,6 +892,299 @@ func (b *Book) ToEdge(order *BookOrder) *BookEdge {
 	return &BookEdge{
 		Node:   b,
 		Cursor: order.Field.toCursor(b),
+	}
+}
+
+// BookCoverEdge is the edge representation of BookCover.
+type BookCoverEdge struct {
+	Node   *BookCover `json:"node"`
+	Cursor Cursor     `json:"cursor"`
+}
+
+// BookCoverConnection is the connection containing edges to BookCover.
+type BookCoverConnection struct {
+	Edges      []*BookCoverEdge `json:"edges"`
+	PageInfo   PageInfo         `json:"pageInfo"`
+	TotalCount int              `json:"totalCount"`
+}
+
+func (c *BookCoverConnection) build(nodes []*BookCover, pager *bookcoverPager, after *Cursor, first *int, before *Cursor, last *int) {
+	c.PageInfo.HasNextPage = before != nil
+	c.PageInfo.HasPreviousPage = after != nil
+	if first != nil && *first+1 == len(nodes) {
+		c.PageInfo.HasNextPage = true
+		nodes = nodes[:len(nodes)-1]
+	} else if last != nil && *last+1 == len(nodes) {
+		c.PageInfo.HasPreviousPage = true
+		nodes = nodes[:len(nodes)-1]
+	}
+	var nodeAt func(int) *BookCover
+	if last != nil {
+		n := len(nodes) - 1
+		nodeAt = func(i int) *BookCover {
+			return nodes[n-i]
+		}
+	} else {
+		nodeAt = func(i int) *BookCover {
+			return nodes[i]
+		}
+	}
+	c.Edges = make([]*BookCoverEdge, len(nodes))
+	for i := range nodes {
+		node := nodeAt(i)
+		c.Edges[i] = &BookCoverEdge{
+			Node:   node,
+			Cursor: pager.toCursor(node),
+		}
+	}
+	if l := len(c.Edges); l > 0 {
+		c.PageInfo.StartCursor = &c.Edges[0].Cursor
+		c.PageInfo.EndCursor = &c.Edges[l-1].Cursor
+	}
+	if c.TotalCount == 0 {
+		c.TotalCount = len(nodes)
+	}
+}
+
+// BookCoverPaginateOption enables pagination customization.
+type BookCoverPaginateOption func(*bookcoverPager) error
+
+// WithBookCoverOrder configures pagination ordering.
+func WithBookCoverOrder(order *BookCoverOrder) BookCoverPaginateOption {
+	if order == nil {
+		order = DefaultBookCoverOrder
+	}
+	o := *order
+	return func(pager *bookcoverPager) error {
+		if err := o.Direction.Validate(); err != nil {
+			return err
+		}
+		if o.Field == nil {
+			o.Field = DefaultBookCoverOrder.Field
+		}
+		pager.order = &o
+		return nil
+	}
+}
+
+// WithBookCoverFilter configures pagination filter.
+func WithBookCoverFilter(filter func(*BookCoverQuery) (*BookCoverQuery, error)) BookCoverPaginateOption {
+	return func(pager *bookcoverPager) error {
+		if filter == nil {
+			return errors.New("BookCoverQuery filter cannot be nil")
+		}
+		pager.filter = filter
+		return nil
+	}
+}
+
+type bookcoverPager struct {
+	reverse bool
+	order   *BookCoverOrder
+	filter  func(*BookCoverQuery) (*BookCoverQuery, error)
+}
+
+func newBookCoverPager(opts []BookCoverPaginateOption, reverse bool) (*bookcoverPager, error) {
+	pager := &bookcoverPager{reverse: reverse}
+	for _, opt := range opts {
+		if err := opt(pager); err != nil {
+			return nil, err
+		}
+	}
+	if pager.order == nil {
+		pager.order = DefaultBookCoverOrder
+	}
+	return pager, nil
+}
+
+func (p *bookcoverPager) applyFilter(query *BookCoverQuery) (*BookCoverQuery, error) {
+	if p.filter != nil {
+		return p.filter(query)
+	}
+	return query, nil
+}
+
+func (p *bookcoverPager) toCursor(bc *BookCover) Cursor {
+	return p.order.Field.toCursor(bc)
+}
+
+func (p *bookcoverPager) applyCursors(query *BookCoverQuery, after, before *Cursor) (*BookCoverQuery, error) {
+	direction := p.order.Direction
+	if p.reverse {
+		direction = direction.Reverse()
+	}
+	for _, predicate := range entgql.CursorsPredicate(after, before, DefaultBookCoverOrder.Field.column, p.order.Field.column, direction) {
+		query = query.Where(predicate)
+	}
+	return query, nil
+}
+
+func (p *bookcoverPager) applyOrder(query *BookCoverQuery) *BookCoverQuery {
+	direction := p.order.Direction
+	if p.reverse {
+		direction = direction.Reverse()
+	}
+	query = query.Order(p.order.Field.toTerm(direction.OrderTermOption()))
+	if p.order.Field != DefaultBookCoverOrder.Field {
+		query = query.Order(DefaultBookCoverOrder.Field.toTerm(direction.OrderTermOption()))
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(p.order.Field.column)
+	}
+	return query
+}
+
+func (p *bookcoverPager) orderExpr(query *BookCoverQuery) sql.Querier {
+	direction := p.order.Direction
+	if p.reverse {
+		direction = direction.Reverse()
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(p.order.Field.column)
+	}
+	return sql.ExprFunc(func(b *sql.Builder) {
+		b.Ident(p.order.Field.column).Pad().WriteString(string(direction))
+		if p.order.Field != DefaultBookCoverOrder.Field {
+			b.Comma().Ident(DefaultBookCoverOrder.Field.column).Pad().WriteString(string(direction))
+		}
+	})
+}
+
+// Paginate executes the query and returns a relay based cursor connection to BookCover.
+func (bc *BookCoverQuery) Paginate(
+	ctx context.Context, after *Cursor, first *int,
+	before *Cursor, last *int, opts ...BookCoverPaginateOption,
+) (*BookCoverConnection, error) {
+	if err := validateFirstLast(first, last); err != nil {
+		return nil, err
+	}
+	pager, err := newBookCoverPager(opts, last != nil)
+	if err != nil {
+		return nil, err
+	}
+	if bc, err = pager.applyFilter(bc); err != nil {
+		return nil, err
+	}
+	conn := &BookCoverConnection{Edges: []*BookCoverEdge{}}
+	ignoredEdges := !hasCollectedField(ctx, edgesField)
+	if hasCollectedField(ctx, totalCountField) || hasCollectedField(ctx, pageInfoField) {
+		hasPagination := after != nil || first != nil || before != nil || last != nil
+		if hasPagination || ignoredEdges {
+			if conn.TotalCount, err = bc.Clone().Count(ctx); err != nil {
+				return nil, err
+			}
+			conn.PageInfo.HasNextPage = first != nil && conn.TotalCount > 0
+			conn.PageInfo.HasPreviousPage = last != nil && conn.TotalCount > 0
+		}
+	}
+	if ignoredEdges || (first != nil && *first == 0) || (last != nil && *last == 0) {
+		return conn, nil
+	}
+	if bc, err = pager.applyCursors(bc, after, before); err != nil {
+		return nil, err
+	}
+	if limit := paginateLimit(first, last); limit != 0 {
+		bc.Limit(limit)
+	}
+	if field := collectedField(ctx, edgesField, nodeField); field != nil {
+		if err := bc.collectField(ctx, graphql.GetOperationContext(ctx), *field, []string{edgesField, nodeField}); err != nil {
+			return nil, err
+		}
+	}
+	bc = pager.applyOrder(bc)
+	nodes, err := bc.All(ctx)
+	if err != nil {
+		return nil, err
+	}
+	conn.build(nodes, pager, after, first, before, last)
+	return conn, nil
+}
+
+var (
+	// BookCoverOrderFieldSize orders BookCover by size.
+	BookCoverOrderFieldSize = &BookCoverOrderField{
+		Value: func(bc *BookCover) (ent.Value, error) {
+			return bc.Size, nil
+		},
+		column: bookcover.FieldSize,
+		toTerm: bookcover.BySize,
+		toCursor: func(bc *BookCover) Cursor {
+			return Cursor{
+				ID:    bc.ID,
+				Value: bc.Size,
+			}
+		},
+	}
+)
+
+// String implement fmt.Stringer interface.
+func (f BookCoverOrderField) String() string {
+	var str string
+	switch f.column {
+	case BookCoverOrderFieldSize.column:
+		str = "SIZE"
+	}
+	return str
+}
+
+// MarshalGQL implements graphql.Marshaler interface.
+func (f BookCoverOrderField) MarshalGQL(w io.Writer) {
+	io.WriteString(w, strconv.Quote(f.String()))
+}
+
+// UnmarshalGQL implements graphql.Unmarshaler interface.
+func (f *BookCoverOrderField) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("BookCoverOrderField %T must be a string", v)
+	}
+	switch str {
+	case "SIZE":
+		*f = *BookCoverOrderFieldSize
+	default:
+		return fmt.Errorf("%s is not a valid BookCoverOrderField", str)
+	}
+	return nil
+}
+
+// BookCoverOrderField defines the ordering field of BookCover.
+type BookCoverOrderField struct {
+	// Value extracts the ordering value from the given BookCover.
+	Value    func(*BookCover) (ent.Value, error)
+	column   string // field or computed.
+	toTerm   func(...sql.OrderTermOption) bookcover.OrderOption
+	toCursor func(*BookCover) Cursor
+}
+
+// BookCoverOrder defines the ordering of BookCover.
+type BookCoverOrder struct {
+	Direction OrderDirection       `json:"direction"`
+	Field     *BookCoverOrderField `json:"field"`
+}
+
+// DefaultBookCoverOrder is the default ordering of BookCover.
+var DefaultBookCoverOrder = &BookCoverOrder{
+	Direction: entgql.OrderDirectionAsc,
+	Field: &BookCoverOrderField{
+		Value: func(bc *BookCover) (ent.Value, error) {
+			return bc.ID, nil
+		},
+		column: bookcover.FieldID,
+		toTerm: bookcover.ByID,
+		toCursor: func(bc *BookCover) Cursor {
+			return Cursor{ID: bc.ID}
+		},
+	},
+}
+
+// ToEdge converts BookCover into BookCoverEdge.
+func (bc *BookCover) ToEdge(order *BookCoverOrder) *BookCoverEdge {
+	if order == nil {
+		order = DefaultBookCoverOrder
+	}
+	return &BookCoverEdge{
+		Node:   bc,
+		Cursor: order.Field.toCursor(bc),
 	}
 }
 

@@ -6,6 +6,7 @@ import (
 	"context"
 	"lybbrio/internal/ent/author"
 	"lybbrio/internal/ent/book"
+	"lybbrio/internal/ent/bookcover"
 	"lybbrio/internal/ent/bookfile"
 	"lybbrio/internal/ent/identifier"
 	"lybbrio/internal/ent/language"
@@ -100,6 +101,63 @@ func init() {
 	bookDescID := bookMixinFields3[0].Descriptor()
 	// book.DefaultID holds the default value on creation for the id field.
 	book.DefaultID = bookDescID.Default.(func() ksuid.ID)
+	bookcoverMixin := schema.BookCover{}.Mixin()
+	bookcover.Policy = privacy.NewPolicies(bookcoverMixin[1], schema.BookCover{})
+	bookcover.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+			if err := bookcover.Policy.EvalMutation(ctx, m); err != nil {
+				return nil, err
+			}
+			return next.Mutate(ctx, m)
+		})
+	}
+	bookcoverHooks := schema.BookCover{}.Hooks()
+
+	bookcover.Hooks[1] = bookcoverHooks[0]
+	bookcoverMixinFields0 := bookcoverMixin[0].Fields()
+	_ = bookcoverMixinFields0
+	bookcoverMixinFields2 := bookcoverMixin[2].Fields()
+	_ = bookcoverMixinFields2
+	bookcoverFields := schema.BookCover{}.Fields()
+	_ = bookcoverFields
+	// bookcoverDescCreateTime is the schema descriptor for create_time field.
+	bookcoverDescCreateTime := bookcoverMixinFields0[0].Descriptor()
+	// bookcover.DefaultCreateTime holds the default value on creation for the create_time field.
+	bookcover.DefaultCreateTime = bookcoverDescCreateTime.Default.(func() time.Time)
+	// bookcoverDescUpdateTime is the schema descriptor for update_time field.
+	bookcoverDescUpdateTime := bookcoverMixinFields0[1].Descriptor()
+	// bookcover.DefaultUpdateTime holds the default value on creation for the update_time field.
+	bookcover.DefaultUpdateTime = bookcoverDescUpdateTime.Default.(func() time.Time)
+	// bookcover.UpdateDefaultUpdateTime holds the default value on update for the update_time field.
+	bookcover.UpdateDefaultUpdateTime = bookcoverDescUpdateTime.UpdateDefault.(func() time.Time)
+	// bookcoverDescPath is the schema descriptor for path field.
+	bookcoverDescPath := bookcoverFields[0].Descriptor()
+	// bookcover.PathValidator is a validator for the "path" field. It is called by the builders before save.
+	bookcover.PathValidator = bookcoverDescPath.Validators[0].(func(string) error)
+	// bookcoverDescSize is the schema descriptor for size field.
+	bookcoverDescSize := bookcoverFields[1].Descriptor()
+	// bookcover.SizeValidator is a validator for the "size" field. It is called by the builders before save.
+	bookcover.SizeValidator = bookcoverDescSize.Validators[0].(func(int64) error)
+	// bookcoverDescWidth is the schema descriptor for width field.
+	bookcoverDescWidth := bookcoverFields[2].Descriptor()
+	// bookcover.WidthValidator is a validator for the "width" field. It is called by the builders before save.
+	bookcover.WidthValidator = bookcoverDescWidth.Validators[0].(func(int) error)
+	// bookcoverDescHeight is the schema descriptor for height field.
+	bookcoverDescHeight := bookcoverFields[3].Descriptor()
+	// bookcover.HeightValidator is a validator for the "height" field. It is called by the builders before save.
+	bookcover.HeightValidator = bookcoverDescHeight.Validators[0].(func(int) error)
+	// bookcoverDescURL is the schema descriptor for url field.
+	bookcoverDescURL := bookcoverFields[4].Descriptor()
+	// bookcover.URLValidator is a validator for the "url" field. It is called by the builders before save.
+	bookcover.URLValidator = bookcoverDescURL.Validators[0].(func(string) error)
+	// bookcoverDescContentType is the schema descriptor for contentType field.
+	bookcoverDescContentType := bookcoverFields[5].Descriptor()
+	// bookcover.ContentTypeValidator is a validator for the "contentType" field. It is called by the builders before save.
+	bookcover.ContentTypeValidator = bookcoverDescContentType.Validators[0].(func(string) error)
+	// bookcoverDescID is the schema descriptor for id field.
+	bookcoverDescID := bookcoverMixinFields2[0].Descriptor()
+	// bookcover.DefaultID holds the default value on creation for the id field.
+	bookcover.DefaultID = bookcoverDescID.Default.(func() ksuid.ID)
 	bookfileMixin := schema.BookFile{}.Mixin()
 	bookfile.Policy = privacy.NewPolicies(bookfileMixin[1], schema.BookFile{})
 	bookfile.Hooks[0] = func(next ent.Mutator) ent.Mutator {
