@@ -12,6 +12,9 @@ type Author func(*sql.Selector)
 // Book is the predicate function for book builders.
 type Book func(*sql.Selector)
 
+// BookCover is the predicate function for bookcover builders.
+type BookCover func(*sql.Selector)
+
 // BookFile is the predicate function for bookfile builders.
 type BookFile func(*sql.Selector)
 

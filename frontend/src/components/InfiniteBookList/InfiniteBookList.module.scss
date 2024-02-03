@@ -1,0 +1,12 @@
+.listContainer {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+  padding: 2.5 rem;
+}
+
+.loaderDiv {
+  position: absolute;
+  bottom: 50em;
+}

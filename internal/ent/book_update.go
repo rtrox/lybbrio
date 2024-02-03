@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"lybbrio/internal/ent/author"
 	"lybbrio/internal/ent/book"
+	"lybbrio/internal/ent/bookcover"
 	"lybbrio/internal/ent/bookfile"
 	"lybbrio/internal/ent/identifier"
 	"lybbrio/internal/ent/language"
@@ -319,6 +320,21 @@ func (bu *BookUpdate) AddFiles(b ...*BookFile) *BookUpdate {
 	return bu.AddFileIDs(ids...)
 }
 
+// AddCoverIDs adds the "covers" edge to the BookCover entity by IDs.
+func (bu *BookUpdate) AddCoverIDs(ids ...ksuid.ID) *BookUpdate {
+	bu.mutation.AddCoverIDs(ids...)
+	return bu
+}
+
+// AddCovers adds the "covers" edges to the BookCover entity.
+func (bu *BookUpdate) AddCovers(b ...*BookCover) *BookUpdate {
+	ids := make([]ksuid.ID, len(b))
+	for i := range b {
+		ids[i] = b[i].ID
+	}
+	return bu.AddCoverIDs(ids...)
+}
+
 // Mutation returns the BookMutation object of the builder.
 func (bu *BookUpdate) Mutation() *BookMutation {
 	return bu.mutation
@@ -490,6 +506,27 @@ func (bu *BookUpdate) RemoveFiles(b ...*BookFile) *BookUpdate {
 		ids[i] = b[i].ID
 	}
 	return bu.RemoveFileIDs(ids...)
+}
+
+// ClearCovers clears all "covers" edges to the BookCover entity.
+func (bu *BookUpdate) ClearCovers() *BookUpdate {
+	bu.mutation.ClearCovers()
+	return bu
+}
+
+// RemoveCoverIDs removes the "covers" edge to BookCover entities by IDs.
+func (bu *BookUpdate) RemoveCoverIDs(ids ...ksuid.ID) *BookUpdate {
+	bu.mutation.RemoveCoverIDs(ids...)
+	return bu
+}
+
+// RemoveCovers removes "covers" edges to BookCover entities.
+func (bu *BookUpdate) RemoveCovers(b ...*BookCover) *BookUpdate {
+	ids := make([]ksuid.ID, len(b))
+	for i := range b {
+		ids[i] = b[i].ID
+	}
+	return bu.RemoveCoverIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -969,6 +1006,51 @@ func (bu *BookUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if bu.mutation.CoversCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   book.CoversTable,
+			Columns: []string{book.CoversColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(bookcover.FieldID, field.TypeString),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := bu.mutation.RemovedCoversIDs(); len(nodes) > 0 && !bu.mutation.CoversCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   book.CoversTable,
+			Columns: []string{book.CoversColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(bookcover.FieldID, field.TypeString),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := bu.mutation.CoversIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   book.CoversTable,
+			Columns: []string{book.CoversColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(bookcover.FieldID, field.TypeString),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, bu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{book.Label}
@@ -1271,6 +1353,21 @@ func (buo *BookUpdateOne) AddFiles(b ...*BookFile) *BookUpdateOne {
 	return buo.AddFileIDs(ids...)
 }
 
+// AddCoverIDs adds the "covers" edge to the BookCover entity by IDs.
+func (buo *BookUpdateOne) AddCoverIDs(ids ...ksuid.ID) *BookUpdateOne {
+	buo.mutation.AddCoverIDs(ids...)
+	return buo
+}
+
+// AddCovers adds the "covers" edges to the BookCover entity.
+func (buo *BookUpdateOne) AddCovers(b ...*BookCover) *BookUpdateOne {
+	ids := make([]ksuid.ID, len(b))
+	for i := range b {
+		ids[i] = b[i].ID
+	}
+	return buo.AddCoverIDs(ids...)
+}
+
 // Mutation returns the BookMutation object of the builder.
 func (buo *BookUpdateOne) Mutation() *BookMutation {
 	return buo.mutation
@@ -1442,6 +1539,27 @@ func (buo *BookUpdateOne) RemoveFiles(b ...*BookFile) *BookUpdateOne {
 		ids[i] = b[i].ID
 	}
 	return buo.RemoveFileIDs(ids...)
+}
+
+// ClearCovers clears all "covers" edges to the BookCover entity.
+func (buo *BookUpdateOne) ClearCovers() *BookUpdateOne {
+	buo.mutation.ClearCovers()
+	return buo
+}
+
+// RemoveCoverIDs removes the "covers" edge to BookCover entities by IDs.
+func (buo *BookUpdateOne) RemoveCoverIDs(ids ...ksuid.ID) *BookUpdateOne {
+	buo.mutation.RemoveCoverIDs(ids...)
+	return buo
+}
+
+// RemoveCovers removes "covers" edges to BookCover entities.
+func (buo *BookUpdateOne) RemoveCovers(b ...*BookCover) *BookUpdateOne {
+	ids := make([]ksuid.ID, len(b))
+	for i := range b {
+		ids[i] = b[i].ID
+	}
+	return buo.RemoveCoverIDs(ids...)
 }
 
 // Where appends a list predicates to the BookUpdate builder.
@@ -1944,6 +2062,51 @@ func (buo *BookUpdateOne) sqlSave(ctx context.Context) (_node *Book, err error) 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(bookfile.FieldID, field.TypeString),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if buo.mutation.CoversCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   book.CoversTable,
+			Columns: []string{book.CoversColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(bookcover.FieldID, field.TypeString),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := buo.mutation.RemovedCoversIDs(); len(nodes) > 0 && !buo.mutation.CoversCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   book.CoversTable,
+			Columns: []string{book.CoversColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(bookcover.FieldID, field.TypeString),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := buo.mutation.CoversIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   book.CoversTable,
+			Columns: []string{book.CoversColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(bookcover.FieldID, field.TypeString),
 			},
 		}
 		for _, k := range nodes {

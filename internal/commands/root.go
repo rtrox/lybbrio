@@ -83,6 +83,7 @@ func initConfig() {
 		}
 		os.Exit(1)
 	}
+	log.Info().Interface("config", conf).Msg("Loaded config")
 }
 
 func initLogger() {
@@ -149,11 +150,14 @@ func rootRun(_ *cobra.Command, _ []string) {
 
 	// Calibre
 	cal, err := calibre.NewCalibreSQLite(conf.CalibreLibraryPath)
-	cal = cal.WithLogger(&log.Logger)
 
 	if err != nil {
-		log.Fatal().Err(err).Msg("Failed to initialize Calibre")
+		log.Fatal().
+			Err(err).
+			Str("path", conf.CalibreLibraryPath).
+			Msg("Failed to initialize Calibre")
 	}
+	cal = cal.WithLogger(&log.Logger)
 
 	// Database
 	client, err := db.Open(&conf.DB)
@@ -232,11 +236,7 @@ func rootRun(_ *cobra.Command, _ []string) {
 
 	r.Handle("/metrics", promhttp.HandlerFor(reg, promhttp.HandlerOpts{}))
 	r.Mount("/auth", handler.AuthRoutes(client, jwtProvider, conf.Argon2ID))
-
-	r.With(
-		middleware.ViewerContextMiddleware(jwtProvider),
-	).Mount("/download",
-		handler.DownloadRoutes(client))
+	r.Mount("/", handler.WebRoutes(conf.DevMode, conf.DevProxy, conf.AssetFolder))
 
 	r.Route("/graphql", func(r chi.Router) {
 		r.With(
@@ -246,11 +246,19 @@ func rootRun(_ *cobra.Command, _ []string) {
 		r.Handle("/playground", playground.Handler("Lybbrio GraphQL playground", "/graphql"))
 	})
 
-	r.Mount("/", handler.WebRoutes(conf.DevMode, conf.DevProxy, conf.AssetFolder))
+	r.With(
+		middleware.ViewerContextMiddleware(jwtProvider),
+	).Mount("/download",
+		handler.DownloadRoutes(client))
+	r.With(
+		middleware.ViewerContextMiddleware(jwtProvider),
+	).Mount("/image",
+		handler.ImageRoutes(client))
 
 	srv.Addr = fmt.Sprintf("%s:%d", conf.Interface, conf.Port)
 	srv.Handler = r
 
+	log.Info().Str("addr", srv.Addr).Msg("Listening and serving")
 	if err := srv.ListenAndServe(); err != http.ErrServerClosed {
 		log.Fatal().Err(err).Msg("Failed to listen and serve")
 	}

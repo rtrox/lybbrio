@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"lybbrio/internal/ent/author"
 	"lybbrio/internal/ent/book"
+	"lybbrio/internal/ent/bookcover"
 	"lybbrio/internal/ent/bookfile"
 	"lybbrio/internal/ent/identifier"
 	"lybbrio/internal/ent/language"
@@ -350,6 +351,18 @@ func (b *BookQuery) collectField(ctx context.Context, opCtx *graphql.OperationCo
 			b.WithNamedFiles(alias, func(wq *BookFileQuery) {
 				*wq = *query
 			})
+		case "covers":
+			var (
+				alias = field.Alias
+				path  = append(path, alias)
+				query = (&BookCoverClient{config: b.config}).Query()
+			)
+			if err := query.collectField(ctx, opCtx, field, path, satisfies...); err != nil {
+				return err
+			}
+			b.WithNamedCovers(alias, func(wq *BookCoverQuery) {
+				*wq = *query
+			})
 		case "createTime":
 			if _, ok := fieldSeen[book.FieldCreateTime]; !ok {
 				selectedFields = append(selectedFields, book.FieldCreateTime)
@@ -465,6 +478,140 @@ func newBookPaginateArgs(rv map[string]any) *bookPaginateArgs {
 	}
 	if v, ok := rv[whereField].(*BookWhereInput); ok {
 		args.opts = append(args.opts, WithBookFilter(v.Filter))
+	}
+	return args
+}
+
+// CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
+func (bc *BookCoverQuery) CollectFields(ctx context.Context, satisfies ...string) (*BookCoverQuery, error) {
+	fc := graphql.GetFieldContext(ctx)
+	if fc == nil {
+		return bc, nil
+	}
+	if err := bc.collectField(ctx, graphql.GetOperationContext(ctx), fc.Field, nil, satisfies...); err != nil {
+		return nil, err
+	}
+	return bc, nil
+}
+
+func (bc *BookCoverQuery) collectField(ctx context.Context, opCtx *graphql.OperationContext, collected graphql.CollectedField, path []string, satisfies ...string) error {
+	path = append([]string(nil), path...)
+	var (
+		unknownSeen    bool
+		fieldSeen      = make(map[string]struct{}, len(bookcover.Columns))
+		selectedFields = []string{bookcover.FieldID}
+	)
+	for _, field := range graphql.CollectFields(opCtx, collected.Selections, satisfies) {
+		switch field.Name {
+		case "book":
+			var (
+				alias = field.Alias
+				path  = append(path, alias)
+				query = (&BookClient{config: bc.config}).Query()
+			)
+			if err := query.collectField(ctx, opCtx, field, path, satisfies...); err != nil {
+				return err
+			}
+			bc.withBook = query
+		case "createTime":
+			if _, ok := fieldSeen[bookcover.FieldCreateTime]; !ok {
+				selectedFields = append(selectedFields, bookcover.FieldCreateTime)
+				fieldSeen[bookcover.FieldCreateTime] = struct{}{}
+			}
+		case "updateTime":
+			if _, ok := fieldSeen[bookcover.FieldUpdateTime]; !ok {
+				selectedFields = append(selectedFields, bookcover.FieldUpdateTime)
+				fieldSeen[bookcover.FieldUpdateTime] = struct{}{}
+			}
+		case "path":
+			if _, ok := fieldSeen[bookcover.FieldPath]; !ok {
+				selectedFields = append(selectedFields, bookcover.FieldPath)
+				fieldSeen[bookcover.FieldPath] = struct{}{}
+			}
+		case "size":
+			if _, ok := fieldSeen[bookcover.FieldSize]; !ok {
+				selectedFields = append(selectedFields, bookcover.FieldSize)
+				fieldSeen[bookcover.FieldSize] = struct{}{}
+			}
+		case "width":
+			if _, ok := fieldSeen[bookcover.FieldWidth]; !ok {
+				selectedFields = append(selectedFields, bookcover.FieldWidth)
+				fieldSeen[bookcover.FieldWidth] = struct{}{}
+			}
+		case "height":
+			if _, ok := fieldSeen[bookcover.FieldHeight]; !ok {
+				selectedFields = append(selectedFields, bookcover.FieldHeight)
+				fieldSeen[bookcover.FieldHeight] = struct{}{}
+			}
+		case "url":
+			if _, ok := fieldSeen[bookcover.FieldURL]; !ok {
+				selectedFields = append(selectedFields, bookcover.FieldURL)
+				fieldSeen[bookcover.FieldURL] = struct{}{}
+			}
+		case "contenttype":
+			if _, ok := fieldSeen[bookcover.FieldContentType]; !ok {
+				selectedFields = append(selectedFields, bookcover.FieldContentType)
+				fieldSeen[bookcover.FieldContentType] = struct{}{}
+			}
+		case "id":
+		case "__typename":
+		default:
+			unknownSeen = true
+		}
+	}
+	if !unknownSeen {
+		bc.Select(selectedFields...)
+	}
+	return nil
+}
+
+type bookcoverPaginateArgs struct {
+	first, last   *int
+	after, before *Cursor
+	opts          []BookCoverPaginateOption
+}
+
+func newBookCoverPaginateArgs(rv map[string]any) *bookcoverPaginateArgs {
+	args := &bookcoverPaginateArgs{}
+	if rv == nil {
+		return args
+	}
+	if v := rv[firstField]; v != nil {
+		args.first = v.(*int)
+	}
+	if v := rv[lastField]; v != nil {
+		args.last = v.(*int)
+	}
+	if v := rv[afterField]; v != nil {
+		args.after = v.(*Cursor)
+	}
+	if v := rv[beforeField]; v != nil {
+		args.before = v.(*Cursor)
+	}
+	if v, ok := rv[orderByField]; ok {
+		switch v := v.(type) {
+		case map[string]any:
+			var (
+				err1, err2 error
+				order      = &BookCoverOrder{Field: &BookCoverOrderField{}, Direction: entgql.OrderDirectionAsc}
+			)
+			if d, ok := v[directionField]; ok {
+				err1 = order.Direction.UnmarshalGQL(d)
+			}
+			if f, ok := v[fieldField]; ok {
+				err2 = order.Field.UnmarshalGQL(f)
+			}
+			if err1 == nil && err2 == nil {
+				args.opts = append(args.opts, WithBookCoverOrder(order))
+			}
+		case *BookCoverOrder:
+			if v != nil {
+				args.opts = append(args.opts, WithBookCoverOrder(v))
+			}
+		}
+	}
+	if v, ok := rv[whereField].(*BookCoverWhereInput); ok {
+		args.opts = append(args.opts, WithBookCoverFilter(v.Filter))
 	}
 	return args
 }

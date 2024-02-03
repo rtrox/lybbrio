@@ -42,6 +42,7 @@ function About() {
     <div>
       <h3>Hello from About!</h3>
       <Link to="/">Home</Link>
+      <Link to="/books">Books</Link>
       <div className="cursor-pointer" onClick={handleLogout}>
         Logout
       </div>
