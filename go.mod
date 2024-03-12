@@ -30,7 +30,7 @@ require (
 	github.com/vektah/gqlparser/v2 v2.5.11
 	golang.org/x/crypto v0.21.0
 	golang.org/x/net v0.21.0
-	gorm.io/driver/sqlite v1.5.4
+	gorm.io/driver/sqlite v1.5.5
 	gorm.io/gorm v1.25.7
 )
 
