@@ -88,6 +88,33 @@ var (
 			},
 		},
 	}
+	// BookCoversColumns holds the columns for the "book_covers" table.
+	BookCoversColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeString},
+		{Name: "create_time", Type: field.TypeTime},
+		{Name: "update_time", Type: field.TypeTime},
+		{Name: "path", Type: field.TypeString, Unique: true, Size: 2147483647},
+		{Name: "size", Type: field.TypeInt64},
+		{Name: "width", Type: field.TypeInt},
+		{Name: "height", Type: field.TypeInt},
+		{Name: "url", Type: field.TypeString},
+		{Name: "content_type", Type: field.TypeString},
+		{Name: "book_cover_book", Type: field.TypeString},
+	}
+	// BookCoversTable holds the schema information for the "book_covers" table.
+	BookCoversTable = &schema.Table{
+		Name:       "book_covers",
+		Columns:    BookCoversColumns,
+		PrimaryKey: []*schema.Column{BookCoversColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "book_covers_books_book",
+				Columns:    []*schema.Column{BookCoversColumns[9]},
+				RefColumns: []*schema.Column{BooksColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+	}
 	// BookFilesColumns holds the columns for the "book_files" table.
 	BookFilesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeString},
@@ -515,6 +542,7 @@ var (
 	Tables = []*schema.Table{
 		AuthorsTable,
 		BooksTable,
+		BookCoversTable,
 		BookFilesTable,
 		IdentifiersTable,
 		LanguagesTable,
@@ -535,6 +563,7 @@ var (
 )
 
 func init() {
+	BookCoversTable.ForeignKeys[0].RefTable = BooksTable
 	BookFilesTable.ForeignKeys[0].RefTable = BooksTable
 	IdentifiersTable.ForeignKeys[0].RefTable = BooksTable
 	ShelvesTable.ForeignKeys[0].RefTable = UsersTable

@@ -14,6 +14,7 @@ import (
 
 	"lybbrio/internal/ent/author"
 	"lybbrio/internal/ent/book"
+	"lybbrio/internal/ent/bookcover"
 	"lybbrio/internal/ent/bookfile"
 	"lybbrio/internal/ent/identifier"
 	"lybbrio/internal/ent/language"
@@ -40,6 +41,8 @@ type Client struct {
 	Author *AuthorClient
 	// Book is the client for interacting with the Book builders.
 	Book *BookClient
+	// BookCover is the client for interacting with the BookCover builders.
+	BookCover *BookCoverClient
 	// BookFile is the client for interacting with the BookFile builders.
 	BookFile *BookFileClient
 	// Identifier is the client for interacting with the Identifier builders.
@@ -73,6 +76,7 @@ func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
 	c.Author = NewAuthorClient(c.config)
 	c.Book = NewBookClient(c.config)
+	c.BookCover = NewBookCoverClient(c.config)
 	c.BookFile = NewBookFileClient(c.config)
 	c.Identifier = NewIdentifierClient(c.config)
 	c.Language = NewLanguageClient(c.config)
@@ -177,6 +181,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		config:          cfg,
 		Author:          NewAuthorClient(cfg),
 		Book:            NewBookClient(cfg),
+		BookCover:       NewBookCoverClient(cfg),
 		BookFile:        NewBookFileClient(cfg),
 		Identifier:      NewIdentifierClient(cfg),
 		Language:        NewLanguageClient(cfg),
@@ -208,6 +213,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		config:          cfg,
 		Author:          NewAuthorClient(cfg),
 		Book:            NewBookClient(cfg),
+		BookCover:       NewBookCoverClient(cfg),
 		BookFile:        NewBookFileClient(cfg),
 		Identifier:      NewIdentifierClient(cfg),
 		Language:        NewLanguageClient(cfg),
@@ -247,8 +253,8 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
-		c.Author, c.Book, c.BookFile, c.Identifier, c.Language, c.Publisher, c.Series,
-		c.Shelf, c.Tag, c.Task, c.User, c.UserPermissions,
+		c.Author, c.Book, c.BookCover, c.BookFile, c.Identifier, c.Language,
+		c.Publisher, c.Series, c.Shelf, c.Tag, c.Task, c.User, c.UserPermissions,
 	} {
 		n.Use(hooks...)
 	}
@@ -258,8 +264,8 @@ func (c *Client) Use(hooks ...Hook) {
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
-		c.Author, c.Book, c.BookFile, c.Identifier, c.Language, c.Publisher, c.Series,
-		c.Shelf, c.Tag, c.Task, c.User, c.UserPermissions,
+		c.Author, c.Book, c.BookCover, c.BookFile, c.Identifier, c.Language,
+		c.Publisher, c.Series, c.Shelf, c.Tag, c.Task, c.User, c.UserPermissions,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -272,6 +278,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.Author.mutate(ctx, m)
 	case *BookMutation:
 		return c.Book.mutate(ctx, m)
+	case *BookCoverMutation:
+		return c.BookCover.mutate(ctx, m)
 	case *BookFileMutation:
 		return c.BookFile.mutate(ctx, m)
 	case *IdentifierMutation:
@@ -683,6 +691,22 @@ func (c *BookClient) QueryFiles(b *Book) *BookFileQuery {
 	return query
 }
 
+// QueryCovers queries the covers edge of a Book.
+func (c *BookClient) QueryCovers(b *Book) *BookCoverQuery {
+	query := (&BookCoverClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := b.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(book.Table, book.FieldID, id),
+			sqlgraph.To(bookcover.Table, bookcover.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, book.CoversTable, book.CoversColumn),
+		)
+		fromV = sqlgraph.Neighbors(b.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *BookClient) Hooks() []Hook {
 	hooks := c.hooks.Book
@@ -706,6 +730,156 @@ func (c *BookClient) mutate(ctx context.Context, m *BookMutation) (Value, error)
 		return (&BookDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown Book mutation op: %q", m.Op())
+	}
+}
+
+// BookCoverClient is a client for the BookCover schema.
+type BookCoverClient struct {
+	config
+}
+
+// NewBookCoverClient returns a client for the BookCover from the given config.
+func NewBookCoverClient(c config) *BookCoverClient {
+	return &BookCoverClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `bookcover.Hooks(f(g(h())))`.
+func (c *BookCoverClient) Use(hooks ...Hook) {
+	c.hooks.BookCover = append(c.hooks.BookCover, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `bookcover.Intercept(f(g(h())))`.
+func (c *BookCoverClient) Intercept(interceptors ...Interceptor) {
+	c.inters.BookCover = append(c.inters.BookCover, interceptors...)
+}
+
+// Create returns a builder for creating a BookCover entity.
+func (c *BookCoverClient) Create() *BookCoverCreate {
+	mutation := newBookCoverMutation(c.config, OpCreate)
+	return &BookCoverCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of BookCover entities.
+func (c *BookCoverClient) CreateBulk(builders ...*BookCoverCreate) *BookCoverCreateBulk {
+	return &BookCoverCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *BookCoverClient) MapCreateBulk(slice any, setFunc func(*BookCoverCreate, int)) *BookCoverCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &BookCoverCreateBulk{err: fmt.Errorf("calling to BookCoverClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*BookCoverCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &BookCoverCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for BookCover.
+func (c *BookCoverClient) Update() *BookCoverUpdate {
+	mutation := newBookCoverMutation(c.config, OpUpdate)
+	return &BookCoverUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *BookCoverClient) UpdateOne(bc *BookCover) *BookCoverUpdateOne {
+	mutation := newBookCoverMutation(c.config, OpUpdateOne, withBookCover(bc))
+	return &BookCoverUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *BookCoverClient) UpdateOneID(id ksuid.ID) *BookCoverUpdateOne {
+	mutation := newBookCoverMutation(c.config, OpUpdateOne, withBookCoverID(id))
+	return &BookCoverUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for BookCover.
+func (c *BookCoverClient) Delete() *BookCoverDelete {
+	mutation := newBookCoverMutation(c.config, OpDelete)
+	return &BookCoverDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *BookCoverClient) DeleteOne(bc *BookCover) *BookCoverDeleteOne {
+	return c.DeleteOneID(bc.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *BookCoverClient) DeleteOneID(id ksuid.ID) *BookCoverDeleteOne {
+	builder := c.Delete().Where(bookcover.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &BookCoverDeleteOne{builder}
+}
+
+// Query returns a query builder for BookCover.
+func (c *BookCoverClient) Query() *BookCoverQuery {
+	return &BookCoverQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeBookCover},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a BookCover entity by its id.
+func (c *BookCoverClient) Get(ctx context.Context, id ksuid.ID) (*BookCover, error) {
+	return c.Query().Where(bookcover.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *BookCoverClient) GetX(ctx context.Context, id ksuid.ID) *BookCover {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryBook queries the book edge of a BookCover.
+func (c *BookCoverClient) QueryBook(bc *BookCover) *BookQuery {
+	query := (&BookClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := bc.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(bookcover.Table, bookcover.FieldID, id),
+			sqlgraph.To(book.Table, book.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, bookcover.BookTable, bookcover.BookColumn),
+		)
+		fromV = sqlgraph.Neighbors(bc.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *BookCoverClient) Hooks() []Hook {
+	hooks := c.hooks.BookCover
+	return append(hooks[:len(hooks):len(hooks)], bookcover.Hooks[:]...)
+}
+
+// Interceptors returns the client interceptors.
+func (c *BookCoverClient) Interceptors() []Interceptor {
+	return c.inters.BookCover
+}
+
+func (c *BookCoverClient) mutate(ctx context.Context, m *BookCoverMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&BookCoverCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&BookCoverUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&BookCoverUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&BookCoverDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown BookCover mutation op: %q", m.Op())
 	}
 }
 
@@ -2244,11 +2418,11 @@ func (c *UserPermissionsClient) mutate(ctx context.Context, m *UserPermissionsMu
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		Author, Book, BookFile, Identifier, Language, Publisher, Series, Shelf, Tag,
-		Task, User, UserPermissions []ent.Hook
+		Author, Book, BookCover, BookFile, Identifier, Language, Publisher, Series,
+		Shelf, Tag, Task, User, UserPermissions []ent.Hook
 	}
 	inters struct {
-		Author, Book, BookFile, Identifier, Language, Publisher, Series, Shelf, Tag,
-		Task, User, UserPermissions []ent.Interceptor
+		Author, Book, BookCover, BookFile, Identifier, Language, Publisher, Series,
+		Shelf, Tag, Task, User, UserPermissions []ent.Interceptor
 	}
 )

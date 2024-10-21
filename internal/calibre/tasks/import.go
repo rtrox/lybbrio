@@ -11,6 +11,7 @@ import (
 	"lybbrio/internal/ent/bookfile"
 	"lybbrio/internal/ent/schema/filetype"
 	"lybbrio/internal/ent/schema/ksuid"
+	"lybbrio/internal/image"
 	"lybbrio/internal/scheduler"
 	"os"
 	"path/filepath"
@@ -155,6 +156,15 @@ func importBook(ctx context.Context, cal calibre.Calibre, client *ent.Client, ca
 			Str("book", calBook.Title).
 			Int64("bookID", calBook.ID).
 			Msg("Failed register book files")
+	}
+	if calBook.HasCover {
+		err = registerBookCovers(ctx, cal, client, entBook, calBook)
+		if err != nil {
+			log.Warn().Err(err).
+				Str("book", calBook.Title).
+				Int64("bookID", calBook.ID).
+				Msg("Failed register book covers")
+		}
 	}
 	return nil
 }
@@ -410,6 +420,57 @@ func registerBookFile(ctx context.Context, client *ent.Client, bookID ksuid.ID, 
 		Save(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to create book file: %w", err)
+	}
+	return nil
+}
+
+func registerBookCovers(ctx context.Context, cal calibre.Calibre, client *ent.Client, book *ent.Book, calBook calibre.Book) error {
+	log := log.Ctx(ctx).With().Str("book", calBook.Title).Str("bookID", book.ID.String()).Logger()
+	path := calBook.FullPath(cal)
+	log.Trace().Str("path", path).Msg("Registering book covers")
+	files, err := os.ReadDir(calBook.FullPath(cal))
+	if err != nil {
+		return fmt.Errorf("failed to read book directory: %w", err)
+	}
+	for _, file := range files {
+		if file.IsDir() {
+			continue
+		}
+		path := filepath.Join(calBook.FullPath(cal), file.Name())
+		err := registerBookCover(ctx, client, book.ID, path, file)
+		if err != nil {
+			if inner := errors.Unwrap(err); ent.IsConstraintError(inner) {
+				continue
+			}
+			log.Warn().Err(err).
+				Str("file", file.Name()).
+				Msg("Failed to register cover")
+		}
+	}
+	return nil
+}
+
+func registerBookCover(ctx context.Context, client *ent.Client, bookID ksuid.ID, path string, file fs.DirEntry) error {
+	ext := strings.ToLower(filepath.Ext(file.Name()))
+	nameWithoutExt := strings.TrimSuffix(file.Name(), ext)
+	if !strings.HasPrefix(nameWithoutExt, "cover") {
+		return nil
+	}
+	img, err := image.ProcessFile(path)
+	if err != nil {
+		return fmt.Errorf("failed to process image: %w", err)
+	}
+
+	_, err = client.BookCover.Create().
+		SetPath(path).
+		SetSize(img.Size).
+		SetContentType(img.ContentType).
+		SetWidth(img.Width).
+		SetHeight(img.Height).
+		SetBookID(bookID).
+		Save(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to create book cover: %w", err)
 	}
 	return nil
 }

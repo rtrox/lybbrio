@@ -125,6 +125,7 @@ type CreateBookInput struct {
 	LanguageIDs   []ksuid.ID
 	ShelfIDs      []ksuid.ID
 	FileIDs       []ksuid.ID
+	CoverIDs      []ksuid.ID
 }
 
 // Mutate applies the CreateBookInput on the BookMutation builder.
@@ -177,6 +178,9 @@ func (i *CreateBookInput) Mutate(m *BookMutation) {
 	if v := i.FileIDs; len(v) > 0 {
 		m.AddFileIDs(v...)
 	}
+	if v := i.CoverIDs; len(v) > 0 {
+		m.AddCoverIDs(v...)
+	}
 }
 
 // SetInput applies the change-set in the CreateBookInput on the BookCreate builder.
@@ -225,6 +229,9 @@ type UpdateBookInput struct {
 	ClearFiles          bool
 	AddFileIDs          []ksuid.ID
 	RemoveFileIDs       []ksuid.ID
+	ClearCovers         bool
+	AddCoverIDs         []ksuid.ID
+	RemoveCoverIDs      []ksuid.ID
 }
 
 // Mutate applies the UpdateBookInput on the BookMutation builder.
@@ -342,6 +349,15 @@ func (i *UpdateBookInput) Mutate(m *BookMutation) {
 	}
 	if v := i.RemoveFileIDs; len(v) > 0 {
 		m.RemoveFileIDs(v...)
+	}
+	if i.ClearCovers {
+		m.ClearCovers()
+	}
+	if v := i.AddCoverIDs; len(v) > 0 {
+		m.AddCoverIDs(v...)
+	}
+	if v := i.RemoveCoverIDs; len(v) > 0 {
+		m.RemoveCoverIDs(v...)
 	}
 }
 

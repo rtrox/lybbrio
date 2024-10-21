@@ -865,6 +865,29 @@ func HasFilesWith(preds ...predicate.BookFile) predicate.Book {
 	})
 }
 
+// HasCovers applies the HasEdge predicate on the "covers" edge.
+func HasCovers() predicate.Book {
+	return predicate.Book(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, CoversTable, CoversColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasCoversWith applies the HasEdge predicate on the "covers" edge with a given conditions (other predicates).
+func HasCoversWith(preds ...predicate.BookCover) predicate.Book {
+	return predicate.Book(func(s *sql.Selector) {
+		step := newCoversStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.Book) predicate.Book {
 	return predicate.Book(sql.AndPredicates(predicates...))

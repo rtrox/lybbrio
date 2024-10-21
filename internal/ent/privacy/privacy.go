@@ -158,6 +158,30 @@ func (f BookMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) 
 	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.BookMutation", m)
 }
 
+// The BookCoverQueryRuleFunc type is an adapter to allow the use of ordinary
+// functions as a query rule.
+type BookCoverQueryRuleFunc func(context.Context, *ent.BookCoverQuery) error
+
+// EvalQuery return f(ctx, q).
+func (f BookCoverQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.BookCoverQuery); ok {
+		return f(ctx, q)
+	}
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.BookCoverQuery", q)
+}
+
+// The BookCoverMutationRuleFunc type is an adapter to allow the use of ordinary
+// functions as a mutation rule.
+type BookCoverMutationRuleFunc func(context.Context, *ent.BookCoverMutation) error
+
+// EvalMutation calls f(ctx, m).
+func (f BookCoverMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.BookCoverMutation); ok {
+		return f(ctx, m)
+	}
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.BookCoverMutation", m)
+}
+
 // The BookFileQueryRuleFunc type is an adapter to allow the use of ordinary
 // functions as a query rule.
 type BookFileQueryRuleFunc func(context.Context, *ent.BookFileQuery) error
@@ -437,6 +461,8 @@ func queryFilter(q ent.Query) (Filter, error) {
 		return q.Filter(), nil
 	case *ent.BookQuery:
 		return q.Filter(), nil
+	case *ent.BookCoverQuery:
+		return q.Filter(), nil
 	case *ent.BookFileQuery:
 		return q.Filter(), nil
 	case *ent.IdentifierQuery:
@@ -467,6 +493,8 @@ func mutationFilter(m ent.Mutation) (Filter, error) {
 	case *ent.AuthorMutation:
 		return m.Filter(), nil
 	case *ent.BookMutation:
+		return m.Filter(), nil
+	case *ent.BookCoverMutation:
 		return m.Filter(), nil
 	case *ent.BookFileMutation:
 		return m.Filter(), nil

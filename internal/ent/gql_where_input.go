@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"lybbrio/internal/ent/author"
 	"lybbrio/internal/ent/book"
+	"lybbrio/internal/ent/bookcover"
 	"lybbrio/internal/ent/bookfile"
 	"lybbrio/internal/ent/identifier"
 	"lybbrio/internal/ent/language"
@@ -633,6 +634,10 @@ type BookWhereInput struct {
 	// "files" edge predicates.
 	HasFiles     *bool                 `json:"hasFiles,omitempty"`
 	HasFilesWith []*BookFileWhereInput `json:"hasFilesWith,omitempty"`
+
+	// "covers" edge predicates.
+	HasCovers     *bool                  `json:"hasCovers,omitempty"`
+	HasCoversWith []*BookCoverWhereInput `json:"hasCoversWith,omitempty"`
 }
 
 // AddPredicates adds custom predicates to the where input to be used during the filtering phase.
@@ -1220,6 +1225,24 @@ func (i *BookWhereInput) P() (predicate.Book, error) {
 		}
 		predicates = append(predicates, book.HasFilesWith(with...))
 	}
+	if i.HasCovers != nil {
+		p := book.HasCovers()
+		if !*i.HasCovers {
+			p = book.Not(p)
+		}
+		predicates = append(predicates, p)
+	}
+	if len(i.HasCoversWith) > 0 {
+		with := make([]predicate.BookCover, 0, len(i.HasCoversWith))
+		for _, w := range i.HasCoversWith {
+			p, err := w.P()
+			if err != nil {
+				return nil, fmt.Errorf("%w: field 'HasCoversWith'", err)
+			}
+			with = append(with, p)
+		}
+		predicates = append(predicates, book.HasCoversWith(with...))
+	}
 	switch len(predicates) {
 	case 0:
 		return nil, ErrEmptyBookWhereInput
@@ -1227,6 +1250,484 @@ func (i *BookWhereInput) P() (predicate.Book, error) {
 		return predicates[0], nil
 	default:
 		return book.And(predicates...), nil
+	}
+}
+
+// BookCoverWhereInput represents a where input for filtering BookCover queries.
+type BookCoverWhereInput struct {
+	Predicates []predicate.BookCover  `json:"-"`
+	Not        *BookCoverWhereInput   `json:"not,omitempty"`
+	Or         []*BookCoverWhereInput `json:"or,omitempty"`
+	And        []*BookCoverWhereInput `json:"and,omitempty"`
+
+	// "id" field predicates.
+	ID      *ksuid.ID  `json:"id,omitempty"`
+	IDNEQ   *ksuid.ID  `json:"idNEQ,omitempty"`
+	IDIn    []ksuid.ID `json:"idIn,omitempty"`
+	IDNotIn []ksuid.ID `json:"idNotIn,omitempty"`
+	IDGT    *ksuid.ID  `json:"idGT,omitempty"`
+	IDGTE   *ksuid.ID  `json:"idGTE,omitempty"`
+	IDLT    *ksuid.ID  `json:"idLT,omitempty"`
+	IDLTE   *ksuid.ID  `json:"idLTE,omitempty"`
+
+	// "create_time" field predicates.
+	CreateTime      *time.Time  `json:"createTime,omitempty"`
+	CreateTimeNEQ   *time.Time  `json:"createTimeNEQ,omitempty"`
+	CreateTimeIn    []time.Time `json:"createTimeIn,omitempty"`
+	CreateTimeNotIn []time.Time `json:"createTimeNotIn,omitempty"`
+	CreateTimeGT    *time.Time  `json:"createTimeGT,omitempty"`
+	CreateTimeGTE   *time.Time  `json:"createTimeGTE,omitempty"`
+	CreateTimeLT    *time.Time  `json:"createTimeLT,omitempty"`
+	CreateTimeLTE   *time.Time  `json:"createTimeLTE,omitempty"`
+
+	// "update_time" field predicates.
+	UpdateTime      *time.Time  `json:"updateTime,omitempty"`
+	UpdateTimeNEQ   *time.Time  `json:"updateTimeNEQ,omitempty"`
+	UpdateTimeIn    []time.Time `json:"updateTimeIn,omitempty"`
+	UpdateTimeNotIn []time.Time `json:"updateTimeNotIn,omitempty"`
+	UpdateTimeGT    *time.Time  `json:"updateTimeGT,omitempty"`
+	UpdateTimeGTE   *time.Time  `json:"updateTimeGTE,omitempty"`
+	UpdateTimeLT    *time.Time  `json:"updateTimeLT,omitempty"`
+	UpdateTimeLTE   *time.Time  `json:"updateTimeLTE,omitempty"`
+
+	// "path" field predicates.
+	Path             *string  `json:"path,omitempty"`
+	PathNEQ          *string  `json:"pathNEQ,omitempty"`
+	PathIn           []string `json:"pathIn,omitempty"`
+	PathNotIn        []string `json:"pathNotIn,omitempty"`
+	PathGT           *string  `json:"pathGT,omitempty"`
+	PathGTE          *string  `json:"pathGTE,omitempty"`
+	PathLT           *string  `json:"pathLT,omitempty"`
+	PathLTE          *string  `json:"pathLTE,omitempty"`
+	PathContains     *string  `json:"pathContains,omitempty"`
+	PathHasPrefix    *string  `json:"pathHasPrefix,omitempty"`
+	PathHasSuffix    *string  `json:"pathHasSuffix,omitempty"`
+	PathEqualFold    *string  `json:"pathEqualFold,omitempty"`
+	PathContainsFold *string  `json:"pathContainsFold,omitempty"`
+
+	// "size" field predicates.
+	Size      *int64  `json:"size,omitempty"`
+	SizeNEQ   *int64  `json:"sizeNEQ,omitempty"`
+	SizeIn    []int64 `json:"sizeIn,omitempty"`
+	SizeNotIn []int64 `json:"sizeNotIn,omitempty"`
+	SizeGT    *int64  `json:"sizeGT,omitempty"`
+	SizeGTE   *int64  `json:"sizeGTE,omitempty"`
+	SizeLT    *int64  `json:"sizeLT,omitempty"`
+	SizeLTE   *int64  `json:"sizeLTE,omitempty"`
+
+	// "width" field predicates.
+	Width      *int  `json:"width,omitempty"`
+	WidthNEQ   *int  `json:"widthNEQ,omitempty"`
+	WidthIn    []int `json:"widthIn,omitempty"`
+	WidthNotIn []int `json:"widthNotIn,omitempty"`
+	WidthGT    *int  `json:"widthGT,omitempty"`
+	WidthGTE   *int  `json:"widthGTE,omitempty"`
+	WidthLT    *int  `json:"widthLT,omitempty"`
+	WidthLTE   *int  `json:"widthLTE,omitempty"`
+
+	// "height" field predicates.
+	Height      *int  `json:"height,omitempty"`
+	HeightNEQ   *int  `json:"heightNEQ,omitempty"`
+	HeightIn    []int `json:"heightIn,omitempty"`
+	HeightNotIn []int `json:"heightNotIn,omitempty"`
+	HeightGT    *int  `json:"heightGT,omitempty"`
+	HeightGTE   *int  `json:"heightGTE,omitempty"`
+	HeightLT    *int  `json:"heightLT,omitempty"`
+	HeightLTE   *int  `json:"heightLTE,omitempty"`
+
+	// "url" field predicates.
+	URL             *string  `json:"url,omitempty"`
+	URLNEQ          *string  `json:"urlNEQ,omitempty"`
+	URLIn           []string `json:"urlIn,omitempty"`
+	URLNotIn        []string `json:"urlNotIn,omitempty"`
+	URLGT           *string  `json:"urlGT,omitempty"`
+	URLGTE          *string  `json:"urlGTE,omitempty"`
+	URLLT           *string  `json:"urlLT,omitempty"`
+	URLLTE          *string  `json:"urlLTE,omitempty"`
+	URLContains     *string  `json:"urlContains,omitempty"`
+	URLHasPrefix    *string  `json:"urlHasPrefix,omitempty"`
+	URLHasSuffix    *string  `json:"urlHasSuffix,omitempty"`
+	URLEqualFold    *string  `json:"urlEqualFold,omitempty"`
+	URLContainsFold *string  `json:"urlContainsFold,omitempty"`
+
+	// "contentType" field predicates.
+	ContentType             *string  `json:"contenttype,omitempty"`
+	ContentTypeNEQ          *string  `json:"contenttypeNEQ,omitempty"`
+	ContentTypeIn           []string `json:"contenttypeIn,omitempty"`
+	ContentTypeNotIn        []string `json:"contenttypeNotIn,omitempty"`
+	ContentTypeGT           *string  `json:"contenttypeGT,omitempty"`
+	ContentTypeGTE          *string  `json:"contenttypeGTE,omitempty"`
+	ContentTypeLT           *string  `json:"contenttypeLT,omitempty"`
+	ContentTypeLTE          *string  `json:"contenttypeLTE,omitempty"`
+	ContentTypeContains     *string  `json:"contenttypeContains,omitempty"`
+	ContentTypeHasPrefix    *string  `json:"contenttypeHasPrefix,omitempty"`
+	ContentTypeHasSuffix    *string  `json:"contenttypeHasSuffix,omitempty"`
+	ContentTypeEqualFold    *string  `json:"contenttypeEqualFold,omitempty"`
+	ContentTypeContainsFold *string  `json:"contenttypeContainsFold,omitempty"`
+
+	// "book" edge predicates.
+	HasBook     *bool             `json:"hasBook,omitempty"`
+	HasBookWith []*BookWhereInput `json:"hasBookWith,omitempty"`
+}
+
+// AddPredicates adds custom predicates to the where input to be used during the filtering phase.
+func (i *BookCoverWhereInput) AddPredicates(predicates ...predicate.BookCover) {
+	i.Predicates = append(i.Predicates, predicates...)
+}
+
+// Filter applies the BookCoverWhereInput filter on the BookCoverQuery builder.
+func (i *BookCoverWhereInput) Filter(q *BookCoverQuery) (*BookCoverQuery, error) {
+	if i == nil {
+		return q, nil
+	}
+	p, err := i.P()
+	if err != nil {
+		if err == ErrEmptyBookCoverWhereInput {
+			return q, nil
+		}
+		return nil, err
+	}
+	return q.Where(p), nil
+}
+
+// ErrEmptyBookCoverWhereInput is returned in case the BookCoverWhereInput is empty.
+var ErrEmptyBookCoverWhereInput = errors.New("ent: empty predicate BookCoverWhereInput")
+
+// P returns a predicate for filtering bookcovers.
+// An error is returned if the input is empty or invalid.
+func (i *BookCoverWhereInput) P() (predicate.BookCover, error) {
+	var predicates []predicate.BookCover
+	if i.Not != nil {
+		p, err := i.Not.P()
+		if err != nil {
+			return nil, fmt.Errorf("%w: field 'not'", err)
+		}
+		predicates = append(predicates, bookcover.Not(p))
+	}
+	switch n := len(i.Or); {
+	case n == 1:
+		p, err := i.Or[0].P()
+		if err != nil {
+			return nil, fmt.Errorf("%w: field 'or'", err)
+		}
+		predicates = append(predicates, p)
+	case n > 1:
+		or := make([]predicate.BookCover, 0, n)
+		for _, w := range i.Or {
+			p, err := w.P()
+			if err != nil {
+				return nil, fmt.Errorf("%w: field 'or'", err)
+			}
+			or = append(or, p)
+		}
+		predicates = append(predicates, bookcover.Or(or...))
+	}
+	switch n := len(i.And); {
+	case n == 1:
+		p, err := i.And[0].P()
+		if err != nil {
+			return nil, fmt.Errorf("%w: field 'and'", err)
+		}
+		predicates = append(predicates, p)
+	case n > 1:
+		and := make([]predicate.BookCover, 0, n)
+		for _, w := range i.And {
+			p, err := w.P()
+			if err != nil {
+				return nil, fmt.Errorf("%w: field 'and'", err)
+			}
+			and = append(and, p)
+		}
+		predicates = append(predicates, bookcover.And(and...))
+	}
+	predicates = append(predicates, i.Predicates...)
+	if i.ID != nil {
+		predicates = append(predicates, bookcover.IDEQ(*i.ID))
+	}
+	if i.IDNEQ != nil {
+		predicates = append(predicates, bookcover.IDNEQ(*i.IDNEQ))
+	}
+	if len(i.IDIn) > 0 {
+		predicates = append(predicates, bookcover.IDIn(i.IDIn...))
+	}
+	if len(i.IDNotIn) > 0 {
+		predicates = append(predicates, bookcover.IDNotIn(i.IDNotIn...))
+	}
+	if i.IDGT != nil {
+		predicates = append(predicates, bookcover.IDGT(*i.IDGT))
+	}
+	if i.IDGTE != nil {
+		predicates = append(predicates, bookcover.IDGTE(*i.IDGTE))
+	}
+	if i.IDLT != nil {
+		predicates = append(predicates, bookcover.IDLT(*i.IDLT))
+	}
+	if i.IDLTE != nil {
+		predicates = append(predicates, bookcover.IDLTE(*i.IDLTE))
+	}
+	if i.CreateTime != nil {
+		predicates = append(predicates, bookcover.CreateTimeEQ(*i.CreateTime))
+	}
+	if i.CreateTimeNEQ != nil {
+		predicates = append(predicates, bookcover.CreateTimeNEQ(*i.CreateTimeNEQ))
+	}
+	if len(i.CreateTimeIn) > 0 {
+		predicates = append(predicates, bookcover.CreateTimeIn(i.CreateTimeIn...))
+	}
+	if len(i.CreateTimeNotIn) > 0 {
+		predicates = append(predicates, bookcover.CreateTimeNotIn(i.CreateTimeNotIn...))
+	}
+	if i.CreateTimeGT != nil {
+		predicates = append(predicates, bookcover.CreateTimeGT(*i.CreateTimeGT))
+	}
+	if i.CreateTimeGTE != nil {
+		predicates = append(predicates, bookcover.CreateTimeGTE(*i.CreateTimeGTE))
+	}
+	if i.CreateTimeLT != nil {
+		predicates = append(predicates, bookcover.CreateTimeLT(*i.CreateTimeLT))
+	}
+	if i.CreateTimeLTE != nil {
+		predicates = append(predicates, bookcover.CreateTimeLTE(*i.CreateTimeLTE))
+	}
+	if i.UpdateTime != nil {
+		predicates = append(predicates, bookcover.UpdateTimeEQ(*i.UpdateTime))
+	}
+	if i.UpdateTimeNEQ != nil {
+		predicates = append(predicates, bookcover.UpdateTimeNEQ(*i.UpdateTimeNEQ))
+	}
+	if len(i.UpdateTimeIn) > 0 {
+		predicates = append(predicates, bookcover.UpdateTimeIn(i.UpdateTimeIn...))
+	}
+	if len(i.UpdateTimeNotIn) > 0 {
+		predicates = append(predicates, bookcover.UpdateTimeNotIn(i.UpdateTimeNotIn...))
+	}
+	if i.UpdateTimeGT != nil {
+		predicates = append(predicates, bookcover.UpdateTimeGT(*i.UpdateTimeGT))
+	}
+	if i.UpdateTimeGTE != nil {
+		predicates = append(predicates, bookcover.UpdateTimeGTE(*i.UpdateTimeGTE))
+	}
+	if i.UpdateTimeLT != nil {
+		predicates = append(predicates, bookcover.UpdateTimeLT(*i.UpdateTimeLT))
+	}
+	if i.UpdateTimeLTE != nil {
+		predicates = append(predicates, bookcover.UpdateTimeLTE(*i.UpdateTimeLTE))
+	}
+	if i.Path != nil {
+		predicates = append(predicates, bookcover.PathEQ(*i.Path))
+	}
+	if i.PathNEQ != nil {
+		predicates = append(predicates, bookcover.PathNEQ(*i.PathNEQ))
+	}
+	if len(i.PathIn) > 0 {
+		predicates = append(predicates, bookcover.PathIn(i.PathIn...))
+	}
+	if len(i.PathNotIn) > 0 {
+		predicates = append(predicates, bookcover.PathNotIn(i.PathNotIn...))
+	}
+	if i.PathGT != nil {
+		predicates = append(predicates, bookcover.PathGT(*i.PathGT))
+	}
+	if i.PathGTE != nil {
+		predicates = append(predicates, bookcover.PathGTE(*i.PathGTE))
+	}
+	if i.PathLT != nil {
+		predicates = append(predicates, bookcover.PathLT(*i.PathLT))
+	}
+	if i.PathLTE != nil {
+		predicates = append(predicates, bookcover.PathLTE(*i.PathLTE))
+	}
+	if i.PathContains != nil {
+		predicates = append(predicates, bookcover.PathContains(*i.PathContains))
+	}
+	if i.PathHasPrefix != nil {
+		predicates = append(predicates, bookcover.PathHasPrefix(*i.PathHasPrefix))
+	}
+	if i.PathHasSuffix != nil {
+		predicates = append(predicates, bookcover.PathHasSuffix(*i.PathHasSuffix))
+	}
+	if i.PathEqualFold != nil {
+		predicates = append(predicates, bookcover.PathEqualFold(*i.PathEqualFold))
+	}
+	if i.PathContainsFold != nil {
+		predicates = append(predicates, bookcover.PathContainsFold(*i.PathContainsFold))
+	}
+	if i.Size != nil {
+		predicates = append(predicates, bookcover.SizeEQ(*i.Size))
+	}
+	if i.SizeNEQ != nil {
+		predicates = append(predicates, bookcover.SizeNEQ(*i.SizeNEQ))
+	}
+	if len(i.SizeIn) > 0 {
+		predicates = append(predicates, bookcover.SizeIn(i.SizeIn...))
+	}
+	if len(i.SizeNotIn) > 0 {
+		predicates = append(predicates, bookcover.SizeNotIn(i.SizeNotIn...))
+	}
+	if i.SizeGT != nil {
+		predicates = append(predicates, bookcover.SizeGT(*i.SizeGT))
+	}
+	if i.SizeGTE != nil {
+		predicates = append(predicates, bookcover.SizeGTE(*i.SizeGTE))
+	}
+	if i.SizeLT != nil {
+		predicates = append(predicates, bookcover.SizeLT(*i.SizeLT))
+	}
+	if i.SizeLTE != nil {
+		predicates = append(predicates, bookcover.SizeLTE(*i.SizeLTE))
+	}
+	if i.Width != nil {
+		predicates = append(predicates, bookcover.WidthEQ(*i.Width))
+	}
+	if i.WidthNEQ != nil {
+		predicates = append(predicates, bookcover.WidthNEQ(*i.WidthNEQ))
+	}
+	if len(i.WidthIn) > 0 {
+		predicates = append(predicates, bookcover.WidthIn(i.WidthIn...))
+	}
+	if len(i.WidthNotIn) > 0 {
+		predicates = append(predicates, bookcover.WidthNotIn(i.WidthNotIn...))
+	}
+	if i.WidthGT != nil {
+		predicates = append(predicates, bookcover.WidthGT(*i.WidthGT))
+	}
+	if i.WidthGTE != nil {
+		predicates = append(predicates, bookcover.WidthGTE(*i.WidthGTE))
+	}
+	if i.WidthLT != nil {
+		predicates = append(predicates, bookcover.WidthLT(*i.WidthLT))
+	}
+	if i.WidthLTE != nil {
+		predicates = append(predicates, bookcover.WidthLTE(*i.WidthLTE))
+	}
+	if i.Height != nil {
+		predicates = append(predicates, bookcover.HeightEQ(*i.Height))
+	}
+	if i.HeightNEQ != nil {
+		predicates = append(predicates, bookcover.HeightNEQ(*i.HeightNEQ))
+	}
+	if len(i.HeightIn) > 0 {
+		predicates = append(predicates, bookcover.HeightIn(i.HeightIn...))
+	}
+	if len(i.HeightNotIn) > 0 {
+		predicates = append(predicates, bookcover.HeightNotIn(i.HeightNotIn...))
+	}
+	if i.HeightGT != nil {
+		predicates = append(predicates, bookcover.HeightGT(*i.HeightGT))
+	}
+	if i.HeightGTE != nil {
+		predicates = append(predicates, bookcover.HeightGTE(*i.HeightGTE))
+	}
+	if i.HeightLT != nil {
+		predicates = append(predicates, bookcover.HeightLT(*i.HeightLT))
+	}
+	if i.HeightLTE != nil {
+		predicates = append(predicates, bookcover.HeightLTE(*i.HeightLTE))
+	}
+	if i.URL != nil {
+		predicates = append(predicates, bookcover.URLEQ(*i.URL))
+	}
+	if i.URLNEQ != nil {
+		predicates = append(predicates, bookcover.URLNEQ(*i.URLNEQ))
+	}
+	if len(i.URLIn) > 0 {
+		predicates = append(predicates, bookcover.URLIn(i.URLIn...))
+	}
+	if len(i.URLNotIn) > 0 {
+		predicates = append(predicates, bookcover.URLNotIn(i.URLNotIn...))
+	}
+	if i.URLGT != nil {
+		predicates = append(predicates, bookcover.URLGT(*i.URLGT))
+	}
+	if i.URLGTE != nil {
+		predicates = append(predicates, bookcover.URLGTE(*i.URLGTE))
+	}
+	if i.URLLT != nil {
+		predicates = append(predicates, bookcover.URLLT(*i.URLLT))
+	}
+	if i.URLLTE != nil {
+		predicates = append(predicates, bookcover.URLLTE(*i.URLLTE))
+	}
+	if i.URLContains != nil {
+		predicates = append(predicates, bookcover.URLContains(*i.URLContains))
+	}
+	if i.URLHasPrefix != nil {
+		predicates = append(predicates, bookcover.URLHasPrefix(*i.URLHasPrefix))
+	}
+	if i.URLHasSuffix != nil {
+		predicates = append(predicates, bookcover.URLHasSuffix(*i.URLHasSuffix))
+	}
+	if i.URLEqualFold != nil {
+		predicates = append(predicates, bookcover.URLEqualFold(*i.URLEqualFold))
+	}
+	if i.URLContainsFold != nil {
+		predicates = append(predicates, bookcover.URLContainsFold(*i.URLContainsFold))
+	}
+	if i.ContentType != nil {
+		predicates = append(predicates, bookcover.ContentTypeEQ(*i.ContentType))
+	}
+	if i.ContentTypeNEQ != nil {
+		predicates = append(predicates, bookcover.ContentTypeNEQ(*i.ContentTypeNEQ))
+	}
+	if len(i.ContentTypeIn) > 0 {
+		predicates = append(predicates, bookcover.ContentTypeIn(i.ContentTypeIn...))
+	}
+	if len(i.ContentTypeNotIn) > 0 {
+		predicates = append(predicates, bookcover.ContentTypeNotIn(i.ContentTypeNotIn...))
+	}
+	if i.ContentTypeGT != nil {
+		predicates = append(predicates, bookcover.ContentTypeGT(*i.ContentTypeGT))
+	}
+	if i.ContentTypeGTE != nil {
+		predicates = append(predicates, bookcover.ContentTypeGTE(*i.ContentTypeGTE))
+	}
+	if i.ContentTypeLT != nil {
+		predicates = append(predicates, bookcover.ContentTypeLT(*i.ContentTypeLT))
+	}
+	if i.ContentTypeLTE != nil {
+		predicates = append(predicates, bookcover.ContentTypeLTE(*i.ContentTypeLTE))
+	}
+	if i.ContentTypeContains != nil {
+		predicates = append(predicates, bookcover.ContentTypeContains(*i.ContentTypeContains))
+	}
+	if i.ContentTypeHasPrefix != nil {
+		predicates = append(predicates, bookcover.ContentTypeHasPrefix(*i.ContentTypeHasPrefix))
+	}
+	if i.ContentTypeHasSuffix != nil {
+		predicates = append(predicates, bookcover.ContentTypeHasSuffix(*i.ContentTypeHasSuffix))
+	}
+	if i.ContentTypeEqualFold != nil {
+		predicates = append(predicates, bookcover.ContentTypeEqualFold(*i.ContentTypeEqualFold))
+	}
+	if i.ContentTypeContainsFold != nil {
+		predicates = append(predicates, bookcover.ContentTypeContainsFold(*i.ContentTypeContainsFold))
+	}
+
+	if i.HasBook != nil {
+		p := bookcover.HasBook()
+		if !*i.HasBook {
+			p = bookcover.Not(p)
+		}
+		predicates = append(predicates, p)
+	}
+	if len(i.HasBookWith) > 0 {
+		with := make([]predicate.Book, 0, len(i.HasBookWith))
+		for _, w := range i.HasBookWith {
+			p, err := w.P()
+			if err != nil {
+				return nil, fmt.Errorf("%w: field 'HasBookWith'", err)
+			}
+			with = append(with, p)
+		}
+		predicates = append(predicates, bookcover.HasBookWith(with...))
+	}
+	switch len(predicates) {
+	case 0:
+		return nil, ErrEmptyBookCoverWhereInput
+	case 1:
+		return predicates[0], nil
+	default:
+		return bookcover.And(predicates...), nil
 	}
 }
 

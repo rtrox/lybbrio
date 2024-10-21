@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"lybbrio/internal/ent/author"
 	"lybbrio/internal/ent/book"
+	"lybbrio/internal/ent/bookcover"
 	"lybbrio/internal/ent/bookfile"
 	"lybbrio/internal/ent/identifier"
 	"lybbrio/internal/ent/language"
@@ -40,6 +41,7 @@ type BookQuery struct {
 	withLanguage         *LanguageQuery
 	withShelf            *ShelfQuery
 	withFiles            *BookFileQuery
+	withCovers           *BookCoverQuery
 	modifiers            []func(*sql.Selector)
 	loadTotal            []func(context.Context, []*Book) error
 	withNamedAuthors     map[string]*AuthorQuery
@@ -50,6 +52,7 @@ type BookQuery struct {
 	withNamedLanguage    map[string]*LanguageQuery
 	withNamedShelf       map[string]*ShelfQuery
 	withNamedFiles       map[string]*BookFileQuery
+	withNamedCovers      map[string]*BookCoverQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -262,6 +265,28 @@ func (bq *BookQuery) QueryFiles() *BookFileQuery {
 	return query
 }
 
+// QueryCovers chains the current query on the "covers" edge.
+func (bq *BookQuery) QueryCovers() *BookCoverQuery {
+	query := (&BookCoverClient{config: bq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := bq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := bq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(book.Table, book.FieldID, selector),
+			sqlgraph.To(bookcover.Table, bookcover.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, book.CoversTable, book.CoversColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(bq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
 // First returns the first Book entity from the query.
 // Returns a *NotFoundError when no Book was found.
 func (bq *BookQuery) First(ctx context.Context) (*Book, error) {
@@ -462,6 +487,7 @@ func (bq *BookQuery) Clone() *BookQuery {
 		withLanguage:    bq.withLanguage.Clone(),
 		withShelf:       bq.withShelf.Clone(),
 		withFiles:       bq.withFiles.Clone(),
+		withCovers:      bq.withCovers.Clone(),
 		// clone intermediate query.
 		sql:  bq.sql.Clone(),
 		path: bq.path,
@@ -556,6 +582,17 @@ func (bq *BookQuery) WithFiles(opts ...func(*BookFileQuery)) *BookQuery {
 	return bq
 }
 
+// WithCovers tells the query-builder to eager-load the nodes that are connected to
+// the "covers" edge. The optional arguments are used to configure the query builder of the edge.
+func (bq *BookQuery) WithCovers(opts ...func(*BookCoverQuery)) *BookQuery {
+	query := (&BookCoverClient{config: bq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	bq.withCovers = query
+	return bq
+}
+
 // GroupBy is used to group vertices by one or more fields/columns.
 // It is often used with aggregate functions, like: count, max, mean, min, sum.
 //
@@ -640,7 +677,7 @@ func (bq *BookQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Book, e
 	var (
 		nodes       = []*Book{}
 		_spec       = bq.querySpec()
-		loadedTypes = [8]bool{
+		loadedTypes = [9]bool{
 			bq.withAuthors != nil,
 			bq.withPublisher != nil,
 			bq.withSeries != nil,
@@ -649,6 +686,7 @@ func (bq *BookQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Book, e
 			bq.withLanguage != nil,
 			bq.withShelf != nil,
 			bq.withFiles != nil,
+			bq.withCovers != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -728,6 +766,13 @@ func (bq *BookQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Book, e
 			return nil, err
 		}
 	}
+	if query := bq.withCovers; query != nil {
+		if err := bq.loadCovers(ctx, query, nodes,
+			func(n *Book) { n.Edges.Covers = []*BookCover{} },
+			func(n *Book, e *BookCover) { n.Edges.Covers = append(n.Edges.Covers, e) }); err != nil {
+			return nil, err
+		}
+	}
 	for name, query := range bq.withNamedAuthors {
 		if err := bq.loadAuthors(ctx, query, nodes,
 			func(n *Book) { n.appendNamedAuthors(name) },
@@ -781,6 +826,13 @@ func (bq *BookQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Book, e
 		if err := bq.loadFiles(ctx, query, nodes,
 			func(n *Book) { n.appendNamedFiles(name) },
 			func(n *Book, e *BookFile) { n.appendNamedFiles(name, e) }); err != nil {
+			return nil, err
+		}
+	}
+	for name, query := range bq.withNamedCovers {
+		if err := bq.loadCovers(ctx, query, nodes,
+			func(n *Book) { n.appendNamedCovers(name) },
+			func(n *Book, e *BookCover) { n.appendNamedCovers(name, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -1220,6 +1272,37 @@ func (bq *BookQuery) loadFiles(ctx context.Context, query *BookFileQuery, nodes 
 	}
 	return nil
 }
+func (bq *BookQuery) loadCovers(ctx context.Context, query *BookCoverQuery, nodes []*Book, init func(*Book), assign func(*Book, *BookCover)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[ksuid.ID]*Book)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.BookCover(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(book.CoversColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.book_cover_book
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "book_cover_book" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "book_cover_book" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
 
 func (bq *BookQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := bq.querySpec()
@@ -1414,6 +1497,20 @@ func (bq *BookQuery) WithNamedFiles(name string, opts ...func(*BookFileQuery)) *
 		bq.withNamedFiles = make(map[string]*BookFileQuery)
 	}
 	bq.withNamedFiles[name] = query
+	return bq
+}
+
+// WithNamedCovers tells the query-builder to eager-load the nodes that are connected to the "covers"
+// edge with the given name. The optional arguments are used to configure the query builder of the edge.
+func (bq *BookQuery) WithNamedCovers(name string, opts ...func(*BookCoverQuery)) *BookQuery {
+	query := (&BookCoverClient{config: bq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	if bq.withNamedCovers == nil {
+		bq.withNamedCovers = make(map[string]*BookCoverQuery)
+	}
+	bq.withNamedCovers[name] = query
 	return bq
 }
 

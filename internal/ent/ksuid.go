@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"lybbrio/internal/ent/author"
 	"lybbrio/internal/ent/book"
+	"lybbrio/internal/ent/bookcover"
 	"lybbrio/internal/ent/bookfile"
 	"lybbrio/internal/ent/identifier"
 	"lybbrio/internal/ent/language"
@@ -24,6 +25,7 @@ import (
 var prefixMap = map[ksuid.ID]string{
 	"atr": author.Table,
 	"bok": book.Table,
+	"cvr": bookcover.Table,
 	"fil": bookfile.Table,
 	"idn": identifier.Table,
 	"lng": language.Table,

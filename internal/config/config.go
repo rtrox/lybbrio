@@ -29,6 +29,9 @@ var defaultSettings = map[string]interface{}{
 	"go-collector":              true,
 	"process-collector":         true,
 	"calibre-library-path":      "./books/",
+	"dev-mode":                  false,
+	"dev-proxy":                 "http://localhost:5173/",
+	"asset-folder":              "dist",
 	"db": map[string]interface{}{
 		"driver":            "sqlite3",
 		"dsn":               "file:database/app.db?cache=shared&_fk=1",
@@ -82,6 +85,9 @@ func RegisterFlags(flagSet *flag.FlagSet) {
 	flagSet.String("jwt.hmac-secret", "", "JWT HMACSecret")
 	flagSet.String("jwt.rsa-private-key", "", "JWT RSAPrivateKey")
 	flagSet.String("jwt.rsa-public-key", "", "JWT RSAPublicKey")
+	flagSet.Bool("dev-mode", false, "Development mode")
+	flagSet.String("dev-proxy", "http://localhost:3000", "Development proxy")
+	flagSet.String("asset-folder", "dist", "Asset folder")
 }
 
 type DatabaseConfig struct {
@@ -153,6 +159,8 @@ type Config struct {
 	Interface               string        `koanf:"interface" validate:"ip"`
 	Port                    int           `koanf:"port" validate:"number,gt=0"`
 	DevMode                 bool          `koanf:"dev-mode"`
+	DevProxy                string        `koanf:"dev-proxy" validate:"url"`
+	AssetFolder             string        `koanf:"asset-folder"`
 
 	GoCollector      bool `koanf:"go-collector"`
 	ProcessCollector bool `koanf:"process-collector"`

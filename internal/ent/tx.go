@@ -16,6 +16,8 @@ type Tx struct {
 	Author *AuthorClient
 	// Book is the client for interacting with the Book builders.
 	Book *BookClient
+	// BookCover is the client for interacting with the BookCover builders.
+	BookCover *BookCoverClient
 	// BookFile is the client for interacting with the BookFile builders.
 	BookFile *BookFileClient
 	// Identifier is the client for interacting with the Identifier builders.
@@ -169,6 +171,7 @@ func (tx *Tx) Client() *Client {
 func (tx *Tx) init() {
 	tx.Author = NewAuthorClient(tx.config)
 	tx.Book = NewBookClient(tx.config)
+	tx.BookCover = NewBookCoverClient(tx.config)
 	tx.BookFile = NewBookFileClient(tx.config)
 	tx.Identifier = NewIdentifierClient(tx.config)
 	tx.Language = NewLanguageClient(tx.config)

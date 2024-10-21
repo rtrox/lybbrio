@@ -77,6 +77,7 @@ type ComplexityRoot struct {
 	Book struct {
 		Authors       func(childComplexity int) int
 		CalibreID     func(childComplexity int) int
+		Covers        func(childComplexity int) int
 		CreateTime    func(childComplexity int) int
 		Description   func(childComplexity int) int
 		Files         func(childComplexity int) int
@@ -100,6 +101,30 @@ type ComplexityRoot struct {
 		Edges      func(childComplexity int) int
 		PageInfo   func(childComplexity int) int
 		TotalCount func(childComplexity int) int
+	}
+
+	BookCover struct {
+		Book        func(childComplexity int) int
+		ContentType func(childComplexity int) int
+		CreateTime  func(childComplexity int) int
+		Height      func(childComplexity int) int
+		ID          func(childComplexity int) int
+		Path        func(childComplexity int) int
+		Size        func(childComplexity int) int
+		URL         func(childComplexity int) int
+		UpdateTime  func(childComplexity int) int
+		Width       func(childComplexity int) int
+	}
+
+	BookCoverConnection struct {
+		Edges      func(childComplexity int) int
+		PageInfo   func(childComplexity int) int
+		TotalCount func(childComplexity int) int
+	}
+
+	BookCoverEdge struct {
+		Cursor func(childComplexity int) int
+		Node   func(childComplexity int) int
 	}
 
 	BookEdge struct {
@@ -210,6 +235,7 @@ type ComplexityRoot struct {
 
 	Query struct {
 		Authors     func(childComplexity int, after *entgql.Cursor[ksuid.ID], first *int, before *entgql.Cursor[ksuid.ID], last *int, orderBy []*ent.AuthorOrder, where *ent.AuthorWhereInput) int
+		BookCovers  func(childComplexity int, after *entgql.Cursor[ksuid.ID], first *int, before *entgql.Cursor[ksuid.ID], last *int, orderBy *ent.BookCoverOrder, where *ent.BookCoverWhereInput) int
 		BookFiles   func(childComplexity int) int
 		Books       func(childComplexity int, after *entgql.Cursor[ksuid.ID], first *int, before *entgql.Cursor[ksuid.ID], last *int, orderBy []*ent.BookOrder, where *ent.BookWhereInput) int
 		Identifiers func(childComplexity int, after *entgql.Cursor[ksuid.ID], first *int, before *entgql.Cursor[ksuid.ID], last *int, orderBy []*ent.IdentifierOrder, where *ent.IdentifierWhereInput) int
@@ -360,6 +386,7 @@ type QueryResolver interface {
 	Nodes(ctx context.Context, ids []ksuid.ID) ([]ent.Noder, error)
 	Authors(ctx context.Context, after *entgql.Cursor[ksuid.ID], first *int, before *entgql.Cursor[ksuid.ID], last *int, orderBy []*ent.AuthorOrder, where *ent.AuthorWhereInput) (*ent.AuthorConnection, error)
 	Books(ctx context.Context, after *entgql.Cursor[ksuid.ID], first *int, before *entgql.Cursor[ksuid.ID], last *int, orderBy []*ent.BookOrder, where *ent.BookWhereInput) (*ent.BookConnection, error)
+	BookCovers(ctx context.Context, after *entgql.Cursor[ksuid.ID], first *int, before *entgql.Cursor[ksuid.ID], last *int, orderBy *ent.BookCoverOrder, where *ent.BookCoverWhereInput) (*ent.BookCoverConnection, error)
 	BookFiles(ctx context.Context) ([]*ent.BookFile, error)
 	Identifiers(ctx context.Context, after *entgql.Cursor[ksuid.ID], first *int, before *entgql.Cursor[ksuid.ID], last *int, orderBy []*ent.IdentifierOrder, where *ent.IdentifierWhereInput) (*ent.IdentifierConnection, error)
 	Languages(ctx context.Context, after *entgql.Cursor[ksuid.ID], first *int, before *entgql.Cursor[ksuid.ID], last *int, orderBy []*ent.LanguageOrder, where *ent.LanguageWhereInput) (*ent.LanguageConnection, error)
@@ -501,6 +528,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Book.CalibreID(childComplexity), true
 
+	case "Book.covers":
+		if e.complexity.Book.Covers == nil {
+			break
+		}
+
+		return e.complexity.Book.Covers(childComplexity), true
+
 	case "Book.createTime":
 		if e.complexity.Book.CreateTime == nil {
 			break
@@ -640,6 +674,111 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.BookConnection.TotalCount(childComplexity), true
+
+	case "BookCover.book":
+		if e.complexity.BookCover.Book == nil {
+			break
+		}
+
+		return e.complexity.BookCover.Book(childComplexity), true
+
+	case "BookCover.contenttype":
+		if e.complexity.BookCover.ContentType == nil {
+			break
+		}
+
+		return e.complexity.BookCover.ContentType(childComplexity), true
+
+	case "BookCover.createTime":
+		if e.complexity.BookCover.CreateTime == nil {
+			break
+		}
+
+		return e.complexity.BookCover.CreateTime(childComplexity), true
+
+	case "BookCover.height":
+		if e.complexity.BookCover.Height == nil {
+			break
+		}
+
+		return e.complexity.BookCover.Height(childComplexity), true
+
+	case "BookCover.id":
+		if e.complexity.BookCover.ID == nil {
+			break
+		}
+
+		return e.complexity.BookCover.ID(childComplexity), true
+
+	case "BookCover.path":
+		if e.complexity.BookCover.Path == nil {
+			break
+		}
+
+		return e.complexity.BookCover.Path(childComplexity), true
+
+	case "BookCover.size":
+		if e.complexity.BookCover.Size == nil {
+			break
+		}
+
+		return e.complexity.BookCover.Size(childComplexity), true
+
+	case "BookCover.url":
+		if e.complexity.BookCover.URL == nil {
+			break
+		}
+
+		return e.complexity.BookCover.URL(childComplexity), true
+
+	case "BookCover.updateTime":
+		if e.complexity.BookCover.UpdateTime == nil {
+			break
+		}
+
+		return e.complexity.BookCover.UpdateTime(childComplexity), true
+
+	case "BookCover.width":
+		if e.complexity.BookCover.Width == nil {
+			break
+		}
+
+		return e.complexity.BookCover.Width(childComplexity), true
+
+	case "BookCoverConnection.edges":
+		if e.complexity.BookCoverConnection.Edges == nil {
+			break
+		}
+
+		return e.complexity.BookCoverConnection.Edges(childComplexity), true
+
+	case "BookCoverConnection.pageInfo":
+		if e.complexity.BookCoverConnection.PageInfo == nil {
+			break
+		}
+
+		return e.complexity.BookCoverConnection.PageInfo(childComplexity), true
+
+	case "BookCoverConnection.totalCount":
+		if e.complexity.BookCoverConnection.TotalCount == nil {
+			break
+		}
+
+		return e.complexity.BookCoverConnection.TotalCount(childComplexity), true
+
+	case "BookCoverEdge.cursor":
+		if e.complexity.BookCoverEdge.Cursor == nil {
+			break
+		}
+
+		return e.complexity.BookCoverEdge.Cursor(childComplexity), true
+
+	case "BookCoverEdge.node":
+		if e.complexity.BookCoverEdge.Node == nil {
+			break
+		}
+
+		return e.complexity.BookCoverEdge.Node(childComplexity), true
 
 	case "BookEdge.cursor":
 		if e.complexity.BookEdge.Cursor == nil {
@@ -1226,6 +1365,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.Authors(childComplexity, args["after"].(*entgql.Cursor[ksuid.ID]), args["first"].(*int), args["before"].(*entgql.Cursor[ksuid.ID]), args["last"].(*int), args["orderBy"].([]*ent.AuthorOrder), args["where"].(*ent.AuthorWhereInput)), true
+
+	case "Query.bookCovers":
+		if e.complexity.Query.BookCovers == nil {
+			break
+		}
+
+		args, err := ec.field_Query_bookCovers_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.BookCovers(childComplexity, args["after"].(*entgql.Cursor[ksuid.ID]), args["first"].(*int), args["before"].(*entgql.Cursor[ksuid.ID]), args["last"].(*int), args["orderBy"].(*ent.BookCoverOrder), args["where"].(*ent.BookCoverWhereInput)), true
 
 	case "Query.bookFiles":
 		if e.complexity.Query.BookFiles == nil {
@@ -1850,6 +2001,8 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
 		ec.unmarshalInputAuthorOrder,
 		ec.unmarshalInputAuthorWhereInput,
+		ec.unmarshalInputBookCoverOrder,
+		ec.unmarshalInputBookCoverWhereInput,
 		ec.unmarshalInputBookFileWhereInput,
 		ec.unmarshalInputBookOrder,
 		ec.unmarshalInputBookWhereInput,
@@ -1999,49 +2152,83 @@ type Author implements Node {
   sort: String!
   link: String
   books(
-    """Returns the elements in the list that come after the specified cursor."""
+    """
+    Returns the elements in the list that come after the specified cursor.
+    """
     after: Cursor
 
-    """Returns the first _n_ elements from the list."""
+    """
+    Returns the first _n_ elements from the list.
+    """
     first: Int
 
-    """Returns the elements in the list that come before the specified cursor."""
+    """
+    Returns the elements in the list that come before the specified cursor.
+    """
     before: Cursor
 
-    """Returns the last _n_ elements from the list."""
+    """
+    Returns the last _n_ elements from the list.
+    """
     last: Int
 
-    """Ordering options for Books returned from the connection."""
+    """
+    Ordering options for Books returned from the connection.
+    """
     orderBy: [BookOrder!]
 
-    """Filtering options for Books returned from the connection."""
+    """
+    Filtering options for Books returned from the connection.
+    """
     where: BookWhereInput
   ): BookConnection!
 }
-"""A connection to a list of items."""
+"""
+A connection to a list of items.
+"""
 type AuthorConnection {
-  """A list of edges."""
+  """
+  A list of edges.
+  """
   edges: [AuthorEdge]
-  """Information to aid in pagination."""
+  """
+  Information to aid in pagination.
+  """
   pageInfo: PageInfo!
-  """Identifies the total count of items in the connection."""
+  """
+  Identifies the total count of items in the connection.
+  """
   totalCount: Int!
 }
-"""An edge in a connection."""
+"""
+An edge in a connection.
+"""
 type AuthorEdge {
-  """The item at the end of the edge."""
+  """
+  The item at the end of the edge.
+  """
   node: Author
-  """A cursor for use in pagination."""
+  """
+  A cursor for use in pagination.
+  """
   cursor: Cursor!
 }
-"""Ordering options for Author connections"""
+"""
+Ordering options for Author connections
+"""
 input AuthorOrder {
-  """The ordering direction."""
+  """
+  The ordering direction.
+  """
   direction: OrderDirection! = ASC
-  """The field by which to order Authors."""
+  """
+  The field by which to order Authors.
+  """
   field: AuthorOrderField!
 }
-"""Properties by which Author connections can be ordered."""
+"""
+Properties by which Author connections can be ordered.
+"""
 enum AuthorOrderField {
   NAME
   BOOKS_COUNT
@@ -2054,7 +2241,9 @@ input AuthorWhereInput {
   not: AuthorWhereInput
   and: [AuthorWhereInput!]
   or: [AuthorWhereInput!]
-  """id field predicates"""
+  """
+  id field predicates
+  """
   id: ID
   idNEQ: ID
   idIn: [ID!]
@@ -2063,7 +2252,9 @@ input AuthorWhereInput {
   idGTE: ID
   idLT: ID
   idLTE: ID
-  """create_time field predicates"""
+  """
+  create_time field predicates
+  """
   createTime: Time
   createTimeNEQ: Time
   createTimeIn: [Time!]
@@ -2072,7 +2263,9 @@ input AuthorWhereInput {
   createTimeGTE: Time
   createTimeLT: Time
   createTimeLTE: Time
-  """update_time field predicates"""
+  """
+  update_time field predicates
+  """
   updateTime: Time
   updateTimeNEQ: Time
   updateTimeIn: [Time!]
@@ -2081,7 +2274,9 @@ input AuthorWhereInput {
   updateTimeGTE: Time
   updateTimeLT: Time
   updateTimeLTE: Time
-  """calibre_id field predicates"""
+  """
+  calibre_id field predicates
+  """
   calibreID: Int
   calibreIDNEQ: Int
   calibreIDIn: [Int!]
@@ -2092,7 +2287,9 @@ input AuthorWhereInput {
   calibreIDLTE: Int
   calibreIDIsNil: Boolean
   calibreIDNotNil: Boolean
-  """name field predicates"""
+  """
+  name field predicates
+  """
   name: String
   nameNEQ: String
   nameIn: [String!]
@@ -2106,7 +2303,9 @@ input AuthorWhereInput {
   nameHasSuffix: String
   nameEqualFold: String
   nameContainsFold: String
-  """sort field predicates"""
+  """
+  sort field predicates
+  """
   sort: String
   sortNEQ: String
   sortIn: [String!]
@@ -2120,7 +2319,9 @@ input AuthorWhereInput {
   sortHasSuffix: String
   sortEqualFold: String
   sortContainsFold: String
-  """link field predicates"""
+  """
+  link field predicates
+  """
   link: String
   linkNEQ: String
   linkIn: [String!]
@@ -2136,7 +2337,9 @@ input AuthorWhereInput {
   linkNotNil: Boolean
   linkEqualFold: String
   linkContainsFold: String
-  """books edge predicates"""
+  """
+  books edge predicates
+  """
   hasBooks: Boolean
   hasBooksWith: [BookWhereInput!]
 }
@@ -2160,48 +2363,112 @@ type Book implements Node {
   language: [Language!]
   shelf: [Shelf!]
   files: [BookFile!]
+  covers: [BookCover!]
 }
-"""A connection to a list of items."""
+"""
+A connection to a list of items.
+"""
 type BookConnection {
-  """A list of edges."""
+  """
+  A list of edges.
+  """
   edges: [BookEdge]
-  """Information to aid in pagination."""
+  """
+  Information to aid in pagination.
+  """
   pageInfo: PageInfo!
-  """Identifies the total count of items in the connection."""
+  """
+  Identifies the total count of items in the connection.
+  """
   totalCount: Int!
 }
-"""An edge in a connection."""
-type BookEdge {
-  """The item at the end of the edge."""
-  node: Book
-  """A cursor for use in pagination."""
-  cursor: Cursor!
-}
-type BookFile implements Node {
+type BookCover implements Node {
   id: ID!
   createTime: Time!
   updateTime: Time!
-  name: String!
   path: String!
-  """Size in bytes"""
+  """
+  Size in bytes
+  """
   size: Int!
-  format: BookFileFormat!
+  """
+  Width in pixels
+  """
+  width: Int!
+  """
+  Height in pixels
+  """
+  height: Int!
+  """
+  URL to the image
+  """
+  url: String!
+  """
+  MIME type
+  """
+  contenttype: String! @goField(name: "ContentType", forceResolver: false)
   book: Book!
 }
-"""BookFileFormat is enum for the field format"""
-enum BookFileFormat @goModel(model: "lybbrio/internal/ent/bookfile.Format") {
-  EPUB
-  KEPUB
+"""
+A connection to a list of items.
+"""
+type BookCoverConnection {
+  """
+  A list of edges.
+  """
+  edges: [BookCoverEdge]
+  """
+  Information to aid in pagination.
+  """
+  pageInfo: PageInfo!
+  """
+  Identifies the total count of items in the connection.
+  """
+  totalCount: Int!
 }
 """
-BookFileWhereInput is used for filtering BookFile objects.
+An edge in a connection.
+"""
+type BookCoverEdge {
+  """
+  The item at the end of the edge.
+  """
+  node: BookCover
+  """
+  A cursor for use in pagination.
+  """
+  cursor: Cursor!
+}
+"""
+Ordering options for BookCover connections
+"""
+input BookCoverOrder {
+  """
+  The ordering direction.
+  """
+  direction: OrderDirection! = ASC
+  """
+  The field by which to order BookCovers.
+  """
+  field: BookCoverOrderField!
+}
+"""
+Properties by which BookCover connections can be ordered.
+"""
+enum BookCoverOrderField {
+  SIZE
+}
+"""
+BookCoverWhereInput is used for filtering BookCover objects.
 Input was generated by ent.
 """
-input BookFileWhereInput {
-  not: BookFileWhereInput
-  and: [BookFileWhereInput!]
-  or: [BookFileWhereInput!]
-  """id field predicates"""
+input BookCoverWhereInput {
+  not: BookCoverWhereInput
+  and: [BookCoverWhereInput!]
+  or: [BookCoverWhereInput!]
+  """
+  id field predicates
+  """
   id: ID
   idNEQ: ID
   idIn: [ID!]
@@ -2210,7 +2477,9 @@ input BookFileWhereInput {
   idGTE: ID
   idLT: ID
   idLTE: ID
-  """create_time field predicates"""
+  """
+  create_time field predicates
+  """
   createTime: Time
   createTimeNEQ: Time
   createTimeIn: [Time!]
@@ -2219,7 +2488,9 @@ input BookFileWhereInput {
   createTimeGTE: Time
   createTimeLT: Time
   createTimeLTE: Time
-  """update_time field predicates"""
+  """
+  update_time field predicates
+  """
   updateTime: Time
   updateTimeNEQ: Time
   updateTimeIn: [Time!]
@@ -2228,21 +2499,9 @@ input BookFileWhereInput {
   updateTimeGTE: Time
   updateTimeLT: Time
   updateTimeLTE: Time
-  """name field predicates"""
-  name: String
-  nameNEQ: String
-  nameIn: [String!]
-  nameNotIn: [String!]
-  nameGT: String
-  nameGTE: String
-  nameLT: String
-  nameLTE: String
-  nameContains: String
-  nameHasPrefix: String
-  nameHasSuffix: String
-  nameEqualFold: String
-  nameContainsFold: String
-  """path field predicates"""
+  """
+  path field predicates
+  """
   path: String
   pathNEQ: String
   pathIn: [String!]
@@ -2256,7 +2515,9 @@ input BookFileWhereInput {
   pathHasSuffix: String
   pathEqualFold: String
   pathContainsFold: String
-  """size field predicates"""
+  """
+  size field predicates
+  """
   size: Int
   sizeNEQ: Int
   sizeIn: [Int!]
@@ -2265,23 +2526,212 @@ input BookFileWhereInput {
   sizeGTE: Int
   sizeLT: Int
   sizeLTE: Int
-  """format field predicates"""
+  """
+  width field predicates
+  """
+  width: Int
+  widthNEQ: Int
+  widthIn: [Int!]
+  widthNotIn: [Int!]
+  widthGT: Int
+  widthGTE: Int
+  widthLT: Int
+  widthLTE: Int
+  """
+  height field predicates
+  """
+  height: Int
+  heightNEQ: Int
+  heightIn: [Int!]
+  heightNotIn: [Int!]
+  heightGT: Int
+  heightGTE: Int
+  heightLT: Int
+  heightLTE: Int
+  """
+  url field predicates
+  """
+  url: String
+  urlNEQ: String
+  urlIn: [String!]
+  urlNotIn: [String!]
+  urlGT: String
+  urlGTE: String
+  urlLT: String
+  urlLTE: String
+  urlContains: String
+  urlHasPrefix: String
+  urlHasSuffix: String
+  urlEqualFold: String
+  urlContainsFold: String
+  """
+  contentType field predicates
+  """
+  contenttype: String
+  contenttypeNEQ: String
+  contenttypeIn: [String!]
+  contenttypeNotIn: [String!]
+  contenttypeGT: String
+  contenttypeGTE: String
+  contenttypeLT: String
+  contenttypeLTE: String
+  contenttypeContains: String
+  contenttypeHasPrefix: String
+  contenttypeHasSuffix: String
+  contenttypeEqualFold: String
+  contenttypeContainsFold: String
+  """
+  book edge predicates
+  """
+  hasBook: Boolean
+  hasBookWith: [BookWhereInput!]
+}
+"""
+An edge in a connection.
+"""
+type BookEdge {
+  """
+  The item at the end of the edge.
+  """
+  node: Book
+  """
+  A cursor for use in pagination.
+  """
+  cursor: Cursor!
+}
+type BookFile implements Node {
+  id: ID!
+  createTime: Time!
+  updateTime: Time!
+  name: String!
+  path: String!
+  """
+  Size in bytes
+  """
+  size: Int!
+  format: BookFileFormat!
+  book: Book!
+}
+"""
+BookFileFormat is enum for the field format
+"""
+enum BookFileFormat @goModel(model: "lybbrio/internal/ent/bookfile.Format") {
+  EPUB
+  KEPUB
+}
+"""
+BookFileWhereInput is used for filtering BookFile objects.
+Input was generated by ent.
+"""
+input BookFileWhereInput {
+  not: BookFileWhereInput
+  and: [BookFileWhereInput!]
+  or: [BookFileWhereInput!]
+  """
+  id field predicates
+  """
+  id: ID
+  idNEQ: ID
+  idIn: [ID!]
+  idNotIn: [ID!]
+  idGT: ID
+  idGTE: ID
+  idLT: ID
+  idLTE: ID
+  """
+  create_time field predicates
+  """
+  createTime: Time
+  createTimeNEQ: Time
+  createTimeIn: [Time!]
+  createTimeNotIn: [Time!]
+  createTimeGT: Time
+  createTimeGTE: Time
+  createTimeLT: Time
+  createTimeLTE: Time
+  """
+  update_time field predicates
+  """
+  updateTime: Time
+  updateTimeNEQ: Time
+  updateTimeIn: [Time!]
+  updateTimeNotIn: [Time!]
+  updateTimeGT: Time
+  updateTimeGTE: Time
+  updateTimeLT: Time
+  updateTimeLTE: Time
+  """
+  name field predicates
+  """
+  name: String
+  nameNEQ: String
+  nameIn: [String!]
+  nameNotIn: [String!]
+  nameGT: String
+  nameGTE: String
+  nameLT: String
+  nameLTE: String
+  nameContains: String
+  nameHasPrefix: String
+  nameHasSuffix: String
+  nameEqualFold: String
+  nameContainsFold: String
+  """
+  path field predicates
+  """
+  path: String
+  pathNEQ: String
+  pathIn: [String!]
+  pathNotIn: [String!]
+  pathGT: String
+  pathGTE: String
+  pathLT: String
+  pathLTE: String
+  pathContains: String
+  pathHasPrefix: String
+  pathHasSuffix: String
+  pathEqualFold: String
+  pathContainsFold: String
+  """
+  size field predicates
+  """
+  size: Int
+  sizeNEQ: Int
+  sizeIn: [Int!]
+  sizeNotIn: [Int!]
+  sizeGT: Int
+  sizeGTE: Int
+  sizeLT: Int
+  sizeLTE: Int
+  """
+  format field predicates
+  """
   format: BookFileFormat
   formatNEQ: BookFileFormat
   formatIn: [BookFileFormat!]
   formatNotIn: [BookFileFormat!]
-  """book edge predicates"""
+  """
+  book edge predicates
+  """
   hasBook: Boolean
   hasBookWith: [BookWhereInput!]
 }
-"""Ordering options for Book connections"""
+"""
+Ordering options for Book connections
+"""
 input BookOrder {
-  """The ordering direction."""
+  """
+  The ordering direction.
+  """
   direction: OrderDirection! = ASC
-  """The field by which to order Books."""
+  """
+  The field by which to order Books.
+  """
   field: BookOrderField!
 }
-"""Properties by which Book connections can be ordered."""
+"""
+Properties by which Book connections can be ordered.
+"""
 enum BookOrderField {
   TITLE
   NAME
@@ -2297,7 +2747,9 @@ input BookWhereInput {
   not: BookWhereInput
   and: [BookWhereInput!]
   or: [BookWhereInput!]
-  """id field predicates"""
+  """
+  id field predicates
+  """
   id: ID
   idNEQ: ID
   idIn: [ID!]
@@ -2306,7 +2758,9 @@ input BookWhereInput {
   idGTE: ID
   idLT: ID
   idLTE: ID
-  """create_time field predicates"""
+  """
+  create_time field predicates
+  """
   createTime: Time
   createTimeNEQ: Time
   createTimeIn: [Time!]
@@ -2315,7 +2769,9 @@ input BookWhereInput {
   createTimeGTE: Time
   createTimeLT: Time
   createTimeLTE: Time
-  """update_time field predicates"""
+  """
+  update_time field predicates
+  """
   updateTime: Time
   updateTimeNEQ: Time
   updateTimeIn: [Time!]
@@ -2324,7 +2780,9 @@ input BookWhereInput {
   updateTimeGTE: Time
   updateTimeLT: Time
   updateTimeLTE: Time
-  """calibre_id field predicates"""
+  """
+  calibre_id field predicates
+  """
   calibreID: Int
   calibreIDNEQ: Int
   calibreIDIn: [Int!]
@@ -2335,7 +2793,9 @@ input BookWhereInput {
   calibreIDLTE: Int
   calibreIDIsNil: Boolean
   calibreIDNotNil: Boolean
-  """title field predicates"""
+  """
+  title field predicates
+  """
   title: String
   titleNEQ: String
   titleIn: [String!]
@@ -2349,7 +2809,9 @@ input BookWhereInput {
   titleHasSuffix: String
   titleEqualFold: String
   titleContainsFold: String
-  """sort field predicates"""
+  """
+  sort field predicates
+  """
   sort: String
   sortNEQ: String
   sortIn: [String!]
@@ -2363,7 +2825,9 @@ input BookWhereInput {
   sortHasSuffix: String
   sortEqualFold: String
   sortContainsFold: String
-  """published_date field predicates"""
+  """
+  published_date field predicates
+  """
   publishedDate: Time
   publishedDateNEQ: Time
   publishedDateIn: [Time!]
@@ -2374,7 +2838,9 @@ input BookWhereInput {
   publishedDateLTE: Time
   publishedDateIsNil: Boolean
   publishedDateNotNil: Boolean
-  """path field predicates"""
+  """
+  path field predicates
+  """
   path: String
   pathNEQ: String
   pathIn: [String!]
@@ -2388,7 +2854,9 @@ input BookWhereInput {
   pathHasSuffix: String
   pathEqualFold: String
   pathContainsFold: String
-  """isbn field predicates"""
+  """
+  isbn field predicates
+  """
   isbn: String
   isbnNEQ: String
   isbnIn: [String!]
@@ -2404,7 +2872,9 @@ input BookWhereInput {
   isbnNotNil: Boolean
   isbnEqualFold: String
   isbnContainsFold: String
-  """description field predicates"""
+  """
+  description field predicates
+  """
   description: String
   descriptionNEQ: String
   descriptionIn: [String!]
@@ -2420,7 +2890,9 @@ input BookWhereInput {
   descriptionNotNil: Boolean
   descriptionEqualFold: String
   descriptionContainsFold: String
-  """series_index field predicates"""
+  """
+  series_index field predicates
+  """
   seriesIndex: Float
   seriesIndexNEQ: Float
   seriesIndexIn: [Float!]
@@ -2431,30 +2903,51 @@ input BookWhereInput {
   seriesIndexLTE: Float
   seriesIndexIsNil: Boolean
   seriesIndexNotNil: Boolean
-  """authors edge predicates"""
+  """
+  authors edge predicates
+  """
   hasAuthors: Boolean
   hasAuthorsWith: [AuthorWhereInput!]
-  """publisher edge predicates"""
+  """
+  publisher edge predicates
+  """
   hasPublisher: Boolean
   hasPublisherWith: [PublisherWhereInput!]
-  """series edge predicates"""
+  """
+  series edge predicates
+  """
   hasSeries: Boolean
   hasSeriesWith: [SeriesWhereInput!]
-  """identifiers edge predicates"""
+  """
+  identifiers edge predicates
+  """
   hasIdentifiers: Boolean
   hasIdentifiersWith: [IdentifierWhereInput!]
-  """tags edge predicates"""
+  """
+  tags edge predicates
+  """
   hasTags: Boolean
   hasTagsWith: [TagWhereInput!]
-  """language edge predicates"""
+  """
+  language edge predicates
+  """
   hasLanguage: Boolean
   hasLanguageWith: [LanguageWhereInput!]
-  """shelf edge predicates"""
+  """
+  shelf edge predicates
+  """
   hasShelf: Boolean
   hasShelfWith: [ShelfWhereInput!]
-  """files edge predicates"""
+  """
+  files edge predicates
+  """
   hasFiles: Boolean
   hasFilesWith: [BookFileWhereInput!]
+  """
+  covers edge predicates
+  """
+  hasCovers: Boolean
+  hasCoversWith: [BookCoverWhereInput!]
 }
 """
 CreateAuthorInput is used for create Author object.
@@ -2492,6 +2985,7 @@ input CreateBookInput {
   languageIDs: [ID!]
   shelfIDs: [ID!]
   fileIDs: [ID!]
+  coverIDs: [ID!]
 }
 """
 CreateIdentifierInput is used for create Identifier object.
@@ -2574,30 +3068,52 @@ type Identifier implements Node {
   value: String!
   book: Book!
 }
-"""A connection to a list of items."""
+"""
+A connection to a list of items.
+"""
 type IdentifierConnection {
-  """A list of edges."""
+  """
+  A list of edges.
+  """
   edges: [IdentifierEdge]
-  """Information to aid in pagination."""
+  """
+  Information to aid in pagination.
+  """
   pageInfo: PageInfo!
-  """Identifies the total count of items in the connection."""
+  """
+  Identifies the total count of items in the connection.
+  """
   totalCount: Int!
 }
-"""An edge in a connection."""
+"""
+An edge in a connection.
+"""
 type IdentifierEdge {
-  """The item at the end of the edge."""
+  """
+  The item at the end of the edge.
+  """
   node: Identifier
-  """A cursor for use in pagination."""
+  """
+  A cursor for use in pagination.
+  """
   cursor: Cursor!
 }
-"""Ordering options for Identifier connections"""
+"""
+Ordering options for Identifier connections
+"""
 input IdentifierOrder {
-  """The ordering direction."""
+  """
+  The ordering direction.
+  """
   direction: OrderDirection! = ASC
-  """The field by which to order Identifiers."""
+  """
+  The field by which to order Identifiers.
+  """
   field: IdentifierOrderField!
 }
-"""Properties by which Identifier connections can be ordered."""
+"""
+Properties by which Identifier connections can be ordered.
+"""
 enum IdentifierOrderField {
   TYPE
   VALUE
@@ -2610,7 +3126,9 @@ input IdentifierWhereInput {
   not: IdentifierWhereInput
   and: [IdentifierWhereInput!]
   or: [IdentifierWhereInput!]
-  """id field predicates"""
+  """
+  id field predicates
+  """
   id: ID
   idNEQ: ID
   idIn: [ID!]
@@ -2619,7 +3137,9 @@ input IdentifierWhereInput {
   idGTE: ID
   idLT: ID
   idLTE: ID
-  """create_time field predicates"""
+  """
+  create_time field predicates
+  """
   createTime: Time
   createTimeNEQ: Time
   createTimeIn: [Time!]
@@ -2628,7 +3148,9 @@ input IdentifierWhereInput {
   createTimeGTE: Time
   createTimeLT: Time
   createTimeLTE: Time
-  """update_time field predicates"""
+  """
+  update_time field predicates
+  """
   updateTime: Time
   updateTimeNEQ: Time
   updateTimeIn: [Time!]
@@ -2637,7 +3159,9 @@ input IdentifierWhereInput {
   updateTimeGTE: Time
   updateTimeLT: Time
   updateTimeLTE: Time
-  """calibre_id field predicates"""
+  """
+  calibre_id field predicates
+  """
   calibreID: Int
   calibreIDNEQ: Int
   calibreIDIn: [Int!]
@@ -2648,7 +3172,9 @@ input IdentifierWhereInput {
   calibreIDLTE: Int
   calibreIDIsNil: Boolean
   calibreIDNotNil: Boolean
-  """type field predicates"""
+  """
+  type field predicates
+  """
   type: String
   typeNEQ: String
   typeIn: [String!]
@@ -2662,7 +3188,9 @@ input IdentifierWhereInput {
   typeHasSuffix: String
   typeEqualFold: String
   typeContainsFold: String
-  """value field predicates"""
+  """
+  value field predicates
+  """
   value: String
   valueNEQ: String
   valueIn: [String!]
@@ -2676,7 +3204,9 @@ input IdentifierWhereInput {
   valueHasSuffix: String
   valueEqualFold: String
   valueContainsFold: String
-  """book edge predicates"""
+  """
+  book edge predicates
+  """
   hasBook: Boolean
   hasBookWith: [BookWhereInput!]
 }
@@ -2687,49 +3217,83 @@ type Language implements Node {
   calibreID: Int
   code: String!
   books(
-    """Returns the elements in the list that come after the specified cursor."""
+    """
+    Returns the elements in the list that come after the specified cursor.
+    """
     after: Cursor
 
-    """Returns the first _n_ elements from the list."""
+    """
+    Returns the first _n_ elements from the list.
+    """
     first: Int
 
-    """Returns the elements in the list that come before the specified cursor."""
+    """
+    Returns the elements in the list that come before the specified cursor.
+    """
     before: Cursor
 
-    """Returns the last _n_ elements from the list."""
+    """
+    Returns the last _n_ elements from the list.
+    """
     last: Int
 
-    """Ordering options for Books returned from the connection."""
+    """
+    Ordering options for Books returned from the connection.
+    """
     orderBy: [BookOrder!]
 
-    """Filtering options for Books returned from the connection."""
+    """
+    Filtering options for Books returned from the connection.
+    """
     where: BookWhereInput
   ): BookConnection!
 }
-"""A connection to a list of items."""
+"""
+A connection to a list of items.
+"""
 type LanguageConnection {
-  """A list of edges."""
+  """
+  A list of edges.
+  """
   edges: [LanguageEdge]
-  """Information to aid in pagination."""
+  """
+  Information to aid in pagination.
+  """
   pageInfo: PageInfo!
-  """Identifies the total count of items in the connection."""
+  """
+  Identifies the total count of items in the connection.
+  """
   totalCount: Int!
 }
-"""An edge in a connection."""
+"""
+An edge in a connection.
+"""
 type LanguageEdge {
-  """The item at the end of the edge."""
+  """
+  The item at the end of the edge.
+  """
   node: Language
-  """A cursor for use in pagination."""
+  """
+  A cursor for use in pagination.
+  """
   cursor: Cursor!
 }
-"""Ordering options for Language connections"""
+"""
+Ordering options for Language connections
+"""
 input LanguageOrder {
-  """The ordering direction."""
+  """
+  The ordering direction.
+  """
   direction: OrderDirection! = ASC
-  """The field by which to order Languages."""
+  """
+  The field by which to order Languages.
+  """
   field: LanguageOrderField!
 }
-"""Properties by which Language connections can be ordered."""
+"""
+Properties by which Language connections can be ordered.
+"""
 enum LanguageOrderField {
   BOOKS_COUNT
 }
@@ -2741,7 +3305,9 @@ input LanguageWhereInput {
   not: LanguageWhereInput
   and: [LanguageWhereInput!]
   or: [LanguageWhereInput!]
-  """id field predicates"""
+  """
+  id field predicates
+  """
   id: ID
   idNEQ: ID
   idIn: [ID!]
@@ -2750,7 +3316,9 @@ input LanguageWhereInput {
   idGTE: ID
   idLT: ID
   idLTE: ID
-  """create_time field predicates"""
+  """
+  create_time field predicates
+  """
   createTime: Time
   createTimeNEQ: Time
   createTimeIn: [Time!]
@@ -2759,7 +3327,9 @@ input LanguageWhereInput {
   createTimeGTE: Time
   createTimeLT: Time
   createTimeLTE: Time
-  """update_time field predicates"""
+  """
+  update_time field predicates
+  """
   updateTime: Time
   updateTimeNEQ: Time
   updateTimeIn: [Time!]
@@ -2768,7 +3338,9 @@ input LanguageWhereInput {
   updateTimeGTE: Time
   updateTimeLT: Time
   updateTimeLTE: Time
-  """calibre_id field predicates"""
+  """
+  calibre_id field predicates
+  """
   calibreID: Int
   calibreIDNEQ: Int
   calibreIDIn: [Int!]
@@ -2779,7 +3351,9 @@ input LanguageWhereInput {
   calibreIDLTE: Int
   calibreIDIsNil: Boolean
   calibreIDNotNil: Boolean
-  """code field predicates"""
+  """
+  code field predicates
+  """
   code: String
   codeNEQ: String
   codeIn: [String!]
@@ -2793,7 +3367,9 @@ input LanguageWhereInput {
   codeHasSuffix: String
   codeEqualFold: String
   codeContainsFold: String
-  """books edge predicates"""
+  """
+  books edge predicates
+  """
   hasBooks: Boolean
   hasBooksWith: [BookWhereInput!]
 }
@@ -2802,14 +3378,22 @@ An object with an ID.
 Follows the [Relay Global Object Identification Specification](https://relay.dev/graphql/objectidentification.htm)
 """
 interface Node @goModel(model: "lybbrio/internal/ent.Noder") {
-  """The id of the object."""
+  """
+  The id of the object.
+  """
   id: ID!
 }
-"""Possible directions in which to order a list of items when provided an ` + "`" + `orderBy` + "`" + ` argument."""
+"""
+Possible directions in which to order a list of items when provided an ` + "`" + `orderBy` + "`" + ` argument.
+"""
 enum OrderDirection {
-  """Specifies an ascending order for a given ` + "`" + `orderBy` + "`" + ` argument."""
+  """
+  Specifies an ascending order for a given ` + "`" + `orderBy` + "`" + ` argument.
+  """
   ASC
-  """Specifies a descending order for a given ` + "`" + `orderBy` + "`" + ` argument."""
+  """
+  Specifies a descending order for a given ` + "`" + `orderBy` + "`" + ` argument.
+  """
   DESC
 }
 """
@@ -2817,13 +3401,21 @@ Information about pagination in a connection.
 https://relay.dev/graphql/connections.htm#sec-undefined.PageInfo
 """
 type PageInfo {
-  """When paginating forwards, are there more items?"""
+  """
+  When paginating forwards, are there more items?
+  """
   hasNextPage: Boolean!
-  """When paginating backwards, are there more items?"""
+  """
+  When paginating backwards, are there more items?
+  """
   hasPreviousPage: Boolean!
-  """When paginating backwards, the cursor to continue."""
+  """
+  When paginating backwards, the cursor to continue.
+  """
   startCursor: Cursor
-  """When paginating forwards, the cursor to continue."""
+  """
+  When paginating forwards, the cursor to continue.
+  """
   endCursor: Cursor
 }
 type Publisher implements Node {
@@ -2833,49 +3425,83 @@ type Publisher implements Node {
   calibreID: Int
   name: String!
   books(
-    """Returns the elements in the list that come after the specified cursor."""
+    """
+    Returns the elements in the list that come after the specified cursor.
+    """
     after: Cursor
 
-    """Returns the first _n_ elements from the list."""
+    """
+    Returns the first _n_ elements from the list.
+    """
     first: Int
 
-    """Returns the elements in the list that come before the specified cursor."""
+    """
+    Returns the elements in the list that come before the specified cursor.
+    """
     before: Cursor
 
-    """Returns the last _n_ elements from the list."""
+    """
+    Returns the last _n_ elements from the list.
+    """
     last: Int
 
-    """Ordering options for Books returned from the connection."""
+    """
+    Ordering options for Books returned from the connection.
+    """
     orderBy: [BookOrder!]
 
-    """Filtering options for Books returned from the connection."""
+    """
+    Filtering options for Books returned from the connection.
+    """
     where: BookWhereInput
   ): BookConnection!
 }
-"""A connection to a list of items."""
+"""
+A connection to a list of items.
+"""
 type PublisherConnection {
-  """A list of edges."""
+  """
+  A list of edges.
+  """
   edges: [PublisherEdge]
-  """Information to aid in pagination."""
+  """
+  Information to aid in pagination.
+  """
   pageInfo: PageInfo!
-  """Identifies the total count of items in the connection."""
+  """
+  Identifies the total count of items in the connection.
+  """
   totalCount: Int!
 }
-"""An edge in a connection."""
+"""
+An edge in a connection.
+"""
 type PublisherEdge {
-  """The item at the end of the edge."""
+  """
+  The item at the end of the edge.
+  """
   node: Publisher
-  """A cursor for use in pagination."""
+  """
+  A cursor for use in pagination.
+  """
   cursor: Cursor!
 }
-"""Ordering options for Publisher connections"""
+"""
+Ordering options for Publisher connections
+"""
 input PublisherOrder {
-  """The ordering direction."""
+  """
+  The ordering direction.
+  """
   direction: OrderDirection! = ASC
-  """The field by which to order Publishers."""
+  """
+  The field by which to order Publishers.
+  """
   field: PublisherOrderField!
 }
-"""Properties by which Publisher connections can be ordered."""
+"""
+Properties by which Publisher connections can be ordered.
+"""
 enum PublisherOrderField {
   NAME
   BOOKS_COUNT
@@ -2888,7 +3514,9 @@ input PublisherWhereInput {
   not: PublisherWhereInput
   and: [PublisherWhereInput!]
   or: [PublisherWhereInput!]
-  """id field predicates"""
+  """
+  id field predicates
+  """
   id: ID
   idNEQ: ID
   idIn: [ID!]
@@ -2897,7 +3525,9 @@ input PublisherWhereInput {
   idGTE: ID
   idLT: ID
   idLTE: ID
-  """create_time field predicates"""
+  """
+  create_time field predicates
+  """
   createTime: Time
   createTimeNEQ: Time
   createTimeIn: [Time!]
@@ -2906,7 +3536,9 @@ input PublisherWhereInput {
   createTimeGTE: Time
   createTimeLT: Time
   createTimeLTE: Time
-  """update_time field predicates"""
+  """
+  update_time field predicates
+  """
   updateTime: Time
   updateTimeNEQ: Time
   updateTimeIn: [Time!]
@@ -2915,7 +3547,9 @@ input PublisherWhereInput {
   updateTimeGTE: Time
   updateTimeLT: Time
   updateTimeLTE: Time
-  """calibre_id field predicates"""
+  """
+  calibre_id field predicates
+  """
   calibreID: Int
   calibreIDNEQ: Int
   calibreIDIn: [Int!]
@@ -2926,7 +3560,9 @@ input PublisherWhereInput {
   calibreIDLTE: Int
   calibreIDIsNil: Boolean
   calibreIDNotNil: Boolean
-  """name field predicates"""
+  """
+  name field predicates
+  """
   name: String
   nameNEQ: String
   nameIn: [String!]
@@ -2940,191 +3576,340 @@ input PublisherWhereInput {
   nameHasSuffix: String
   nameEqualFold: String
   nameContainsFold: String
-  """books edge predicates"""
+  """
+  books edge predicates
+  """
   hasBooks: Boolean
   hasBooksWith: [BookWhereInput!]
 }
 type Query {
-  """Fetches an object given its ID."""
+  """
+  Fetches an object given its ID.
+  """
   node(
-    """ID of the object."""
+    """
+    ID of the object.
+    """
     id: ID!
   ): Node
-  """Lookup nodes by a list of IDs."""
+  """
+  Lookup nodes by a list of IDs.
+  """
   nodes(
-    """The list of node IDs."""
+    """
+    The list of node IDs.
+    """
     ids: [ID!]!
   ): [Node]!
   authors(
-    """Returns the elements in the list that come after the specified cursor."""
+    """
+    Returns the elements in the list that come after the specified cursor.
+    """
     after: Cursor
 
-    """Returns the first _n_ elements from the list."""
+    """
+    Returns the first _n_ elements from the list.
+    """
     first: Int
 
-    """Returns the elements in the list that come before the specified cursor."""
+    """
+    Returns the elements in the list that come before the specified cursor.
+    """
     before: Cursor
 
-    """Returns the last _n_ elements from the list."""
+    """
+    Returns the last _n_ elements from the list.
+    """
     last: Int
 
-    """Ordering options for Authors returned from the connection."""
+    """
+    Ordering options for Authors returned from the connection.
+    """
     orderBy: [AuthorOrder!]
 
-    """Filtering options for Authors returned from the connection."""
+    """
+    Filtering options for Authors returned from the connection.
+    """
     where: AuthorWhereInput
   ): AuthorConnection!
   books(
-    """Returns the elements in the list that come after the specified cursor."""
+    """
+    Returns the elements in the list that come after the specified cursor.
+    """
     after: Cursor
 
-    """Returns the first _n_ elements from the list."""
+    """
+    Returns the first _n_ elements from the list.
+    """
     first: Int
 
-    """Returns the elements in the list that come before the specified cursor."""
+    """
+    Returns the elements in the list that come before the specified cursor.
+    """
     before: Cursor
 
-    """Returns the last _n_ elements from the list."""
+    """
+    Returns the last _n_ elements from the list.
+    """
     last: Int
 
-    """Ordering options for Books returned from the connection."""
+    """
+    Ordering options for Books returned from the connection.
+    """
     orderBy: [BookOrder!]
 
-    """Filtering options for Books returned from the connection."""
+    """
+    Filtering options for Books returned from the connection.
+    """
     where: BookWhereInput
   ): BookConnection!
-  bookFiles: [BookFile!]!
-  identifiers(
-    """Returns the elements in the list that come after the specified cursor."""
+  bookCovers(
+    """
+    Returns the elements in the list that come after the specified cursor.
+    """
     after: Cursor
 
-    """Returns the first _n_ elements from the list."""
+    """
+    Returns the first _n_ elements from the list.
+    """
     first: Int
 
-    """Returns the elements in the list that come before the specified cursor."""
+    """
+    Returns the elements in the list that come before the specified cursor.
+    """
     before: Cursor
 
-    """Returns the last _n_ elements from the list."""
+    """
+    Returns the last _n_ elements from the list.
+    """
     last: Int
 
-    """Ordering options for Identifiers returned from the connection."""
+    """
+    Ordering options for BookCovers returned from the connection.
+    """
+    orderBy: BookCoverOrder
+
+    """
+    Filtering options for BookCovers returned from the connection.
+    """
+    where: BookCoverWhereInput
+  ): BookCoverConnection!
+  bookFiles: [BookFile!]!
+  identifiers(
+    """
+    Returns the elements in the list that come after the specified cursor.
+    """
+    after: Cursor
+
+    """
+    Returns the first _n_ elements from the list.
+    """
+    first: Int
+
+    """
+    Returns the elements in the list that come before the specified cursor.
+    """
+    before: Cursor
+
+    """
+    Returns the last _n_ elements from the list.
+    """
+    last: Int
+
+    """
+    Ordering options for Identifiers returned from the connection.
+    """
     orderBy: [IdentifierOrder!]
 
-    """Filtering options for Identifiers returned from the connection."""
+    """
+    Filtering options for Identifiers returned from the connection.
+    """
     where: IdentifierWhereInput
   ): IdentifierConnection!
   languages(
-    """Returns the elements in the list that come after the specified cursor."""
+    """
+    Returns the elements in the list that come after the specified cursor.
+    """
     after: Cursor
 
-    """Returns the first _n_ elements from the list."""
+    """
+    Returns the first _n_ elements from the list.
+    """
     first: Int
 
-    """Returns the elements in the list that come before the specified cursor."""
+    """
+    Returns the elements in the list that come before the specified cursor.
+    """
     before: Cursor
 
-    """Returns the last _n_ elements from the list."""
+    """
+    Returns the last _n_ elements from the list.
+    """
     last: Int
 
-    """Ordering options for Languages returned from the connection."""
+    """
+    Ordering options for Languages returned from the connection.
+    """
     orderBy: [LanguageOrder!]
 
-    """Filtering options for Languages returned from the connection."""
+    """
+    Filtering options for Languages returned from the connection.
+    """
     where: LanguageWhereInput
   ): LanguageConnection!
   publishers(
-    """Returns the elements in the list that come after the specified cursor."""
+    """
+    Returns the elements in the list that come after the specified cursor.
+    """
     after: Cursor
 
-    """Returns the first _n_ elements from the list."""
+    """
+    Returns the first _n_ elements from the list.
+    """
     first: Int
 
-    """Returns the elements in the list that come before the specified cursor."""
+    """
+    Returns the elements in the list that come before the specified cursor.
+    """
     before: Cursor
 
-    """Returns the last _n_ elements from the list."""
+    """
+    Returns the last _n_ elements from the list.
+    """
     last: Int
 
-    """Ordering options for Publishers returned from the connection."""
+    """
+    Ordering options for Publishers returned from the connection.
+    """
     orderBy: [PublisherOrder!]
 
-    """Filtering options for Publishers returned from the connection."""
+    """
+    Filtering options for Publishers returned from the connection.
+    """
     where: PublisherWhereInput
   ): PublisherConnection!
   seriesSlice(
-    """Returns the elements in the list that come after the specified cursor."""
+    """
+    Returns the elements in the list that come after the specified cursor.
+    """
     after: Cursor
 
-    """Returns the first _n_ elements from the list."""
+    """
+    Returns the first _n_ elements from the list.
+    """
     first: Int
 
-    """Returns the elements in the list that come before the specified cursor."""
+    """
+    Returns the elements in the list that come before the specified cursor.
+    """
     before: Cursor
 
-    """Returns the last _n_ elements from the list."""
+    """
+    Returns the last _n_ elements from the list.
+    """
     last: Int
 
-    """Ordering options for SeriesSlice returned from the connection."""
+    """
+    Ordering options for SeriesSlice returned from the connection.
+    """
     orderBy: [SeriesOrder!]
 
-    """Filtering options for SeriesSlice returned from the connection."""
+    """
+    Filtering options for SeriesSlice returned from the connection.
+    """
     where: SeriesWhereInput
   ): SeriesConnection!
   shelves(
-    """Returns the elements in the list that come after the specified cursor."""
+    """
+    Returns the elements in the list that come after the specified cursor.
+    """
     after: Cursor
 
-    """Returns the first _n_ elements from the list."""
+    """
+    Returns the first _n_ elements from the list.
+    """
     first: Int
 
-    """Returns the elements in the list that come before the specified cursor."""
+    """
+    Returns the elements in the list that come before the specified cursor.
+    """
     before: Cursor
 
-    """Returns the last _n_ elements from the list."""
+    """
+    Returns the last _n_ elements from the list.
+    """
     last: Int
 
-    """Ordering options for Shelves returned from the connection."""
+    """
+    Ordering options for Shelves returned from the connection.
+    """
     orderBy: [ShelfOrder!]
 
-    """Filtering options for Shelves returned from the connection."""
+    """
+    Filtering options for Shelves returned from the connection.
+    """
     where: ShelfWhereInput
   ): ShelfConnection!
   tags(
-    """Returns the elements in the list that come after the specified cursor."""
+    """
+    Returns the elements in the list that come after the specified cursor.
+    """
     after: Cursor
 
-    """Returns the first _n_ elements from the list."""
+    """
+    Returns the first _n_ elements from the list.
+    """
     first: Int
 
-    """Returns the elements in the list that come before the specified cursor."""
+    """
+    Returns the elements in the list that come before the specified cursor.
+    """
     before: Cursor
 
-    """Returns the last _n_ elements from the list."""
+    """
+    Returns the last _n_ elements from the list.
+    """
     last: Int
 
-    """Ordering options for Tags returned from the connection."""
+    """
+    Ordering options for Tags returned from the connection.
+    """
     orderBy: [TagOrder!]
 
-    """Filtering options for Tags returned from the connection."""
+    """
+    Filtering options for Tags returned from the connection.
+    """
     where: TagWhereInput
   ): TagConnection!
   tasks(
-    """Returns the elements in the list that come after the specified cursor."""
+    """
+    Returns the elements in the list that come after the specified cursor.
+    """
     after: Cursor
 
-    """Returns the first _n_ elements from the list."""
+    """
+    Returns the first _n_ elements from the list.
+    """
     first: Int
 
-    """Returns the elements in the list that come before the specified cursor."""
+    """
+    Returns the elements in the list that come before the specified cursor.
+    """
     before: Cursor
 
-    """Returns the last _n_ elements from the list."""
+    """
+    Returns the last _n_ elements from the list.
+    """
     last: Int
 
-    """Ordering options for Tasks returned from the connection."""
+    """
+    Ordering options for Tasks returned from the connection.
+    """
     orderBy: [TaskOrder!]
 
-    """Filtering options for Tasks returned from the connection."""
+    """
+    Filtering options for Tasks returned from the connection.
+    """
     where: TaskWhereInput
   ): TaskConnection!
   users: [User!]!
@@ -3138,30 +3923,52 @@ type Series implements Node {
   sort: String!
   books: [Book!]
 }
-"""A connection to a list of items."""
+"""
+A connection to a list of items.
+"""
 type SeriesConnection {
-  """A list of edges."""
+  """
+  A list of edges.
+  """
   edges: [SeriesEdge]
-  """Information to aid in pagination."""
+  """
+  Information to aid in pagination.
+  """
   pageInfo: PageInfo!
-  """Identifies the total count of items in the connection."""
+  """
+  Identifies the total count of items in the connection.
+  """
   totalCount: Int!
 }
-"""An edge in a connection."""
+"""
+An edge in a connection.
+"""
 type SeriesEdge {
-  """The item at the end of the edge."""
+  """
+  The item at the end of the edge.
+  """
   node: Series
-  """A cursor for use in pagination."""
+  """
+  A cursor for use in pagination.
+  """
   cursor: Cursor!
 }
-"""Ordering options for Series connections"""
+"""
+Ordering options for Series connections
+"""
 input SeriesOrder {
-  """The ordering direction."""
+  """
+  The ordering direction.
+  """
   direction: OrderDirection! = ASC
-  """The field by which to order SeriesSlice."""
+  """
+  The field by which to order SeriesSlice.
+  """
   field: SeriesOrderField!
 }
-"""Properties by which Series connections can be ordered."""
+"""
+Properties by which Series connections can be ordered.
+"""
 enum SeriesOrderField {
   NAME
 }
@@ -3173,7 +3980,9 @@ input SeriesWhereInput {
   not: SeriesWhereInput
   and: [SeriesWhereInput!]
   or: [SeriesWhereInput!]
-  """id field predicates"""
+  """
+  id field predicates
+  """
   id: ID
   idNEQ: ID
   idIn: [ID!]
@@ -3182,7 +3991,9 @@ input SeriesWhereInput {
   idGTE: ID
   idLT: ID
   idLTE: ID
-  """create_time field predicates"""
+  """
+  create_time field predicates
+  """
   createTime: Time
   createTimeNEQ: Time
   createTimeIn: [Time!]
@@ -3191,7 +4002,9 @@ input SeriesWhereInput {
   createTimeGTE: Time
   createTimeLT: Time
   createTimeLTE: Time
-  """update_time field predicates"""
+  """
+  update_time field predicates
+  """
   updateTime: Time
   updateTimeNEQ: Time
   updateTimeIn: [Time!]
@@ -3200,7 +4013,9 @@ input SeriesWhereInput {
   updateTimeGTE: Time
   updateTimeLT: Time
   updateTimeLTE: Time
-  """calibre_id field predicates"""
+  """
+  calibre_id field predicates
+  """
   calibreID: Int
   calibreIDNEQ: Int
   calibreIDIn: [Int!]
@@ -3211,7 +4026,9 @@ input SeriesWhereInput {
   calibreIDLTE: Int
   calibreIDIsNil: Boolean
   calibreIDNotNil: Boolean
-  """name field predicates"""
+  """
+  name field predicates
+  """
   name: String
   nameNEQ: String
   nameIn: [String!]
@@ -3225,7 +4042,9 @@ input SeriesWhereInput {
   nameHasSuffix: String
   nameEqualFold: String
   nameContainsFold: String
-  """sort field predicates"""
+  """
+  sort field predicates
+  """
   sort: String
   sortNEQ: String
   sortIn: [String!]
@@ -3239,7 +4058,9 @@ input SeriesWhereInput {
   sortHasSuffix: String
   sortEqualFold: String
   sortContainsFold: String
-  """books edge predicates"""
+  """
+  books edge predicates
+  """
   hasBooks: Boolean
   hasBooksWith: [BookWhereInput!]
 }
@@ -3253,49 +4074,83 @@ type Shelf implements Node {
   description: String
   user: User!
   books(
-    """Returns the elements in the list that come after the specified cursor."""
+    """
+    Returns the elements in the list that come after the specified cursor.
+    """
     after: Cursor
 
-    """Returns the first _n_ elements from the list."""
+    """
+    Returns the first _n_ elements from the list.
+    """
     first: Int
 
-    """Returns the elements in the list that come before the specified cursor."""
+    """
+    Returns the elements in the list that come before the specified cursor.
+    """
     before: Cursor
 
-    """Returns the last _n_ elements from the list."""
+    """
+    Returns the last _n_ elements from the list.
+    """
     last: Int
 
-    """Ordering options for Books returned from the connection."""
+    """
+    Ordering options for Books returned from the connection.
+    """
     orderBy: [BookOrder!]
 
-    """Filtering options for Books returned from the connection."""
+    """
+    Filtering options for Books returned from the connection.
+    """
     where: BookWhereInput
   ): BookConnection!
 }
-"""A connection to a list of items."""
+"""
+A connection to a list of items.
+"""
 type ShelfConnection {
-  """A list of edges."""
+  """
+  A list of edges.
+  """
   edges: [ShelfEdge]
-  """Information to aid in pagination."""
+  """
+  Information to aid in pagination.
+  """
   pageInfo: PageInfo!
-  """Identifies the total count of items in the connection."""
+  """
+  Identifies the total count of items in the connection.
+  """
   totalCount: Int!
 }
-"""An edge in a connection."""
+"""
+An edge in a connection.
+"""
 type ShelfEdge {
-  """The item at the end of the edge."""
+  """
+  The item at the end of the edge.
+  """
   node: Shelf
-  """A cursor for use in pagination."""
+  """
+  A cursor for use in pagination.
+  """
   cursor: Cursor!
 }
-"""Ordering options for Shelf connections"""
+"""
+Ordering options for Shelf connections
+"""
 input ShelfOrder {
-  """The ordering direction."""
+  """
+  The ordering direction.
+  """
   direction: OrderDirection! = ASC
-  """The field by which to order Shelves."""
+  """
+  The field by which to order Shelves.
+  """
   field: ShelfOrderField!
 }
-"""Properties by which Shelf connections can be ordered."""
+"""
+Properties by which Shelf connections can be ordered.
+"""
 enum ShelfOrderField {
   NAME
   BOOKS_COUNT
@@ -3308,7 +4163,9 @@ input ShelfWhereInput {
   not: ShelfWhereInput
   and: [ShelfWhereInput!]
   or: [ShelfWhereInput!]
-  """id field predicates"""
+  """
+  id field predicates
+  """
   id: ID
   idNEQ: ID
   idIn: [ID!]
@@ -3317,7 +4174,9 @@ input ShelfWhereInput {
   idGTE: ID
   idLT: ID
   idLTE: ID
-  """create_time field predicates"""
+  """
+  create_time field predicates
+  """
   createTime: Time
   createTimeNEQ: Time
   createTimeIn: [Time!]
@@ -3326,7 +4185,9 @@ input ShelfWhereInput {
   createTimeGTE: Time
   createTimeLT: Time
   createTimeLTE: Time
-  """update_time field predicates"""
+  """
+  update_time field predicates
+  """
   updateTime: Time
   updateTimeNEQ: Time
   updateTimeIn: [Time!]
@@ -3335,10 +4196,14 @@ input ShelfWhereInput {
   updateTimeGTE: Time
   updateTimeLT: Time
   updateTimeLTE: Time
-  """public field predicates"""
+  """
+  public field predicates
+  """
   public: Boolean
   publicNEQ: Boolean
-  """user_id field predicates"""
+  """
+  user_id field predicates
+  """
   userID: ID
   userIDNEQ: ID
   userIDIn: [ID!]
@@ -3352,7 +4217,9 @@ input ShelfWhereInput {
   userIDHasSuffix: ID
   userIDEqualFold: ID
   userIDContainsFold: ID
-  """name field predicates"""
+  """
+  name field predicates
+  """
   name: String
   nameNEQ: String
   nameIn: [String!]
@@ -3366,7 +4233,9 @@ input ShelfWhereInput {
   nameHasSuffix: String
   nameEqualFold: String
   nameContainsFold: String
-  """description field predicates"""
+  """
+  description field predicates
+  """
   description: String
   descriptionNEQ: String
   descriptionIn: [String!]
@@ -3382,10 +4251,14 @@ input ShelfWhereInput {
   descriptionNotNil: Boolean
   descriptionEqualFold: String
   descriptionContainsFold: String
-  """user edge predicates"""
+  """
+  user edge predicates
+  """
   hasUser: Boolean
   hasUserWith: [UserWhereInput!]
-  """books edge predicates"""
+  """
+  books edge predicates
+  """
   hasBooks: Boolean
   hasBooksWith: [BookWhereInput!]
 }
@@ -3394,49 +4267,83 @@ type Tag implements Node {
   calibreID: Int
   name: String!
   books(
-    """Returns the elements in the list that come after the specified cursor."""
+    """
+    Returns the elements in the list that come after the specified cursor.
+    """
     after: Cursor
 
-    """Returns the first _n_ elements from the list."""
+    """
+    Returns the first _n_ elements from the list.
+    """
     first: Int
 
-    """Returns the elements in the list that come before the specified cursor."""
+    """
+    Returns the elements in the list that come before the specified cursor.
+    """
     before: Cursor
 
-    """Returns the last _n_ elements from the list."""
+    """
+    Returns the last _n_ elements from the list.
+    """
     last: Int
 
-    """Ordering options for Books returned from the connection."""
+    """
+    Ordering options for Books returned from the connection.
+    """
     orderBy: [BookOrder!]
 
-    """Filtering options for Books returned from the connection."""
+    """
+    Filtering options for Books returned from the connection.
+    """
     where: BookWhereInput
   ): BookConnection!
 }
-"""A connection to a list of items."""
+"""
+A connection to a list of items.
+"""
 type TagConnection {
-  """A list of edges."""
+  """
+  A list of edges.
+  """
   edges: [TagEdge]
-  """Information to aid in pagination."""
+  """
+  Information to aid in pagination.
+  """
   pageInfo: PageInfo!
-  """Identifies the total count of items in the connection."""
+  """
+  Identifies the total count of items in the connection.
+  """
   totalCount: Int!
 }
-"""An edge in a connection."""
+"""
+An edge in a connection.
+"""
 type TagEdge {
-  """The item at the end of the edge."""
+  """
+  The item at the end of the edge.
+  """
   node: Tag
-  """A cursor for use in pagination."""
+  """
+  A cursor for use in pagination.
+  """
   cursor: Cursor!
 }
-"""Ordering options for Tag connections"""
+"""
+Ordering options for Tag connections
+"""
 input TagOrder {
-  """The ordering direction."""
+  """
+  The ordering direction.
+  """
   direction: OrderDirection! = ASC
-  """The field by which to order Tags."""
+  """
+  The field by which to order Tags.
+  """
   field: TagOrderField!
 }
-"""Properties by which Tag connections can be ordered."""
+"""
+Properties by which Tag connections can be ordered.
+"""
 enum TagOrderField {
   NAME
   BOOKS_COUNT
@@ -3449,7 +4356,9 @@ input TagWhereInput {
   not: TagWhereInput
   and: [TagWhereInput!]
   or: [TagWhereInput!]
-  """id field predicates"""
+  """
+  id field predicates
+  """
   id: ID
   idNEQ: ID
   idIn: [ID!]
@@ -3458,7 +4367,9 @@ input TagWhereInput {
   idGTE: ID
   idLT: ID
   idLTE: ID
-  """calibre_id field predicates"""
+  """
+  calibre_id field predicates
+  """
   calibreID: Int
   calibreIDNEQ: Int
   calibreIDIn: [Int!]
@@ -3469,7 +4380,9 @@ input TagWhereInput {
   calibreIDLTE: Int
   calibreIDIsNil: Boolean
   calibreIDNotNil: Boolean
-  """name field predicates"""
+  """
+  name field predicates
+  """
   name: String
   nameNEQ: String
   nameIn: [String!]
@@ -3483,7 +4396,9 @@ input TagWhereInput {
   nameHasSuffix: String
   nameEqualFold: String
   nameContainsFold: String
-  """books edge predicates"""
+  """
+  books edge predicates
+  """
   hasBooks: Boolean
   hasBooksWith: [BookWhereInput!]
 }
@@ -3493,54 +4408,90 @@ type Task implements Node {
   updateTime: Time!
   type: TaskTaskType!
   status: TaskStatus!
-  """Progress of the task. 0-1"""
+  """
+  Progress of the task. 0-1
+  """
   progress: Float!
-  """Message of the task"""
+  """
+  Message of the task
+  """
   message: String
-  """Error message of the task"""
+  """
+  Error message of the task
+  """
   error: String
-  """The user who created this task. Empty for System Task"""
+  """
+  The user who created this task. Empty for System Task
+  """
   userID: ID
-  """Whether this task is created by the system"""
+  """
+  Whether this task is created by the system
+  """
   isSystemTask: Boolean!
   user: User
 }
-"""A connection to a list of items."""
+"""
+A connection to a list of items.
+"""
 type TaskConnection {
-  """A list of edges."""
+  """
+  A list of edges.
+  """
   edges: [TaskEdge]
-  """Information to aid in pagination."""
+  """
+  Information to aid in pagination.
+  """
   pageInfo: PageInfo!
-  """Identifies the total count of items in the connection."""
+  """
+  Identifies the total count of items in the connection.
+  """
   totalCount: Int!
 }
-"""An edge in a connection."""
+"""
+An edge in a connection.
+"""
 type TaskEdge {
-  """The item at the end of the edge."""
+  """
+  The item at the end of the edge.
+  """
   node: Task
-  """A cursor for use in pagination."""
+  """
+  A cursor for use in pagination.
+  """
   cursor: Cursor!
 }
-"""Ordering options for Task connections"""
+"""
+Ordering options for Task connections
+"""
 input TaskOrder {
-  """The ordering direction."""
+  """
+  The ordering direction.
+  """
   direction: OrderDirection! = ASC
-  """The field by which to order Tasks."""
+  """
+  The field by which to order Tasks.
+  """
   field: TaskOrderField!
 }
-"""Properties by which Task connections can be ordered."""
+"""
+Properties by which Task connections can be ordered.
+"""
 enum TaskOrderField {
   TYPE
   STATUS
 }
-"""TaskStatus is enum for the field status"""
+"""
+TaskStatus is enum for the field status
+"""
 enum TaskStatus @goModel(model: "lybbrio/internal/ent/schema/task_enums.Status") {
   pending
   in_progress
   success
   failure
 }
-"""TaskTaskType is enum for the field type"""
+"""
+TaskTaskType is enum for the field type
+"""
 enum TaskTaskType @goModel(model: "lybbrio/internal/ent/schema/task_enums.TaskType") {
   noop
   calibre_import
@@ -3553,7 +4504,9 @@ input TaskWhereInput {
   not: TaskWhereInput
   and: [TaskWhereInput!]
   or: [TaskWhereInput!]
-  """id field predicates"""
+  """
+  id field predicates
+  """
   id: ID
   idNEQ: ID
   idIn: [ID!]
@@ -3562,7 +4515,9 @@ input TaskWhereInput {
   idGTE: ID
   idLT: ID
   idLTE: ID
-  """create_time field predicates"""
+  """
+  create_time field predicates
+  """
   createTime: Time
   createTimeNEQ: Time
   createTimeIn: [Time!]
@@ -3571,7 +4526,9 @@ input TaskWhereInput {
   createTimeGTE: Time
   createTimeLT: Time
   createTimeLTE: Time
-  """update_time field predicates"""
+  """
+  update_time field predicates
+  """
   updateTime: Time
   updateTimeNEQ: Time
   updateTimeIn: [Time!]
@@ -3580,17 +4537,23 @@ input TaskWhereInput {
   updateTimeGTE: Time
   updateTimeLT: Time
   updateTimeLTE: Time
-  """type field predicates"""
+  """
+  type field predicates
+  """
   type: TaskTaskType
   typeNEQ: TaskTaskType
   typeIn: [TaskTaskType!]
   typeNotIn: [TaskTaskType!]
-  """status field predicates"""
+  """
+  status field predicates
+  """
   status: TaskStatus
   statusNEQ: TaskStatus
   statusIn: [TaskStatus!]
   statusNotIn: [TaskStatus!]
-  """progress field predicates"""
+  """
+  progress field predicates
+  """
   progress: Float
   progressNEQ: Float
   progressIn: [Float!]
@@ -3599,7 +4562,9 @@ input TaskWhereInput {
   progressGTE: Float
   progressLT: Float
   progressLTE: Float
-  """message field predicates"""
+  """
+  message field predicates
+  """
   message: String
   messageNEQ: String
   messageIn: [String!]
@@ -3615,7 +4580,9 @@ input TaskWhereInput {
   messageNotNil: Boolean
   messageEqualFold: String
   messageContainsFold: String
-  """error field predicates"""
+  """
+  error field predicates
+  """
   error: String
   errorNEQ: String
   errorIn: [String!]
@@ -3631,7 +4598,9 @@ input TaskWhereInput {
   errorNotNil: Boolean
   errorEqualFold: String
   errorContainsFold: String
-  """user_id field predicates"""
+  """
+  user_id field predicates
+  """
   userID: ID
   userIDNEQ: ID
   userIDIn: [ID!]
@@ -3647,14 +4616,20 @@ input TaskWhereInput {
   userIDNotNil: Boolean
   userIDEqualFold: ID
   userIDContainsFold: ID
-  """is_system_task field predicates"""
+  """
+  is_system_task field predicates
+  """
   isSystemTask: Boolean
   isSystemTaskNEQ: Boolean
-  """user edge predicates"""
+  """
+  user edge predicates
+  """
   hasUser: Boolean
   hasUserWith: [UserWhereInput!]
 }
-"""The builtin Time type"""
+"""
+The builtin Time type
+"""
 scalar Time
 """
 UpdateAuthorInput is used for update Author object.
@@ -3715,6 +4690,9 @@ input UpdateBookInput {
   addFileIDs: [ID!]
   removeFileIDs: [ID!]
   clearFiles: Boolean
+  addCoverIDs: [ID!]
+  removeCoverIDs: [ID!]
+  clearCovers: Boolean
 }
 """
 UpdateIdentifierInput is used for update Identifier object.
@@ -3815,14 +4793,22 @@ type User implements Node {
   shelves: [Shelf!]
   userPermissions: UserPermissions!
 }
-"""Ordering options for User connections"""
+"""
+Ordering options for User connections
+"""
 input UserOrder {
-  """The ordering direction."""
+  """
+  The ordering direction.
+  """
   direction: OrderDirection! = ASC
-  """The field by which to order Users."""
+  """
+  The field by which to order Users.
+  """
   field: UserOrderField!
 }
-"""Properties by which User connections can be ordered."""
+"""
+Properties by which User connections can be ordered.
+"""
 enum UserOrderField {
   USERNAME
 }
@@ -3844,7 +4830,9 @@ input UserPermissionsWhereInput {
   not: UserPermissionsWhereInput
   and: [UserPermissionsWhereInput!]
   or: [UserPermissionsWhereInput!]
-  """id field predicates"""
+  """
+  id field predicates
+  """
   id: ID
   idNEQ: ID
   idIn: [ID!]
@@ -3853,7 +4841,9 @@ input UserPermissionsWhereInput {
   idGTE: ID
   idLT: ID
   idLTE: ID
-  """create_time field predicates"""
+  """
+  create_time field predicates
+  """
   createTime: Time
   createTimeNEQ: Time
   createTimeIn: [Time!]
@@ -3862,7 +4852,9 @@ input UserPermissionsWhereInput {
   createTimeGTE: Time
   createTimeLT: Time
   createTimeLTE: Time
-  """update_time field predicates"""
+  """
+  update_time field predicates
+  """
   updateTime: Time
   updateTimeNEQ: Time
   updateTimeIn: [Time!]
@@ -3871,7 +4863,9 @@ input UserPermissionsWhereInput {
   updateTimeGTE: Time
   updateTimeLT: Time
   updateTimeLTE: Time
-  """user_id field predicates"""
+  """
+  user_id field predicates
+  """
   userID: ID
   userIDNEQ: ID
   userIDIn: [ID!]
@@ -3887,16 +4881,24 @@ input UserPermissionsWhereInput {
   userIDNotNil: Boolean
   userIDEqualFold: ID
   userIDContainsFold: ID
-  """Admin field predicates"""
+  """
+  Admin field predicates
+  """
   admin: Boolean
   adminNEQ: Boolean
-  """CanCreatePublic field predicates"""
+  """
+  CanCreatePublic field predicates
+  """
   cancreatepublic: Boolean
   cancreatepublicNEQ: Boolean
-  """CanEdit field predicates"""
+  """
+  CanEdit field predicates
+  """
   canedit: Boolean
   caneditNEQ: Boolean
-  """user edge predicates"""
+  """
+  user edge predicates
+  """
   hasUser: Boolean
   hasUserWith: [UserWhereInput!]
 }
@@ -3908,7 +4910,9 @@ input UserWhereInput {
   not: UserWhereInput
   and: [UserWhereInput!]
   or: [UserWhereInput!]
-  """id field predicates"""
+  """
+  id field predicates
+  """
   id: ID
   idNEQ: ID
   idIn: [ID!]
@@ -3917,7 +4921,9 @@ input UserWhereInput {
   idGTE: ID
   idLT: ID
   idLTE: ID
-  """create_time field predicates"""
+  """
+  create_time field predicates
+  """
   createTime: Time
   createTimeNEQ: Time
   createTimeIn: [Time!]
@@ -3926,7 +4932,9 @@ input UserWhereInput {
   createTimeGTE: Time
   createTimeLT: Time
   createTimeLTE: Time
-  """update_time field predicates"""
+  """
+  update_time field predicates
+  """
   updateTime: Time
   updateTimeNEQ: Time
   updateTimeIn: [Time!]
@@ -3935,7 +4943,9 @@ input UserWhereInput {
   updateTimeGTE: Time
   updateTimeLT: Time
   updateTimeLTE: Time
-  """username field predicates"""
+  """
+  username field predicates
+  """
   username: String
   usernameNEQ: String
   usernameIn: [String!]
@@ -3949,7 +4959,9 @@ input UserWhereInput {
   usernameHasSuffix: String
   usernameEqualFold: String
   usernameContainsFold: String
-  """email field predicates"""
+  """
+  email field predicates
+  """
   email: String
   emailNEQ: String
   emailIn: [String!]
@@ -3963,10 +4975,14 @@ input UserWhereInput {
   emailHasSuffix: String
   emailEqualFold: String
   emailContainsFold: String
-  """shelves edge predicates"""
+  """
+  shelves edge predicates
+  """
   hasShelves: Boolean
   hasShelvesWith: [ShelfWhereInput!]
-  """user_permissions edge predicates"""
+  """
+  user_permissions edge predicates
+  """
   hasUserPermissions: Boolean
   hasUserPermissionsWith: [UserPermissionsWhereInput!]
 }
@@ -4661,6 +5677,66 @@ func (ec *executionContext) field_Query_authors_args(ctx context.Context, rawArg
 	if tmp, ok := rawArgs["where"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("where"))
 		arg5, err = ec.unmarshalOAuthorWhereInput2ᚖlybbrioᚋinternalᚋentᚐAuthorWhereInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["where"] = arg5
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_bookCovers_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *entgql.Cursor[ksuid.ID]
+	if tmp, ok := rawArgs["after"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("after"))
+		arg0, err = ec.unmarshalOCursor2ᚖentgoᚗioᚋcontribᚋentgqlᚐCursor(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["after"] = arg0
+	var arg1 *int
+	if tmp, ok := rawArgs["first"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("first"))
+		arg1, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["first"] = arg1
+	var arg2 *entgql.Cursor[ksuid.ID]
+	if tmp, ok := rawArgs["before"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("before"))
+		arg2, err = ec.unmarshalOCursor2ᚖentgoᚗioᚋcontribᚋentgqlᚐCursor(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["before"] = arg2
+	var arg3 *int
+	if tmp, ok := rawArgs["last"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("last"))
+		arg3, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["last"] = arg3
+	var arg4 *ent.BookCoverOrder
+	if tmp, ok := rawArgs["orderBy"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("orderBy"))
+		arg4, err = ec.unmarshalOBookCoverOrder2ᚖlybbrioᚋinternalᚋentᚐBookCoverOrder(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["orderBy"] = arg4
+	var arg5 *ent.BookCoverWhereInput
+	if tmp, ok := rawArgs["where"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("where"))
+		arg5, err = ec.unmarshalOBookCoverWhereInput2ᚖlybbrioᚋinternalᚋentᚐBookCoverWhereInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -6873,6 +7949,69 @@ func (ec *executionContext) fieldContext_Book_files(ctx context.Context, field g
 	return fc, nil
 }
 
+func (ec *executionContext) _Book_covers(ctx context.Context, field graphql.CollectedField, obj *ent.Book) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Book_covers(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Covers(ctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*ent.BookCover)
+	fc.Result = res
+	return ec.marshalOBookCover2ᚕᚖlybbrioᚋinternalᚋentᚐBookCoverᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Book_covers(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Book",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_BookCover_id(ctx, field)
+			case "createTime":
+				return ec.fieldContext_BookCover_createTime(ctx, field)
+			case "updateTime":
+				return ec.fieldContext_BookCover_updateTime(ctx, field)
+			case "path":
+				return ec.fieldContext_BookCover_path(ctx, field)
+			case "size":
+				return ec.fieldContext_BookCover_size(ctx, field)
+			case "width":
+				return ec.fieldContext_BookCover_width(ctx, field)
+			case "height":
+				return ec.fieldContext_BookCover_height(ctx, field)
+			case "url":
+				return ec.fieldContext_BookCover_url(ctx, field)
+			case "contenttype":
+				return ec.fieldContext_BookCover_contenttype(ctx, field)
+			case "book":
+				return ec.fieldContext_BookCover_book(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type BookCover", field.Name)
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _BookConnection_edges(ctx context.Context, field graphql.CollectedField, obj *ent.BookConnection) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_BookConnection_edges(ctx, field)
 	if err != nil {
@@ -7018,6 +8157,740 @@ func (ec *executionContext) fieldContext_BookConnection_totalCount(ctx context.C
 	return fc, nil
 }
 
+func (ec *executionContext) _BookCover_id(ctx context.Context, field graphql.CollectedField, obj *ent.BookCover) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_BookCover_id(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(ksuid.ID)
+	fc.Result = res
+	return ec.marshalNID2lybbrioᚋinternalᚋentᚋschemaᚋksuidᚐID(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_BookCover_id(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "BookCover",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _BookCover_createTime(ctx context.Context, field graphql.CollectedField, obj *ent.BookCover) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_BookCover_createTime(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CreateTime, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(time.Time)
+	fc.Result = res
+	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_BookCover_createTime(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "BookCover",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Time does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _BookCover_updateTime(ctx context.Context, field graphql.CollectedField, obj *ent.BookCover) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_BookCover_updateTime(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.UpdateTime, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(time.Time)
+	fc.Result = res
+	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_BookCover_updateTime(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "BookCover",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Time does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _BookCover_path(ctx context.Context, field graphql.CollectedField, obj *ent.BookCover) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_BookCover_path(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Path, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_BookCover_path(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "BookCover",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _BookCover_size(ctx context.Context, field graphql.CollectedField, obj *ent.BookCover) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_BookCover_size(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Size, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int64)
+	fc.Result = res
+	return ec.marshalNInt2int64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_BookCover_size(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "BookCover",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _BookCover_width(ctx context.Context, field graphql.CollectedField, obj *ent.BookCover) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_BookCover_width(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Width, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_BookCover_width(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "BookCover",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _BookCover_height(ctx context.Context, field graphql.CollectedField, obj *ent.BookCover) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_BookCover_height(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Height, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_BookCover_height(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "BookCover",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _BookCover_url(ctx context.Context, field graphql.CollectedField, obj *ent.BookCover) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_BookCover_url(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.URL, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_BookCover_url(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "BookCover",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _BookCover_contenttype(ctx context.Context, field graphql.CollectedField, obj *ent.BookCover) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_BookCover_contenttype(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ContentType, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_BookCover_contenttype(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "BookCover",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _BookCover_book(ctx context.Context, field graphql.CollectedField, obj *ent.BookCover) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_BookCover_book(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Book(ctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.Book)
+	fc.Result = res
+	return ec.marshalNBook2ᚖlybbrioᚋinternalᚋentᚐBook(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_BookCover_book(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "BookCover",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Book_id(ctx, field)
+			case "createTime":
+				return ec.fieldContext_Book_createTime(ctx, field)
+			case "updateTime":
+				return ec.fieldContext_Book_updateTime(ctx, field)
+			case "calibreID":
+				return ec.fieldContext_Book_calibreID(ctx, field)
+			case "title":
+				return ec.fieldContext_Book_title(ctx, field)
+			case "sort":
+				return ec.fieldContext_Book_sort(ctx, field)
+			case "publishedDate":
+				return ec.fieldContext_Book_publishedDate(ctx, field)
+			case "path":
+				return ec.fieldContext_Book_path(ctx, field)
+			case "isbn":
+				return ec.fieldContext_Book_isbn(ctx, field)
+			case "description":
+				return ec.fieldContext_Book_description(ctx, field)
+			case "seriesIndex":
+				return ec.fieldContext_Book_seriesIndex(ctx, field)
+			case "authors":
+				return ec.fieldContext_Book_authors(ctx, field)
+			case "publisher":
+				return ec.fieldContext_Book_publisher(ctx, field)
+			case "series":
+				return ec.fieldContext_Book_series(ctx, field)
+			case "identifiers":
+				return ec.fieldContext_Book_identifiers(ctx, field)
+			case "tags":
+				return ec.fieldContext_Book_tags(ctx, field)
+			case "language":
+				return ec.fieldContext_Book_language(ctx, field)
+			case "shelf":
+				return ec.fieldContext_Book_shelf(ctx, field)
+			case "files":
+				return ec.fieldContext_Book_files(ctx, field)
+			case "covers":
+				return ec.fieldContext_Book_covers(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Book", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _BookCoverConnection_edges(ctx context.Context, field graphql.CollectedField, obj *ent.BookCoverConnection) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_BookCoverConnection_edges(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Edges, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*ent.BookCoverEdge)
+	fc.Result = res
+	return ec.marshalOBookCoverEdge2ᚕᚖlybbrioᚋinternalᚋentᚐBookCoverEdge(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_BookCoverConnection_edges(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "BookCoverConnection",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "node":
+				return ec.fieldContext_BookCoverEdge_node(ctx, field)
+			case "cursor":
+				return ec.fieldContext_BookCoverEdge_cursor(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type BookCoverEdge", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _BookCoverConnection_pageInfo(ctx context.Context, field graphql.CollectedField, obj *ent.BookCoverConnection) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_BookCoverConnection_pageInfo(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.PageInfo, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(entgql.PageInfo[ksuid.ID])
+	fc.Result = res
+	return ec.marshalNPageInfo2entgoᚗioᚋcontribᚋentgqlᚐPageInfo(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_BookCoverConnection_pageInfo(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "BookCoverConnection",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "hasNextPage":
+				return ec.fieldContext_PageInfo_hasNextPage(ctx, field)
+			case "hasPreviousPage":
+				return ec.fieldContext_PageInfo_hasPreviousPage(ctx, field)
+			case "startCursor":
+				return ec.fieldContext_PageInfo_startCursor(ctx, field)
+			case "endCursor":
+				return ec.fieldContext_PageInfo_endCursor(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type PageInfo", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _BookCoverConnection_totalCount(ctx context.Context, field graphql.CollectedField, obj *ent.BookCoverConnection) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_BookCoverConnection_totalCount(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.TotalCount, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_BookCoverConnection_totalCount(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "BookCoverConnection",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _BookCoverEdge_node(ctx context.Context, field graphql.CollectedField, obj *ent.BookCoverEdge) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_BookCoverEdge_node(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Node, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*ent.BookCover)
+	fc.Result = res
+	return ec.marshalOBookCover2ᚖlybbrioᚋinternalᚋentᚐBookCover(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_BookCoverEdge_node(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "BookCoverEdge",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_BookCover_id(ctx, field)
+			case "createTime":
+				return ec.fieldContext_BookCover_createTime(ctx, field)
+			case "updateTime":
+				return ec.fieldContext_BookCover_updateTime(ctx, field)
+			case "path":
+				return ec.fieldContext_BookCover_path(ctx, field)
+			case "size":
+				return ec.fieldContext_BookCover_size(ctx, field)
+			case "width":
+				return ec.fieldContext_BookCover_width(ctx, field)
+			case "height":
+				return ec.fieldContext_BookCover_height(ctx, field)
+			case "url":
+				return ec.fieldContext_BookCover_url(ctx, field)
+			case "contenttype":
+				return ec.fieldContext_BookCover_contenttype(ctx, field)
+			case "book":
+				return ec.fieldContext_BookCover_book(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type BookCover", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _BookCoverEdge_cursor(ctx context.Context, field graphql.CollectedField, obj *ent.BookCoverEdge) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_BookCoverEdge_cursor(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Cursor, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(entgql.Cursor[ksuid.ID])
+	fc.Result = res
+	return ec.marshalNCursor2entgoᚗioᚋcontribᚋentgqlᚐCursor(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_BookCoverEdge_cursor(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "BookCoverEdge",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Cursor does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _BookEdge_node(ctx context.Context, field graphql.CollectedField, obj *ent.BookEdge) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_BookEdge_node(ctx, field)
 	if err != nil {
@@ -7092,6 +8965,8 @@ func (ec *executionContext) fieldContext_BookEdge_node(ctx context.Context, fiel
 				return ec.fieldContext_Book_shelf(ctx, field)
 			case "files":
 				return ec.fieldContext_Book_files(ctx, field)
+			case "covers":
+				return ec.fieldContext_Book_covers(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Book", field.Name)
 		},
@@ -7528,6 +9403,8 @@ func (ec *executionContext) fieldContext_BookFile_book(ctx context.Context, fiel
 				return ec.fieldContext_Book_shelf(ctx, field)
 			case "files":
 				return ec.fieldContext_Book_files(ctx, field)
+			case "covers":
+				return ec.fieldContext_Book_covers(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Book", field.Name)
 		},
@@ -7873,6 +9750,8 @@ func (ec *executionContext) fieldContext_Identifier_book(ctx context.Context, fi
 				return ec.fieldContext_Book_shelf(ctx, field)
 			case "files":
 				return ec.fieldContext_Book_files(ctx, field)
+			case "covers":
+				return ec.fieldContext_Book_covers(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Book", field.Name)
 		},
@@ -8724,6 +10603,8 @@ func (ec *executionContext) fieldContext_Mutation_createBook(ctx context.Context
 				return ec.fieldContext_Book_shelf(ctx, field)
 			case "files":
 				return ec.fieldContext_Book_files(ctx, field)
+			case "covers":
+				return ec.fieldContext_Book_covers(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Book", field.Name)
 		},
@@ -8816,6 +10697,8 @@ func (ec *executionContext) fieldContext_Mutation_updateBook(ctx context.Context
 				return ec.fieldContext_Book_shelf(ctx, field)
 			case "files":
 				return ec.fieldContext_Book_files(ctx, field)
+			case "covers":
+				return ec.fieldContext_Book_covers(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Book", field.Name)
 		},
@@ -10917,6 +12800,69 @@ func (ec *executionContext) fieldContext_Query_books(ctx context.Context, field 
 	return fc, nil
 }
 
+func (ec *executionContext) _Query_bookCovers(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_bookCovers(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().BookCovers(rctx, fc.Args["after"].(*entgql.Cursor[ksuid.ID]), fc.Args["first"].(*int), fc.Args["before"].(*entgql.Cursor[ksuid.ID]), fc.Args["last"].(*int), fc.Args["orderBy"].(*ent.BookCoverOrder), fc.Args["where"].(*ent.BookCoverWhereInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.BookCoverConnection)
+	fc.Result = res
+	return ec.marshalNBookCoverConnection2ᚖlybbrioᚋinternalᚋentᚐBookCoverConnection(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_bookCovers(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "edges":
+				return ec.fieldContext_BookCoverConnection_edges(ctx, field)
+			case "pageInfo":
+				return ec.fieldContext_BookCoverConnection_pageInfo(ctx, field)
+			case "totalCount":
+				return ec.fieldContext_BookCoverConnection_totalCount(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type BookCoverConnection", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_bookCovers_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Query_bookFiles(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Query_bookFiles(ctx, field)
 	if err != nil {
@@ -12004,6 +13950,8 @@ func (ec *executionContext) fieldContext_Series_books(ctx context.Context, field
 				return ec.fieldContext_Book_shelf(ctx, field)
 			case "files":
 				return ec.fieldContext_Book_files(ctx, field)
+			case "covers":
+				return ec.fieldContext_Book_covers(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Book", field.Name)
 		},
@@ -17205,6 +19153,708 @@ func (ec *executionContext) unmarshalInputAuthorWhereInput(ctx context.Context, 
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputBookCoverOrder(ctx context.Context, obj interface{}) (ent.BookCoverOrder, error) {
+	var it ent.BookCoverOrder
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	if _, present := asMap["direction"]; !present {
+		asMap["direction"] = "ASC"
+	}
+
+	fieldsInOrder := [...]string{"direction", "field"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "direction":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("direction"))
+			data, err := ec.unmarshalNOrderDirection2entgoᚗioᚋcontribᚋentgqlᚐOrderDirection(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Direction = data
+		case "field":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("field"))
+			data, err := ec.unmarshalNBookCoverOrderField2ᚖlybbrioᚋinternalᚋentᚐBookCoverOrderField(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Field = data
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputBookCoverWhereInput(ctx context.Context, obj interface{}) (ent.BookCoverWhereInput, error) {
+	var it ent.BookCoverWhereInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createTime", "createTimeNEQ", "createTimeIn", "createTimeNotIn", "createTimeGT", "createTimeGTE", "createTimeLT", "createTimeLTE", "updateTime", "updateTimeNEQ", "updateTimeIn", "updateTimeNotIn", "updateTimeGT", "updateTimeGTE", "updateTimeLT", "updateTimeLTE", "path", "pathNEQ", "pathIn", "pathNotIn", "pathGT", "pathGTE", "pathLT", "pathLTE", "pathContains", "pathHasPrefix", "pathHasSuffix", "pathEqualFold", "pathContainsFold", "size", "sizeNEQ", "sizeIn", "sizeNotIn", "sizeGT", "sizeGTE", "sizeLT", "sizeLTE", "width", "widthNEQ", "widthIn", "widthNotIn", "widthGT", "widthGTE", "widthLT", "widthLTE", "height", "heightNEQ", "heightIn", "heightNotIn", "heightGT", "heightGTE", "heightLT", "heightLTE", "url", "urlNEQ", "urlIn", "urlNotIn", "urlGT", "urlGTE", "urlLT", "urlLTE", "urlContains", "urlHasPrefix", "urlHasSuffix", "urlEqualFold", "urlContainsFold", "contenttype", "contenttypeNEQ", "contenttypeIn", "contenttypeNotIn", "contenttypeGT", "contenttypeGTE", "contenttypeLT", "contenttypeLTE", "contenttypeContains", "contenttypeHasPrefix", "contenttypeHasSuffix", "contenttypeEqualFold", "contenttypeContainsFold", "hasBook", "hasBookWith"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "not":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("not"))
+			data, err := ec.unmarshalOBookCoverWhereInput2ᚖlybbrioᚋinternalᚋentᚐBookCoverWhereInput(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Not = data
+		case "and":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("and"))
+			data, err := ec.unmarshalOBookCoverWhereInput2ᚕᚖlybbrioᚋinternalᚋentᚐBookCoverWhereInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.And = data
+		case "or":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("or"))
+			data, err := ec.unmarshalOBookCoverWhereInput2ᚕᚖlybbrioᚋinternalᚋentᚐBookCoverWhereInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Or = data
+		case "id":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+			data, err := ec.unmarshalOID2ᚖlybbrioᚋinternalᚋentᚋschemaᚋksuidᚐID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ID = data
+		case "idNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("idNEQ"))
+			data, err := ec.unmarshalOID2ᚖlybbrioᚋinternalᚋentᚋschemaᚋksuidᚐID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.IDNEQ = data
+		case "idIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("idIn"))
+			data, err := ec.unmarshalOID2ᚕlybbrioᚋinternalᚋentᚋschemaᚋksuidᚐIDᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.IDIn = data
+		case "idNotIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("idNotIn"))
+			data, err := ec.unmarshalOID2ᚕlybbrioᚋinternalᚋentᚋschemaᚋksuidᚐIDᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.IDNotIn = data
+		case "idGT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("idGT"))
+			data, err := ec.unmarshalOID2ᚖlybbrioᚋinternalᚋentᚋschemaᚋksuidᚐID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.IDGT = data
+		case "idGTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("idGTE"))
+			data, err := ec.unmarshalOID2ᚖlybbrioᚋinternalᚋentᚋschemaᚋksuidᚐID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.IDGTE = data
+		case "idLT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("idLT"))
+			data, err := ec.unmarshalOID2ᚖlybbrioᚋinternalᚋentᚋschemaᚋksuidᚐID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.IDLT = data
+		case "idLTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("idLTE"))
+			data, err := ec.unmarshalOID2ᚖlybbrioᚋinternalᚋentᚋschemaᚋksuidᚐID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.IDLTE = data
+		case "createTime":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTime"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTime = data
+		case "createTimeNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeNEQ"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTimeNEQ = data
+		case "createTimeIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeIn"))
+			data, err := ec.unmarshalOTime2ᚕtimeᚐTimeᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTimeIn = data
+		case "createTimeNotIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeNotIn"))
+			data, err := ec.unmarshalOTime2ᚕtimeᚐTimeᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTimeNotIn = data
+		case "createTimeGT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeGT"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTimeGT = data
+		case "createTimeGTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeGTE"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTimeGTE = data
+		case "createTimeLT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeLT"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTimeLT = data
+		case "createTimeLTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeLTE"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTimeLTE = data
+		case "updateTime":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTime"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTime = data
+		case "updateTimeNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeNEQ"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTimeNEQ = data
+		case "updateTimeIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeIn"))
+			data, err := ec.unmarshalOTime2ᚕtimeᚐTimeᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTimeIn = data
+		case "updateTimeNotIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeNotIn"))
+			data, err := ec.unmarshalOTime2ᚕtimeᚐTimeᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTimeNotIn = data
+		case "updateTimeGT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeGT"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTimeGT = data
+		case "updateTimeGTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeGTE"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTimeGTE = data
+		case "updateTimeLT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeLT"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTimeLT = data
+		case "updateTimeLTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeLTE"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTimeLTE = data
+		case "path":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("path"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Path = data
+		case "pathNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pathNEQ"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PathNEQ = data
+		case "pathIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pathIn"))
+			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PathIn = data
+		case "pathNotIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pathNotIn"))
+			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PathNotIn = data
+		case "pathGT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pathGT"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PathGT = data
+		case "pathGTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pathGTE"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PathGTE = data
+		case "pathLT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pathLT"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PathLT = data
+		case "pathLTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pathLTE"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PathLTE = data
+		case "pathContains":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pathContains"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PathContains = data
+		case "pathHasPrefix":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pathHasPrefix"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PathHasPrefix = data
+		case "pathHasSuffix":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pathHasSuffix"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PathHasSuffix = data
+		case "pathEqualFold":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pathEqualFold"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PathEqualFold = data
+		case "pathContainsFold":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pathContainsFold"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PathContainsFold = data
+		case "size":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("size"))
+			data, err := ec.unmarshalOInt2ᚖint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Size = data
+		case "sizeNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("sizeNEQ"))
+			data, err := ec.unmarshalOInt2ᚖint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.SizeNEQ = data
+		case "sizeIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("sizeIn"))
+			data, err := ec.unmarshalOInt2ᚕint64ᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.SizeIn = data
+		case "sizeNotIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("sizeNotIn"))
+			data, err := ec.unmarshalOInt2ᚕint64ᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.SizeNotIn = data
+		case "sizeGT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("sizeGT"))
+			data, err := ec.unmarshalOInt2ᚖint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.SizeGT = data
+		case "sizeGTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("sizeGTE"))
+			data, err := ec.unmarshalOInt2ᚖint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.SizeGTE = data
+		case "sizeLT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("sizeLT"))
+			data, err := ec.unmarshalOInt2ᚖint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.SizeLT = data
+		case "sizeLTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("sizeLTE"))
+			data, err := ec.unmarshalOInt2ᚖint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.SizeLTE = data
+		case "width":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("width"))
+			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Width = data
+		case "widthNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("widthNEQ"))
+			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.WidthNEQ = data
+		case "widthIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("widthIn"))
+			data, err := ec.unmarshalOInt2ᚕintᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.WidthIn = data
+		case "widthNotIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("widthNotIn"))
+			data, err := ec.unmarshalOInt2ᚕintᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.WidthNotIn = data
+		case "widthGT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("widthGT"))
+			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.WidthGT = data
+		case "widthGTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("widthGTE"))
+			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.WidthGTE = data
+		case "widthLT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("widthLT"))
+			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.WidthLT = data
+		case "widthLTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("widthLTE"))
+			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.WidthLTE = data
+		case "height":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("height"))
+			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Height = data
+		case "heightNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("heightNEQ"))
+			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HeightNEQ = data
+		case "heightIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("heightIn"))
+			data, err := ec.unmarshalOInt2ᚕintᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HeightIn = data
+		case "heightNotIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("heightNotIn"))
+			data, err := ec.unmarshalOInt2ᚕintᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HeightNotIn = data
+		case "heightGT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("heightGT"))
+			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HeightGT = data
+		case "heightGTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("heightGTE"))
+			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HeightGTE = data
+		case "heightLT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("heightLT"))
+			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HeightLT = data
+		case "heightLTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("heightLTE"))
+			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HeightLTE = data
+		case "url":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("url"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.URL = data
+		case "urlNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("urlNEQ"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.URLNEQ = data
+		case "urlIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("urlIn"))
+			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.URLIn = data
+		case "urlNotIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("urlNotIn"))
+			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.URLNotIn = data
+		case "urlGT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("urlGT"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.URLGT = data
+		case "urlGTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("urlGTE"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.URLGTE = data
+		case "urlLT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("urlLT"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.URLLT = data
+		case "urlLTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("urlLTE"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.URLLTE = data
+		case "urlContains":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("urlContains"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.URLContains = data
+		case "urlHasPrefix":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("urlHasPrefix"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.URLHasPrefix = data
+		case "urlHasSuffix":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("urlHasSuffix"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.URLHasSuffix = data
+		case "urlEqualFold":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("urlEqualFold"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.URLEqualFold = data
+		case "urlContainsFold":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("urlContainsFold"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.URLContainsFold = data
+		case "contenttype":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("contenttype"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ContentType = data
+		case "contenttypeNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("contenttypeNEQ"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ContentTypeNEQ = data
+		case "contenttypeIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("contenttypeIn"))
+			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ContentTypeIn = data
+		case "contenttypeNotIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("contenttypeNotIn"))
+			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ContentTypeNotIn = data
+		case "contenttypeGT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("contenttypeGT"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ContentTypeGT = data
+		case "contenttypeGTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("contenttypeGTE"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ContentTypeGTE = data
+		case "contenttypeLT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("contenttypeLT"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ContentTypeLT = data
+		case "contenttypeLTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("contenttypeLTE"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ContentTypeLTE = data
+		case "contenttypeContains":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("contenttypeContains"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ContentTypeContains = data
+		case "contenttypeHasPrefix":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("contenttypeHasPrefix"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ContentTypeHasPrefix = data
+		case "contenttypeHasSuffix":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("contenttypeHasSuffix"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ContentTypeHasSuffix = data
+		case "contenttypeEqualFold":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("contenttypeEqualFold"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ContentTypeEqualFold = data
+		case "contenttypeContainsFold":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("contenttypeContainsFold"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ContentTypeContainsFold = data
+		case "hasBook":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasBook"))
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HasBook = data
+		case "hasBookWith":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasBookWith"))
+			data, err := ec.unmarshalOBookWhereInput2ᚕᚖlybbrioᚋinternalᚋentᚐBookWhereInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HasBookWith = data
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputBookFileWhereInput(ctx context.Context, obj interface{}) (ent.BookFileWhereInput, error) {
 	var it ent.BookFileWhereInput
 	asMap := map[string]interface{}{}
@@ -17739,7 +20389,7 @@ func (ec *executionContext) unmarshalInputBookWhereInput(ctx context.Context, ob
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createTime", "createTimeNEQ", "createTimeIn", "createTimeNotIn", "createTimeGT", "createTimeGTE", "createTimeLT", "createTimeLTE", "updateTime", "updateTimeNEQ", "updateTimeIn", "updateTimeNotIn", "updateTimeGT", "updateTimeGTE", "updateTimeLT", "updateTimeLTE", "calibreID", "calibreIDNEQ", "calibreIDIn", "calibreIDNotIn", "calibreIDGT", "calibreIDGTE", "calibreIDLT", "calibreIDLTE", "calibreIDIsNil", "calibreIDNotNil", "title", "titleNEQ", "titleIn", "titleNotIn", "titleGT", "titleGTE", "titleLT", "titleLTE", "titleContains", "titleHasPrefix", "titleHasSuffix", "titleEqualFold", "titleContainsFold", "sort", "sortNEQ", "sortIn", "sortNotIn", "sortGT", "sortGTE", "sortLT", "sortLTE", "sortContains", "sortHasPrefix", "sortHasSuffix", "sortEqualFold", "sortContainsFold", "publishedDate", "publishedDateNEQ", "publishedDateIn", "publishedDateNotIn", "publishedDateGT", "publishedDateGTE", "publishedDateLT", "publishedDateLTE", "publishedDateIsNil", "publishedDateNotNil", "path", "pathNEQ", "pathIn", "pathNotIn", "pathGT", "pathGTE", "pathLT", "pathLTE", "pathContains", "pathHasPrefix", "pathHasSuffix", "pathEqualFold", "pathContainsFold", "isbn", "isbnNEQ", "isbnIn", "isbnNotIn", "isbnGT", "isbnGTE", "isbnLT", "isbnLTE", "isbnContains", "isbnHasPrefix", "isbnHasSuffix", "isbnIsNil", "isbnNotNil", "isbnEqualFold", "isbnContainsFold", "description", "descriptionNEQ", "descriptionIn", "descriptionNotIn", "descriptionGT", "descriptionGTE", "descriptionLT", "descriptionLTE", "descriptionContains", "descriptionHasPrefix", "descriptionHasSuffix", "descriptionIsNil", "descriptionNotNil", "descriptionEqualFold", "descriptionContainsFold", "seriesIndex", "seriesIndexNEQ", "seriesIndexIn", "seriesIndexNotIn", "seriesIndexGT", "seriesIndexGTE", "seriesIndexLT", "seriesIndexLTE", "seriesIndexIsNil", "seriesIndexNotNil", "hasAuthors", "hasAuthorsWith", "hasPublisher", "hasPublisherWith", "hasSeries", "hasSeriesWith", "hasIdentifiers", "hasIdentifiersWith", "hasTags", "hasTagsWith", "hasLanguage", "hasLanguageWith", "hasShelf", "hasShelfWith", "hasFiles", "hasFilesWith"}
+	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createTime", "createTimeNEQ", "createTimeIn", "createTimeNotIn", "createTimeGT", "createTimeGTE", "createTimeLT", "createTimeLTE", "updateTime", "updateTimeNEQ", "updateTimeIn", "updateTimeNotIn", "updateTimeGT", "updateTimeGTE", "updateTimeLT", "updateTimeLTE", "calibreID", "calibreIDNEQ", "calibreIDIn", "calibreIDNotIn", "calibreIDGT", "calibreIDGTE", "calibreIDLT", "calibreIDLTE", "calibreIDIsNil", "calibreIDNotNil", "title", "titleNEQ", "titleIn", "titleNotIn", "titleGT", "titleGTE", "titleLT", "titleLTE", "titleContains", "titleHasPrefix", "titleHasSuffix", "titleEqualFold", "titleContainsFold", "sort", "sortNEQ", "sortIn", "sortNotIn", "sortGT", "sortGTE", "sortLT", "sortLTE", "sortContains", "sortHasPrefix", "sortHasSuffix", "sortEqualFold", "sortContainsFold", "publishedDate", "publishedDateNEQ", "publishedDateIn", "publishedDateNotIn", "publishedDateGT", "publishedDateGTE", "publishedDateLT", "publishedDateLTE", "publishedDateIsNil", "publishedDateNotNil", "path", "pathNEQ", "pathIn", "pathNotIn", "pathGT", "pathGTE", "pathLT", "pathLTE", "pathContains", "pathHasPrefix", "pathHasSuffix", "pathEqualFold", "pathContainsFold", "isbn", "isbnNEQ", "isbnIn", "isbnNotIn", "isbnGT", "isbnGTE", "isbnLT", "isbnLTE", "isbnContains", "isbnHasPrefix", "isbnHasSuffix", "isbnIsNil", "isbnNotNil", "isbnEqualFold", "isbnContainsFold", "description", "descriptionNEQ", "descriptionIn", "descriptionNotIn", "descriptionGT", "descriptionGTE", "descriptionLT", "descriptionLTE", "descriptionContains", "descriptionHasPrefix", "descriptionHasSuffix", "descriptionIsNil", "descriptionNotNil", "descriptionEqualFold", "descriptionContainsFold", "seriesIndex", "seriesIndexNEQ", "seriesIndexIn", "seriesIndexNotIn", "seriesIndexGT", "seriesIndexGTE", "seriesIndexLT", "seriesIndexLTE", "seriesIndexIsNil", "seriesIndexNotNil", "hasAuthors", "hasAuthorsWith", "hasPublisher", "hasPublisherWith", "hasSeries", "hasSeriesWith", "hasIdentifiers", "hasIdentifiersWith", "hasTags", "hasTagsWith", "hasLanguage", "hasLanguageWith", "hasShelf", "hasShelfWith", "hasFiles", "hasFilesWith", "hasCovers", "hasCoversWith"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -18740,6 +21390,20 @@ func (ec *executionContext) unmarshalInputBookWhereInput(ctx context.Context, ob
 				return it, err
 			}
 			it.HasFilesWith = data
+		case "hasCovers":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasCovers"))
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HasCovers = data
+		case "hasCoversWith":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasCoversWith"))
+			data, err := ec.unmarshalOBookCoverWhereInput2ᚕᚖlybbrioᚋinternalᚋentᚐBookCoverWhereInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HasCoversWith = data
 		}
 	}
 
@@ -18822,7 +21486,7 @@ func (ec *executionContext) unmarshalInputCreateBookInput(ctx context.Context, o
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"createTime", "updateTime", "calibreID", "title", "sort", "publishedDate", "path", "isbn", "description", "seriesIndex", "authorIDs", "publisherIDs", "seriesIDs", "identifierIDs", "tagIDs", "languageIDs", "shelfIDs", "fileIDs"}
+	fieldsInOrder := [...]string{"createTime", "updateTime", "calibreID", "title", "sort", "publishedDate", "path", "isbn", "description", "seriesIndex", "authorIDs", "publisherIDs", "seriesIDs", "identifierIDs", "tagIDs", "languageIDs", "shelfIDs", "fileIDs", "coverIDs"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -18955,6 +21619,13 @@ func (ec *executionContext) unmarshalInputCreateBookInput(ctx context.Context, o
 				return it, err
 			}
 			it.FileIDs = data
+		case "coverIDs":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("coverIDs"))
+			data, err := ec.unmarshalOID2ᚕlybbrioᚋinternalᚋentᚋschemaᚋksuidᚐIDᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CoverIDs = data
 		}
 	}
 
@@ -22976,7 +25647,7 @@ func (ec *executionContext) unmarshalInputUpdateBookInput(ctx context.Context, o
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"updateTime", "calibreID", "clearCalibreID", "title", "sort", "publishedDate", "clearPublishedDate", "path", "isbn", "clearIsbn", "description", "clearDescription", "seriesIndex", "clearSeriesIndex", "addAuthorIDs", "removeAuthorIDs", "clearAuthors", "addPublisherIDs", "removePublisherIDs", "clearPublisher", "addSeriesIDs", "removeSeriesIDs", "clearSeries", "addIdentifierIDs", "removeIdentifierIDs", "clearIdentifiers", "addTagIDs", "removeTagIDs", "clearTags", "addLanguageIDs", "removeLanguageIDs", "clearLanguage", "addShelfIDs", "removeShelfIDs", "clearShelf", "addFileIDs", "removeFileIDs", "clearFiles"}
+	fieldsInOrder := [...]string{"updateTime", "calibreID", "clearCalibreID", "title", "sort", "publishedDate", "clearPublishedDate", "path", "isbn", "clearIsbn", "description", "clearDescription", "seriesIndex", "clearSeriesIndex", "addAuthorIDs", "removeAuthorIDs", "clearAuthors", "addPublisherIDs", "removePublisherIDs", "clearPublisher", "addSeriesIDs", "removeSeriesIDs", "clearSeries", "addIdentifierIDs", "removeIdentifierIDs", "clearIdentifiers", "addTagIDs", "removeTagIDs", "clearTags", "addLanguageIDs", "removeLanguageIDs", "clearLanguage", "addShelfIDs", "removeShelfIDs", "clearShelf", "addFileIDs", "removeFileIDs", "clearFiles", "addCoverIDs", "removeCoverIDs", "clearCovers"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -23249,6 +25920,27 @@ func (ec *executionContext) unmarshalInputUpdateBookInput(ctx context.Context, o
 				return it, err
 			}
 			it.ClearFiles = data
+		case "addCoverIDs":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("addCoverIDs"))
+			data, err := ec.unmarshalOID2ᚕlybbrioᚋinternalᚋentᚋschemaᚋksuidᚐIDᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.AddCoverIDs = data
+		case "removeCoverIDs":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("removeCoverIDs"))
+			data, err := ec.unmarshalOID2ᚕlybbrioᚋinternalᚋentᚋschemaᚋksuidᚐIDᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.RemoveCoverIDs = data
+		case "clearCovers":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clearCovers"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ClearCovers = data
 		}
 	}
 
@@ -24617,6 +27309,11 @@ func (ec *executionContext) _Node(ctx context.Context, sel ast.SelectionSet, obj
 			return graphql.Null
 		}
 		return ec._Book(ctx, sel, obj)
+	case *ent.BookCover:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._BookCover(ctx, sel, obj)
 	case *ent.BookFile:
 		if obj == nil {
 			return graphql.Null
@@ -25177,6 +27874,39 @@ func (ec *executionContext) _Book(ctx context.Context, sel ast.SelectionSet, obj
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "covers":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Book_covers(ctx, field, obj)
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -25220,6 +27950,208 @@ func (ec *executionContext) _BookConnection(ctx context.Context, sel ast.Selecti
 			}
 		case "totalCount":
 			out.Values[i] = ec._BookConnection_totalCount(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var bookCoverImplementors = []string{"BookCover", "Node"}
+
+func (ec *executionContext) _BookCover(ctx context.Context, sel ast.SelectionSet, obj *ent.BookCover) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, bookCoverImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("BookCover")
+		case "id":
+			out.Values[i] = ec._BookCover_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "createTime":
+			out.Values[i] = ec._BookCover_createTime(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "updateTime":
+			out.Values[i] = ec._BookCover_updateTime(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "path":
+			out.Values[i] = ec._BookCover_path(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "size":
+			out.Values[i] = ec._BookCover_size(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "width":
+			out.Values[i] = ec._BookCover_width(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "height":
+			out.Values[i] = ec._BookCover_height(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "url":
+			out.Values[i] = ec._BookCover_url(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "contenttype":
+			out.Values[i] = ec._BookCover_contenttype(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "book":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._BookCover_book(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var bookCoverConnectionImplementors = []string{"BookCoverConnection"}
+
+func (ec *executionContext) _BookCoverConnection(ctx context.Context, sel ast.SelectionSet, obj *ent.BookCoverConnection) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, bookCoverConnectionImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("BookCoverConnection")
+		case "edges":
+			out.Values[i] = ec._BookCoverConnection_edges(ctx, field, obj)
+		case "pageInfo":
+			out.Values[i] = ec._BookCoverConnection_pageInfo(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "totalCount":
+			out.Values[i] = ec._BookCoverConnection_totalCount(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var bookCoverEdgeImplementors = []string{"BookCoverEdge"}
+
+func (ec *executionContext) _BookCoverEdge(ctx context.Context, sel ast.SelectionSet, obj *ent.BookCoverEdge) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, bookCoverEdgeImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("BookCoverEdge")
+		case "node":
+			out.Values[i] = ec._BookCoverEdge_node(ctx, field, obj)
+		case "cursor":
+			out.Values[i] = ec._BookCoverEdge_cursor(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -26192,6 +29124,28 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_books(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "bookCovers":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_bookCovers(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
@@ -27852,6 +30806,51 @@ func (ec *executionContext) marshalNBookConnection2ᚖlybbrioᚋinternalᚋent�
 	return ec._BookConnection(ctx, sel, v)
 }
 
+func (ec *executionContext) marshalNBookCover2ᚖlybbrioᚋinternalᚋentᚐBookCover(ctx context.Context, sel ast.SelectionSet, v *ent.BookCover) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._BookCover(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNBookCoverConnection2lybbrioᚋinternalᚋentᚐBookCoverConnection(ctx context.Context, sel ast.SelectionSet, v ent.BookCoverConnection) graphql.Marshaler {
+	return ec._BookCoverConnection(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNBookCoverConnection2ᚖlybbrioᚋinternalᚋentᚐBookCoverConnection(ctx context.Context, sel ast.SelectionSet, v *ent.BookCoverConnection) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._BookCoverConnection(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNBookCoverOrderField2ᚖlybbrioᚋinternalᚋentᚐBookCoverOrderField(ctx context.Context, v interface{}) (*ent.BookCoverOrderField, error) {
+	var res = new(ent.BookCoverOrderField)
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNBookCoverOrderField2ᚖlybbrioᚋinternalᚋentᚐBookCoverOrderField(ctx context.Context, sel ast.SelectionSet, v *ent.BookCoverOrderField) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return v
+}
+
+func (ec *executionContext) unmarshalNBookCoverWhereInput2ᚖlybbrioᚋinternalᚋentᚐBookCoverWhereInput(ctx context.Context, v interface{}) (*ent.BookCoverWhereInput, error) {
+	res, err := ec.unmarshalInputBookCoverWhereInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) marshalNBookFile2ᚕᚖlybbrioᚋinternalᚋentᚐBookFileᚄ(ctx context.Context, sel ast.SelectionSet, v []*ent.BookFile) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
@@ -29152,6 +32151,144 @@ func (ec *executionContext) marshalOBook2ᚖlybbrioᚋinternalᚋentᚐBook(ctx 
 	return ec._Book(ctx, sel, v)
 }
 
+func (ec *executionContext) marshalOBookCover2ᚕᚖlybbrioᚋinternalᚋentᚐBookCoverᚄ(ctx context.Context, sel ast.SelectionSet, v []*ent.BookCover) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNBookCover2ᚖlybbrioᚋinternalᚋentᚐBookCover(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalOBookCover2ᚖlybbrioᚋinternalᚋentᚐBookCover(ctx context.Context, sel ast.SelectionSet, v *ent.BookCover) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._BookCover(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalOBookCoverEdge2ᚕᚖlybbrioᚋinternalᚋentᚐBookCoverEdge(ctx context.Context, sel ast.SelectionSet, v []*ent.BookCoverEdge) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalOBookCoverEdge2ᚖlybbrioᚋinternalᚋentᚐBookCoverEdge(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	return ret
+}
+
+func (ec *executionContext) marshalOBookCoverEdge2ᚖlybbrioᚋinternalᚋentᚐBookCoverEdge(ctx context.Context, sel ast.SelectionSet, v *ent.BookCoverEdge) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._BookCoverEdge(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalOBookCoverOrder2ᚖlybbrioᚋinternalᚋentᚐBookCoverOrder(ctx context.Context, v interface{}) (*ent.BookCoverOrder, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputBookCoverOrder(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalOBookCoverWhereInput2ᚕᚖlybbrioᚋinternalᚋentᚐBookCoverWhereInputᚄ(ctx context.Context, v interface{}) ([]*ent.BookCoverWhereInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var vSlice []interface{}
+	if v != nil {
+		vSlice = graphql.CoerceList(v)
+	}
+	var err error
+	res := make([]*ent.BookCoverWhereInput, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNBookCoverWhereInput2ᚖlybbrioᚋinternalᚋentᚐBookCoverWhereInput(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) unmarshalOBookCoverWhereInput2ᚖlybbrioᚋinternalᚋentᚐBookCoverWhereInput(ctx context.Context, v interface{}) (*ent.BookCoverWhereInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputBookCoverWhereInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) marshalOBookEdge2ᚕᚖlybbrioᚋinternalᚋentᚐBookEdge(ctx context.Context, sel ast.SelectionSet, v []*ent.BookEdge) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
@@ -29763,6 +32900,44 @@ func (ec *executionContext) marshalOInt2ᚕint64ᚄ(ctx context.Context, sel ast
 	ret := make(graphql.Array, len(v))
 	for i := range v {
 		ret[i] = ec.marshalNInt2int64(ctx, sel, v[i])
+	}
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) unmarshalOInt2ᚕintᚄ(ctx context.Context, v interface{}) ([]int, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var vSlice []interface{}
+	if v != nil {
+		vSlice = graphql.CoerceList(v)
+	}
+	var err error
+	res := make([]int, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNInt2int(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) marshalOInt2ᚕintᚄ(ctx context.Context, sel ast.SelectionSet, v []int) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	for i := range v {
+		ret[i] = ec.marshalNInt2int(ctx, sel, v[i])
 	}
 
 	for _, e := range ret {

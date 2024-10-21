@@ -9,49 +9,83 @@ type Author implements Node {
   sort: String!
   link: String
   books(
-    """Returns the elements in the list that come after the specified cursor."""
+    """
+    Returns the elements in the list that come after the specified cursor.
+    """
     after: Cursor
 
-    """Returns the first _n_ elements from the list."""
+    """
+    Returns the first _n_ elements from the list.
+    """
     first: Int
 
-    """Returns the elements in the list that come before the specified cursor."""
+    """
+    Returns the elements in the list that come before the specified cursor.
+    """
     before: Cursor
 
-    """Returns the last _n_ elements from the list."""
+    """
+    Returns the last _n_ elements from the list.
+    """
     last: Int
 
-    """Ordering options for Books returned from the connection."""
+    """
+    Ordering options for Books returned from the connection.
+    """
     orderBy: [BookOrder!]
 
-    """Filtering options for Books returned from the connection."""
+    """
+    Filtering options for Books returned from the connection.
+    """
     where: BookWhereInput
   ): BookConnection!
 }
-"""A connection to a list of items."""
+"""
+A connection to a list of items.
+"""
 type AuthorConnection {
-  """A list of edges."""
+  """
+  A list of edges.
+  """
   edges: [AuthorEdge]
-  """Information to aid in pagination."""
+  """
+  Information to aid in pagination.
+  """
   pageInfo: PageInfo!
-  """Identifies the total count of items in the connection."""
+  """
+  Identifies the total count of items in the connection.
+  """
   totalCount: Int!
 }
-"""An edge in a connection."""
+"""
+An edge in a connection.
+"""
 type AuthorEdge {
-  """The item at the end of the edge."""
+  """
+  The item at the end of the edge.
+  """
   node: Author
-  """A cursor for use in pagination."""
+  """
+  A cursor for use in pagination.
+  """
   cursor: Cursor!
 }
-"""Ordering options for Author connections"""
+"""
+Ordering options for Author connections
+"""
 input AuthorOrder {
-  """The ordering direction."""
+  """
+  The ordering direction.
+  """
   direction: OrderDirection! = ASC
-  """The field by which to order Authors."""
+  """
+  The field by which to order Authors.
+  """
   field: AuthorOrderField!
 }
-"""Properties by which Author connections can be ordered."""
+"""
+Properties by which Author connections can be ordered.
+"""
 enum AuthorOrderField {
   NAME
   BOOKS_COUNT
@@ -64,7 +98,9 @@ input AuthorWhereInput {
   not: AuthorWhereInput
   and: [AuthorWhereInput!]
   or: [AuthorWhereInput!]
-  """id field predicates"""
+  """
+  id field predicates
+  """
   id: ID
   idNEQ: ID
   idIn: [ID!]
@@ -73,7 +109,9 @@ input AuthorWhereInput {
   idGTE: ID
   idLT: ID
   idLTE: ID
-  """create_time field predicates"""
+  """
+  create_time field predicates
+  """
   createTime: Time
   createTimeNEQ: Time
   createTimeIn: [Time!]
@@ -82,7 +120,9 @@ input AuthorWhereInput {
   createTimeGTE: Time
   createTimeLT: Time
   createTimeLTE: Time
-  """update_time field predicates"""
+  """
+  update_time field predicates
+  """
   updateTime: Time
   updateTimeNEQ: Time
   updateTimeIn: [Time!]
@@ -91,7 +131,9 @@ input AuthorWhereInput {
   updateTimeGTE: Time
   updateTimeLT: Time
   updateTimeLTE: Time
-  """calibre_id field predicates"""
+  """
+  calibre_id field predicates
+  """
   calibreID: Int
   calibreIDNEQ: Int
   calibreIDIn: [Int!]
@@ -102,7 +144,9 @@ input AuthorWhereInput {
   calibreIDLTE: Int
   calibreIDIsNil: Boolean
   calibreIDNotNil: Boolean
-  """name field predicates"""
+  """
+  name field predicates
+  """
   name: String
   nameNEQ: String
   nameIn: [String!]
@@ -116,7 +160,9 @@ input AuthorWhereInput {
   nameHasSuffix: String
   nameEqualFold: String
   nameContainsFold: String
-  """sort field predicates"""
+  """
+  sort field predicates
+  """
   sort: String
   sortNEQ: String
   sortIn: [String!]
@@ -130,7 +176,9 @@ input AuthorWhereInput {
   sortHasSuffix: String
   sortEqualFold: String
   sortContainsFold: String
-  """link field predicates"""
+  """
+  link field predicates
+  """
   link: String
   linkNEQ: String
   linkIn: [String!]
@@ -146,7 +194,9 @@ input AuthorWhereInput {
   linkNotNil: Boolean
   linkEqualFold: String
   linkContainsFold: String
-  """books edge predicates"""
+  """
+  books edge predicates
+  """
   hasBooks: Boolean
   hasBooksWith: [BookWhereInput!]
 }
@@ -170,48 +220,112 @@ type Book implements Node {
   language: [Language!]
   shelf: [Shelf!]
   files: [BookFile!]
+  covers: [BookCover!]
 }
-"""A connection to a list of items."""
+"""
+A connection to a list of items.
+"""
 type BookConnection {
-  """A list of edges."""
+  """
+  A list of edges.
+  """
   edges: [BookEdge]
-  """Information to aid in pagination."""
+  """
+  Information to aid in pagination.
+  """
   pageInfo: PageInfo!
-  """Identifies the total count of items in the connection."""
+  """
+  Identifies the total count of items in the connection.
+  """
   totalCount: Int!
 }
-"""An edge in a connection."""
-type BookEdge {
-  """The item at the end of the edge."""
-  node: Book
-  """A cursor for use in pagination."""
-  cursor: Cursor!
-}
-type BookFile implements Node {
+type BookCover implements Node {
   id: ID!
   createTime: Time!
   updateTime: Time!
-  name: String!
   path: String!
-  """Size in bytes"""
+  """
+  Size in bytes
+  """
   size: Int!
-  format: BookFileFormat!
+  """
+  Width in pixels
+  """
+  width: Int!
+  """
+  Height in pixels
+  """
+  height: Int!
+  """
+  URL to the image
+  """
+  url: String!
+  """
+  MIME type
+  """
+  contenttype: String! @goField(name: "ContentType", forceResolver: false)
   book: Book!
 }
-"""BookFileFormat is enum for the field format"""
-enum BookFileFormat @goModel(model: "lybbrio/internal/ent/bookfile.Format") {
-  EPUB
-  KEPUB
+"""
+A connection to a list of items.
+"""
+type BookCoverConnection {
+  """
+  A list of edges.
+  """
+  edges: [BookCoverEdge]
+  """
+  Information to aid in pagination.
+  """
+  pageInfo: PageInfo!
+  """
+  Identifies the total count of items in the connection.
+  """
+  totalCount: Int!
 }
 """
-BookFileWhereInput is used for filtering BookFile objects.
+An edge in a connection.
+"""
+type BookCoverEdge {
+  """
+  The item at the end of the edge.
+  """
+  node: BookCover
+  """
+  A cursor for use in pagination.
+  """
+  cursor: Cursor!
+}
+"""
+Ordering options for BookCover connections
+"""
+input BookCoverOrder {
+  """
+  The ordering direction.
+  """
+  direction: OrderDirection! = ASC
+  """
+  The field by which to order BookCovers.
+  """
+  field: BookCoverOrderField!
+}
+"""
+Properties by which BookCover connections can be ordered.
+"""
+enum BookCoverOrderField {
+  SIZE
+}
+"""
+BookCoverWhereInput is used for filtering BookCover objects.
 Input was generated by ent.
 """
-input BookFileWhereInput {
-  not: BookFileWhereInput
-  and: [BookFileWhereInput!]
-  or: [BookFileWhereInput!]
-  """id field predicates"""
+input BookCoverWhereInput {
+  not: BookCoverWhereInput
+  and: [BookCoverWhereInput!]
+  or: [BookCoverWhereInput!]
+  """
+  id field predicates
+  """
   id: ID
   idNEQ: ID
   idIn: [ID!]
@@ -220,7 +334,9 @@ input BookFileWhereInput {
   idGTE: ID
   idLT: ID
   idLTE: ID
-  """create_time field predicates"""
+  """
+  create_time field predicates
+  """
   createTime: Time
   createTimeNEQ: Time
   createTimeIn: [Time!]
@@ -229,7 +345,9 @@ input BookFileWhereInput {
   createTimeGTE: Time
   createTimeLT: Time
   createTimeLTE: Time
-  """update_time field predicates"""
+  """
+  update_time field predicates
+  """
   updateTime: Time
   updateTimeNEQ: Time
   updateTimeIn: [Time!]
@@ -238,21 +356,9 @@ input BookFileWhereInput {
   updateTimeGTE: Time
   updateTimeLT: Time
   updateTimeLTE: Time
-  """name field predicates"""
-  name: String
-  nameNEQ: String
-  nameIn: [String!]
-  nameNotIn: [String!]
-  nameGT: String
-  nameGTE: String
-  nameLT: String
-  nameLTE: String
-  nameContains: String
-  nameHasPrefix: String
-  nameHasSuffix: String
-  nameEqualFold: String
-  nameContainsFold: String
-  """path field predicates"""
+  """
+  path field predicates
+  """
   path: String
   pathNEQ: String
   pathIn: [String!]
@@ -266,7 +372,9 @@ input BookFileWhereInput {
   pathHasSuffix: String
   pathEqualFold: String
   pathContainsFold: String
-  """size field predicates"""
+  """
+  size field predicates
+  """
   size: Int
   sizeNEQ: Int
   sizeIn: [Int!]
@@ -275,23 +383,212 @@ input BookFileWhereInput {
   sizeGTE: Int
   sizeLT: Int
   sizeLTE: Int
-  """format field predicates"""
+  """
+  width field predicates
+  """
+  width: Int
+  widthNEQ: Int
+  widthIn: [Int!]
+  widthNotIn: [Int!]
+  widthGT: Int
+  widthGTE: Int
+  widthLT: Int
+  widthLTE: Int
+  """
+  height field predicates
+  """
+  height: Int
+  heightNEQ: Int
+  heightIn: [Int!]
+  heightNotIn: [Int!]
+  heightGT: Int
+  heightGTE: Int
+  heightLT: Int
+  heightLTE: Int
+  """
+  url field predicates
+  """
+  url: String
+  urlNEQ: String
+  urlIn: [String!]
+  urlNotIn: [String!]
+  urlGT: String
+  urlGTE: String
+  urlLT: String
+  urlLTE: String
+  urlContains: String
+  urlHasPrefix: String
+  urlHasSuffix: String
+  urlEqualFold: String
+  urlContainsFold: String
+  """
+  contentType field predicates
+  """
+  contenttype: String
+  contenttypeNEQ: String
+  contenttypeIn: [String!]
+  contenttypeNotIn: [String!]
+  contenttypeGT: String
+  contenttypeGTE: String
+  contenttypeLT: String
+  contenttypeLTE: String
+  contenttypeContains: String
+  contenttypeHasPrefix: String
+  contenttypeHasSuffix: String
+  contenttypeEqualFold: String
+  contenttypeContainsFold: String
+  """
+  book edge predicates
+  """
+  hasBook: Boolean
+  hasBookWith: [BookWhereInput!]
+}
+"""
+An edge in a connection.
+"""
+type BookEdge {
+  """
+  The item at the end of the edge.
+  """
+  node: Book
+  """
+  A cursor for use in pagination.
+  """
+  cursor: Cursor!
+}
+type BookFile implements Node {
+  id: ID!
+  createTime: Time!
+  updateTime: Time!
+  name: String!
+  path: String!
+  """
+  Size in bytes
+  """
+  size: Int!
+  format: BookFileFormat!
+  book: Book!
+}
+"""
+BookFileFormat is enum for the field format
+"""
+enum BookFileFormat @goModel(model: "lybbrio/internal/ent/bookfile.Format") {
+  EPUB
+  KEPUB
+}
+"""
+BookFileWhereInput is used for filtering BookFile objects.
+Input was generated by ent.
+"""
+input BookFileWhereInput {
+  not: BookFileWhereInput
+  and: [BookFileWhereInput!]
+  or: [BookFileWhereInput!]
+  """
+  id field predicates
+  """
+  id: ID
+  idNEQ: ID
+  idIn: [ID!]
+  idNotIn: [ID!]
+  idGT: ID
+  idGTE: ID
+  idLT: ID
+  idLTE: ID
+  """
+  create_time field predicates
+  """
+  createTime: Time
+  createTimeNEQ: Time
+  createTimeIn: [Time!]
+  createTimeNotIn: [Time!]
+  createTimeGT: Time
+  createTimeGTE: Time
+  createTimeLT: Time
+  createTimeLTE: Time
+  """
+  update_time field predicates
+  """
+  updateTime: Time
+  updateTimeNEQ: Time
+  updateTimeIn: [Time!]
+  updateTimeNotIn: [Time!]
+  updateTimeGT: Time
+  updateTimeGTE: Time
+  updateTimeLT: Time
+  updateTimeLTE: Time
+  """
+  name field predicates
+  """
+  name: String
+  nameNEQ: String
+  nameIn: [String!]
+  nameNotIn: [String!]
+  nameGT: String
+  nameGTE: String
+  nameLT: String
+  nameLTE: String
+  nameContains: String
+  nameHasPrefix: String
+  nameHasSuffix: String
+  nameEqualFold: String
+  nameContainsFold: String
+  """
+  path field predicates
+  """
+  path: String
+  pathNEQ: String
+  pathIn: [String!]
+  pathNotIn: [String!]
+  pathGT: String
+  pathGTE: String
+  pathLT: String
+  pathLTE: String
+  pathContains: String
+  pathHasPrefix: String
+  pathHasSuffix: String
+  pathEqualFold: String
+  pathContainsFold: String
+  """
+  size field predicates
+  """
+  size: Int
+  sizeNEQ: Int
+  sizeIn: [Int!]
+  sizeNotIn: [Int!]
+  sizeGT: Int
+  sizeGTE: Int
+  sizeLT: Int
+  sizeLTE: Int
+  """
+  format field predicates
+  """
   format: BookFileFormat
   formatNEQ: BookFileFormat
   formatIn: [BookFileFormat!]
   formatNotIn: [BookFileFormat!]
-  """book edge predicates"""
+  """
+  book edge predicates
+  """
   hasBook: Boolean
   hasBookWith: [BookWhereInput!]
 }
-"""Ordering options for Book connections"""
+"""
+Ordering options for Book connections
+"""
 input BookOrder {
-  """The ordering direction."""
+  """
+  The ordering direction.
+  """
   direction: OrderDirection! = ASC
-  """The field by which to order Books."""
+  """
+  The field by which to order Books.
+  """
   field: BookOrderField!
 }
-"""Properties by which Book connections can be ordered."""
+"""
+Properties by which Book connections can be ordered.
+"""
 enum BookOrderField {
   TITLE
   NAME
@@ -307,7 +604,9 @@ input BookWhereInput {
   not: BookWhereInput
   and: [BookWhereInput!]
   or: [BookWhereInput!]
-  """id field predicates"""
+  """
+  id field predicates
+  """
   id: ID
   idNEQ: ID
   idIn: [ID!]
@@ -316,7 +615,9 @@ input BookWhereInput {
   idGTE: ID
   idLT: ID
   idLTE: ID
-  """create_time field predicates"""
+  """
+  create_time field predicates
+  """
   createTime: Time
   createTimeNEQ: Time
   createTimeIn: [Time!]
@@ -325,7 +626,9 @@ input BookWhereInput {
   createTimeGTE: Time
   createTimeLT: Time
   createTimeLTE: Time
-  """update_time field predicates"""
+  """
+  update_time field predicates
+  """
   updateTime: Time
   updateTimeNEQ: Time
   updateTimeIn: [Time!]
@@ -334,7 +637,9 @@ input BookWhereInput {
   updateTimeGTE: Time
   updateTimeLT: Time
   updateTimeLTE: Time
-  """calibre_id field predicates"""
+  """
+  calibre_id field predicates
+  """
   calibreID: Int
   calibreIDNEQ: Int
   calibreIDIn: [Int!]
@@ -345,7 +650,9 @@ input BookWhereInput {
   calibreIDLTE: Int
   calibreIDIsNil: Boolean
   calibreIDNotNil: Boolean
-  """title field predicates"""
+  """
+  title field predicates
+  """
   title: String
   titleNEQ: String
   titleIn: [String!]
@@ -359,7 +666,9 @@ input BookWhereInput {
   titleHasSuffix: String
   titleEqualFold: String
   titleContainsFold: String
-  """sort field predicates"""
+  """
+  sort field predicates
+  """
   sort: String
   sortNEQ: String
   sortIn: [String!]
@@ -373,7 +682,9 @@ input BookWhereInput {
   sortHasSuffix: String
   sortEqualFold: String
   sortContainsFold: String
-  """published_date field predicates"""
+  """
+  published_date field predicates
+  """
   publishedDate: Time
   publishedDateNEQ: Time
   publishedDateIn: [Time!]
@@ -384,7 +695,9 @@ input BookWhereInput {
   publishedDateLTE: Time
   publishedDateIsNil: Boolean
   publishedDateNotNil: Boolean
-  """path field predicates"""
+  """
+  path field predicates
+  """
   path: String
   pathNEQ: String
   pathIn: [String!]
@@ -398,7 +711,9 @@ input BookWhereInput {
   pathHasSuffix: String
   pathEqualFold: String
   pathContainsFold: String
-  """isbn field predicates"""
+  """
+  isbn field predicates
+  """
   isbn: String
   isbnNEQ: String
   isbnIn: [String!]
@@ -414,7 +729,9 @@ input BookWhereInput {
   isbnNotNil: Boolean
   isbnEqualFold: String
   isbnContainsFold: String
-  """description field predicates"""
+  """
+  description field predicates
+  """
   description: String
   descriptionNEQ: String
   descriptionIn: [String!]
@@ -430,7 +747,9 @@ input BookWhereInput {
   descriptionNotNil: Boolean
   descriptionEqualFold: String
   descriptionContainsFold: String
-  """series_index field predicates"""
+  """
+  series_index field predicates
+  """
   seriesIndex: Float
   seriesIndexNEQ: Float
   seriesIndexIn: [Float!]
@@ -441,30 +760,51 @@ input BookWhereInput {
   seriesIndexLTE: Float
   seriesIndexIsNil: Boolean
   seriesIndexNotNil: Boolean
-  """authors edge predicates"""
+  """
+  authors edge predicates
+  """
   hasAuthors: Boolean
   hasAuthorsWith: [AuthorWhereInput!]
-  """publisher edge predicates"""
+  """
+  publisher edge predicates
+  """
   hasPublisher: Boolean
   hasPublisherWith: [PublisherWhereInput!]
-  """series edge predicates"""
+  """
+  series edge predicates
+  """
   hasSeries: Boolean
   hasSeriesWith: [SeriesWhereInput!]
-  """identifiers edge predicates"""
+  """
+  identifiers edge predicates
+  """
   hasIdentifiers: Boolean
   hasIdentifiersWith: [IdentifierWhereInput!]
-  """tags edge predicates"""
+  """
+  tags edge predicates
+  """
   hasTags: Boolean
   hasTagsWith: [TagWhereInput!]
-  """language edge predicates"""
+  """
+  language edge predicates
+  """
   hasLanguage: Boolean
   hasLanguageWith: [LanguageWhereInput!]
-  """shelf edge predicates"""
+  """
+  shelf edge predicates
+  """
   hasShelf: Boolean
   hasShelfWith: [ShelfWhereInput!]
-  """files edge predicates"""
+  """
+  files edge predicates
+  """
   hasFiles: Boolean
   hasFilesWith: [BookFileWhereInput!]
+  """
+  covers edge predicates
+  """
+  hasCovers: Boolean
+  hasCoversWith: [BookCoverWhereInput!]
 }
 """
 CreateAuthorInput is used for create Author object.
@@ -502,6 +842,7 @@ input CreateBookInput {
   languageIDs: [ID!]
   shelfIDs: [ID!]
   fileIDs: [ID!]
+  coverIDs: [ID!]
 }
 """
 CreateIdentifierInput is used for create Identifier object.
@@ -584,30 +925,52 @@ type Identifier implements Node {
   value: String!
   book: Book!
 }
-"""A connection to a list of items."""
+"""
+A connection to a list of items.
+"""
 type IdentifierConnection {
-  """A list of edges."""
+  """
+  A list of edges.
+  """
   edges: [IdentifierEdge]
-  """Information to aid in pagination."""
+  """
+  Information to aid in pagination.
+  """
   pageInfo: PageInfo!
-  """Identifies the total count of items in the connection."""
+  """
+  Identifies the total count of items in the connection.
+  """
   totalCount: Int!
 }
-"""An edge in a connection."""
+"""
+An edge in a connection.
+"""
 type IdentifierEdge {
-  """The item at the end of the edge."""
+  """
+  The item at the end of the edge.
+  """
   node: Identifier
-  """A cursor for use in pagination."""
+  """
+  A cursor for use in pagination.
+  """
   cursor: Cursor!
 }
-"""Ordering options for Identifier connections"""
+"""
+Ordering options for Identifier connections
+"""
 input IdentifierOrder {
-  """The ordering direction."""
+  """
+  The ordering direction.
+  """
   direction: OrderDirection! = ASC
-  """The field by which to order Identifiers."""
+  """
+  The field by which to order Identifiers.
+  """
   field: IdentifierOrderField!
 }
-"""Properties by which Identifier connections can be ordered."""
+"""
+Properties by which Identifier connections can be ordered.
+"""
 enum IdentifierOrderField {
   TYPE
   VALUE
@@ -620,7 +983,9 @@ input IdentifierWhereInput {
   not: IdentifierWhereInput
   and: [IdentifierWhereInput!]
   or: [IdentifierWhereInput!]
-  """id field predicates"""
+  """
+  id field predicates
+  """
   id: ID
   idNEQ: ID
   idIn: [ID!]
@@ -629,7 +994,9 @@ input IdentifierWhereInput {
   idGTE: ID
   idLT: ID
   idLTE: ID
-  """create_time field predicates"""
+  """
+  create_time field predicates
+  """
   createTime: Time
   createTimeNEQ: Time
   createTimeIn: [Time!]
@@ -638,7 +1005,9 @@ input IdentifierWhereInput {
   createTimeGTE: Time
   createTimeLT: Time
   createTimeLTE: Time
-  """update_time field predicates"""
+  """
+  update_time field predicates
+  """
   updateTime: Time
   updateTimeNEQ: Time
   updateTimeIn: [Time!]
@@ -647,7 +1016,9 @@ input IdentifierWhereInput {
   updateTimeGTE: Time
   updateTimeLT: Time
   updateTimeLTE: Time
-  """calibre_id field predicates"""
+  """
+  calibre_id field predicates
+  """
   calibreID: Int
   calibreIDNEQ: Int
   calibreIDIn: [Int!]
@@ -658,7 +1029,9 @@ input IdentifierWhereInput {
   calibreIDLTE: Int
   calibreIDIsNil: Boolean
   calibreIDNotNil: Boolean
-  """type field predicates"""
+  """
+  type field predicates
+  """
   type: String
   typeNEQ: String
   typeIn: [String!]
@@ -672,7 +1045,9 @@ input IdentifierWhereInput {
   typeHasSuffix: String
   typeEqualFold: String
   typeContainsFold: String
-  """value field predicates"""
+  """
+  value field predicates
+  """
   value: String
   valueNEQ: String
   valueIn: [String!]
@@ -686,7 +1061,9 @@ input IdentifierWhereInput {
   valueHasSuffix: String
   valueEqualFold: String
   valueContainsFold: String
-  """book edge predicates"""
+  """
+  book edge predicates
+  """
   hasBook: Boolean
   hasBookWith: [BookWhereInput!]
 }
@@ -697,49 +1074,83 @@ type Language implements Node {
   calibreID: Int
   code: String!
   books(
-    """Returns the elements in the list that come after the specified cursor."""
+    """
+    Returns the elements in the list that come after the specified cursor.
+    """
     after: Cursor
 
-    """Returns the first _n_ elements from the list."""
+    """
+    Returns the first _n_ elements from the list.
+    """
     first: Int
 
-    """Returns the elements in the list that come before the specified cursor."""
+    """
+    Returns the elements in the list that come before the specified cursor.
+    """
     before: Cursor
 
-    """Returns the last _n_ elements from the list."""
+    """
+    Returns the last _n_ elements from the list.
+    """
     last: Int
 
-    """Ordering options for Books returned from the connection."""
+    """
+    Ordering options for Books returned from the connection.
+    """
     orderBy: [BookOrder!]
 
-    """Filtering options for Books returned from the connection."""
+    """
+    Filtering options for Books returned from the connection.
+    """
     where: BookWhereInput
   ): BookConnection!
 }
-"""A connection to a list of items."""
+"""
+A connection to a list of items.
+"""
 type LanguageConnection {
-  """A list of edges."""
+  """
+  A list of edges.
+  """
   edges: [LanguageEdge]
-  """Information to aid in pagination."""
+  """
+  Information to aid in pagination.
+  """
   pageInfo: PageInfo!
-  """Identifies the total count of items in the connection."""
+  """
+  Identifies the total count of items in the connection.
+  """
   totalCount: Int!
 }
-"""An edge in a connection."""
+"""
+An edge in a connection.
+"""
 type LanguageEdge {
-  """The item at the end of the edge."""
+  """
+  The item at the end of the edge.
+  """
   node: Language
-  """A cursor for use in pagination."""
+  """
+  A cursor for use in pagination.
+  """
   cursor: Cursor!
 }
-"""Ordering options for Language connections"""
+"""
+Ordering options for Language connections
+"""
 input LanguageOrder {
-  """The ordering direction."""
+  """
+  The ordering direction.
+  """
   direction: OrderDirection! = ASC
-  """The field by which to order Languages."""
+  """
+  The field by which to order Languages.
+  """
   field: LanguageOrderField!
 }
-"""Properties by which Language connections can be ordered."""
+"""
+Properties by which Language connections can be ordered.
+"""
 enum LanguageOrderField {
   BOOKS_COUNT
 }
@@ -751,7 +1162,9 @@ input LanguageWhereInput {
   not: LanguageWhereInput
   and: [LanguageWhereInput!]
   or: [LanguageWhereInput!]
-  """id field predicates"""
+  """
+  id field predicates
+  """
   id: ID
   idNEQ: ID
   idIn: [ID!]
@@ -760,7 +1173,9 @@ input LanguageWhereInput {
   idGTE: ID
   idLT: ID
   idLTE: ID
-  """create_time field predicates"""
+  """
+  create_time field predicates
+  """
   createTime: Time
   createTimeNEQ: Time
   createTimeIn: [Time!]
@@ -769,7 +1184,9 @@ input LanguageWhereInput {
   createTimeGTE: Time
   createTimeLT: Time
   createTimeLTE: Time
-  """update_time field predicates"""
+  """
+  update_time field predicates
+  """
   updateTime: Time
   updateTimeNEQ: Time
   updateTimeIn: [Time!]
@@ -778,7 +1195,9 @@ input LanguageWhereInput {
   updateTimeGTE: Time
   updateTimeLT: Time
   updateTimeLTE: Time
-  """calibre_id field predicates"""
+  """
+  calibre_id field predicates
+  """
   calibreID: Int
   calibreIDNEQ: Int
   calibreIDIn: [Int!]
@@ -789,7 +1208,9 @@ input LanguageWhereInput {
   calibreIDLTE: Int
   calibreIDIsNil: Boolean
   calibreIDNotNil: Boolean
-  """code field predicates"""
+  """
+  code field predicates
+  """
   code: String
   codeNEQ: String
   codeIn: [String!]
@@ -803,7 +1224,9 @@ input LanguageWhereInput {
   codeHasSuffix: String
   codeEqualFold: String
   codeContainsFold: String
-  """books edge predicates"""
+  """
+  books edge predicates
+  """
   hasBooks: Boolean
   hasBooksWith: [BookWhereInput!]
 }
@@ -812,14 +1235,22 @@ An object with an ID.
 Follows the [Relay Global Object Identification Specification](https://relay.dev/graphql/objectidentification.htm)
 """
 interface Node @goModel(model: "lybbrio/internal/ent.Noder") {
-  """The id of the object."""
+  """
+  The id of the object.
+  """
   id: ID!
 }
-"""Possible directions in which to order a list of items when provided an `orderBy` argument."""
+"""
+Possible directions in which to order a list of items when provided an `orderBy` argument.
+"""
 enum OrderDirection {
-  """Specifies an ascending order for a given `orderBy` argument."""
+  """
+  Specifies an ascending order for a given `orderBy` argument.
+  """
   ASC
-  """Specifies a descending order for a given `orderBy` argument."""
+  """
+  Specifies a descending order for a given `orderBy` argument.
+  """
   DESC
 }
 """
@@ -827,13 +1258,21 @@ Information about pagination in a connection.
 https://relay.dev/graphql/connections.htm#sec-undefined.PageInfo
 """
 type PageInfo {
-  """When paginating forwards, are there more items?"""
+  """
+  When paginating forwards, are there more items?
+  """
   hasNextPage: Boolean!
-  """When paginating backwards, are there more items?"""
+  """
+  When paginating backwards, are there more items?
+  """
   hasPreviousPage: Boolean!
-  """When paginating backwards, the cursor to continue."""
+  """
+  When paginating backwards, the cursor to continue.
+  """
   startCursor: Cursor
-  """When paginating forwards, the cursor to continue."""
+  """
+  When paginating forwards, the cursor to continue.
+  """
   endCursor: Cursor
 }
 type Publisher implements Node {
@@ -843,49 +1282,83 @@ type Publisher implements Node {
   calibreID: Int
   name: String!
   books(
-    """Returns the elements in the list that come after the specified cursor."""
+    """
+    Returns the elements in the list that come after the specified cursor.
+    """
     after: Cursor
 
-    """Returns the first _n_ elements from the list."""
+    """
+    Returns the first _n_ elements from the list.
+    """
     first: Int
 
-    """Returns the elements in the list that come before the specified cursor."""
+    """
+    Returns the elements in the list that come before the specified cursor.
+    """
     before: Cursor
 
-    """Returns the last _n_ elements from the list."""
+    """
+    Returns the last _n_ elements from the list.
+    """
     last: Int
 
-    """Ordering options for Books returned from the connection."""
+    """
+    Ordering options for Books returned from the connection.
+    """
     orderBy: [BookOrder!]
 
-    """Filtering options for Books returned from the connection."""
+    """
+    Filtering options for Books returned from the connection.
+    """
     where: BookWhereInput
   ): BookConnection!
 }
-"""A connection to a list of items."""
+"""
+A connection to a list of items.
+"""
 type PublisherConnection {
-  """A list of edges."""
+  """
+  A list of edges.
+  """
   edges: [PublisherEdge]
-  """Information to aid in pagination."""
+  """
+  Information to aid in pagination.
+  """
   pageInfo: PageInfo!
-  """Identifies the total count of items in the connection."""
+  """
+  Identifies the total count of items in the connection.
+  """
   totalCount: Int!
 }
-"""An edge in a connection."""
+"""
+An edge in a connection.
+"""
 type PublisherEdge {
-  """The item at the end of the edge."""
+  """
+  The item at the end of the edge.
+  """
   node: Publisher
-  """A cursor for use in pagination."""
+  """
+  A cursor for use in pagination.
+  """
   cursor: Cursor!
 }
-"""Ordering options for Publisher connections"""
+"""
+Ordering options for Publisher connections
+"""
 input PublisherOrder {
-  """The ordering direction."""
+  """
+  The ordering direction.
+  """
   direction: OrderDirection! = ASC
-  """The field by which to order Publishers."""
+  """
+  The field by which to order Publishers.
+  """
   field: PublisherOrderField!
 }
-"""Properties by which Publisher connections can be ordered."""
+"""
+Properties by which Publisher connections can be ordered.
+"""
 enum PublisherOrderField {
   NAME
   BOOKS_COUNT
@@ -898,7 +1371,9 @@ input PublisherWhereInput {
   not: PublisherWhereInput
   and: [PublisherWhereInput!]
   or: [PublisherWhereInput!]
-  """id field predicates"""
+  """
+  id field predicates
+  """
   id: ID
   idNEQ: ID
   idIn: [ID!]
@@ -907,7 +1382,9 @@ input PublisherWhereInput {
   idGTE: ID
   idLT: ID
   idLTE: ID
-  """create_time field predicates"""
+  """
+  create_time field predicates
+  """
   createTime: Time
   createTimeNEQ: Time
   createTimeIn: [Time!]
@@ -916,7 +1393,9 @@ input PublisherWhereInput {
   createTimeGTE: Time
   createTimeLT: Time
   createTimeLTE: Time
-  """update_time field predicates"""
+  """
+  update_time field predicates
+  """
   updateTime: Time
   updateTimeNEQ: Time
   updateTimeIn: [Time!]
@@ -925,7 +1404,9 @@ input PublisherWhereInput {
   updateTimeGTE: Time
   updateTimeLT: Time
   updateTimeLTE: Time
-  """calibre_id field predicates"""
+  """
+  calibre_id field predicates
+  """
   calibreID: Int
   calibreIDNEQ: Int
   calibreIDIn: [Int!]
@@ -936,7 +1417,9 @@ input PublisherWhereInput {
   calibreIDLTE: Int
   calibreIDIsNil: Boolean
   calibreIDNotNil: Boolean
-  """name field predicates"""
+  """
+  name field predicates
+  """
   name: String
   nameNEQ: String
   nameIn: [String!]
@@ -950,191 +1433,340 @@ input PublisherWhereInput {
   nameHasSuffix: String
   nameEqualFold: String
   nameContainsFold: String
-  """books edge predicates"""
+  """
+  books edge predicates
+  """
   hasBooks: Boolean
   hasBooksWith: [BookWhereInput!]
 }
 type Query {
-  """Fetches an object given its ID."""
+  """
+  Fetches an object given its ID.
+  """
   node(
-    """ID of the object."""
+    """
+    ID of the object.
+    """
     id: ID!
   ): Node
-  """Lookup nodes by a list of IDs."""
+  """
+  Lookup nodes by a list of IDs.
+  """
   nodes(
-    """The list of node IDs."""
+    """
+    The list of node IDs.
+    """
     ids: [ID!]!
   ): [Node]!
   authors(
-    """Returns the elements in the list that come after the specified cursor."""
+    """
+    Returns the elements in the list that come after the specified cursor.
+    """
     after: Cursor
 
-    """Returns the first _n_ elements from the list."""
+    """
+    Returns the first _n_ elements from the list.
+    """
     first: Int
 
-    """Returns the elements in the list that come before the specified cursor."""
+    """
+    Returns the elements in the list that come before the specified cursor.
+    """
     before: Cursor
 
-    """Returns the last _n_ elements from the list."""
+    """
+    Returns the last _n_ elements from the list.
+    """
     last: Int
 
-    """Ordering options for Authors returned from the connection."""
+    """
+    Ordering options for Authors returned from the connection.
+    """
     orderBy: [AuthorOrder!]
 
-    """Filtering options for Authors returned from the connection."""
+    """
+    Filtering options for Authors returned from the connection.
+    """
     where: AuthorWhereInput
   ): AuthorConnection!
   books(
-    """Returns the elements in the list that come after the specified cursor."""
+    """
+    Returns the elements in the list that come after the specified cursor.
+    """
     after: Cursor
 
-    """Returns the first _n_ elements from the list."""
+    """
+    Returns the first _n_ elements from the list.
+    """
     first: Int
 
-    """Returns the elements in the list that come before the specified cursor."""
+    """
+    Returns the elements in the list that come before the specified cursor.
+    """
     before: Cursor
 
-    """Returns the last _n_ elements from the list."""
+    """
+    Returns the last _n_ elements from the list.
+    """
     last: Int
 
-    """Ordering options for Books returned from the connection."""
+    """
+    Ordering options for Books returned from the connection.
+    """
     orderBy: [BookOrder!]
 
-    """Filtering options for Books returned from the connection."""
+    """
+    Filtering options for Books returned from the connection.
+    """
     where: BookWhereInput
   ): BookConnection!
-  bookFiles: [BookFile!]!
-  identifiers(
-    """Returns the elements in the list that come after the specified cursor."""
+  bookCovers(
+    """
+    Returns the elements in the list that come after the specified cursor.
+    """
     after: Cursor
 
-    """Returns the first _n_ elements from the list."""
+    """
+    Returns the first _n_ elements from the list.
+    """
     first: Int
 
-    """Returns the elements in the list that come before the specified cursor."""
+    """
+    Returns the elements in the list that come before the specified cursor.
+    """
     before: Cursor
 
-    """Returns the last _n_ elements from the list."""
+    """
+    Returns the last _n_ elements from the list.
+    """
     last: Int
 
-    """Ordering options for Identifiers returned from the connection."""
+    """
+    Ordering options for BookCovers returned from the connection.
+    """
+    orderBy: BookCoverOrder
+
+    """
+    Filtering options for BookCovers returned from the connection.
+    """
+    where: BookCoverWhereInput
+  ): BookCoverConnection!
+  bookFiles: [BookFile!]!
+  identifiers(
+    """
+    Returns the elements in the list that come after the specified cursor.
+    """
+    after: Cursor
+
+    """
+    Returns the first _n_ elements from the list.
+    """
+    first: Int
+
+    """
+    Returns the elements in the list that come before the specified cursor.
+    """
+    before: Cursor
+
+    """
+    Returns the last _n_ elements from the list.
+    """
+    last: Int
+
+    """
+    Ordering options for Identifiers returned from the connection.
+    """
     orderBy: [IdentifierOrder!]
 
-    """Filtering options for Identifiers returned from the connection."""
+    """
+    Filtering options for Identifiers returned from the connection.
+    """
     where: IdentifierWhereInput
   ): IdentifierConnection!
   languages(
-    """Returns the elements in the list that come after the specified cursor."""
+    """
+    Returns the elements in the list that come after the specified cursor.
+    """
     after: Cursor
 
-    """Returns the first _n_ elements from the list."""
+    """
+    Returns the first _n_ elements from the list.
+    """
     first: Int
 
-    """Returns the elements in the list that come before the specified cursor."""
+    """
+    Returns the elements in the list that come before the specified cursor.
+    """
     before: Cursor
 
-    """Returns the last _n_ elements from the list."""
+    """
+    Returns the last _n_ elements from the list.
+    """
     last: Int
 
-    """Ordering options for Languages returned from the connection."""
+    """
+    Ordering options for Languages returned from the connection.
+    """
     orderBy: [LanguageOrder!]
 
-    """Filtering options for Languages returned from the connection."""
+    """
+    Filtering options for Languages returned from the connection.
+    """
     where: LanguageWhereInput
   ): LanguageConnection!
   publishers(
-    """Returns the elements in the list that come after the specified cursor."""
+    """
+    Returns the elements in the list that come after the specified cursor.
+    """
     after: Cursor
 
-    """Returns the first _n_ elements from the list."""
+    """
+    Returns the first _n_ elements from the list.
+    """
     first: Int
 
-    """Returns the elements in the list that come before the specified cursor."""
+    """
+    Returns the elements in the list that come before the specified cursor.
+    """
     before: Cursor
 
-    """Returns the last _n_ elements from the list."""
+    """
+    Returns the last _n_ elements from the list.
+    """
     last: Int
 
-    """Ordering options for Publishers returned from the connection."""
+    """
+    Ordering options for Publishers returned from the connection.
+    """
     orderBy: [PublisherOrder!]
 
-    """Filtering options for Publishers returned from the connection."""
+    """
+    Filtering options for Publishers returned from the connection.
+    """
     where: PublisherWhereInput
   ): PublisherConnection!
   seriesSlice(
-    """Returns the elements in the list that come after the specified cursor."""
+    """
+    Returns the elements in the list that come after the specified cursor.
+    """
     after: Cursor
 
-    """Returns the first _n_ elements from the list."""
+    """
+    Returns the first _n_ elements from the list.
+    """
     first: Int
 
-    """Returns the elements in the list that come before the specified cursor."""
+    """
+    Returns the elements in the list that come before the specified cursor.
+    """
     before: Cursor
 
-    """Returns the last _n_ elements from the list."""
+    """
+    Returns the last _n_ elements from the list.
+    """
     last: Int
 
-    """Ordering options for SeriesSlice returned from the connection."""
+    """
+    Ordering options for SeriesSlice returned from the connection.
+    """
     orderBy: [SeriesOrder!]
 
-    """Filtering options for SeriesSlice returned from the connection."""
+    """
+    Filtering options for SeriesSlice returned from the connection.
+    """
     where: SeriesWhereInput
   ): SeriesConnection!
   shelves(
-    """Returns the elements in the list that come after the specified cursor."""
+    """
+    Returns the elements in the list that come after the specified cursor.
+    """
     after: Cursor
 
-    """Returns the first _n_ elements from the list."""
+    """
+    Returns the first _n_ elements from the list.
+    """
     first: Int
 
-    """Returns the elements in the list that come before the specified cursor."""
+    """
+    Returns the elements in the list that come before the specified cursor.
+    """
     before: Cursor
 
-    """Returns the last _n_ elements from the list."""
+    """
+    Returns the last _n_ elements from the list.
+    """
     last: Int
 
-    """Ordering options for Shelves returned from the connection."""
+    """
+    Ordering options for Shelves returned from the connection.
+    """
     orderBy: [ShelfOrder!]
 
-    """Filtering options for Shelves returned from the connection."""
+    """
+    Filtering options for Shelves returned from the connection.
+    """
     where: ShelfWhereInput
   ): ShelfConnection!
   tags(
-    """Returns the elements in the list that come after the specified cursor."""
+    """
+    Returns the elements in the list that come after the specified cursor.
+    """
     after: Cursor
 
-    """Returns the first _n_ elements from the list."""
+    """
+    Returns the first _n_ elements from the list.
+    """
     first: Int
 
-    """Returns the elements in the list that come before the specified cursor."""
+    """
+    Returns the elements in the list that come before the specified cursor.
+    """
     before: Cursor
 
-    """Returns the last _n_ elements from the list."""
+    """
+    Returns the last _n_ elements from the list.
+    """
     last: Int
 
-    """Ordering options for Tags returned from the connection."""
+    """
+    Ordering options for Tags returned from the connection.
+    """
     orderBy: [TagOrder!]
 
-    """Filtering options for Tags returned from the connection."""
+    """
+    Filtering options for Tags returned from the connection.
+    """
     where: TagWhereInput
   ): TagConnection!
   tasks(
-    """Returns the elements in the list that come after the specified cursor."""
+    """
+    Returns the elements in the list that come after the specified cursor.
+    """
     after: Cursor
 
-    """Returns the first _n_ elements from the list."""
+    """
+    Returns the first _n_ elements from the list.
+    """
     first: Int
 
-    """Returns the elements in the list that come before the specified cursor."""
+    """
+    Returns the elements in the list that come before the specified cursor.
+    """
     before: Cursor
 
-    """Returns the last _n_ elements from the list."""
+    """
+    Returns the last _n_ elements from the list.
+    """
     last: Int
 
-    """Ordering options for Tasks returned from the connection."""
+    """
+    Ordering options for Tasks returned from the connection.
+    """
     orderBy: [TaskOrder!]
 
-    """Filtering options for Tasks returned from the connection."""
+    """
+    Filtering options for Tasks returned from the connection.
+    """
     where: TaskWhereInput
   ): TaskConnection!
   users: [User!]!
@@ -1148,30 +1780,52 @@ type Series implements Node {
   sort: String!
   books: [Book!]
 }
-"""A connection to a list of items."""
+"""
+A connection to a list of items.
+"""
 type SeriesConnection {
-  """A list of edges."""
+  """
+  A list of edges.
+  """
   edges: [SeriesEdge]
-  """Information to aid in pagination."""
+  """
+  Information to aid in pagination.
+  """
   pageInfo: PageInfo!
-  """Identifies the total count of items in the connection."""
+  """
+  Identifies the total count of items in the connection.
+  """
   totalCount: Int!
 }
-"""An edge in a connection."""
+"""
+An edge in a connection.
+"""
 type SeriesEdge {
-  """The item at the end of the edge."""
+  """
+  The item at the end of the edge.
+  """
   node: Series
-  """A cursor for use in pagination."""
+  """
+  A cursor for use in pagination.
+  """
   cursor: Cursor!
 }
-"""Ordering options for Series connections"""
+"""
+Ordering options for Series connections
+"""
 input SeriesOrder {
-  """The ordering direction."""
+  """
+  The ordering direction.
+  """
   direction: OrderDirection! = ASC
-  """The field by which to order SeriesSlice."""
+  """
+  The field by which to order SeriesSlice.
+  """
   field: SeriesOrderField!
 }
-"""Properties by which Series connections can be ordered."""
+"""
+Properties by which Series connections can be ordered.
+"""
 enum SeriesOrderField {
   NAME
 }
@@ -1183,7 +1837,9 @@ input SeriesWhereInput {
   not: SeriesWhereInput
   and: [SeriesWhereInput!]
   or: [SeriesWhereInput!]
-  """id field predicates"""
+  """
+  id field predicates
+  """
   id: ID
   idNEQ: ID
   idIn: [ID!]
@@ -1192,7 +1848,9 @@ input SeriesWhereInput {
   idGTE: ID
   idLT: ID
   idLTE: ID
-  """create_time field predicates"""
+  """
+  create_time field predicates
+  """
   createTime: Time
   createTimeNEQ: Time
   createTimeIn: [Time!]
@@ -1201,7 +1859,9 @@ input SeriesWhereInput {
   createTimeGTE: Time
   createTimeLT: Time
   createTimeLTE: Time
-  """update_time field predicates"""
+  """
+  update_time field predicates
+  """
   updateTime: Time
   updateTimeNEQ: Time
   updateTimeIn: [Time!]
@@ -1210,7 +1870,9 @@ input SeriesWhereInput {
   updateTimeGTE: Time
   updateTimeLT: Time
   updateTimeLTE: Time
-  """calibre_id field predicates"""
+  """
+  calibre_id field predicates
+  """
   calibreID: Int
   calibreIDNEQ: Int
   calibreIDIn: [Int!]
@@ -1221,7 +1883,9 @@ input SeriesWhereInput {
   calibreIDLTE: Int
   calibreIDIsNil: Boolean
   calibreIDNotNil: Boolean
-  """name field predicates"""
+  """
+  name field predicates
+  """
   name: String
   nameNEQ: String
   nameIn: [String!]
@@ -1235,7 +1899,9 @@ input SeriesWhereInput {
   nameHasSuffix: String
   nameEqualFold: String
   nameContainsFold: String
-  """sort field predicates"""
+  """
+  sort field predicates
+  """
   sort: String
   sortNEQ: String
   sortIn: [String!]
@@ -1249,7 +1915,9 @@ input SeriesWhereInput {
   sortHasSuffix: String
   sortEqualFold: String
   sortContainsFold: String
-  """books edge predicates"""
+  """
+  books edge predicates
+  """
   hasBooks: Boolean
   hasBooksWith: [BookWhereInput!]
 }
@@ -1263,49 +1931,83 @@ type Shelf implements Node {
   description: String
   user: User!
   books(
-    """Returns the elements in the list that come after the specified cursor."""
+    """
+    Returns the elements in the list that come after the specified cursor.
+    """
     after: Cursor
 
-    """Returns the first _n_ elements from the list."""
+    """
+    Returns the first _n_ elements from the list.
+    """
     first: Int
 
-    """Returns the elements in the list that come before the specified cursor."""
+    """
+    Returns the elements in the list that come before the specified cursor.
+    """
     before: Cursor
 
-    """Returns the last _n_ elements from the list."""
+    """
+    Returns the last _n_ elements from the list.
+    """
     last: Int
 
-    """Ordering options for Books returned from the connection."""
+    """
+    Ordering options for Books returned from the connection.
+    """
     orderBy: [BookOrder!]
 
-    """Filtering options for Books returned from the connection."""
+    """
+    Filtering options for Books returned from the connection.
+    """
     where: BookWhereInput
   ): BookConnection!
 }
-"""A connection to a list of items."""
+"""
+A connection to a list of items.
+"""
 type ShelfConnection {
-  """A list of edges."""
+  """
+  A list of edges.
+  """
   edges: [ShelfEdge]
-  """Information to aid in pagination."""
+  """
+  Information to aid in pagination.
+  """
   pageInfo: PageInfo!
-  """Identifies the total count of items in the connection."""
+  """
+  Identifies the total count of items in the connection.
+  """
   totalCount: Int!
 }
-"""An edge in a connection."""
+"""
+An edge in a connection.
+"""
 type ShelfEdge {
-  """The item at the end of the edge."""
+  """
+  The item at the end of the edge.
+  """
   node: Shelf
-  """A cursor for use in pagination."""
+  """
+  A cursor for use in pagination.
+  """
   cursor: Cursor!
 }
-"""Ordering options for Shelf connections"""
+"""
+Ordering options for Shelf connections
+"""
 input ShelfOrder {
-  """The ordering direction."""
+  """
+  The ordering direction.
+  """
   direction: OrderDirection! = ASC
-  """The field by which to order Shelves."""
+  """
+  The field by which to order Shelves.
+  """
   field: ShelfOrderField!
 }
-"""Properties by which Shelf connections can be ordered."""
+"""
+Properties by which Shelf connections can be ordered.
+"""
 enum ShelfOrderField {
   NAME
   BOOKS_COUNT
@@ -1318,7 +2020,9 @@ input ShelfWhereInput {
   not: ShelfWhereInput
   and: [ShelfWhereInput!]
   or: [ShelfWhereInput!]
-  """id field predicates"""
+  """
+  id field predicates
+  """
   id: ID
   idNEQ: ID
   idIn: [ID!]
@@ -1327,7 +2031,9 @@ input ShelfWhereInput {
   idGTE: ID
   idLT: ID
   idLTE: ID
-  """create_time field predicates"""
+  """
+  create_time field predicates
+  """
   createTime: Time
   createTimeNEQ: Time
   createTimeIn: [Time!]
@@ -1336,7 +2042,9 @@ input ShelfWhereInput {
   createTimeGTE: Time
   createTimeLT: Time
   createTimeLTE: Time
-  """update_time field predicates"""
+  """
+  update_time field predicates
+  """
   updateTime: Time
   updateTimeNEQ: Time
   updateTimeIn: [Time!]
@@ -1345,10 +2053,14 @@ input ShelfWhereInput {
   updateTimeGTE: Time
   updateTimeLT: Time
   updateTimeLTE: Time
-  """public field predicates"""
+  """
+  public field predicates
+  """
   public: Boolean
   publicNEQ: Boolean
-  """user_id field predicates"""
+  """
+  user_id field predicates
+  """
   userID: ID
   userIDNEQ: ID
   userIDIn: [ID!]
@@ -1362,7 +2074,9 @@ input ShelfWhereInput {
   userIDHasSuffix: ID
   userIDEqualFold: ID
   userIDContainsFold: ID
-  """name field predicates"""
+  """
+  name field predicates
+  """
   name: String
   nameNEQ: String
   nameIn: [String!]
@@ -1376,7 +2090,9 @@ input ShelfWhereInput {
   nameHasSuffix: String
   nameEqualFold: String
   nameContainsFold: String
-  """description field predicates"""
+  """
+  description field predicates
+  """
   description: String
   descriptionNEQ: String
   descriptionIn: [String!]
@@ -1392,10 +2108,14 @@ input ShelfWhereInput {
   descriptionNotNil: Boolean
   descriptionEqualFold: String
   descriptionContainsFold: String
-  """user edge predicates"""
+  """
+  user edge predicates
+  """
   hasUser: Boolean
   hasUserWith: [UserWhereInput!]
-  """books edge predicates"""
+  """
+  books edge predicates
+  """
   hasBooks: Boolean
   hasBooksWith: [BookWhereInput!]
 }
@@ -1404,49 +2124,83 @@ type Tag implements Node {
   calibreID: Int
   name: String!
   books(
-    """Returns the elements in the list that come after the specified cursor."""
+    """
+    Returns the elements in the list that come after the specified cursor.
+    """
     after: Cursor
 
-    """Returns the first _n_ elements from the list."""
+    """
+    Returns the first _n_ elements from the list.
+    """
     first: Int
 
-    """Returns the elements in the list that come before the specified cursor."""
+    """
+    Returns the elements in the list that come before the specified cursor.
+    """
     before: Cursor
 
-    """Returns the last _n_ elements from the list."""
+    """
+    Returns the last _n_ elements from the list.
+    """
     last: Int
 
-    """Ordering options for Books returned from the connection."""
+    """
+    Ordering options for Books returned from the connection.
+    """
     orderBy: [BookOrder!]
 
-    """Filtering options for Books returned from the connection."""
+    """
+    Filtering options for Books returned from the connection.
+    """
     where: BookWhereInput
   ): BookConnection!
 }
-"""A connection to a list of items."""
+"""
+A connection to a list of items.
+"""
 type TagConnection {
-  """A list of edges."""
+  """
+  A list of edges.
+  """
   edges: [TagEdge]
-  """Information to aid in pagination."""
+  """
+  Information to aid in pagination.
+  """
   pageInfo: PageInfo!
-  """Identifies the total count of items in the connection."""
+  """
+  Identifies the total count of items in the connection.
+  """
   totalCount: Int!
 }
-"""An edge in a connection."""
+"""
+An edge in a connection.
+"""
 type TagEdge {
-  """The item at the end of the edge."""
+  """
+  The item at the end of the edge.
+  """
   node: Tag
-  """A cursor for use in pagination."""
+  """
+  A cursor for use in pagination.
+  """
   cursor: Cursor!
 }
-"""Ordering options for Tag connections"""
+"""
+Ordering options for Tag connections
+"""
 input TagOrder {
-  """The ordering direction."""
+  """
+  The ordering direction.
+  """
   direction: OrderDirection! = ASC
-  """The field by which to order Tags."""
+  """
+  The field by which to order Tags.
+  """
   field: TagOrderField!
 }
-"""Properties by which Tag connections can be ordered."""
+"""
+Properties by which Tag connections can be ordered.
+"""
 enum TagOrderField {
   NAME
   BOOKS_COUNT
@@ -1459,7 +2213,9 @@ input TagWhereInput {
   not: TagWhereInput
   and: [TagWhereInput!]
   or: [TagWhereInput!]
-  """id field predicates"""
+  """
+  id field predicates
+  """
   id: ID
   idNEQ: ID
   idIn: [ID!]
@@ -1468,7 +2224,9 @@ input TagWhereInput {
   idGTE: ID
   idLT: ID
   idLTE: ID
-  """calibre_id field predicates"""
+  """
+  calibre_id field predicates
+  """
   calibreID: Int
   calibreIDNEQ: Int
   calibreIDIn: [Int!]
@@ -1479,7 +2237,9 @@ input TagWhereInput {
   calibreIDLTE: Int
   calibreIDIsNil: Boolean
   calibreIDNotNil: Boolean
-  """name field predicates"""
+  """
+  name field predicates
+  """
   name: String
   nameNEQ: String
   nameIn: [String!]
@@ -1493,7 +2253,9 @@ input TagWhereInput {
   nameHasSuffix: String
   nameEqualFold: String
   nameContainsFold: String
-  """books edge predicates"""
+  """
+  books edge predicates
+  """
   hasBooks: Boolean
   hasBooksWith: [BookWhereInput!]
 }
@@ -1503,54 +2265,90 @@ type Task implements Node {
   updateTime: Time!
   type: TaskTaskType!
   status: TaskStatus!
-  """Progress of the task. 0-1"""
+  """
+  Progress of the task. 0-1
+  """
   progress: Float!
-  """Message of the task"""
+  """
+  Message of the task
+  """
   message: String
-  """Error message of the task"""
+  """
+  Error message of the task
+  """
   error: String
-  """The user who created this task. Empty for System Task"""
+  """
+  The user who created this task. Empty for System Task
+  """
   userID: ID
-  """Whether this task is created by the system"""
+  """
+  Whether this task is created by the system
+  """
   isSystemTask: Boolean!
   user: User
 }
-"""A connection to a list of items."""
+"""
+A connection to a list of items.
+"""
 type TaskConnection {
-  """A list of edges."""
+  """
+  A list of edges.
+  """
   edges: [TaskEdge]
-  """Information to aid in pagination."""
+  """
+  Information to aid in pagination.
+  """
   pageInfo: PageInfo!
-  """Identifies the total count of items in the connection."""
+  """
+  Identifies the total count of items in the connection.
+  """
   totalCount: Int!
 }
-"""An edge in a connection."""
+"""
+An edge in a connection.
+"""
 type TaskEdge {
-  """The item at the end of the edge."""
+  """
+  The item at the end of the edge.
+  """
   node: Task
-  """A cursor for use in pagination."""
+  """
+  A cursor for use in pagination.
+  """
   cursor: Cursor!
 }
-"""Ordering options for Task connections"""
+"""
+Ordering options for Task connections
+"""
 input TaskOrder {
-  """The ordering direction."""
+  """
+  The ordering direction.
+  """
   direction: OrderDirection! = ASC
-  """The field by which to order Tasks."""
+  """
+  The field by which to order Tasks.
+  """
   field: TaskOrderField!
 }
-"""Properties by which Task connections can be ordered."""
+"""
+Properties by which Task connections can be ordered.
+"""
 enum TaskOrderField {
   TYPE
   STATUS
 }
-"""TaskStatus is enum for the field status"""
+"""
+TaskStatus is enum for the field status
+"""
 enum TaskStatus @goModel(model: "lybbrio/internal/ent/schema/task_enums.Status") {
   pending
   in_progress
   success
   failure
 }
-"""TaskTaskType is enum for the field type"""
+"""
+TaskTaskType is enum for the field type
+"""
 enum TaskTaskType @goModel(model: "lybbrio/internal/ent/schema/task_enums.TaskType") {
   noop
   calibre_import
@@ -1563,7 +2361,9 @@ input TaskWhereInput {
   not: TaskWhereInput
   and: [TaskWhereInput!]
   or: [TaskWhereInput!]
-  """id field predicates"""
+  """
+  id field predicates
+  """
   id: ID
   idNEQ: ID
   idIn: [ID!]
@@ -1572,7 +2372,9 @@ input TaskWhereInput {
   idGTE: ID
   idLT: ID
   idLTE: ID
-  """create_time field predicates"""
+  """
+  create_time field predicates
+  """
   createTime: Time
   createTimeNEQ: Time
   createTimeIn: [Time!]
@@ -1581,7 +2383,9 @@ input TaskWhereInput {
   createTimeGTE: Time
   createTimeLT: Time
   createTimeLTE: Time
-  """update_time field predicates"""
+  """
+  update_time field predicates
+  """
   updateTime: Time
   updateTimeNEQ: Time
   updateTimeIn: [Time!]
@@ -1590,17 +2394,23 @@ input TaskWhereInput {
   updateTimeGTE: Time
   updateTimeLT: Time
   updateTimeLTE: Time
-  """type field predicates"""
+  """
+  type field predicates
+  """
   type: TaskTaskType
   typeNEQ: TaskTaskType
   typeIn: [TaskTaskType!]
   typeNotIn: [TaskTaskType!]
-  """status field predicates"""
+  """
+  status field predicates
+  """
   status: TaskStatus
   statusNEQ: TaskStatus
   statusIn: [TaskStatus!]
   statusNotIn: [TaskStatus!]
-  """progress field predicates"""
+  """
+  progress field predicates
+  """
   progress: Float
   progressNEQ: Float
   progressIn: [Float!]
@@ -1609,7 +2419,9 @@ input TaskWhereInput {
   progressGTE: Float
   progressLT: Float
   progressLTE: Float
-  """message field predicates"""
+  """
+  message field predicates
+  """
   message: String
   messageNEQ: String
   messageIn: [String!]
@@ -1625,7 +2437,9 @@ input TaskWhereInput {
   messageNotNil: Boolean
   messageEqualFold: String
   messageContainsFold: String
-  """error field predicates"""
+  """
+  error field predicates
+  """
   error: String
   errorNEQ: String
   errorIn: [String!]
@@ -1641,7 +2455,9 @@ input TaskWhereInput {
   errorNotNil: Boolean
   errorEqualFold: String
   errorContainsFold: String
-  """user_id field predicates"""
+  """
+  user_id field predicates
+  """
   userID: ID
   userIDNEQ: ID
   userIDIn: [ID!]
@@ -1657,14 +2473,20 @@ input TaskWhereInput {
   userIDNotNil: Boolean
   userIDEqualFold: ID
   userIDContainsFold: ID
-  """is_system_task field predicates"""
+  """
+  is_system_task field predicates
+  """
   isSystemTask: Boolean
   isSystemTaskNEQ: Boolean
-  """user edge predicates"""
+  """
+  user edge predicates
+  """
   hasUser: Boolean
   hasUserWith: [UserWhereInput!]
 }
-"""The builtin Time type"""
+"""
+The builtin Time type
+"""
 scalar Time
 """
 UpdateAuthorInput is used for update Author object.
@@ -1725,6 +2547,9 @@ input UpdateBookInput {
   addFileIDs: [ID!]
   removeFileIDs: [ID!]
   clearFiles: Boolean
+  addCoverIDs: [ID!]
+  removeCoverIDs: [ID!]
+  clearCovers: Boolean
 }
 """
 UpdateIdentifierInput is used for update Identifier object.
@@ -1825,14 +2650,22 @@ type User implements Node {
   shelves: [Shelf!]
   userPermissions: UserPermissions!
 }
-"""Ordering options for User connections"""
+"""
+Ordering options for User connections
+"""
 input UserOrder {
-  """The ordering direction."""
+  """
+  The ordering direction.
+  """
   direction: OrderDirection! = ASC
-  """The field by which to order Users."""
+  """
+  The field by which to order Users.
+  """
   field: UserOrderField!
 }
-"""Properties by which User connections can be ordered."""
+"""
+Properties by which User connections can be ordered.
+"""
 enum UserOrderField {
   USERNAME
 }
@@ -1854,7 +2687,9 @@ input UserPermissionsWhereInput {
   not: UserPermissionsWhereInput
   and: [UserPermissionsWhereInput!]
   or: [UserPermissionsWhereInput!]
-  """id field predicates"""
+  """
+  id field predicates
+  """
   id: ID
   idNEQ: ID
   idIn: [ID!]
@@ -1863,7 +2698,9 @@ input UserPermissionsWhereInput {
   idGTE: ID
   idLT: ID
   idLTE: ID
-  """create_time field predicates"""
+  """
+  create_time field predicates
+  """
   createTime: Time
   createTimeNEQ: Time
   createTimeIn: [Time!]
@@ -1872,7 +2709,9 @@ input UserPermissionsWhereInput {
   createTimeGTE: Time
   createTimeLT: Time
   createTimeLTE: Time
-  """update_time field predicates"""
+  """
+  update_time field predicates
+  """
   updateTime: Time
   updateTimeNEQ: Time
   updateTimeIn: [Time!]
@@ -1881,7 +2720,9 @@ input UserPermissionsWhereInput {
   updateTimeGTE: Time
   updateTimeLT: Time
   updateTimeLTE: Time
-  """user_id field predicates"""
+  """
+  user_id field predicates
+  """
   userID: ID
   userIDNEQ: ID
   userIDIn: [ID!]
@@ -1897,16 +2738,24 @@ input UserPermissionsWhereInput {
   userIDNotNil: Boolean
   userIDEqualFold: ID
   userIDContainsFold: ID
-  """Admin field predicates"""
+  """
+  Admin field predicates
+  """
   admin: Boolean
   adminNEQ: Boolean
-  """CanCreatePublic field predicates"""
+  """
+  CanCreatePublic field predicates
+  """
   cancreatepublic: Boolean
   cancreatepublicNEQ: Boolean
-  """CanEdit field predicates"""
+  """
+  CanEdit field predicates
+  """
   canedit: Boolean
   caneditNEQ: Boolean
-  """user edge predicates"""
+  """
+  user edge predicates
+  """
   hasUser: Boolean
   hasUserWith: [UserWhereInput!]
 }
@@ -1918,7 +2767,9 @@ input UserWhereInput {
   not: UserWhereInput
   and: [UserWhereInput!]
   or: [UserWhereInput!]
-  """id field predicates"""
+  """
+  id field predicates
+  """
   id: ID
   idNEQ: ID
   idIn: [ID!]
@@ -1927,7 +2778,9 @@ input UserWhereInput {
   idGTE: ID
   idLT: ID
   idLTE: ID
-  """create_time field predicates"""
+  """
+  create_time field predicates
+  """
   createTime: Time
   createTimeNEQ: Time
   createTimeIn: [Time!]
@@ -1936,7 +2789,9 @@ input UserWhereInput {
   createTimeGTE: Time
   createTimeLT: Time
   createTimeLTE: Time
-  """update_time field predicates"""
+  """
+  update_time field predicates
+  """
   updateTime: Time
   updateTimeNEQ: Time
   updateTimeIn: [Time!]
@@ -1945,7 +2800,9 @@ input UserWhereInput {
   updateTimeGTE: Time
   updateTimeLT: Time
   updateTimeLTE: Time
-  """username field predicates"""
+  """
+  username field predicates
+  """
   username: String
   usernameNEQ: String
   usernameIn: [String!]
@@ -1959,7 +2816,9 @@ input UserWhereInput {
   usernameHasSuffix: String
   usernameEqualFold: String
   usernameContainsFold: String
-  """email field predicates"""
+  """
+  email field predicates
+  """
   email: String
   emailNEQ: String
   emailIn: [String!]
@@ -1973,10 +2832,14 @@ input UserWhereInput {
   emailHasSuffix: String
   emailEqualFold: String
   emailContainsFold: String
-  """shelves edge predicates"""
+  """
+  shelves edge predicates
+  """
   hasShelves: Boolean
   hasShelvesWith: [ShelfWhereInput!]
-  """user_permissions edge predicates"""
+  """
+  user_permissions edge predicates
+  """
   hasUserPermissions: Boolean
   hasUserPermissionsWith: [UserPermissionsWhereInput!]
 }

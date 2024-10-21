@@ -52,6 +52,8 @@ const (
 	EdgeShelf = "shelf"
 	// EdgeFiles holds the string denoting the files edge name in mutations.
 	EdgeFiles = "files"
+	// EdgeCovers holds the string denoting the covers edge name in mutations.
+	EdgeCovers = "covers"
 	// Table holds the table name of the book in the database.
 	Table = "books"
 	// AuthorsTable is the table that holds the authors relation/edge. The primary key declared below.
@@ -98,6 +100,13 @@ const (
 	FilesInverseTable = "book_files"
 	// FilesColumn is the table column denoting the files relation/edge.
 	FilesColumn = "book_file_book"
+	// CoversTable is the table that holds the covers relation/edge.
+	CoversTable = "book_covers"
+	// CoversInverseTable is the table name for the BookCover entity.
+	// It exists in this package in order to avoid circular dependency with the "bookcover" package.
+	CoversInverseTable = "book_covers"
+	// CoversColumn is the table column denoting the covers relation/edge.
+	CoversColumn = "book_cover_book"
 )
 
 // Columns holds all SQL columns for book fields.
@@ -337,6 +346,20 @@ func ByFiles(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newFilesStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByCoversCount orders the results by covers count.
+func ByCoversCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newCoversStep(), opts...)
+	}
+}
+
+// ByCovers orders the results by covers terms.
+func ByCovers(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newCoversStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newAuthorsStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -391,5 +414,12 @@ func newFilesStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(FilesInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, true, FilesTable, FilesColumn),
+	)
+}
+func newCoversStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(CoversInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, true, CoversTable, CoversColumn),
 	)
 }

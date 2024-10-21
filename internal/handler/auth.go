@@ -25,10 +25,9 @@ type PasswordRequest struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
 }
-
 type AuthResponse struct {
 	User        *ent.User        `json:"user"`
-	AccessToken auth.SignedToken `json:"accessToken"`
+	AccessToken auth.SignedToken `json:"access_token"`
 }
 
 func accessTokenClaimsFromUser(user *ent.User) *auth.AccessTokenClaims {

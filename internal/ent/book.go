@@ -62,11 +62,13 @@ type BookEdges struct {
 	Shelf []*Shelf `json:"shelf,omitempty"`
 	// Files holds the value of the files edge.
 	Files []*BookFile `json:"files,omitempty"`
+	// Covers holds the value of the covers edge.
+	Covers []*BookCover `json:"covers,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [8]bool
+	loadedTypes [9]bool
 	// totalCount holds the count of the edges above.
-	totalCount [8]map[string]int
+	totalCount [9]map[string]int
 
 	namedAuthors     map[string][]*Author
 	namedPublisher   map[string][]*Publisher
@@ -76,6 +78,7 @@ type BookEdges struct {
 	namedLanguage    map[string][]*Language
 	namedShelf       map[string][]*Shelf
 	namedFiles       map[string][]*BookFile
+	namedCovers      map[string][]*BookCover
 }
 
 // AuthorsOrErr returns the Authors value or an error if the edge
@@ -148,6 +151,15 @@ func (e BookEdges) FilesOrErr() ([]*BookFile, error) {
 		return e.Files, nil
 	}
 	return nil, &NotLoadedError{edge: "files"}
+}
+
+// CoversOrErr returns the Covers value or an error if the edge
+// was not loaded in eager-loading.
+func (e BookEdges) CoversOrErr() ([]*BookCover, error) {
+	if e.loadedTypes[8] {
+		return e.Covers, nil
+	}
+	return nil, &NotLoadedError{edge: "covers"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -295,6 +307,11 @@ func (b *Book) QueryShelf() *ShelfQuery {
 // QueryFiles queries the "files" edge of the Book entity.
 func (b *Book) QueryFiles() *BookFileQuery {
 	return NewBookClient(b.config).QueryFiles(b)
+}
+
+// QueryCovers queries the "covers" edge of the Book entity.
+func (b *Book) QueryCovers() *BookCoverQuery {
+	return NewBookClient(b.config).QueryCovers(b)
 }
 
 // Update returns a builder for updating this Book.
@@ -542,6 +559,30 @@ func (b *Book) appendNamedFiles(name string, edges ...*BookFile) {
 		b.Edges.namedFiles[name] = []*BookFile{}
 	} else {
 		b.Edges.namedFiles[name] = append(b.Edges.namedFiles[name], edges...)
+	}
+}
+
+// NamedCovers returns the Covers named value or an error if the edge was not
+// loaded in eager-loading with this name.
+func (b *Book) NamedCovers(name string) ([]*BookCover, error) {
+	if b.Edges.namedCovers == nil {
+		return nil, &NotLoadedError{edge: name}
+	}
+	nodes, ok := b.Edges.namedCovers[name]
+	if !ok {
+		return nil, &NotLoadedError{edge: name}
+	}
+	return nodes, nil
+}
+
+func (b *Book) appendNamedCovers(name string, edges ...*BookCover) {
+	if b.Edges.namedCovers == nil {
+		b.Edges.namedCovers = make(map[string][]*BookCover)
+	}
+	if len(edges) == 0 {
+		b.Edges.namedCovers[name] = []*BookCover{}
+	} else {
+		b.Edges.namedCovers[name] = append(b.Edges.namedCovers[name], edges...)
 	}
 }
 

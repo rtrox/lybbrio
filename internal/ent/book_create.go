@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"lybbrio/internal/ent/author"
 	"lybbrio/internal/ent/book"
+	"lybbrio/internal/ent/bookcover"
 	"lybbrio/internal/ent/bookfile"
 	"lybbrio/internal/ent/identifier"
 	"lybbrio/internal/ent/language"
@@ -280,6 +281,21 @@ func (bc *BookCreate) AddFiles(b ...*BookFile) *BookCreate {
 		ids[i] = b[i].ID
 	}
 	return bc.AddFileIDs(ids...)
+}
+
+// AddCoverIDs adds the "covers" edge to the BookCover entity by IDs.
+func (bc *BookCreate) AddCoverIDs(ids ...ksuid.ID) *BookCreate {
+	bc.mutation.AddCoverIDs(ids...)
+	return bc
+}
+
+// AddCovers adds the "covers" edges to the BookCover entity.
+func (bc *BookCreate) AddCovers(b ...*BookCover) *BookCreate {
+	ids := make([]ksuid.ID, len(b))
+	for i := range b {
+		ids[i] = b[i].ID
+	}
+	return bc.AddCoverIDs(ids...)
 }
 
 // Mutation returns the BookMutation object of the builder.
@@ -567,6 +583,22 @@ func (bc *BookCreate) createSpec() (*Book, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(bookfile.FieldID, field.TypeString),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := bc.mutation.CoversIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   book.CoversTable,
+			Columns: []string{book.CoversColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(bookcover.FieldID, field.TypeString),
 			},
 		}
 		for _, k := range nodes {
