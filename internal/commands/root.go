@@ -149,11 +149,14 @@ func rootRun(_ *cobra.Command, _ []string) {
 
 	// Calibre
 	cal, err := calibre.NewCalibreSQLite(conf.CalibreLibraryPath)
-	cal = cal.WithLogger(&log.Logger)
 
 	if err != nil {
-		log.Fatal().Err(err).Msg("Failed to initialize Calibre")
+		log.Fatal().
+			Err(err).
+			Str("path", conf.CalibreLibraryPath).
+			Msg("Failed to initialize Calibre")
 	}
+	cal = cal.WithLogger(&log.Logger)
 
 	// Database
 	client, err := db.Open(&conf.DB)
@@ -254,6 +257,7 @@ func rootRun(_ *cobra.Command, _ []string) {
 	srv.Addr = fmt.Sprintf("%s:%d", conf.Interface, conf.Port)
 	srv.Handler = r
 
+	log.Info().Str("addr", srv.Addr).Msg("Listening and serving")
 	if err := srv.ListenAndServe(); err != http.ErrServerClosed {
 		log.Fatal().Err(err).Msg("Failed to listen and serve")
 	}
