@@ -11,8 +11,6 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-const VITE_DEV = "http://localhost:5173"
-
 func WebRoutes(isDev bool, proxyPath string, assetFolder string) http.Handler {
 	r := chi.NewRouter()
 	if isDev {
@@ -29,12 +27,7 @@ func FrontendProxy(proxyPath string) http.HandlerFunc {
 		// Should be unreachable
 		panic(err)
 	}
-	proxy := httputil.ReverseProxy{Director: func(r *http.Request) {
-		r.URL.Scheme = remote.Scheme
-		r.URL.Host = remote.Host
-		r.URL.Path = remote.Path + r.URL.Path
-		r.Host = remote.Host
-	}}
+	proxy := httputil.NewSingleHostReverseProxy(remote)
 	return func(w http.ResponseWriter, r *http.Request) {
 		proxy.ServeHTTP(w, r)
 	}

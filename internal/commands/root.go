@@ -83,6 +83,7 @@ func initConfig() {
 		}
 		os.Exit(1)
 	}
+	log.Info().Interface("config", conf).Msg("Loaded config")
 }
 
 func initLogger() {
