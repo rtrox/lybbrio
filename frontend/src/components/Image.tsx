@@ -40,10 +40,8 @@ export function Img({ url, alt, ...props }: ImgProps) {
         };
       })
       .then(async (res: BlobAndType) => {
-        console.log(res);
         const b64data = await convertBlobToBase64(res.blob);
         setData(b64data);
-        console.log(b64data);
       })
       .catch((error: any) => {
         console.error("Image fetch failed: ", error);

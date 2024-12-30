@@ -27,6 +27,9 @@ function Index() {
         <li>
           <Link to="/about">About</Link>
         </li>
+        <li>
+          <Link to="/books">Books</Link>
+        </li>
         {loggedIn && (
           <li>
             <div className="cursor-pointer" onClick={handleLogout}>

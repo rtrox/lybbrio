@@ -1,8 +1,7 @@
+import { Suspense } from "react";
 import { createFileRoute, redirect } from "@tanstack/react-router";
-import { useGraphQLClient } from "../context/GraphQLProvider";
-import { graphql } from "../gql/gql";
-import { useQuery } from "@tanstack/react-query";
-import { Book } from "../components/Book";
+
+import { InfiniteBookList } from "../components/InfiniteBookList/InfiniteBookList";
 
 export const Route = createFileRoute("/books")({
   component: Books,
@@ -18,35 +17,12 @@ export const Route = createFileRoute("/books")({
   },
 });
 
-const bookQuery = graphql(`
-  query allBooks($first: Int!) {
-    books(first: $first) {
-      edges {
-        node {
-          ...BookItem
-        }
-      }
-    }
-  }
-`);
-
 function Books() {
-  const { graphql: g } = useGraphQLClient();
-  const { data } = useQuery({
-    queryKey: ["allBooks", { first: 10 }],
-    queryFn: async () => g.request(bookQuery, { first: 100 }),
-  });
-
   return (
-    <div className="grid grid-cols-7 gap-4">
-      {data?.books?.edges?.map(
-        (e, i) =>
-          e?.node && (
-            <div>
-              <Book book={e?.node} key={`film-${i}`} />
-            </div>
-          )
-      )}
-    </div>
+    <Suspense fallback={<h1> Loading ...</h1>}>
+      <div className="p-8">
+        <InfiniteBookList />
+      </div>
+    </Suspense>
   );
 }
