@@ -1,0 +1,149 @@
+:root {
+  --book-card-transition-timing: 200ms;
+  --div-scale-factor: 1.02;
+}
+// .container:before {
+//   content: "";
+//   position: absolute;
+//   display: block;
+//   z-index: 15;
+//   top: 0;
+//   right: 0;
+//   border-width: 0 24px 24px 0;
+//   border-style: solid;
+//   border-radius: 0 0 0 0.375em;
+//   border-color: #555 #fff;
+// }
+.container {
+  aspect-ratio: 2/3;
+  overflow: hidden;
+  border-radius: 0.375em;
+  display: flex;
+  position: relative;
+  box-shadow: 0 25px 50px -12px #000;
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    transition-timing-function: cubic-linear(0.4, 0, 0.2, 1);
+    transition-duration: var(--book-card-transition-timing);
+  }
+}
+
+.container:hover div.info {
+  opacity: 0.8;
+  transform: translate(0) scale(var(--div-scale-factor));
+  -webkit-transform: translate(1%) scale(var(--div-scale-factor));
+  -moz-transform: translate(1%) scale(var(--div-scale-factor));
+  -ms-transform: translate(1%) scale(var(--div-scale-factor));
+  -o-transform: translate(1%) scale(var(--div-scale-factor));
+}
+
+.container:hover img {
+  filter: blur(5px);
+}
+
+div.info {
+  display: flex;
+  flex-direction: column;
+  opacity: 0;
+  position: absolute;
+  z-index: 10;
+  width: 110%;
+  background-color: #333;
+  padding: 1em;
+  padding-top: 2em;
+  text-align: center;
+  box-shadow: -25px 25px 50px -12px #00000080;
+  /* slide in from the right */
+  transform: translate(100%) scale(var(--div-scale-factor));
+  -webkit-transform: translate(100%) scale(var(--div-scale-factor));
+  -moz-transform: translate(100%) scale(var(--div-scale-factor));
+  -ms-transform: translate(100%) scale(var(--div-scale-factor));
+  -o-transform: translate(100%) scale(var(--div-scale-factor));
+  /* animation */
+  transition-property:
+    transform,
+    -webkit-transform,
+    -moz-transform,
+    -ms-transform,
+    -o-transform;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: var(--book-card-transition-timing);
+
+  h1 {
+    font-size: 1.25em;
+    font-weight: bold;
+    color: #fff;
+  }
+
+  .byline {
+    font-size: 0.875em;
+    font-style: italic;
+  }
+
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.5em;
+    margin-top: auto;
+    margin-bottom: 1em;
+    width: 100%;
+    span {
+      padding: 0.125em 0.5em;
+      border-radius: 0.5em;
+      background-color: #fff;
+      color: #333;
+      font-size: 0.75em;
+    }
+  }
+}
+
+.bottomBadges {
+  position: absolute;
+  display: flex;
+  gap: 0.5em;
+  bottom: 0;
+  right: 0;
+  padding: 0.5rem;
+  z-index: 15;
+  > * {
+    cursor: pointer;
+  }
+}
+
+.menu {
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding: 0.5rem 0.5rem;
+  z-index: 10;
+  z-index: 15;
+  cursor: pointer;
+}
+
+// .tooltip {
+//   position: relative;
+//   display: inline-block;
+//   .tooltiptext {
+//     visibility: hidden;
+//     width: 100px;
+//     bottom: 100%;
+//     left: 50%;
+//     margin-left: -60px;
+//     background-color: #333;
+//     color: #fff;
+//     text-align: cetner;
+//     padding: 5px 0;
+//     border-radius: 6px;
+//     background-color: lime;
+
+//     position: absolute;
+//     z-index: 1000;
+//   }
+//   :hover .tooltiptext {
+//     visibility: visible;
+//   }
+// }
