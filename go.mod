@@ -33,7 +33,7 @@ require (
 	golang.org/x/crypto v0.31.0
 	golang.org/x/net v0.33.0
 	gorm.io/driver/sqlite v1.5.4
-	gorm.io/gorm v1.25.7
+	gorm.io/gorm v1.25.12
 )
 
 require (
