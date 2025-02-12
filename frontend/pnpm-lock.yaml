@@ -99,7 +99,7 @@ devDependencies:
     version: 1.84.0
   tailwindcss:
     specifier: ^4.0.0
-    version: 4.0.3
+    version: 4.0.6
   ts-node:
     specifier: ^10.9.2
     version: 10.9.2(@types/node@22.13.1)(typescript@5.7.3)
@@ -4743,8 +4743,8 @@ packages:
       tslib: 2.6.2
     dev: true
 
-  /tailwindcss@4.0.3:
-    resolution: {integrity: sha512-ImmZF0Lon5RrQpsEAKGxRvHwCvMgSC4XVlFRqmbzTEDb/3wvin9zfEZrMwgsa3yqBbPqahYcVI6lulM2S7IZAA==}
+  /tailwindcss@4.0.6:
+    resolution: {integrity: sha512-mysewHYJKaXgNOW6pp5xon/emCsfAMnO8WMaGKZZ35fomnR/T5gYnRg2/yRTTrtXiEl1tiVkeRt0eMO6HxEZqw==}
     dev: true
 
   /through@2.3.8:
