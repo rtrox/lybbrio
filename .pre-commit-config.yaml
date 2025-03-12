@@ -14,7 +14,7 @@ repos:
           - .github/lint/yamllint.yaml
         id: yamllint
   - repo: https://github.com/golangci/golangci-lint
-    rev: v1.64.6
+    rev: v1.64.7
     hooks:
       - id: golangci-lint
         args:
