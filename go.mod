@@ -6,7 +6,7 @@ toolchain go1.24.1
 
 require (
 	entgo.io/contrib v0.6.0
-	entgo.io/ent v0.14.3
+	entgo.io/ent v0.14.4
 	github.com/99designs/gqlgen v0.17.68
 	github.com/go-chi/chi/v5 v5.2.1
 	github.com/go-chi/render v1.0.3
