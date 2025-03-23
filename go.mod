@@ -23,7 +23,7 @@ require (
 	github.com/mattn/go-sqlite3 v1.14.24
 	github.com/mpalmer/gorm-zerolog v0.1.0
 	github.com/prometheus/client_golang v1.21.1
-	github.com/rs/zerolog v1.33.0
+	github.com/rs/zerolog v1.34.0
 	github.com/segmentio/ksuid v1.0.4
 	github.com/spf13/cobra v1.9.1
 	github.com/spf13/pflag v1.0.6
