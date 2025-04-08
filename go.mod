@@ -31,7 +31,7 @@ require (
 	github.com/tj/assert v0.0.3
 	github.com/vektah/gqlparser/v2 v2.5.23
 	golang.org/x/crypto v0.37.0
-	golang.org/x/net v0.38.0
+	golang.org/x/net v0.39.0
 	gorm.io/driver/sqlite v1.5.7
 	gorm.io/gorm v1.25.12
 )
