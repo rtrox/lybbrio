@@ -10,7 +10,7 @@ require (
 	github.com/99designs/gqlgen v0.17.70
 	github.com/go-chi/chi/v5 v5.2.2
 	github.com/go-chi/render v1.0.3
-	github.com/go-playground/validator/v10 v10.26.0
+	github.com/go-playground/validator/v10 v10.27.0
 	github.com/golang-jwt/jwt/v5 v5.2.2
 	github.com/google/uuid v1.6.0
 	github.com/hashicorp/go-multierror v1.1.1
