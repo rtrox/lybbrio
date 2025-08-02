@@ -1,11 +1,11 @@
 module lybbrio
 
-go 1.23.0
+go 1.23.4
 
 toolchain go1.24.5
 
 require (
-	entgo.io/contrib v0.6.0
+	entgo.io/contrib v0.7.0
 	entgo.io/ent v0.14.5
 	github.com/99designs/gqlgen v0.17.70
 	github.com/go-chi/chi/v5 v5.2.2
