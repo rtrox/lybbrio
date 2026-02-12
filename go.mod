@@ -7,7 +7,7 @@ toolchain go1.25.5
 require (
 	entgo.io/contrib v0.7.0
 	entgo.io/ent v0.14.5
-	github.com/99designs/gqlgen v0.17.70
+	github.com/99designs/gqlgen v0.17.86
 	github.com/go-chi/chi/v5 v5.2.5
 	github.com/go-chi/render v1.0.3
 	github.com/go-playground/validator/v10 v10.30.1
@@ -51,6 +51,7 @@ require (
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/go-viper/mapstructure/v2 v2.4.0 // indirect
+	github.com/goccy/go-yaml v1.19.2 // indirect
 	github.com/google/go-cmp v0.7.0 // indirect
 	github.com/gorilla/websocket v1.5.0 // indirect
 	github.com/hashicorp/errwrap v1.0.0 // indirect
@@ -86,6 +87,6 @@ require (
 	golang.org/x/sys v0.41.0 // indirect
 	golang.org/x/text v0.34.0 // indirect
 	golang.org/x/tools v0.41.0 // indirect
-	google.golang.org/protobuf v1.36.8 // indirect
+	google.golang.org/protobuf v1.36.11 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
