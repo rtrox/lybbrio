@@ -17,7 +17,7 @@ jobs:
 
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
       - run: git fetch --force --tags
@@ -38,7 +38,7 @@ jobs:
     if: ${{ needs.main-branch-check.outputs.on_main_branch }} == true
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
       - run: git fetch --force --tags
