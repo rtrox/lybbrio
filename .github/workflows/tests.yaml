@@ -63,7 +63,7 @@ jobs:
         if: steps.changes.outputs.go-files == 'true'
         with:
           go-version: ">=1.21.4"
-      - uses: golangci/golangci-lint-action@v6
+      - uses: golangci/golangci-lint-action@v9
         if: steps.changes.outputs.go-files == 'true'
         with:
           version: v1.54
