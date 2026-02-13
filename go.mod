@@ -15,7 +15,7 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/jackc/pgx/v5 v5.8.0
-	github.com/knadh/koanf/providers/confmap v0.1.0
+	github.com/knadh/koanf/providers/confmap v1.0.0
 	github.com/knadh/koanf/providers/env v1.1.0
 	github.com/knadh/koanf/providers/posflag v0.1.0
 	github.com/knadh/koanf/v2 v2.3.2
