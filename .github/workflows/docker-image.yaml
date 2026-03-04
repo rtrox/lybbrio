@@ -54,7 +54,7 @@ jobs:
             type=semver,pattern={{major}}
 
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
+        uses: docker/setup-qemu-action@v4
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -125,7 +125,7 @@ jobs:
 
       - name: Extract metadata (tags, labels) for Docker
         id: meta
-        uses: docker/metadata-action@c769610e5c78046ecf9befd8fea79ffa76f360b4
+        uses: docker/metadata-action@cb50be45084dde2f4465550fdd9e0abf61483be1
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}${{ inputs.suffix }}
           flavor: |
