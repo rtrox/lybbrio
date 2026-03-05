@@ -1,6 +1,6 @@
 module lybbrio
 
-go 1.24.0
+go 1.25.0
 
 toolchain go1.25.5
 
@@ -31,7 +31,7 @@ require (
 	github.com/tj/assert v0.0.3
 	github.com/vektah/gqlparser/v2 v2.5.32
 	golang.org/x/crypto v0.48.0
-	golang.org/x/net v0.50.0
+	golang.org/x/net v0.51.0
 	gorm.io/driver/sqlite v1.6.0
 	gorm.io/gorm v1.31.1
 )
