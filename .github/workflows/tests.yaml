@@ -26,7 +26,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
       - uses: pre-commit/action@v3.0.1
         with:
           extra_args: --config .github/lint/precommit-ci.yaml
@@ -66,7 +66,7 @@ jobs:
       - uses: golangci/golangci-lint-action@v6
         if: steps.changes.outputs.go-files == 'true'
         with:
-          version: v1.64.8
+          version: v1.54
           args: --timeout 5m --config .github/lint/golangci.yaml
 
   go-tests:
