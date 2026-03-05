@@ -36,7 +36,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v6
         with:
           go-version: ">=1.21.4"
       - name: Check Go Fmt
@@ -59,14 +59,14 @@ jobs:
       pull-requests: read
       checks: write
     steps:
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v6
         if: steps.changes.outputs.go-files == 'true'
         with:
           go-version: ">=1.21.4"
       - uses: golangci/golangci-lint-action@v6
         if: steps.changes.outputs.go-files == 'true'
         with:
-          version: v1.64.8
+          version: v1.54
           args: --timeout 5m --config .github/lint/golangci.yaml
 
   go-tests:
@@ -84,7 +84,7 @@ jobs:
               - 'go.mod'
               - 'go.sum'
       - name: Set up Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v6
         with:
           go-version: ">=1.21.4"
       - name: Tidy
