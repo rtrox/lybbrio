@@ -77,7 +77,7 @@ importers:
         version: 4.7.0(supports-color@8.1.1)(vite@6.4.3(@types/node@25.2.3)(jiti@2.7.0)(sass@1.101.0)(yaml@2.8.2))
       autoprefixer:
         specifier: ^10.4.17
-        version: 10.5.4(postcss@8.5.19)
+        version: 10.5.4(postcss@8.5.22)
       concurrently:
         specifier: ^9.0.0
         version: 9.2.4
@@ -92,10 +92,10 @@ importers:
         version: 0.5.3(eslint@9.39.5(jiti@2.7.0)(supports-color@8.1.1))
       postcss:
         specifier: ^8.4.33
-        version: 8.5.19
+        version: 8.5.22
       postcss-import:
         specifier: ^16.0.0
-        version: 16.1.1(postcss@8.5.19)
+        version: 16.1.1(postcss@8.5.22)
       sass:
         specifier: ^1.70.0
         version: 1.101.0
@@ -2251,8 +2251,8 @@ packages:
   postcss-value-parser@4.2.0:
     resolution: {integrity: sha512-1NNCs6uurfkVbeXG4S8JFT9t19m45ICnif8zWLd5oPSZ50QnwMfK+H3jv408d4jw/7Bttv5axS5IiHoLaVNHeQ==}
 
-  postcss@8.5.19:
-    resolution: {integrity: sha512-Mz8SaolMd8nB+G13WkORcxQKHZ/NE4xXevtkJHVuG+guo9/wYKlIMTKAqGdEmYOXR2ijPjTYNHssizdaVSUNdQ==}
+  postcss@8.5.22:
+    resolution: {integrity: sha512-KBDEIpLrvpv16pp3K0Fw+UCoZfopFjjgeB+0tA/aaThfEE74kKDLrgg603YvOWJyg3+WYtyq3xYsQWsIyZlPqQ==}
     engines: {node: ^10 || ^12 || >=14}
 
   prelude-ls@1.2.1:
@@ -4200,13 +4200,13 @@ snapshots:
 
   auto-bind@4.0.0: {}
 
-  autoprefixer@10.5.4(postcss@8.5.19):
+  autoprefixer@10.5.4(postcss@8.5.22):
     dependencies:
       browserslist: 4.28.6
       caniuse-lite: 1.0.30001806
       fraction.js: 5.3.4
       picocolors: 1.1.1
-      postcss: 8.5.19
+      postcss: 8.5.22
       postcss-value-parser: 4.2.0
 
   babel-dead-code-elimination@1.0.12(supports-color@8.1.1):
@@ -5116,16 +5116,16 @@ snapshots:
 
   pify@2.3.0: {}
 
-  postcss-import@16.1.1(postcss@8.5.19):
+  postcss-import@16.1.1(postcss@8.5.22):
     dependencies:
-      postcss: 8.5.19
+      postcss: 8.5.22
       postcss-value-parser: 4.2.0
       read-cache: 1.0.0
       resolve: 1.22.11
 
   postcss-value-parser@4.2.0: {}
 
-  postcss@8.5.19:
+  postcss@8.5.22:
     dependencies:
       nanoid: 3.3.16
       picocolors: 1.1.1
@@ -5481,7 +5481,7 @@ snapshots:
       esbuild: 0.25.12
       fdir: 6.5.0(picomatch@4.0.4)
       picomatch: 4.0.4
-      postcss: 8.5.19
+      postcss: 8.5.22
       rollup: 4.61.0
       tinyglobby: 0.2.17
     optionalDependencies:
