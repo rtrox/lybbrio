@@ -20,7 +20,7 @@ require (
 	github.com/knadh/koanf/providers/posflag v0.1.0
 	github.com/knadh/koanf/v2 v2.3.6
 	github.com/magefile/mage v1.17.2
-	github.com/mattn/go-sqlite3 v1.14.49
+	github.com/mattn/go-sqlite3 v1.14.50
 	github.com/mpalmer/gorm-zerolog v0.1.0
 	github.com/prometheus/client_golang v1.24.1
 	github.com/rs/zerolog v1.35.1
