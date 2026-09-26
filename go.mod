@@ -18,7 +18,7 @@ require (
 	github.com/knadh/koanf/providers/confmap v0.1.0
 	github.com/knadh/koanf/providers/env v1.1.0
 	github.com/knadh/koanf/providers/posflag v0.1.0
-	github.com/knadh/koanf/v2 v2.3.6
+	github.com/knadh/koanf/v2 v2.3.7
 	github.com/magefile/mage v1.17.2
 	github.com/mattn/go-sqlite3 v1.14.52
 	github.com/mpalmer/gorm-zerolog v0.1.0
