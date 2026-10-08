@@ -59,7 +59,7 @@ importers:
         version: 1.167.2(@tanstack/react-router@1.170.41(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(@tanstack/router-core@1.171.34)(csstype@3.2.3)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
       '@tanstack/router-vite-plugin':
         specifier: ^1.15.11
-        version: 1.167.42(@tanstack/react-router@1.170.41(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(esbuild@0.25.12)(rollup@4.61.0)(supports-color@8.1.1)(vite@6.4.3(@types/node@25.2.3)(jiti@2.7.0)(sass@1.105.1)(yaml@2.8.2))
+        version: 1.167.42(@tanstack/react-router@1.170.41(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(esbuild@0.25.12)(rollup@4.61.0)(supports-color@8.1.1)(vite@6.4.4(@types/node@25.2.3)(jiti@2.7.0)(sass@1.105.1)(yaml@2.8.2))
       '@types/react':
         specifier: ^19.0.0
         version: 19.3.0
@@ -74,7 +74,7 @@ importers:
         version: 8.71.1(eslint@9.39.5(jiti@2.7.0)(supports-color@8.1.1))(supports-color@8.1.1)(typescript@5.9.3)
       '@vitejs/plugin-react':
         specifier: ^4.2.1
-        version: 4.7.0(supports-color@8.1.1)(vite@6.4.3(@types/node@25.2.3)(jiti@2.7.0)(sass@1.105.1)(yaml@2.8.2))
+        version: 4.7.0(supports-color@8.1.1)(vite@6.4.4(@types/node@25.2.3)(jiti@2.7.0)(sass@1.105.1)(yaml@2.8.2))
       autoprefixer:
         specifier: ^10.4.17
         version: 10.6.1(postcss@8.5.29)
@@ -110,7 +110,7 @@ importers:
         version: 5.9.3
       vite:
         specifier: ^6.0.0
-        version: 6.4.3(@types/node@25.2.3)(jiti@2.7.0)(sass@1.105.1)(yaml@2.8.2)
+        version: 6.4.4(@types/node@25.2.3)(jiti@2.7.0)(sass@1.105.1)(yaml@2.8.2)
 
 packages:
 
@@ -2259,10 +2259,6 @@ packages:
     resolution: {integrity: sha512-V7+vQEJ06Z+c5tSye8S+nHUfI51xoXIXjHQ99cQtKUkQqqO1kO/KCJUfZXuB47h/YBlDhah2H3hdUGXn8ie0oA==}
     engines: {node: '>=8.6'}
 
-  picomatch@4.0.4:
-    resolution: {integrity: sha512-QP88BAKvMam/3NxH6vj2o21R6MjxZUAd6nlwAS/pnGvN9IVLocLHxGYIzFhg6fUQ+5th6P4dv4eW9jX3DSIj7A==}
-    engines: {node: '>=12'}
-
   picomatch@4.0.5:
     resolution: {integrity: sha512-RvwwcruNjI1ncT5xRakeyS9Lf8lcItv34KD+aif+VH9kduAyfYBipGh12274xtenIPZ119/R9BdTBa8gAwSh0A==}
     engines: {node: '>=12'}
@@ -2683,8 +2679,8 @@ packages:
   v8-compile-cache-lib@3.0.1:
     resolution: {integrity: sha512-wa7YjyUGfNZngI/vtK0UHAN+lgDCxBPCylVXGp0zu59Fz5aiGtNXaq3DhIov063MorB+VfufLh3JlF2KdTK3xg==}
 
-  vite@6.4.3:
-    resolution: {integrity: sha512-NTKlcQjlAK7MlQoyb6LgaqHc8sso/pVyUJYWMws3jg21uTJw/LddqIFPcPqP6PzpgbIcZyKI85sFE4HBrQDA8A==}
+  vite@6.4.4:
+    resolution: {integrity: sha512-xGjU/SyjeNyb0E4KxXBvYz/1C+3JXuujvf2hXNOtnlcE+58o5ajd9N2/n2VhkiJvpCP2qQasnUpx5PXNeI+p1Q==}
     engines: {node: ^18.0.0 || ^20.0.0 || >=22.0.0}
     hasBin: true
     peerDependencies:
@@ -3955,7 +3951,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@tanstack/router-plugin@1.168.42(@tanstack/react-router@1.170.41(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(esbuild@0.25.12)(rollup@4.61.0)(supports-color@8.1.1)(vite@6.4.3(@types/node@25.2.3)(jiti@2.7.0)(sass@1.105.1)(yaml@2.8.2))':
+  '@tanstack/router-plugin@1.168.42(@tanstack/react-router@1.170.41(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(esbuild@0.25.12)(rollup@4.61.0)(supports-color@8.1.1)(vite@6.4.4(@types/node@25.2.3)(jiti@2.7.0)(sass@1.105.1)(yaml@2.8.2))':
     dependencies:
       '@babel/core': 7.29.7(supports-color@8.1.1)
       '@babel/template': 7.29.7
@@ -3964,11 +3960,11 @@ snapshots:
       '@tanstack/router-generator': 1.167.40(supports-color@8.1.1)
       '@tanstack/router-utils': 1.162.3(supports-color@8.1.1)
       chokidar: 5.0.0
-      unplugin: 3.3.0(esbuild@0.25.12)(rollup@4.61.0)(vite@6.4.3(@types/node@25.2.3)(jiti@2.7.0)(sass@1.105.1)(yaml@2.8.2))
+      unplugin: 3.3.0(esbuild@0.25.12)(rollup@4.61.0)(vite@6.4.4(@types/node@25.2.3)(jiti@2.7.0)(sass@1.105.1)(yaml@2.8.2))
       zod: 4.6.2
     optionalDependencies:
       '@tanstack/react-router': 1.170.41(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
-      vite: 6.4.3(@types/node@25.2.3)(jiti@2.7.0)(sass@1.105.1)(yaml@2.8.2)
+      vite: 6.4.4(@types/node@25.2.3)(jiti@2.7.0)(sass@1.105.1)(yaml@2.8.2)
     transitivePeerDependencies:
       - '@farmfe/core'
       - '@rspack/core'
@@ -3992,9 +3988,9 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@tanstack/router-vite-plugin@1.167.42(@tanstack/react-router@1.170.41(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(esbuild@0.25.12)(rollup@4.61.0)(supports-color@8.1.1)(vite@6.4.3(@types/node@25.2.3)(jiti@2.7.0)(sass@1.105.1)(yaml@2.8.2))':
+  '@tanstack/router-vite-plugin@1.167.42(@tanstack/react-router@1.170.41(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(esbuild@0.25.12)(rollup@4.61.0)(supports-color@8.1.1)(vite@6.4.4(@types/node@25.2.3)(jiti@2.7.0)(sass@1.105.1)(yaml@2.8.2))':
     dependencies:
-      '@tanstack/router-plugin': 1.168.42(@tanstack/react-router@1.170.41(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(esbuild@0.25.12)(rollup@4.61.0)(supports-color@8.1.1)(vite@6.4.3(@types/node@25.2.3)(jiti@2.7.0)(sass@1.105.1)(yaml@2.8.2))
+      '@tanstack/router-plugin': 1.168.42(@tanstack/react-router@1.170.41(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(esbuild@0.25.12)(rollup@4.61.0)(supports-color@8.1.1)(vite@6.4.4(@types/node@25.2.3)(jiti@2.7.0)(sass@1.105.1)(yaml@2.8.2))
     transitivePeerDependencies:
       - '@farmfe/core'
       - '@rsbuild/core'
@@ -4166,7 +4162,7 @@ snapshots:
       '@typescript-eslint/types': 8.71.1
       eslint-visitor-keys: 5.0.1
 
-  '@vitejs/plugin-react@4.7.0(supports-color@8.1.1)(vite@6.4.3(@types/node@25.2.3)(jiti@2.7.0)(sass@1.105.1)(yaml@2.8.2))':
+  '@vitejs/plugin-react@4.7.0(supports-color@8.1.1)(vite@6.4.4(@types/node@25.2.3)(jiti@2.7.0)(sass@1.105.1)(yaml@2.8.2))':
     dependencies:
       '@babel/core': 7.29.0(supports-color@8.1.1)
       '@babel/plugin-transform-react-jsx-self': 7.27.1(@babel/core@7.29.0(supports-color@8.1.1))
@@ -4174,7 +4170,7 @@ snapshots:
       '@rolldown/pluginutils': 1.0.0-beta.27
       '@types/babel__core': 7.20.5
       react-refresh: 0.17.0
-      vite: 6.4.3(@types/node@25.2.3)(jiti@2.7.0)(sass@1.105.1)(yaml@2.8.2)
+      vite: 6.4.4(@types/node@25.2.3)(jiti@2.7.0)(sass@1.105.1)(yaml@2.8.2)
     transitivePeerDependencies:
       - supports-color
 
@@ -4667,10 +4663,6 @@ snapshots:
       ua-parser-js: 1.0.41
     transitivePeerDependencies:
       - encoding
-
-  fdir@6.5.0(picomatch@4.0.4):
-    optionalDependencies:
-      picomatch: 4.0.4
 
   fdir@6.5.0(picomatch@4.0.5):
     optionalDependencies:
@@ -5177,8 +5169,6 @@ snapshots:
 
   picomatch@2.3.2: {}
 
-  picomatch@4.0.4: {}
-
   picomatch@4.0.5: {}
 
   pify@2.3.0: {}
@@ -5506,7 +5496,7 @@ snapshots:
     dependencies:
       normalize-path: 2.1.1
 
-  unplugin@3.3.0(esbuild@0.25.12)(rollup@4.61.0)(vite@6.4.3(@types/node@25.2.3)(jiti@2.7.0)(sass@1.105.1)(yaml@2.8.2)):
+  unplugin@3.3.0(esbuild@0.25.12)(rollup@4.61.0)(vite@6.4.4(@types/node@25.2.3)(jiti@2.7.0)(sass@1.105.1)(yaml@2.8.2)):
     dependencies:
       '@jridgewell/remapping': 2.3.5
       picomatch: 4.0.5
@@ -5514,7 +5504,7 @@ snapshots:
     optionalDependencies:
       esbuild: 0.25.12
       rollup: 4.61.0
-      vite: 6.4.3(@types/node@25.2.3)(jiti@2.7.0)(sass@1.105.1)(yaml@2.8.2)
+      vite: 6.4.4(@types/node@25.2.3)(jiti@2.7.0)(sass@1.105.1)(yaml@2.8.2)
 
   unstated-next@1.1.0: {}
 
@@ -5552,11 +5542,11 @@ snapshots:
 
   v8-compile-cache-lib@3.0.1: {}
 
-  vite@6.4.3(@types/node@25.2.3)(jiti@2.7.0)(sass@1.105.1)(yaml@2.8.2):
+  vite@6.4.4(@types/node@25.2.3)(jiti@2.7.0)(sass@1.105.1)(yaml@2.8.2):
     dependencies:
       esbuild: 0.25.12
-      fdir: 6.5.0(picomatch@4.0.4)
-      picomatch: 4.0.4
+      fdir: 6.5.0(picomatch@4.0.5)
+      picomatch: 4.0.5
       postcss: 8.5.29
       rollup: 4.61.0
       tinyglobby: 0.2.17
