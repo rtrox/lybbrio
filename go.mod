@@ -2,7 +2,7 @@ module lybbrio
 
 go 1.26.0
 
-toolchain go1.27.1
+toolchain go1.27.2
 
 require (
 	entgo.io/contrib v0.7.0
