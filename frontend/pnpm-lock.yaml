@@ -94,8 +94,8 @@ importers:
         specifier: ^8.4.33
         version: 8.5.32
       postcss-import:
-        specifier: ^16.0.0
-        version: 16.2.0(postcss@8.5.32)
+        specifier: ^17.0.0
+        version: 17.0.1(postcss@8.5.32)
       sass:
         specifier: ^1.70.0
         version: 1.106.1
@@ -2275,9 +2275,9 @@ packages:
     resolution: {integrity: sha512-udgsAY+fTnvv7kI7aaxbqwWNb0AHiB0qBO89PZKPkoTmGOgdbrHDKD+0B2X4uTfJ/FT1R09r9gTsjUjNJotuog==}
     engines: {node: '>=0.10.0'}
 
-  postcss-import@16.2.0:
-    resolution: {integrity: sha512-0mQUGlSp87Zl70K58RNwQAN1WS9plFE6KWGui9nyK6ninduMyjW/Khaoy/BpBoFTBh7ndAvAKrSKVbwy6vd/BA==}
-    engines: {node: '>=18.0.0'}
+  postcss-import@17.0.1:
+    resolution: {integrity: sha512-lthLZRa+sMc/xo+lG7TMUvOviwP9ngR0VULnvfXTyOE3JIc0mFrbjcubI6Jx52X+B3IKt9yfp6wwVWE768JezA==}
+    engines: {node: '>=22.0.0'}
     peerDependencies:
       postcss: ^8.0.0
 
@@ -5177,7 +5177,7 @@ snapshots:
 
   pify@2.3.0: {}
 
-  postcss-import@16.2.0(postcss@8.5.32):
+  postcss-import@17.0.1(postcss@8.5.32):
     dependencies:
       postcss: 8.5.32
       postcss-value-parser: 4.2.0
